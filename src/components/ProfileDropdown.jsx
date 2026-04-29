@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, User as UserIcon } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context";
 
 export function ProfileDropdown({
     onAccount,
@@ -10,7 +10,7 @@ export function ProfileDropdown({
     onLogout,
 }) {
     const [open, setOpen] = useState(false);
-    const { user, loading } = useAuth();
+    const { user } = useAuth();
     
     // Fallback if user is not loaded yet
     const displayEmail = user?.email || "Guest";
@@ -114,7 +114,7 @@ export function ProfileDropdown({
             {/* Dropdown Menu */}
             <AnimatePresence>
                 {open && (
-                    <motion.div
+                    <Motion.div
                         initial={{ opacity: 0, scale: 0.95, y: -5 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -5 }}
@@ -178,7 +178,7 @@ export function ProfileDropdown({
                                 Sign out
                             </button>
                         </div>
-                    </motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
         </div>

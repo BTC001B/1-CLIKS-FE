@@ -34,7 +34,9 @@ import { homeService } from '../../services';
 // Fix for potential ReferenceError in stale builds or cached components
 const StatsCard = () => null;
 
-const AccountCard = ({ name, amount, color, icon: Icon }) => (
+const AccountCard = (props) => {
+    const { name, amount, color, icon: Icon } = props;
+    return (
     <div className="account-card" style={{ backgroundColor: color }}>
         <div className="account-icon">
             <Icon size={24} />
@@ -44,9 +46,12 @@ const AccountCard = ({ name, amount, color, icon: Icon }) => (
             <div className="account-amount">{formatCurrency(amount)}</div>
         </div>
     </div>
-);
+    );
+};
 
-const DonutChart = ({ label, value, colorClass, percent = 75, icon: Icon }) => (
+const DonutChart = (props) => {
+    const { label, value, colorClass, percent = 75, icon: Icon } = props;
+    return (
     <div className="circular-chart-container">
         <div className="relative">
             <svg viewBox="0 0 36 36" className="circular-chart">
@@ -74,9 +79,11 @@ const DonutChart = ({ label, value, colorClass, percent = 75, icon: Icon }) => (
         <div className="chart-label">{label}</div>
         <div className="chart-value">{value}</div>
     </div>
-);
+    );
+};
 
-const DashboardTile = ({ title, icon: Icon, children, className = '', onRemove, style }) => {
+const DashboardTile = (props) => {
+    const { title, icon: Icon, children, className = '', onRemove, style } = props;
     const [expanded, setExpanded] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
@@ -374,7 +381,7 @@ const BooksDashboard = () => {
                     />
                 );
             case 'goals': return <MoneyGoalsTile />;
-            case 'overview':
+            case 'overview': {
                 const balance = stats?.totalBalance || 0;
                 const income = stats?.monthlyIncome || 0;
                 const expenses = stats?.monthlyExpenses || 0;
@@ -402,7 +409,8 @@ const BooksDashboard = () => {
                         />
                     </div>
                 );
-            case 'transactions':
+            }
+            case 'transactions': {
                 const transactions = stats?.recentTransactions || [];
                 return (
                     <div className="hide-scrollbar" style={{ overflowX: 'auto', width: '100%' }}>
@@ -451,6 +459,7 @@ const BooksDashboard = () => {
                         )}
                     </div>
                 );
+            }
             case 'budget':
                 return <BudgetMixTile />;
             case 'split':

@@ -3,22 +3,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { financialPlanService } from '../../services';
 import { 
     Plus, 
-    DollarSign, 
     TrendingUp, 
-    Wallet, 
     Search, 
-    Filter, 
-    ChevronDown, 
     Edit, 
     Trash2, 
     X,
     ArrowUpRight,
-    ArrowDownLeft,
     PieChart,
     Calendar,
-    ArrowLeftRight
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '../../lib/formatCurrency';
 
 const EMPTY_FORM = { source: '', category: '', amount: '', date: new Date().toISOString().split('T')[0] };
@@ -227,7 +221,7 @@ const PlanIncome = () => {
 
             <div className="income-list">
                 {filteredSources.map(item => (
-                    <motion.div 
+                    <Motion.div 
                         key={item.id} 
                         className="income-tile"
                         initial={{ opacity: 0, y: 10 }}
@@ -253,7 +247,7 @@ const PlanIncome = () => {
                                 <Trash2 size={14} className="action-icon delete" onClick={() => deleteMutation.mutate(item.id)} />
                             </div>
                         </div>
-                    </motion.div>
+                    </Motion.div>
                 ))}
                 
                 {filteredSources.length === 0 && (
@@ -266,7 +260,7 @@ const PlanIncome = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="form-overlay" onClick={closeModal}>
-                        <motion.div 
+                        <Motion.div 
                             className="glass-form" 
                             onClick={e => e.stopPropagation()}
                             initial={{ opacity: 0, scale: 0.9 }}
@@ -318,7 +312,7 @@ const PlanIncome = () => {
                                     <button type="submit" className="btn-go">Add Source</button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
     Search, 
-    Tag, 
-    ArrowDownLeft, 
-    ArrowUpRight, 
     Edit2, 
     Trash2, 
     Plus, 
@@ -13,13 +10,12 @@ import {
     TrendingUp,
     TrendingDown,
     Calendar,
-    User,
     ArrowLeft,
     Coins,
     X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { peopleService } from '../../services';
 import '../../App.css';
 import { formatCurrency } from '../../lib/formatCurrency';
@@ -265,7 +261,7 @@ const PeopleTransactions = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="modal-content-premium">
+                        <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="modal-content-premium">
                             <div className="modal-header-premium">
                                 <div>
                                     <h3 className="modal-title">{editingTx ? 'Edit Transaction' : 'Record Transaction'}</h3>
@@ -344,7 +340,7 @@ const PeopleTransactions = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

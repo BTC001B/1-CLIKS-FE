@@ -72,13 +72,13 @@ const FinancialPlan = () => {
         if (!plansLoading && plans.length === 0 && !plansError) {
             createPlanMutation.mutate({ title: 'Main Financial Plan', status: 'active' });
         }
-    }, [plansLoading, plans.length, plansError]);
+    }, [plansLoading, plans.length, plansError, createPlanMutation]);
 
     const activePlanId = plans.length > 0 ? plans[0].id : null;
     const activePlanTitle = plans.length > 0 ? plans[0].title : 'Loading Plan...';
 
     // 2. Fetch Plan Analysis
-    const { data: analysis, isLoading: analysisLoading, error } = useQuery({
+    const { data: analysis } = useQuery({
         queryKey: ['plan-analysis', activePlanId],
         queryFn: async () => {
             if (!activePlanId) return null;
@@ -89,7 +89,7 @@ const FinancialPlan = () => {
     });
 
     // 3. Fetch Recent Expenses
-    const { data: expenses = [], isLoading: expensesLoading } = useQuery({
+    const { data: expenses = [] } = useQuery({
         queryKey: ['plan-expenses', activePlanId],
         queryFn: async () => {
             if (!activePlanId) return [];
@@ -100,7 +100,7 @@ const FinancialPlan = () => {
     });
 
     // 4. Fetch Recent Incomes
-    const { data: incomes = [], isLoading: incomesLoading } = useQuery({
+    const { data: incomes = [] } = useQuery({
         queryKey: ['plan-incomes', activePlanId],
         queryFn: async () => {
             if (!activePlanId) return [];
@@ -147,13 +147,6 @@ const FinancialPlan = () => {
     const isLoading = plansLoading || createPlanMutation.isPending;
     const isFullLoading = isLoading && plans.length === 0;
 
-    const handleCreateFirstPlan = () => {
-        const title = prompt('Enter a title for your first plan:', 'Main Financial Plan');
-        if (title) {
-            createPlanMutation.mutate({ title, status: 'active' });
-        }
-    };
-
     const handleAddEntry = (e) => {
         e.preventDefault();
         const payload = {
@@ -171,7 +164,6 @@ const FinancialPlan = () => {
         }
     };
 
-    const isDataLoading = analysisLoading || expensesLoading || incomesLoading;
     const incomeTotal = analysis?.total_expected_income || 0;
     const expenseTotal = analysis?.total_actual_expenses || analysis?.total_expected_expenses || 0;
     const savings = incomeTotal - expenseTotal;

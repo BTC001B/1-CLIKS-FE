@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { splitExpenseService } from '../services/splitExpenseService';
 import EmptyState from '../components/common/EmptyState';
@@ -51,7 +51,6 @@ const SplitExpense = () => {
     const { 
         data: summaryResponse, 
         isLoading: isSummaryLoading, 
-        isError: isSummaryError,
         refetch: refetchSummary 
     } = useQuery({
         queryKey: ['split-summary'],
@@ -104,7 +103,7 @@ const SplitExpense = () => {
 
     // ── Logic ──────────────────────────────────────────────────────────────
 
-    const calculateSplits = () => {
+    const calculateSplits = React.useCallback(() => {
         const totalAmount = parseFloat(formData.amount) || 0;
         const participants = formData.participants;
         if (participants.length === 0) return [];
@@ -153,7 +152,7 @@ const SplitExpense = () => {
         }
 
         return results;
-    };
+    }, [formData, splitType, items]);
 
     const handleAddSplit = (e) => {
         e.preventDefault();
@@ -206,26 +205,6 @@ const SplitExpense = () => {
         setFormData({ ...formData, participants: formData.participants.filter((_, i) => i !== index) });
     };
 
-    const addItemField = () => {
-        setItems([...items, { id: Date.now(), name: '', amount: '', assignedTo: [] }]);
-    };
-
-    const updateItem = (id, field, value) => {
-        setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
-    };
-
-    const toggleItemParticipant = (itemId, personName) => {
-        setItems(items.map(item => {
-            if (item.id === itemId) {
-                const assigned = item.assignedTo.includes(personName)
-                    ? item.assignedTo.filter(n => n !== personName)
-                    : [...item.assignedTo, personName];
-                return { ...item, assignedTo: assigned };
-            }
-            return item;
-        }));
-    };
-
     const openExpenseDetail = async (expense) => {
         try {
             const detail = await splitExpenseService.getSplitById(expense.id);
@@ -246,7 +225,7 @@ const SplitExpense = () => {
         (e.title || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const calculatedPreview = useMemo(() => calculateSplits(), [formData, splitType, items]);
+    const calculatedPreview = useMemo(() => calculateSplits(), [calculateSplits]);
 
     return (
         <div className="split-page">
@@ -409,7 +388,7 @@ const SplitExpense = () => {
             <AnimatePresence>
                 {selectedExpense && (
                     <div className="modal-overlay" onClick={() => setSelectedExpense(null)}>
-                        <motion.div
+                        <Motion.div
                             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
                             className="modal-content detail-modal" onClick={e => e.stopPropagation()}
                         >
@@ -464,7 +443,7 @@ const SplitExpense = () => {
                                 <button className="btn-secondary" onClick={() => setSelectedExpense(null)}>Close</button>
                                 <button className="btn-primary">Edit Split</button>
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -473,7 +452,7 @@ const SplitExpense = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div
+                        <Motion.div
                             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                             className="modal-content large"
                         >
@@ -613,7 +592,7 @@ const SplitExpense = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

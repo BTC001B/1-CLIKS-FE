@@ -3,7 +3,7 @@ import { plannedPaymentsService } from '../services';
 import '../App.css';
 import '../styles/modals.css';
 import { Home,Shield,Wifi,Activity,CreditCard,ShoppingBag,Zap,Plus,DollarSign,AlertCircle,CalendarClock} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
 const CATEGORIES = ['Housing', 'Insurance', 'Credit', 'Utilities', 'Health', 'Entertainment', 'Transport', 'Subscriptions', 'Other'];
@@ -20,7 +20,9 @@ const ICON_OPTIONS = [
 
 const EMPTY_FORM = { title: '', category: '', amount: '', dueDate: '', recurring: false, iconValue: 'home' };
 
-const PaymentStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
+const PaymentStat = (props) => {
+    const { label, value, subtext, icon: Icon, colorClass } = props;
+    return (
     <div className="payment-stat-card">
         <div className="flex justify-between items-start">
             <div>
@@ -33,7 +35,8 @@ const PaymentStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
         </div>
         <p className="stat-subtext">{subtext}</p>
     </div>
-);
+    );
+};
 
 const PlannedPayments = () => {
     const queryClient = useQueryClient();
@@ -225,7 +228,7 @@ const PlannedPayments = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div
+                        <Motion.div
                             className="modal-card"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -317,7 +320,7 @@ const PlannedPayments = () => {
                                     <button type="submit" className="modal-btn-submit">Add Payment</button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

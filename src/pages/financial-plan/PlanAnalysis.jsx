@@ -3,22 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { financialPlanService } from '../../services';
 import {
     BarChart3,
-    PieChart,
     TrendingUp,
-    Download,
-    Calendar,
     ArrowUpRight,
     ArrowDownRight,
-    Wallet,
-    DollarSign,
-    Target,
     Activity,
     ShieldCheck,
     Zap,
-    ChevronRight
 } from 'lucide-react';
 import { formatCurrency } from '../../lib/formatCurrency';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 const PlanAnalysis = () => {
     // 1. Fetch available plans
@@ -116,7 +109,7 @@ const PlanAnalysis = () => {
                 .legend-dot { width: 8px; height: 8px; border-radius: 50%; background: #6366F1; }
             `}</style>
 
-            <motion.div 
+            <Motion.div 
                 className="insights-hero"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -128,7 +121,7 @@ const PlanAnalysis = () => {
                 </div>
                 <h1 className="hero-val">{savingsRate.toFixed(1)}%</h1>
                 <p className="hero-desc">Your current savings rate is {savingsRate > 20 ? 'Optimal' : 'Needs attention'}</p>
-            </motion.div>
+            </Motion.div>
 
             <div className="kpi-grid">
                 <div className="kpi-card">

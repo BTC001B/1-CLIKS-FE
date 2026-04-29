@@ -26,7 +26,9 @@ const ICON_MAP = {
     Default: IndianRupee
 };
 
-const IncomeStr = ({ label, value, subtext, icon: Icon, colorClass }) => (
+const IncomeStr = (props) => {
+    const { label, value, subtext, icon: Icon, colorClass } = props;
+    return (
     <div className="income-stat-card">
         <div className="flex justify-between items-start">
             <div>
@@ -39,7 +41,8 @@ const IncomeStr = ({ label, value, subtext, icon: Icon, colorClass }) => (
         </div>
         <p className="stat-subtext">{subtext}</p>
     </div>
-);
+    );
+};
 
 const Income = () => {
     const queryClient = useQueryClient();

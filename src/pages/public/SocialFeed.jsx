@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
     TrendingUp,
     Users,
@@ -235,18 +235,21 @@ export default function SocialFeed() {
                 {/* Community navigation */}
                 <div className="sf-community-card">
                     <div className="sf-community-title">Community</div>
-                    {NAV_ITEMS.map(({ id, label, Icon }) => (
-                        <button
-                            key={id}
-                            className={`sf-nav-item ${activeNav === id ? 'active' : ''}`}
-                            onClick={() => setActiveNav(id)}
-                        >
-                            <div className="sf-nav-icon">
-                                <Icon size={15} />
-                            </div>
-                            {label}
-                        </button>
-                    ))}
+                    {NAV_ITEMS.map((item) => {
+                        const { id, label, Icon } = item;
+                        return (
+                            <button
+                                key={id}
+                                className={`sf-nav-item ${activeNav === id ? 'active' : ''}`}
+                                onClick={() => setActiveNav(id)}
+                            >
+                                <div className="sf-nav-icon">
+                                    <Icon size={15} />
+                                </div>
+                                {label}
+                            </button>
+                        );
+                    })}
                 </div>
             </aside>
 
@@ -315,7 +318,7 @@ export default function SocialFeed() {
                         </div>
                     ) : (
                         posts.map((post) => (
-                            <motion.div
+                            <Motion.div
                                 key={post.id}
                                 layout
                                 initial={{ opacity: 0, y: 10 }}
@@ -383,7 +386,7 @@ export default function SocialFeed() {
                                         </button>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </Motion.div>
                         ))
                     )}
                 </AnimatePresence>

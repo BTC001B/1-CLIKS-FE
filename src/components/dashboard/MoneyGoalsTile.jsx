@@ -8,7 +8,9 @@ const ICON_MAP = {
     'General': Target
 };
 
-const GoalItem = ({ title, current, total, percent, color, icon: Icon }) => (
+const GoalItem = (props) => {
+    const { title, current, total, percent, color, icon: Icon } = props;
+    return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 0' }}>
         <div style={{ position: 'relative', width: '48px', height: '48px' }}>
             <svg viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
@@ -39,7 +41,8 @@ const GoalItem = ({ title, current, total, percent, color, icon: Icon }) => (
             </div>
         </div>
     </div>
-);
+    );
+};
 
 const MoneyGoalsTile = () => {
     // 1. Fetch plans to get a planId

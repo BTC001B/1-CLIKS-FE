@@ -6,8 +6,6 @@ import {
     Plus, 
     Filter, 
     Download, 
-    Eye, 
-    MoreVertical, 
     ArrowLeft,
     X,
     User,
@@ -16,13 +14,12 @@ import {
     History,
     Trash2,
     Edit2,
-    Image as ImageIcon,
     File,
     Upload,
     Paperclip
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { peopleService } from '../../services';
 import { config } from '../../lib/config';
 import '../../App.css';
@@ -250,7 +247,7 @@ const PeopleRecords = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="modal-content-premium">
+                        <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="modal-content-premium">
                             <div className="modal-header-premium">
                                 <div>
                                     <h3 className="modal-title">New People Record</h3>
@@ -340,7 +337,7 @@ const PeopleRecords = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

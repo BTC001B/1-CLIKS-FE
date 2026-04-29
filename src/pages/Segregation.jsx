@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { goalWalletService } from '../services/goalWalletService';
 import EmptyState from '../components/common/EmptyState';
@@ -16,7 +16,6 @@ import {
     ChevronRight,
     X,
     Loader2,
-    Check,
     Trash2
 } from 'lucide-react';
 
@@ -42,8 +41,6 @@ const Segregation = () => {
     const { 
         data: walletsResponse, 
         isLoading, 
-        isError,
-        refetch 
     } = useQuery({
         queryKey: ['goal-wallets'],
         queryFn: () => goalWalletService.getWallets(),
@@ -352,7 +349,7 @@ const WalletCard = ({ wallet, onAddMoney, onClaim, onDelete, onViewHistory, isHi
     const remaining = Math.max(Number(wallet.target_amount || 0) - Number(wallet.current_amount || 0), 0);
 
     return (
-        <motion.div 
+        <Motion.div 
             layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -387,7 +384,7 @@ const WalletCard = ({ wallet, onAddMoney, onClaim, onDelete, onViewHistory, isHi
                     <span className="target">Target: ₹{Number(wallet.target_amount || 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="progress-bar-container">
-                    <motion.div 
+                    <Motion.div 
                         className="progress-bar-fill" 
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
@@ -427,13 +424,13 @@ const WalletCard = ({ wallet, onAddMoney, onClaim, onDelete, onViewHistory, isHi
                     View History
                 </button>
             )}
-        </motion.div>
+        </Motion.div>
     );
 };
 
 const Modal = ({ title, onClose, children }) => (
     <div className="modal-overlay" onClick={onClose}>
-        <motion.div 
+        <Motion.div 
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -445,7 +442,7 @@ const Modal = ({ title, onClose, children }) => (
                 <button className="close-btn" onClick={onClose}><X size={20} /></button>
             </div>
             {children}
-        </motion.div>
+        </Motion.div>
     </div>
 );
 

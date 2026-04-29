@@ -3,23 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { financialPlanService } from '../../services';
 import { 
     Plus, 
-    DollarSign, 
-    TrendingUp, 
-    Wallet, 
     Search, 
-    Filter, 
-    ChevronDown, 
-    Edit, 
     Trash2, 
     X,
     Trophy,
     Target,
-    Flag,
     Calendar,
-    ChevronRight,
-    Star
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '../../lib/formatCurrency';
 
 const EMPTY_FORM = { name: '', target: '', current: '', deadline: new Date().toISOString().split('T')[0] };
@@ -29,7 +20,6 @@ const PlanGoals = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData]       = useState(EMPTY_FORM);
     const [formError, setFormError]     = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
 
     // 1. Fetch available plans
     const { data: plans = [], isLoading: plansLoading } = useQuery({
@@ -113,9 +103,7 @@ const PlanGoals = () => {
     const totalCurrent = goals.reduce((sum, item) => sum + item.current, 0);
     const overallProgress = totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0;
 
-    const filteredGoals = goals.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredGoals = goals;
 
     if (isLoading) {
         return (
@@ -195,7 +183,7 @@ const PlanGoals = () => {
                 {filteredGoals.map(goal => {
                     const progress = goal.target > 0 ? Math.min((goal.current / goal.target) * 100, 100) : 0;
                     return (
-                        <motion.div 
+                        <Motion.div 
                             key={goal.id} 
                             className="goal-card"
                             initial={{ opacity: 0, scale: 0.95 }}
@@ -231,7 +219,7 @@ const PlanGoals = () => {
                                 </div>
                                 <span style={{ fontSize: '12px', fontWeight: 900, color: '#F59E0B' }}>{progress.toFixed(0)}%</span>
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     );
                 })}
 
@@ -244,7 +232,7 @@ const PlanGoals = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="modal-backdrop" onClick={closeModal}>
-                        <motion.div 
+                        <Motion.div 
                             className="modal-container" 
                             onClick={e => e.stopPropagation()}
                             initial={{ opacity: 0, y: 30 }}
@@ -296,7 +284,7 @@ const PlanGoals = () => {
                                     <button type="submit" className="btn-submit">Set Goal</button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

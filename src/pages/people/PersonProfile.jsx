@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { 
     User, 
     Phone, 
@@ -54,22 +54,22 @@ const PersonProfile = () => {
         queryFn: () => peopleService.getPersonById(id).then(res => res.data || res),
     });
 
-    const { data: transactions = [], isLoading: isTxLoading } = useQuery({
+    const { data: transactions = [] } = useQuery({
         queryKey: ['person-transactions', id],
         queryFn: () => peopleService.getTransactions(id).then(res => res.data || res),
     });
 
-    const { data: records = [], isLoading: isRecordsLoading } = useQuery({
+    const { data: records = [] } = useQuery({
         queryKey: ['person-records', id],
         queryFn: () => peopleService.getRecords(id).then(res => res.data || res),
     });
 
-    const { data: reminders = [], isLoading: isRemindersLoading } = useQuery({
+    const { data: reminders = [] } = useQuery({
         queryKey: ['person-reminders', id],
         queryFn: () => peopleService.getReminders(id).then(res => res.data || res),
     });
 
-    const { data: wallets = [], isLoading: isWalletsLoading } = useQuery({
+    const { data: wallets = [] } = useQuery({
         queryKey: ['person-wallets', id],
         queryFn: () => goalWalletService.getWallets({ person_id: id }).then(res => res.data || res),
     });
@@ -205,7 +205,7 @@ const PersonProfile = () => {
                         onClick={() => setActiveTab(tab)}
                     >
                         {tab}
-                        {activeTab === tab && <motion.div layoutId="activeTab" className="active-line" />}
+                        {activeTab === tab && <Motion.div layoutId="activeTab" className="active-line" />}
                     </button>
                 ))}
             </div>
@@ -214,7 +214,7 @@ const PersonProfile = () => {
             <div className="p-tab-panel">
                 <AnimatePresence mode="wait">
                     {activeTab === 'Overview' && (
-                        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} key="ov">
+                        <Motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} key="ov">
                             <div className="ov-grid">
                                 <div className="ov-main">
                                     <div className="ov-stats-row">
@@ -300,11 +300,11 @@ const PersonProfile = () => {
                                     </div>
                                 </div>
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     )}
 
                     {activeTab === 'Notes' && (
-                        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} key="no">
+                        <Motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} key="no">
                             <div className="tab-header-row">
                                 <div>
                                     <h2 className="tab-title">Records & Documents</h2>
@@ -335,11 +335,11 @@ const PersonProfile = () => {
                                     )) : <div className="empty-state-v2">No records found. Click "Add Record" to start.</div>;
                                 })()}
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     )}
 
                     {activeTab === 'Money' && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} key="mn">
+                        <Motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} key="mn">
                             <div className="tab-header-row">
                                 <div>
                                     <h2 className="tab-title">Money Trail</h2>
@@ -370,11 +370,11 @@ const PersonProfile = () => {
                                     )) : <div className="empty-state-v2">No money transactions found.</div>;
                                 })()}
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     )}
 
                     {activeTab === 'Wallets' && (
-                        <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} key="wa">
+                        <Motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} key="wa">
                             <div className="tab-header-row">
                                 <div>
                                     <h2 className="tab-title">Goal Wallets</h2>
@@ -410,11 +410,11 @@ const PersonProfile = () => {
                                     )) : <div className="empty-state-v2">No wallets linked yet.</div>;
                                 })()}
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     )}
 
                     {activeTab === 'Reminders' && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} key="re">
+                        <Motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} key="re">
                             <div className="tab-header-row">
                                 <div>
                                     <h2 className="tab-title">Reminders & Tasks</h2>
@@ -447,7 +447,7 @@ const PersonProfile = () => {
                                     )) : <div className="empty-state-v2">No reminders scheduled.</div>;
                                 })()}
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     )}
                 </AnimatePresence>
             </div>
@@ -455,7 +455,7 @@ const PersonProfile = () => {
             {/* Premium Modals */}
             {modalType && (
                 <div className="premium-modal-overlay">
-                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="premium-modal-box">
+                    <Motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="premium-modal-box">
                         <div className="p-modal-header">
                             <h3>Add {modalType.charAt(0).toUpperCase() + modalType.slice(1)}</h3>
                             <button onClick={() => setModalType(null)}><X size={20} /></button>
@@ -533,7 +533,7 @@ const PersonProfile = () => {
                                 <button type="submit" className="p-btn-primary">Save Entry</button>
                             </div>
                         </form>
-                    </motion.div>
+                    </Motion.div>
                 </div>
             )}
         </div>

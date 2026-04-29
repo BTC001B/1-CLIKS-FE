@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion as Motion } from 'framer-motion';
 import {
     Plus,
     Minus,
@@ -211,7 +211,7 @@ const DynamicWidget = ({ widget, records, onRemove }) => {
 
     if (type === 'totalLiquidity') {
         return (
-            <motion.div key={id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <Motion.div key={id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                 <div className="fd-liquidity-widget" style={{ position: 'relative' }}>
                     <button className="fd-widget-remove-btn" style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white' }} onClick={() => onRemove(id)}>
                         <X size={14} />
@@ -225,12 +225,12 @@ const DynamicWidget = ({ widget, records, onRemove }) => {
                         <span>Live · updates with records</span>
                     </div>
                 </div>
-            </motion.div>
+            </Motion.div>
         );
     }
 
     return (
-        <motion.div key={id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+        <Motion.div key={id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
             <div className="fd-widget-tile">
                 <div className="fd-widget-tile-header">
                     <h3 className="fd-widget-tile-title">{getTitle()}</h3>
@@ -240,7 +240,7 @@ const DynamicWidget = ({ widget, records, onRemove }) => {
                 </div>
                 {renderContent()}
             </div>
-        </motion.div>
+        </Motion.div>
     );
 };
 
@@ -376,7 +376,7 @@ const Finance = () => {
 
                         <AnimatePresence>
                             {isRecordMenuOpen && (
-                                <motion.div
+                                <Motion.div
                                     className="fd-record-dropdown"
                                     initial={{ opacity: 0, scale: 0.95, y: -6 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -404,7 +404,7 @@ const Finance = () => {
                                             <span className="fd-record-desc">Between accounts</span>
                                         </div>
                                     </button>
-                                </motion.div>
+                                </Motion.div>
                             )}
                         </AnimatePresence>
                     </div>
@@ -520,7 +520,7 @@ const Finance = () => {
 
                 <AnimatePresence>
                     {widgets.length > 0 && (
-                        <motion.div
+                        <Motion.div
                             className="fd-extra-widgets"
                             style={{ marginTop: '1.5rem' }}
                             initial={{ opacity: 0 }}
@@ -530,7 +530,7 @@ const Finance = () => {
                             {widgets.map((w) => (
                                 <DynamicWidget key={w.id} widget={w} records={records} onRemove={removeWidget} />
                             ))}
-                        </motion.div>
+                        </Motion.div>
                     )}
                 </AnimatePresence>
             </div>
@@ -538,7 +538,7 @@ const Finance = () => {
             <AnimatePresence>
                 {isWidgetModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div className="modal-card" style={{ maxWidth: '540px' }} {...MODAL_ANIM}>
+                        <Motion.div className="modal-card" style={{ maxWidth: '540px' }} {...MODAL_ANIM}>
                             <div className="modal-header">
                                 <h2 className="modal-title">Add Widget</h2>
                                 <button className="modal-close-btn" onClick={() => setIsWidgetModalOpen(false)}>
@@ -550,7 +550,7 @@ const Finance = () => {
                             </p>
 
                             <div className="fd-widget-grid">
-                                {WIDGET_CATALOGUE.map(({ type, label, desc, Icon }) => {
+                                {WIDGET_CATALOGUE.map(({ type, label, desc, Icon: WidgetIcon }) => {
                                     const alreadyAdded = widgets.some(w => w.type === type);
                                     return (
                                         <button
@@ -560,7 +560,7 @@ const Finance = () => {
                                             disabled={alreadyAdded}
                                             style={alreadyAdded ? { opacity: 0.45, cursor: 'not-allowed' } : {}}
                                         >
-                                            <div className="fd-widget-opt-icon"><Icon size={18} /></div>
+                                            <div className="fd-widget-opt-icon">{React.createElement(WidgetIcon, { size: 18 })}</div>
                                             <div className="fd-widget-opt-name">{label}</div>
                                             <div className="fd-widget-opt-desc">{alreadyAdded ? 'Already added' : desc}</div>
                                         </button>
@@ -579,7 +579,7 @@ const Finance = () => {
                                     Add Widget
                                 </button>
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -587,7 +587,7 @@ const Finance = () => {
             <AnimatePresence>
                 {recordModal === 'income' && (
                     <div className="modal-overlay">
-                        <motion.div className="modal-card" {...MODAL_ANIM}>
+                        <Motion.div className="modal-card" {...MODAL_ANIM}>
                             <div className="modal-header">
                                 <h2 className="modal-title">Record Income</h2>
                                 <button className="modal-close-btn" onClick={closeModal}><X size={16} /></button>
@@ -633,7 +633,7 @@ const Finance = () => {
                                     <button type="submit" className="modal-btn-submit">Save Income</button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -641,7 +641,7 @@ const Finance = () => {
             <AnimatePresence>
                 {recordModal === 'expense' && (
                     <div className="modal-overlay">
-                        <motion.div className="modal-card" {...MODAL_ANIM}>
+                        <Motion.div className="modal-card" {...MODAL_ANIM}>
                             <div className="modal-header">
                                 <h2 className="modal-title">Record Expense</h2>
                                 <button className="modal-close-btn" onClick={closeModal}><X size={16} /></button>
@@ -687,7 +687,7 @@ const Finance = () => {
                                     <button type="submit" className="modal-btn-submit">Save Expense</button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -695,7 +695,7 @@ const Finance = () => {
             <AnimatePresence>
                 {recordModal === 'transfer' && (
                     <div className="modal-overlay">
-                        <motion.div className="modal-card" {...MODAL_ANIM}>
+                        <Motion.div className="modal-card" {...MODAL_ANIM}>
                             <div className="modal-header">
                                 <h2 className="modal-title">Record Transfer</h2>
                                 <button className="modal-close-btn" onClick={closeModal}><X size={16} /></button>
@@ -743,7 +743,7 @@ const Finance = () => {
                                     <button type="submit" className="modal-btn-submit">Save Transfer</button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

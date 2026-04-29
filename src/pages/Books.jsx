@@ -12,7 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import '../App.css';
 import AnalyticsSection from '../components/AnalyticsSection';
 
-const OverviewCard = ({ title, icon: Icon, color, path, stats, children }) => {
+const OverviewCard = (props) => {
+    const { title, icon: Icon, color, path, stats, children } = props;
     const navigate = useNavigate();
 
     return (

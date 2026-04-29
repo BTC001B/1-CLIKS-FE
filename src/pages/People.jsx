@@ -12,7 +12,8 @@ import { peopleService } from '../services/peopleService';
 import '../App.css';
 import { formatCurrency } from '../lib/formatCurrency';
 
-const FeatureCard = ({ title, icon: Icon, color, path, stats, loading }) => {
+const FeatureCard = (props) => {
+    const { title, icon: Icon, color, path, stats, loading } = props;
     const navigate = useNavigate();
 
     return (

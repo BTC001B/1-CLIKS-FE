@@ -1,13 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { authService } from '../services/authService';
-
-const AuthContext = createContext(null);
+import { AuthContext } from './auth-context';
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('books_auth_token'));
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!!token);
     const queryClient = useQueryClient();
 
     const logout = React.useCallback(() => {
@@ -20,24 +19,22 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initAuth = async () => {
-            if (token) {
-                try {
-                    const userData = await authService.getProfile();
-                    // authService.getProfile now returns the unwrapped user object
-                    setUser(userData);
-                } catch (error) {
-                    console.error('[AuthContext] Failed to fetch profile:', error);
-                    logout();
-                }
+            if (!token) {
+                setLoading(false);
+                return;
             }
-            setLoading(false);
+            try {
+                const userData = await authService.getProfile();
+                setUser(userData);
+            } catch (error) {
+                console.error('[AuthContext] Failed to fetch profile:', error);
+                logout();
+            } finally {
+                setLoading(false);
+            }
         };
 
-        if (token) {
-            initAuth();
-        } else {
-            setLoading(false);
-        }
+        initAuth();
     }, [token, logout]);
 
     const login = async (username, password) => {
@@ -85,12 +82,4 @@ export const AuthProvider = ({ children }) => {
             {!loading && children}
         </AuthContext.Provider>
     );
-};
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
 };

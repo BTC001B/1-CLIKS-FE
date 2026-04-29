@@ -3,8 +3,8 @@ import { accountsService } from '../services';
 import '../App.css';
 import '../styles/modals.css';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { EyeOff,Plus, Wallet,TrendingUp,TrendingDown } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff, Plus, Wallet, TrendingUp, TrendingDown, ShieldCheck, Smartphone, Globe } from 'lucide-react';
 
 const ACCOUNT_TYPES = ['Checking', 'Savings', 'Credit Card', 'Investment'];
 
@@ -17,7 +17,9 @@ const THEMES = {
 
 const EMPTY_FORM = { bank: '', type: 'Checking', number: '', balance: '' };
 
-const AccountStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
+const AccountStat = (props) => {
+    const { label, value, subtext, icon: Icon, colorClass } = props;
+    return (
     <div className="account-stat-card">
         <div className="flex justify-between items-start">
             <div>
@@ -30,7 +32,8 @@ const AccountStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
         </div>
         <p className="stat-subtext">{subtext}</p>
     </div>
-);
+    );
+};
 
 const Accounts = () => {
     const queryClient = useQueryClient();
@@ -40,7 +43,7 @@ const Accounts = () => {
     const [formError, setFormError] = useState('');
 
     // Fetch account data
-    const { data: accounts = [], isLoading } = useQuery({
+    const { data: accounts = [] } = useQuery({
         queryKey: ['accounts'],
         queryFn: async () => {
             const data = await accountsService.getAccounts();

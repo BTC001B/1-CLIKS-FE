@@ -16,7 +16,7 @@ const Settings = () => {
         dataSharing: false
     });
 
-    const { data: serverSettings, isLoading } = useQuery({
+    const { data: _serverSettings, isLoading } = useQuery({
         queryKey: ['settings'],
         queryFn: settingsService.getSettings,
         onSuccess: (data) => {
@@ -137,7 +137,9 @@ const Settings = () => {
         </div>
     );
 };
-const SettingSection = ({ title, icon: Icon, children }) => (
+const SettingSection = (props) => {
+    const { title, icon: Icon, children } = props;
+    return (
     <div style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
             <div style={{ padding: '0.5rem', background: '#DBEAFE', borderRadius: '8px', color: 'var(--primary)' }}>
@@ -149,7 +151,8 @@ const SettingSection = ({ title, icon: Icon, children }) => (
             {children}
         </div>
     </div>
-);
+    );
+};
 
 const SettingItem = ({ label, description, isToggled, onToggle, last = false }) => (
     <div style={{

@@ -22,7 +22,7 @@ const EmptyState = ({
     return (
         <div className={cn("empty-state-container", className)}>
             <div className="empty-icon-wrapper">
-                <Icon size={48} className="empty-icon" />
+                {React.createElement(Icon, { size: 48, className: "empty-icon" })}
             </div>
             <h3 className="empty-title">{title}</h3>
             <p className="empty-description">{description}</p>

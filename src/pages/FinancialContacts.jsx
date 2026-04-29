@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import EmptyState from '../components/common/EmptyState';
 import {
     MoreHorizontal,
@@ -108,7 +108,7 @@ const FinancialContacts = () => {
                     
                     <AnimatePresence>
                         {isFilterOpen && (
-                            <motion.div
+                            <Motion.div
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
@@ -171,7 +171,7 @@ const FinancialContacts = () => {
                                 <div className="filter-footer">
                                     <button className="btn-reset" onClick={resetFilters}>Reset Filters</button>
                                 </div>
-                            </motion.div>
+                            </Motion.div>
                         )}
                     </AnimatePresence>
 
@@ -235,7 +235,7 @@ const FinancialContacts = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div
+                        <Motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
@@ -290,7 +290,7 @@ const FinancialContacts = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Tooltip } from './common';
 import {
     Home,
@@ -55,13 +55,6 @@ const Sidebar = ({ isOpen }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Home Section State
-    const [expandedSections, setExpandedSections] = useState({
-        home: true,
-        financialPlan: true,
-        people: true
-    });
-
     // Determine active item based on path
     const getActiveItemFromPath = (path) => {
         if (path === '/' || path === '/finance') return 'Dashboard';
@@ -87,32 +80,18 @@ const Sidebar = ({ isOpen }) => {
     React.useEffect(() => {
         const newItem = getActiveItemFromPath(location.pathname);
         setActiveItem(newItem);
-
-        // Auto-expand sections if needed
-        if (location.pathname.includes('/books/plan')) {
-            setExpandedSections(prev => ({ ...prev, financialPlan: true }));
-        }
-        if (location.pathname.includes('/books/people')) {
-            setExpandedSections(prev => ({ ...prev, people: true }));
-        }
     }, [location.pathname]);
 
     // Books Section State (from snippet)
     const [openDropdown, setOpenDropdown] = useState(null);
+    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
-    // Close dropdowns when sidebar collapses (if you have collapse functionality)
-    useEffect(() => {
+    if (isOpen !== prevIsOpen) {
+        setPrevIsOpen(isOpen);
         if (!isOpen) {
             setOpenDropdown(null);
         }
-    }, [isOpen]);
-
-    const toggleSection = (section) => {
-        setExpandedSections(prev => ({
-            ...prev,
-            [section]: !prev[section]
-        }));
-    };
+    }
 
     const toggleDropdown = (name) => {
         setOpenDropdown(openDropdown === name ? null : name);

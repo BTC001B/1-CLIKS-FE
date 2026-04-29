@@ -5,7 +5,7 @@ import './Transactions.css';
 import { useState, useRef, useEffect } from 'react';
 import '../styles/modals.css';
 import { formatCurrency } from '../lib/formatCurrency';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
     Briefcase,
     Building2,
@@ -42,7 +42,9 @@ const ICON_MAP = {
 
 const EMPTY_FORM = { title: '', category: '', amount: '', date: '', notes: '' };
 
-const StatCard = ({ label, value, subtext, icon: Icon, colorClass }) => (
+const StatCard = (props) => {
+    const { label, value, subtext, icon: Icon, colorClass } = props;
+    return (
     <div className="stat-card">
         <div className="stat-header">
             <div>
@@ -55,7 +57,8 @@ const StatCard = ({ label, value, subtext, icon: Icon, colorClass }) => (
         </div>
         <p className="stat-footer">{subtext}</p>
     </div>
-);
+    );
+};
 
 const Transactions = () => {
     const queryClient = useQueryClient();
@@ -67,7 +70,7 @@ const Transactions = () => {
     const menuRef = useRef(null);
 
     // Fetch transactions
-    const { data: transactions = [], isLoading } = useQuery({
+    const { data: transactions = [] } = useQuery({
         queryKey: ['transactions'],
         queryFn: async () => {
             const data = await transactionsService.getTransactions();
@@ -319,7 +322,7 @@ const Transactions = () => {
             <AnimatePresence>
                 {modalType && (
                     <div className="modal-overlay">
-                        <motion.div
+                        <Motion.div
                             className="modal-card"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -405,7 +408,7 @@ const Transactions = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

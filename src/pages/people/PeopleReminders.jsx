@@ -9,14 +9,12 @@ import {
     Search, 
     Plus, 
     Filter, 
-    MoreVertical, 
     ArrowLeft,
     X,
     User,
-    CheckCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { peopleService } from '../../services';
 import '../../App.css';
 
@@ -197,7 +195,7 @@ const PeopleReminders = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="modal-content-premium">
+                        <Motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="modal-content-premium">
                             <div className="modal-header-premium">
                                 <div>
                                     <h3 className="modal-title">Set New Reminder</h3>
@@ -262,7 +260,7 @@ const PeopleReminders = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

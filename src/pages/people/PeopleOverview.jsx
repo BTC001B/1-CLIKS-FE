@@ -8,7 +8,6 @@ import {
     ChevronRight, 
     X, 
     Trash2, 
-    Briefcase, 
     Users, 
     TrendingUp, 
     TrendingDown,
@@ -18,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import '../../App.css';
 import { formatCurrency } from '../../lib/formatCurrency';
 
@@ -149,7 +148,7 @@ const PeopleOverview = () => {
                                 <button className="btn-link" onClick={() => setIsModalOpen(true)}>Create your first contact</button>
                             </div>
                         ) : people.map((person, idx) => (
-                            <motion.div 
+                            <Motion.div 
                                 key={person.id}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -183,7 +182,7 @@ const PeopleOverview = () => {
                                         <ChevronRight size={18} className="chevron" />
                                     </div>
                                 </div>
-                            </motion.div>
+                            </Motion.div>
                         ))}
                     </AnimatePresence>
                 </div>
@@ -193,7 +192,7 @@ const PeopleOverview = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div 
+                        <Motion.div 
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
@@ -306,7 +305,7 @@ const PeopleOverview = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

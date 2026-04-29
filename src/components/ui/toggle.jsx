@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 export const Toggle = ({ checked, onChange, size = 'md', label, disabled = false }) => {
     // Dimensions based on size prop (currently just 'md' supported as standard)
@@ -40,7 +40,7 @@ export const Toggle = ({ checked, onChange, size = 'md', label, disabled = false
                     style={{ position: 'absolute', opacity: 0, cursor: 'inherit', height: '100%', width: '100%', margin: 0 }}
                     aria-label={label}
                 />
-                <motion.div
+                <Motion.div
                     initial={false}
                     animate={{ x: checked ? width - handle - padding : padding }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}

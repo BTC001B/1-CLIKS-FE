@@ -28,7 +28,9 @@ const ICON_MAP = {
     Default: Globe
 };
 
-const DebtStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
+const DebtStat = (props) => {
+    const { label, value, subtext, icon: Icon, colorClass } = props;
+    return (
     <div className="debt-stat-card">
         <div className="flex justify-between items-start">
             <div>
@@ -41,7 +43,8 @@ const DebtStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
         </div>
         <p className="stat-subtext">{subtext}</p>
     </div>
-);
+    );
+};
 
 const Debts = () => {
     // Fetch debts

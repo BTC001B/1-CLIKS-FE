@@ -17,7 +17,8 @@ const COLOR_MAP = [
     '#195BAC', '#3B82F6', '#60A5FA', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'
 ];
 
-const BudgetItem = ({ icon: Icon, label, current, total, color }) => {
+const BudgetItem = (props) => {
+    const { icon: Icon, label, current, total, color } = props;
     const percentage = Math.min((current / total) * 100, 100);
 
     return (

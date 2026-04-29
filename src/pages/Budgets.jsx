@@ -3,7 +3,7 @@ import { budgetsService } from '../services';
 import '../App.css';
 import '../styles/modals.css';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 
 // Budget icon options the user can pick
 const ICON_OPTIONS = [
@@ -39,7 +39,9 @@ const COLOR_POOL = ['orange', 'blue', 'purple', 'green', 'red', 'indigo'];
 
 const EMPTY_FORM = { category: '', limit: '', spent: '', iconValue: 'shopping' };
 
-const BudgetStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
+const BudgetStat = (props) => {
+    const { label, value, subtext, icon: Icon, colorClass } = props;
+    return (
     <div className="budget-stat-card">
         <div className="flex justify-between items-start">
             <div>
@@ -52,7 +54,8 @@ const BudgetStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
         </div>
         <p className={`stat-subtext ${subtext.includes('Over') || subtext.includes('utilized') ? 'text-blue' : 'text-green'}`}>{subtext}</p>
     </div>
-);
+    );
+};
 
 const Budgets = () => {
     const queryClient = useQueryClient();
@@ -229,7 +232,7 @@ const Budgets = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div
+                        <Motion.div
                             className="modal-card"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -298,7 +301,7 @@ const Budgets = () => {
                                     <button type="submit" className="modal-btn-submit">Create Budget</button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

@@ -30,7 +30,9 @@ const ICON_MAP = {
     Default: Receipt
 };
 
-const ExpenseStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
+const ExpenseStat = (props) => {
+    const { label, value, subtext, icon: Icon, colorClass } = props;
+    return (
     <div className="expense-stat-card">
         <div className="flex justify-between items-start">
             <div>
@@ -43,7 +45,8 @@ const ExpenseStat = ({ label, value, subtext, icon: Icon, colorClass }) => (
         </div>
         <p className="stat-subtext">{subtext}</p>
     </div>
-);
+    );
+};
 
 const Expenses = () => {
     const queryClient = useQueryClient();

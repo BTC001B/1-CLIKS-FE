@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import goalWalletService from '../services/goalWalletService';
 import EmptyState from '../components/common/EmptyState';
@@ -42,7 +42,6 @@ const GoalWallets = () => {
     const { 
         data: walletsResponse, 
         isLoading: isWalletsLoading, 
-        isError: isWalletsError,
         refetch: refetchWallets 
     } = useQuery({
         queryKey: ['goal-wallets'],
@@ -220,7 +219,7 @@ const GoalWallets = () => {
                         const remaining = Math.max(0, wallet.target_amount - wallet.current_amount);
 
                         return (
-                            <motion.div 
+                            <Motion.div 
                                 layout
                                 key={wallet.id} 
                                 className={`wallet-card ${wallet.status === 'completed' ? 'completed' : ''}`}
@@ -248,11 +247,11 @@ const GoalWallets = () => {
                                         <span className="text-slate-800">TARGET: ₹{wallet.target_amount.toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="progress-bar-bg large">
-                                        <motion.div 
+                                        <Motion.div 
                                             initial={{ width: 0 }}
                                             animate={{ width: `${Math.min(progress, 100)}%` }}
                                             className={`progress-bar-fill ${progress >= 100 ? 'bg-green' : 'bg-blue'}`}
-                                        ></motion.div>
+                                        ></Motion.div>
                                     </div>
                                     <div className="progress-meta mt-2">
                                         <span className="percentage">{progress.toFixed(0)}% reached</span>
@@ -293,7 +292,7 @@ const GoalWallets = () => {
                                         </div>
                                     )}
                                 </div>
-                            </motion.div>
+                            </Motion.div>
                         );
                     })}
                 </div>
@@ -303,7 +302,7 @@ const GoalWallets = () => {
             <AnimatePresence>
                 {isCreateModalOpen && (
                     <div className="modal-overlay">
-                        <motion.div
+                        <Motion.div
                             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
                             className="modal-content"
                         >
@@ -348,7 +347,7 @@ const GoalWallets = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -357,7 +356,7 @@ const GoalWallets = () => {
             <AnimatePresence>
                 {isAddMoneyModalOpen && selectedWallet && (
                     <div className="modal-overlay">
-                        <motion.div
+                        <Motion.div
                             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
                             className="modal-content small"
                         >
@@ -387,7 +386,7 @@ const GoalWallets = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

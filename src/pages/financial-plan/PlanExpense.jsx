@@ -13,7 +13,7 @@ import {
     Trash2, 
     X 
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { EmptyState } from '../../components/common';
 import './financial-plan.css';
 
@@ -247,7 +247,7 @@ const PlanExpense = () => {
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="fp-modal-overlay">
-                        <motion.div
+                        <Motion.div
                             className="fp-modal"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -327,7 +327,7 @@ const PlanExpense = () => {
                                     </button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </Motion.div>
                     </div>
                 )}
             </AnimatePresence>

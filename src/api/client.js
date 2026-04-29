@@ -159,7 +159,7 @@ async function request(endpoint, options = {}) {
             return await response.json();
         }
         return await response.text();
-    } catch (error) {
+    } catch {
         throw new ApiError(
             'Failed to parse server response',
             response.status,
