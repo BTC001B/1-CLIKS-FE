@@ -54,20 +54,16 @@ const Loader = () => {
                         />
                         
                         {/* Main logo circle */}
-                        <circle cx="250" cy="250" r="200" fill="#1B6B3A" />
+                        <circle cx="250" cy="250" r="200" fill="#064E3B" />
                         
                         {/* Inner white ring */}
-                        <circle cx="250" cy="250" r="140" fill="none" stroke="white" strokeWidth="24" opacity="0.6" />
+                        <circle cx="250" cy="250" r="145" fill="none" stroke="white" strokeWidth="35" opacity="1" />
                         
-                        {/* Drawing checkmark */}
+                        {/* New Stylized checkmark */}
                         <path 
-                            d="M175 260 L225 310 L340 195" 
-                            stroke="white" 
-                            strokeWidth="36" 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            fill="none"
-                            className="checkmark"
+                            d="M170 249C170 249 185 229 205 239C225 249 240 319 240 319C240 319 315 194 405 124C355 194 265 354 240 354C215 354 170 249 170 249Z" 
+                            fill="white"
+                            className="checkmark-fade"
                         />
                     </svg>
                 </div>
@@ -113,10 +109,9 @@ const StyledWrapper = styled.div`
     transform-origin: center;
   }
 
-  .checkmark {
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-    animation: ${draw} 2s ease-out forwards infinite;
+  .checkmark-fade {
+    animation: ${pulse} 2s ease-in-out infinite;
+    transform-origin: center;
   }
 
   .loading-text {
