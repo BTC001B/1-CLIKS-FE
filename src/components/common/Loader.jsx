@@ -59,9 +59,9 @@ const Loader = () => {
                         {/* Inner white ring */}
                         <circle cx="250" cy="250" r="145" fill="none" stroke="white" strokeWidth="35" opacity="1" />
                         
-                        {/* New Stylized checkmark */}
+                        {/* New Refined Stylized checkmark */}
                         <path 
-                            d="M170 249C170 249 185 229 205 239C225 249 240 319 240 319C240 319 315 194 405 124C355 194 265 354 240 354C215 354 170 249 170 249Z" 
+                            d="M160 249C160 249 180 219 200 229C220 239 240 319 240 319C240 319 325 174 425 109C375 184 265 364 240 364C215 364 160 249 160 249Z" 
                             fill="white"
                             className="checkmark-fade"
                         />
