@@ -3,7 +3,7 @@ name: Deploy Frontend
 on:
   push:
     branches:
-      - main   # make sure you push to main
+      - main
 
 jobs:
   deploy:
@@ -19,12 +19,12 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build project
         run: npm run build
 
-      # ✅ STEP 1: Clean old files on server (VERY IMPORTANT)
+      # 🔥 Clean old files
       - name: Clean server directory
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -32,9 +32,9 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            rm -rf /var/www/app/*
+            rm -rf /var/www/cliks-FE/dist/*
 
-      # ✅ STEP 2: Upload new build
+      # 🚀 Upload new build
       - name: Upload new build
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -42,9 +42,9 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "dist/*"
-          target: "/var/www/app"
+          target: "/var/www/cliks-FE/dist"
 
-      # ✅ STEP 3: Restart Nginx (if using)
+      # 🔁 Restart nginx
       - name: Restart Nginx
         uses: appleboy/ssh-action@v0.1.6
         with:
