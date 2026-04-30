@@ -323,7 +323,7 @@ const Landing = () => {
                 }}>
                     {[
                         { num: "50K+", label: "Active Users", icon: Users },
-                        { num: "$2.5B+", label: "Assets Tracked", icon: TrendingUp },
+                        { num: "₹200Cr+", label: "Assets Tracked", icon: TrendingUp },
                         { num: "99.9%", label: "Uptime", icon: Shield },
                         { num: "4.9/5", label: "User Rating", icon: Star }
                     ].map((stat, i) => (
@@ -413,15 +413,15 @@ const Landing = () => {
                 <div className="pricing-grid scroll-animate" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", maxWidth: "1000px", margin: "0 auto", alignItems: "center" }}>
                     {[
                         {
-                            name: "Free", price: "$0", period: "forever", feat: ["Up to 2 bank accounts", "Basic budgeting", "Monthly reports"],
+                            name: "Free", price: "₹0", period: "forever", feat: ["Up to 2 bank accounts", "Basic budgeting", "Monthly reports"],
                             cta: "Get Started Free", highlight: false
                         },
                         {
-                            name: "Pro", price: "$12", period: "per month", feat: ["Unlimited accounts", "Advanced budgeting", "Investment tracking", "Goal planning", "Priority support"],
+                            name: "Pro", price: "₹999", period: "per month", feat: ["Unlimited accounts", "Advanced budgeting", "Investment tracking", "Goal planning", "Priority support"],
                             cta: "Start Free Trial", highlight: true
                         },
                         {
-                            name: "Family", price: "$20", period: "per month", feat: ["Everything in Pro", "Up to 5 members", "Shared budgets", "Kids allowance"],
+                            name: "Family", price: "₹1,699", period: "per month", feat: ["Everything in Pro", "Up to 5 members", "Shared budgets", "Kids allowance"],
                             cta: "Start Free Trial", highlight: false
                         }
                     ].map((plan, i) => (
