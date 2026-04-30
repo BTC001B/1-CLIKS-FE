@@ -97,7 +97,7 @@ export async function addStockItem(itemData) {
 // }
 
 export async function updateStockItem(id, itemData) {
-    const res = await apiClient.put(ENDPOINTS.STOCK_DETAIL(id), itemData);
+    const res = await apiClient.patch(ENDPOINTS.STOCK_DETAIL(id), itemData);
     return res.data;
 }
 
@@ -112,8 +112,7 @@ export async function updateStockItem(id, itemData) {
 // }
 
 export async function deleteStockItem(id) {
-    const res = await apiClient.delete(ENDPOINTS.STOCK_DETAIL(id));
-    return res.data;
+    return await apiClient.delete(ENDPOINTS.STOCK_DETAIL(id));
 }
 
 /**

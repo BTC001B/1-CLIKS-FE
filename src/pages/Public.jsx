@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { meetupsService } from '../services';
 import {
     TrendingUp,
     Users,
@@ -25,7 +27,10 @@ import {
     Video,
     Sparkles,
     Plus,
-    Globe
+    Globe,
+    Target,
+    X,
+    Loader2
 } from 'lucide-react';
 import '../App.css';
 import SIPView from './investments/SIPView.jsx';
@@ -69,12 +74,12 @@ export default function Public() {
             <div style={{
                 width: '100px',
                 height: '100px',
-                background: 'linear-gradient(135deg, #195BAC 0%, #3B82F6 100%)',
+                background: 'linear-gradient(135deg, #1B6B3A 0%, #22C55E 100%)',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 20px 25px -5px rgba(25, 91, 172, 0.3)',
+                boxShadow: '0 20px 25px -5px rgba(27, 107, 58, 0.3)',
                 marginBottom: '1rem'
             }}>
                 <Briefcase size={48} color="white" strokeWidth={1.5} />
@@ -113,12 +118,12 @@ export default function Public() {
                     <div style={{
                         width: '56px',
                         height: '56px',
-                        background: '#EFF6FF',
+                        background: '#F0FDF4',
                         borderRadius: '16px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#195BAC'
+                        color: '#1B6B3A'
                     }}>
                         <TrendingUp size={28} strokeWidth={2} />
                     </div>
@@ -166,7 +171,7 @@ export default function Public() {
             </div>
 
             <button style={{
-                background: '#195BAC',
+                background: '#1B6B3A',
                 color: 'white',
                 padding: '1.25rem 3.5rem',
                 borderRadius: '99px',
@@ -174,7 +179,7 @@ export default function Public() {
                 fontWeight: '700',
                 border: 'none',
                 cursor: 'pointer',
-                boxShadow: '0 10px 15px -3px rgba(25, 91, 172, 0.3), 0 4px 6px -2px rgba(25, 91, 172, 0.1)',
+                boxShadow: '0 10px 15px -3px rgba(27, 107, 58, 0.3), 0 4px 6px -2px rgba(27, 107, 58, 0.1)',
                 transition: 'all 0.2s',
                 display: 'flex',
                 alignItems: 'center',
@@ -182,11 +187,11 @@ export default function Public() {
             }}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(25, 91, 172, 0.4), 0 10px 10px -5px rgba(25, 91, 172, 0.2)';
+                    e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(27, 107, 58, 0.4), 0 10px 10px -5px rgba(27, 107, 58, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(25, 91, 172, 0.3), 0 4px 6px -2px rgba(25, 91, 172, 0.1)';
+                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(27, 107, 58, 0.3), 0 4px 6px -2px rgba(27, 107, 58, 0.1)';
                 }}
             >
                 Start Investing Now
@@ -203,7 +208,7 @@ export default function Public() {
         <div style={{ padding: '0 0 2rem 0', fontFamily: "'Inter', sans-serif" }}>
             {/* Unique Header Banner */}
             <div style={{
-                background: 'linear-gradient(120deg, #1e3a8a 0%, #3b82f6 100%)',
+                background: 'linear-gradient(120deg, #1B6B3A 0%, #064E3B 100%)',
                 borderRadius: '24px',
                 padding: '3rem 2rem',
                 color: 'white',
@@ -237,7 +242,7 @@ export default function Public() {
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         <button style={{
                             background: 'white',
-                            color: '#1e3a8a',
+                            color: '#1B6B3A',
                             border: 'none',
                             padding: '0.75rem 1.5rem',
                             borderRadius: '12px',
@@ -275,7 +280,7 @@ export default function Public() {
                 <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>Featured Games</h2>
-                        <a href="#" style={{ color: '#2563eb', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem' }}>View All</a>
+                        <a href="#" style={{ color: '#1B6B3A', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem' }}>View All</a>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
@@ -310,7 +315,7 @@ export default function Public() {
                                 <h3 style={{ fontSize: '1.75rem', fontWeight: '800', color: '#111827', margin: '0.5rem 0' }}>Ultimate Trading Simulator</h3>
                                 <p style={{ color: '#6b7280', marginBottom: '1.5rem', lineHeight: '1.5' }}>Experience the thrill of the stock market without the risk. Trade with virtual currency and compete.</p>
                                 <button style={{
-                                    background: '#195BAC',
+                                    background: '#1B6B3A',
                                     color: 'white',
                                     border: 'none',
                                     padding: '0.75rem 2rem',
@@ -398,7 +403,7 @@ export default function Public() {
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                             <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>Top Players</h3>
-                            <button style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <button style={{ background: 'none', border: 'none', color: '#1B6B3A', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}>
                                 This Week
                             </button>
                         </div>
@@ -469,71 +474,78 @@ export default function Public() {
 
     // Meetup Page
     const MeetupPage = () => {
-        const [filter, setFilter] = useState('All');
+        const [filter, setFilter] = useState('All Events');
+        const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+        const [newEvent, setNewEvent] = useState({ 
+            title: '', 
+            type: 'Offline', 
+            date: '', 
+            time: '', 
+            location: '', 
+            price: 'Free',
+            description: '',
+            category: 'Networking',
+            image_url: ''
+        });
+        const queryClient = useQueryClient();
 
-        const events = [
-            {
-                title: 'Stock Market Basics Masterclass',
-                type: 'Offline',
-                date: 'Mar 18, 2026',
-                time: '10:00 AM',
-                location: 'Downtown Conf. Center',
-                attendees: [1, 2, 3, 4],
-                gradient: 'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%)',
-                icon: TrendingUp,
-                price: 'Free'
-            },
-            {
-                title: 'Crypto Trading Strategies Webinar',
-                type: 'Online',
-                date: 'Mar 22, 2026',
-                time: '06:00 PM',
-                location: 'Zoom Meeting',
-                attendees: [1, 2, 3, 4, 5, 6],
-                gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-                icon: Bitcoin,
-                price: '$29'
-            },
-            {
-                title: 'Investment Planning Workshop',
-                type: 'Offline',
-                date: 'Mar 30, 2026',
-                time: '02:00 PM',
-                location: 'Grand Hotel, NYC',
-                attendees: [1, 2, 3],
-                gradient: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
-                icon: PiggyBank,
-                price: 'Free'
-            },
-            {
-                title: 'DeFi & Web3 Future Summit',
-                type: 'Online',
-                date: 'Apr 05, 2026',
-                time: '09:00 PM',
-                location: 'Live Stream',
-                attendees: [1, 2, 3, 4, 5],
-                gradient: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)',
-                icon: Globe,
-                price: '$49'
-            },
-            {
-                title: 'Real Estate Investing 101',
-                type: 'Offline',
-                date: 'Apr 12, 2026',
-                time: '11:00 AM',
-                location: 'Community Hall',
-                attendees: [1, 2, 3, 4, 5, 6, 7],
-                gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                icon: MapPin,
-                price: 'Free'
+        const { data: events = [], isLoading } = useQuery({
+            queryKey: ['meetups'],
+            queryFn: meetupsService.getMeetups,
+            retry: 1,
+            refetchOnWindowFocus: false
+        });
+
+        const createMutation = useMutation({
+            mutationFn: meetupsService.createMeetup,
+            onSuccess: () => {
+                queryClient.invalidateQueries(['meetups']);
+                setIsCreateModalOpen(false);
+                setNewEvent({ 
+                    title: '', 
+                    type: 'Offline', 
+                    date: '', 
+                    time: '', 
+                    location: '', 
+                    price: 'Free',
+                    description: '',
+                    category: 'Networking',
+                    image_url: ''
+                });
             }
-        ];
+        });
+
+        const joinMutation = useMutation({
+            mutationFn: meetupsService.joinMeetup,
+            onSuccess: () => {
+                queryClient.invalidateQueries(['meetups']);
+            }
+        });
+
+        const handleCreateSubmit = (e) => {
+            e.preventDefault();
+            createMutation.mutate(newEvent);
+        };
+
+        // Helper to render icon from string
+        const renderIcon = (iconName) => {
+            switch (iconName) {
+                case 'Briefcase': return <Briefcase size={32} />;
+                case 'Target': return <Target size={32} />;
+                case 'Globe': return <Globe size={32} />;
+                case 'TrendingUp': return <TrendingUp size={32} />;
+                case 'Bitcoin': return <Bitcoin size={32} />;
+                case 'PiggyBank': return <PiggyBank size={32} />;
+                case 'MapPin': return <MapPin size={32} />;
+                default: return <Users size={32} />;
+            }
+        };
 
         return (
             <div className="space-y-8">
                 {/* Header Section */}
                 <div style={{
-                    background: 'linear-gradient(135deg, #1e3a8a 0%, #172554 100%)',
+                    background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)',
                     borderRadius: '24px',
                     padding: '3rem',
                     color: 'white',
@@ -542,7 +554,7 @@ export default function Public() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    boxShadow: '0 20px 25px -5px rgba(30, 58, 138, 0.25)'
+                    boxShadow: '0 20px 25px -5px rgba(27, 107, 58, 0.25)'
                 }}>
                     <div style={{ position: 'relative', zIndex: 10 }}>
                         <div style={{
@@ -557,11 +569,11 @@ export default function Public() {
                             fontSize: '0.9rem',
                             fontWeight: '500'
                         }}>
-                            <Sparkles size={16} />
-                            <span>Community Events</span>
+                            <Briefcase size={16} />
+                            <span>Business & Startups</span>
                         </div>
                         <h1 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '1rem', lineHeight: 1.2 }}>
-                            Connect, Learn & <br /> Grow Together
+                            Founders Meetup <br /> & Event Scheduler
                         </h1>
                         <p style={{
                             fontSize: '1.1rem',
@@ -569,7 +581,7 @@ export default function Public() {
                             maxWidth: '480px',
                             lineHeight: 1.6
                         }}>
-                            Join our exclusive finance meetups, workshops, and webinars to level up your investing game.
+                            Connect with fellow founders, schedule business events, and scale your startup through powerful networking.
                         </p>
                     </div>
 
@@ -585,7 +597,10 @@ export default function Public() {
                         pointerEvents: 'none'
                     }} />
 
-                    <button className="transition" style={{
+                    <button 
+                        className="transition" 
+                        onClick={() => setIsCreateModalOpen(true)}
+                        style={{
                         position: 'relative',
                         zIndex: 10,
                         padding: '1rem 2rem',
@@ -599,8 +614,18 @@ export default function Public() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.75rem',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }}>
+                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                        e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                    }}
+                    >
                         <Plus size={20} />
                         Create Event
                     </button>
@@ -617,7 +642,7 @@ export default function Public() {
                                 padding: '0.75rem 1.5rem',
                                 borderRadius: '999px',
                                 border: filter === tab ? 'none' : '1px solid #E5E7EB',
-                                background: filter === tab ? '#195BAC' : 'white',
+                                background: filter === tab ? '#1B6B3A' : 'white',
                                 color: filter === tab ? 'white' : '#6B7280',
                                 fontWeight: '600',
                                 cursor: 'pointer',
@@ -630,8 +655,39 @@ export default function Public() {
                 </div>
 
                 {/* Events Grid */}
-                <div className="grid grid-cols-3 gap-6">
-                    {events.map((event, idx) => (
+                {events.length === 0 ? (
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '4rem 2rem',
+                        background: 'white',
+                        borderRadius: '24px',
+                        border: '1px dashed #CBD5E1',
+                        textAlign: 'center',
+                        gap: '1rem'
+                    }}>
+                        <div style={{
+                            width: '64px',
+                            height: '64px',
+                            borderRadius: '50%',
+                            background: '#F0FDF4',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#94A3B8'
+                        }}>
+                            <Calendar size={32} />
+                        </div>
+                        <div>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1E293B', marginBottom: '0.5rem' }}>No Events Found</h3>
+                            <p style={{ color: '#64748B', maxWidth: '400px', margin: '0 auto' }}>There are no upcoming meetups scheduled right now. Click "Create Event" to schedule the first one!</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-3 gap-6">
+                        {events.map((event, idx) => (
                         <div
                             key={idx}
                             className="transition"
@@ -655,26 +711,45 @@ export default function Public() {
                         >
                             {/* Graphic Header */}
                             <div style={{
-                                height: '140px',
-                                background: event.gradient,
+                                height: '160px',
+                                background: event.image_url ? `url(${event.image_url})` : (event.gradient || 'linear-gradient(135deg, #1B6B3A 0%, #22C55E 100%)'),
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
                                 position: 'relative',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center'
                             }}>
+                                {!event.image_url && (
+                                    <div style={{
+                                        width: '64px',
+                                        height: '64px',
+                                        background: 'rgba(255,255,255,0.25)',
+                                        backdropFilter: 'blur(8px)',
+                                        borderRadius: '16px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                                    }}>
+                                        {renderIcon(event.icon)}
+                                    </div>
+                                )}
+
                                 <div style={{
-                                    width: '64px',
-                                    height: '64px',
-                                    background: 'rgba(255,255,255,0.25)',
-                                    backdropFilter: 'blur(8px)',
-                                    borderRadius: '16px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
+                                    position: 'absolute',
+                                    top: '1rem',
+                                    left: '1rem',
+                                    padding: '0.25rem 0.75rem',
+                                    background: 'rgba(27, 107, 58, 0.9)',
                                     color: 'white',
-                                    boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                                    borderRadius: '999px',
+                                    fontSize: '0.7rem',
+                                    fontWeight: '700',
+                                    backdropFilter: 'blur(4px)'
                                 }}>
-                                    <event.icon size={32} />
+                                    {event.category || 'Networking'}
                                 </div>
 
                                 <span style={{
@@ -683,11 +758,11 @@ export default function Public() {
                                     right: '1rem',
                                     padding: '0.25rem 0.75rem',
                                     background: 'white',
-                                    color: '#1F2937',
+                                    color: '#1B6B3A',
                                     borderRadius: '999px',
                                     fontSize: '0.8rem',
-                                    fontWeight: '700',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    fontWeight: '800',
+                                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
                                 }}>
                                     {event.price}
                                 </span>
@@ -699,31 +774,41 @@ export default function Public() {
                                     <span style={{
                                         fontSize: '0.75rem',
                                         fontWeight: '700',
-                                        color: event.type === 'Online' ? '#9333EA' : '#2563EB',
-                                        background: event.type === 'Online' ? '#F3E8FF' : '#DBEAFE',
+                                        color: event.type === 'Online' ? '#9333EA' : '#1B6B3A',
+                                        background: event.type === 'Online' ? '#F3E8FF' : '#F0FDF4',
                                         padding: '0.25rem 0.75rem',
-                                        borderRadius: '6px'
+                                        borderRadius: '6px',
+                                        border: `1px solid ${event.type === 'Online' ? '#E9D5FF' : '#DCF2E4'}`
                                     }}>
                                         {event.type}
                                     </span>
-                                    <span style={{ fontSize: '0.85rem', color: '#6B7280', fontWeight: '500' }}>
+                                    <span style={{ fontSize: '0.85rem', color: '#64748B', fontWeight: '600' }}>
                                         {event.date}
                                     </span>
                                 </div>
 
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#111827', marginBottom: '0.5rem', lineHeight: '1.4' }}>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#064E3B', marginBottom: '0.5rem', lineHeight: '1.3' }}>
                                     {event.title}
                                 </h3>
 
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6B7280', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                                    <Clock size={16} />
-                                    <span>{event.time}</span>
+                                {event.description && (
+                                    <p style={{ fontSize: '0.9rem', color: '#64748B', marginBottom: '1.25rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
+                                        {event.description}
+                                    </p>
+                                )}
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#4B635A', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                                    <MapPin size={14} />
+                                    <span style={{ fontWeight: '500' }}>{event.location}</span>
+                                    <span style={{ margin: '0 0.25rem', opacity: 0.5 }}>•</span>
+                                    <Clock size={14} />
+                                    <span style={{ fontWeight: '500' }}>{event.time}</span>
                                 </div>
 
                                 {/* Footer: Attendees & Button */}
                                 <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <div style={{ display: 'flex', paddingLeft: '8px' }}>
-                                        {event.attendees.slice(0, 4).map((_, i) => (
+                                        {Array.from({ length: Math.min(event.attendees || 1, 4) }).map((_, i) => (
                                             <div key={i} style={{
                                                 width: '28px',
                                                 height: '28px',
@@ -733,7 +818,7 @@ export default function Public() {
                                                 marginLeft: '-8px'
                                             }} />
                                         ))}
-                                        {event.attendees.length > 4 && (
+                                        {(event.attendees || 1) > 4 && (
                                             <div style={{
                                                 width: '28px',
                                                 height: '28px',
@@ -748,27 +833,36 @@ export default function Public() {
                                                 color: '#6B7280',
                                                 fontWeight: '600'
                                             }}>
-                                                +{event.attendees.length - 4}
+                                                +{(event.attendees || 1) - 4}
                                             </div>
                                         )}
                                     </div>
 
                                     <button className="transition" style={{
                                         padding: '0.5rem 1.25rem',
-                                        border: '1px solid #195BAC',
+                                        border: '1px solid #1B6B3A',
                                         borderRadius: '8px',
-                                        color: '#195BAC',
+                                        color: '#1B6B3A',
                                         background: 'transparent',
                                         fontWeight: '600',
                                         cursor: 'pointer'
                                     }}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = '#195BAC';
+                                            e.currentTarget.style.background = '#1B6B3A';
                                             e.currentTarget.style.color = 'white';
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.background = 'transparent';
-                                            e.currentTarget.style.color = '#195BAC';
+                                            e.currentTarget.style.color = '#1B6B3A';
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            joinMutation.mutate(event.id);
+                                            // Optional: Add a localized visual feedback
+                                            e.currentTarget.style.transform = 'scale(0.95)';
+                                            setTimeout(() => {
+                                                if (e.currentTarget) e.currentTarget.style.transform = 'scale(1)';
+                                            }, 150);
                                         }}
                                     >
                                         Join
@@ -778,6 +872,190 @@ export default function Public() {
                         </div>
                     ))}
                 </div>
+                )}
+
+                {/* Create Event Modal */}
+                {isCreateModalOpen && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        backdropFilter: 'blur(4px)',
+                        zIndex: 1000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <div style={{
+                            background: 'white',
+                            borderRadius: '24px',
+                            width: '100%',
+                            maxWidth: '500px',
+                            padding: '2rem',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                            position: 'relative'
+                        }}>
+                            <button
+                                onClick={() => setIsCreateModalOpen(false)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '1.5rem',
+                                    right: '1.5rem',
+                                    background: '#F0FDF4',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '32px',
+                                    height: '32px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    color: '#64748B'
+                                }}
+                            >
+                                <X size={18} />
+                            </button>
+
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1E293B', marginBottom: '1.5rem' }}>
+                                Create New Event
+                            </h2>
+
+                            <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#475569', marginBottom: '0.5rem' }}>Event Title</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newEvent.title}
+                                        onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                                        placeholder="e.g. SaaS Founders Meetup"
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none' }}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#475569', marginBottom: '0.5rem' }}>Description</label>
+                                    <textarea
+                                        value={newEvent.description}
+                                        onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                                        placeholder="Tell people about your event..."
+                                        rows={3}
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none', resize: 'none', fontFamily: 'inherit' }}
+                                    />
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#475569', marginBottom: '0.5rem' }}>Type</label>
+                                        <select
+                                            value={newEvent.type}
+                                            onChange={(e) => setNewEvent({...newEvent, type: e.target.value})}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none', background: 'white' }}
+                                        >
+                                            <option value="Offline">Offline</option>
+                                            <option value="Online">Online</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#475569', marginBottom: '0.5rem' }}>Price</label>
+                                        <input
+                                            type="text"
+                                            value={newEvent.price}
+                                            onChange={(e) => setNewEvent({...newEvent, price: e.target.value})}
+                                            placeholder="e.g. Free or $20"
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#475569', marginBottom: '0.5rem' }}>Category</label>
+                                        <select
+                                            value={newEvent.category}
+                                            onChange={(e) => setNewEvent({...newEvent, category: e.target.value})}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none', background: 'white' }}
+                                        >
+                                            <option value="Networking">Networking</option>
+                                            <option value="Workshop">Workshop</option>
+                                            <option value="Webinar">Webinar</option>
+                                            <option value="Social">Social</option>
+                                            <option value="Masterclass">Masterclass</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#475569', marginBottom: '0.5rem' }}>Image URL (Optional)</label>
+                                        <input
+                                            type="text"
+                                            value={newEvent.image_url}
+                                            onChange={(e) => setNewEvent({...newEvent, image_url: e.target.value})}
+                                            placeholder="https://..."
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#475569', marginBottom: '0.5rem' }}>Date</label>
+                                        <input
+                                            type="date"
+                                            required
+                                            value={newEvent.date}
+                                            onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#475569', marginBottom: '0.5rem' }}>Time</label>
+                                        <input
+                                            type="time"
+                                            required
+                                            value={newEvent.time}
+                                            onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#475569', marginBottom: '0.5rem' }}>Location (or Link)</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newEvent.location}
+                                        onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+                                        placeholder="Downtown Tech Hub"
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none' }}
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={createMutation.isPending}
+                                    style={{
+                                        marginTop: '1rem',
+                                        width: '100%',
+                                        padding: '1rem',
+                                        background: '#1B6B3A',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '12px',
+                                        fontWeight: '700',
+                                        fontSize: '1rem',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.5rem'
+                                    }}
+                                >
+                                    {createMutation.isPending ? <Loader2 className="animate-spin" size={20} /> : 'Publish Event'}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     };

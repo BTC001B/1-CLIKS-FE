@@ -23,7 +23,7 @@ const SIPView = () => {
     const monthlyTotal = sips.reduce((sum, s) => sum + s.amount, 0);
 
     const summaryCards = [
-        { label: 'Active SIPs', value: activeCount.toString(), icon: Target, color: '#2563EB', bg: '#DBEAFE' },
+        { label: 'Active SIPs', value: activeCount.toString(), icon: Target, color: '#1B6B3A', bg: '#DBEAFE' },
         { label: 'Monthly Investment', value: `₹${(monthlyTotal / 1000).toFixed(1)}K`, icon: Wallet, color: '#7C3AED', bg: '#EDE9FE' },
         { label: 'Total Returns', value: '+18.5%', icon: TrendingUp, color: '#16A34A', bg: '#DCFCE7' },
         { label: 'Portfolio Value', value: '₹8.2L', icon: BarChart3, color: '#EA580C', bg: '#FFF7ED' },
@@ -38,7 +38,7 @@ const SIPView = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '300px' }}>
-                <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid #E3F2FD', borderTopColor: '#2563EB', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid #DCF2E4', borderTopColor: '#1B6B3A', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -123,7 +123,7 @@ const SIPView = () => {
                 }
                 .sip-plan-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
                 .sip-plan-icon-wrap {
-                    width: 48px; height: 48px; border-radius: 14px; background: #EFF6FF; color: var(--primary);
+                    width: 48px; height: 48px; border-radius: 14px; background: #F0FDF4; color: var(--primary);
                     display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
                 }
                 .sip-plan-name { font-size: 1.1rem; font-weight: 600; color: var(--text-main); margin-bottom: 1rem; }

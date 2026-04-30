@@ -60,15 +60,15 @@
 }
 
 .sidebar-item:hover {
-    background-color: #F1F5F9;
-    color: var(--text-main);
+    background-color: rgba(27, 107, 58, 0.05);
+    color: var(--primary);
 }
 
 .sidebar-item.active {
-    background-color: #EFF6FF;
-    /* Blue-50 */
+    background-color: rgba(27, 107, 58, 0.08);
     color: var(--primary);
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: inset 4px 0 0 -1px var(--primary);
 }
 
 /* Tree View Subgroup */
@@ -170,7 +170,7 @@
 
 /* Buttons and Profiles */
 .btn-primary {
-    background-color: #195BAC;
+    background-color: #1B6B3A;
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 8px;
@@ -179,7 +179,7 @@
     gap: 0.5rem;
     font-weight: 500;
     font-size: 0.875rem;
-    box-shadow: 0 2px 4px rgba(25, 91, 172, 0.2);
+    box-shadow: 0 2px 4px rgba(27, 107, 58, 0.2);
     transition: background-color 0.2s;
 }
 
@@ -256,19 +256,19 @@
 
 /* Specific Account Styles */
 .account-card:nth-child(1) {
-    background: #195BAC;
+    background: #1B6B3A;
     /* Primary Blue */
 }
 
 .account-card:nth-child(2) {
-    background: #1E3A8A;
+    background: #064E3B;
     /* Dark Blue - Keeping or changing? User said "all tiles". Let's change to same or similar shade?
        "Use same 195BAC as the primary color for all tiles."
        If I change both to 195BAC, they will look identical. Maybe the user means "primary" as in the main theme color.
        But "for all tiles" implies uniformity. I will set the second one to 195BAC as well, or maybe a slightly darker variant if it's "Locker".
        However, strict interpretation: "same 195BAC". I will use it.
     */
-    background: #195BAC;
+    background: #1B6B3A;
     /* Dark Blue */
 }
 
@@ -322,8 +322,8 @@
 }
 
 .add-account-btn:hover {
-    border-color: #3B82F6;
-    color: #195BAC;
+    border-color: #22C55E;
+    color: #1B6B3A;
     background: #F8FAFC;
 }
 
@@ -359,7 +359,7 @@
 }
 
 .icon-btn:hover {
-    background: #F1F5F9;
+    background: #F0FDF4;
     color: var(--text-main);
 }
 
@@ -720,13 +720,13 @@
 
 .amount-input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(25, 91, 172, 0.1);
+    box-shadow: 0 0 0 3px rgba(27, 107, 58, 0.1);
 }
 
 .send-btn {
     width: 40px;
     height: 40px;
-    background: #195BAC;
+    background: #1B6B3A;
     color: white;
     border-radius: 8px;
     display: flex;
@@ -762,7 +762,7 @@
 /* Topbar Styles */
 .topbar {
     height: 64px;
-    background: rgba(25, 91, 172, 0.85);
+    background: rgba(27, 107, 58, 0.85);
     /* Semi-transparent Primary */
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -852,7 +852,7 @@
         left: -100%;
         height: calc(100vh - 64px);
         width: 100%;
-        background-color: #195BAC;
+        background-color: #1B6B3A;
         flex-direction: column;
         justify-content: flex-start;
         padding-top: 2rem;
@@ -885,7 +885,7 @@
 
 .nav-link {
     font-weight: 500;
-    color: #E9F4FF;
+    color: #F0FDF4;
     font-size: 0.95rem;
     padding: 0.5rem 1.25rem;
     border-radius: 9999px;
@@ -902,8 +902,8 @@
 }
 
 .nav-link.active {
-    background-color: #E9F4FF;
-    color: #195BAC;
+    background-color: #F0FDF4;
+    color: #1B6B3A;
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -931,7 +931,7 @@
 }
 
 .topbar .icon-btn {
-    color: #E9F4FF;
+    color: #F0FDF4;
 }
 
 .topbar .icon-btn:hover {
@@ -1035,7 +1035,7 @@
 
 .circle-bg {
     fill: none;
-    stroke: #F1F5F9;
+    stroke: #F0FDF4;
     stroke-width: 2.5;
 }
 
@@ -1099,7 +1099,7 @@
 /* Update Active State to match user request */
 /* Update Active State to match user request - Soft Tint */
 .sidebar-item.active {
-    background-color: #EFF6FF;
+    background-color: #F0FDF4;
     color: var(--primary) !important;
     font-weight: 600;
     box-shadow: inset 2px 0 0 0 var(--primary);
@@ -1123,7 +1123,7 @@
     gap: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     transition: box-shadow 0.2s;
-    border: 1px solid #F1F5F9;
+    border: 1px solid #F0FDF4;
 }
 
 .month-selector:hover {
@@ -1246,7 +1246,7 @@ button,
 }
 
 .tile-menu-item:hover {
-    background: #F1F5F9;
+    background: #F0FDF4;
 }
 
 .tile-menu-item.danger {
@@ -1308,7 +1308,7 @@ button,
 }
 
 .modal-close:hover {
-    background: #F1F5F9;
+    background: #F0FDF4;
     color: var(--text-main);
 }
 
@@ -1523,7 +1523,7 @@ th {
 }
 
 .exclusive-link {
-    font-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    font-family: var(--font-display);
     font-size: 1rem;
     color: inherit;
     text-decoration: none;
@@ -1668,7 +1668,7 @@ th {
 }
 
 .main-title {
-    font-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    font-family: var(--font-display);
     font-size: 1.75rem;
     /* Larger for better impact */
     font-weight: 600;
@@ -1746,7 +1746,7 @@ th {
 }
 
 .news-title {
-    font-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    font-family: var(--font-display);
     color: #1f2937;
     /* gray-800 */
     text-decoration: none;
@@ -1857,9 +1857,9 @@ th {
 }
 
 .btn-action.primary {
-    background-color: #195BAC;
+    background-color: #1B6B3A;
     color: white;
-    border-color: #195BAC;
+    border-color: #1B6B3A;
 }
 
 .btn-action.secondary {
@@ -1988,7 +1988,7 @@ th {
 
 /* Liquidity Card */
 .liquidity-card {
-    background-color: #195BAC;
+    background-color: #1B6B3A;
     color: white;
     display: flex;
     flex-direction: column;
@@ -2081,7 +2081,7 @@ th {
 
 .btn-pay {
     background-color: #eff6ff;
-    color: #195BAC;
+    color: #1B6B3A;
     border: none;
     padding: 0.35rem 0.85rem;
     border-radius: 9999px;

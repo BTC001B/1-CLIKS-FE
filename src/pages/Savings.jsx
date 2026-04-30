@@ -69,7 +69,7 @@ const Savings = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '400px' }}>
-                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #E3F2FD', borderTopColor: '#10B981', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #DCF2E4', borderTopColor: '#10B981', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -176,7 +176,7 @@ const Savings = () => {
                 .stat-subtext { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
                 
                 .stat-icon-wrapper { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-                .icon-blue { background: #DBEAFE; color: #2563EB; }
+                .icon-blue { background: #DBEAFE; color: #1B6B3A; }
                 .icon-green { background: #DCFCE7; color: #16A34A; }
                 .icon-purple { background: #F3E8FF; color: #9333EA; }
 
@@ -200,9 +200,9 @@ const Savings = () => {
                 .priority-badge { font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 99px; border: 1px solid; font-weight: 500; }
                 .priority-High { background: #FEE2E2; color: #DC2626; border-color: #FECACA; }
                 .priority-Medium { background: #FEF3C7; color: #D97706; border-color: #FDE68A; }
-                .priority-Low { background: #F1F5F9; color: #64748B; border-color: #E2E8F0; }
+                .priority-Low { background: #F0FDF4; color: #64748B; border-color: #E2E8F0; }
 
-                .bg-blue { background: #3B82F6; }
+                .bg-blue { background: #22C55E; }
                 .bg-purple { background: #A855F7; }
                 .bg-green { background: #22C55E; }
                 .bg-orange { background: #F97316; }
@@ -215,7 +215,7 @@ const Savings = () => {
                 .current-amt { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
                 .target-amt { font-size: 0.9rem; color: var(--text-muted); }
 
-                .progress-bar-bg { width: 100%; height: 8px; background: #F1F5F9; border-radius: 99px; overflow: hidden; margin-bottom: 0.5rem; }
+                .progress-bar-bg { width: 100%; height: 8px; background: #F0FDF4; border-radius: 99px; overflow: hidden; margin-bottom: 0.5rem; }
                 .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease-out; }
                 
                 .pct-text { text-align: right; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }

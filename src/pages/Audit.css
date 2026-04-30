@@ -18,7 +18,7 @@
     padding: 0.5rem;
     background-color: #DBEAFE;
     border-radius: 0.5rem;
-    color: #2563EB;
+    color: #1B6B3A;
 }
 
 .chat-bot-info .title {
@@ -63,7 +63,7 @@
 }
 
 .msg-av-ai {
-    background-color: #2563EB;
+    background-color: #1B6B3A;
     color: #FFFFFF;
 }
 
@@ -155,7 +155,7 @@
 }
 
 .audit-tr {
-    border-bottom: 1px solid #F1F5F9;
+    border-bottom: 1px solid #F0FDF4;
     transition: background-color 0.2s;
 }
 
@@ -185,8 +185,8 @@
 
 .audit-file-icon {
     padding: 0.5rem;
-    background-color: #EFF6FF;
-    color: #2563EB;
+    background-color: #F0FDF4;
+    color: #1B6B3A;
     border-radius: 0.5rem;
 }
 
@@ -213,7 +213,7 @@
 }
 
 .audit-action-link {
-    color: #2563EB;
+    color: #1B6B3A;
     font-size: 0.875rem;
     font-weight: 500;
     background: transparent;

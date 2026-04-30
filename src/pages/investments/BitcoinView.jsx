@@ -24,7 +24,7 @@ const BitcoinView = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '400px' }}>
-                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #E3F2FD', borderTopColor: '#F59E0B', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #DCF2E4', borderTopColor: '#F59E0B', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -60,12 +60,12 @@ const BitcoinView = () => {
                     <svg viewBox="0 0 800 200" className="btc-chart-svg">
                         <defs>
                             <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#195BAC" stopOpacity="0.3" />
-                                <stop offset="100%" stopColor="#195BAC" stopOpacity="0.02" />
+                                <stop offset="0%" stopColor="#1B6B3A" stopOpacity="0.3" />
+                                <stop offset="100%" stopColor="#1B6B3A" stopOpacity="0.02" />
                             </linearGradient>
                         </defs>
                         <path d="M0,160 Q50,140 100,120 T200,100 T300,80 T400,90 T500,60 T600,70 T700,40 L800,50 L800,200 L0,200 Z" fill="url(#chartGrad)" />
-                        <path d="M0,160 Q50,140 100,120 T200,100 T300,80 T400,90 T500,60 T600,70 T700,40 L800,50" fill="none" stroke="#195BAC" strokeWidth="2.5" />
+                        <path d="M0,160 Q50,140 100,120 T200,100 T300,80 T400,90 T500,60 T600,70 T700,40 L800,50" fill="none" stroke="#1B6B3A" strokeWidth="2.5" />
                     </svg>
                     <div className="btc-chart-overlay">
                         <BarChart3 size={40} />
@@ -125,7 +125,7 @@ const BitcoinView = () => {
                 .btc-chart-card { background: white; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 1.5rem; overflow: hidden; }
                 .btc-chart-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); }
                 .btc-chart-tabs { display: flex; gap: 0.35rem; }
-                .btc-chart-tab { padding: 0.3rem 0.7rem; border-radius: 6px; border: none; background: #F1F5F9; color: var(--text-muted); font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+                .btc-chart-tab { padding: 0.3rem 0.7rem; border-radius: 6px; border: none; background: #F0FDF4; color: var(--text-muted); font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
                 .btc-chart-tab.active { background: var(--primary); color: white; }
                 .btc-chart-area { position: relative; height: 220px; padding: 1rem; }
                 .btc-chart-svg { width: 100%; height: 100%; }
@@ -143,7 +143,7 @@ const BitcoinView = () => {
                 .btc-input-prefix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600; }
                 .btc-input { width: 100%; padding: 0.75rem 1rem 0.75rem 2rem; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; outline: none; transition: border 0.2s; background: #F8FAFC; }
                 .btc-input:focus { border-color: var(--primary); background: white; }
-                .btc-calc-val { padding: 0.65rem 1rem; background: #F1F5F9; border-radius: 10px; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
+                .btc-calc-val { padding: 0.65rem 1rem; background: #F0FDF4; border-radius: 10px; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
                 .btc-action-btn { width: 100%; padding: 0.75rem; border: none; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
                 .buy-btn { background: #16A34A; color: white; }
                 .buy-btn:hover { background: #15803D; }

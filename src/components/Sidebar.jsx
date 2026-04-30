@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context';
 import { Tooltip } from './common';
 import {
     Home,
@@ -46,12 +47,16 @@ import {
     UsersRound,
     Handshake,
     Bitcoin,
-    Bot
+    Bot,
+    Briefcase,
+    Package
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
+import logoSvg from '../assets/logo.svg';
 
 const Sidebar = ({ isOpen }) => {
+    const { user } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -70,6 +75,16 @@ const Sidebar = ({ isOpen }) => {
         if (path.includes('/books/segregation')) return 'Goal Wallets';
         if (path.includes('/books/split-expense')) return 'Split Expense';
         if (path === '/auditor') return 'Audit';
+
+        // Business paths
+        if (path.includes('/business/dashboard')) return 'Dashboard';
+        if (path.includes('/business/inventory')) return 'Inventory';
+        if (path.includes('/business/billing')) return 'Billing';
+        if (path.includes('/business/crm')) return 'CRM';
+        if (path.includes('/business/plan')) return 'Financial Plan';
+        if (path.includes('/business/compare')) return 'Compare';
+        if (path.includes('/business/staffing')) return 'Staffing';
+        if (path.includes('/business/segregation')) return 'Segregation';
 
         return 'Dashboard';
     };
@@ -113,18 +128,20 @@ const Sidebar = ({ isOpen }) => {
     const showFinanceSidebar = location.pathname === '/' || location.pathname.startsWith('/home') || location.pathname.startsWith('/finance');
     const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor';
     const showPublicSidebar = location.pathname.startsWith('/public');
+    const showBusinessSidebar = location.pathname.startsWith('/business');
+    const isBusinessUser = user?.role === 'business';
 
     return (
         <aside className={`sidebar ${isOpen ? 'open' : 'collapsed'}`}>
             <div className="sidebar-header">
-                <div className="brand-logo">
-                    <Wallet size={20} color="white" />
+                <div className="brand-logo" style={{ background: 'transparent' }}>
+                    <img src={logoSvg} alt="CLIKS Logo" style={{ width: '24px', height: '24px' }} />
                 </div>
-                <h2 className="app-title">Books</h2>
+                <h2 className="app-title">CLIKS</h2>
             </div>
 
             <nav className="sidebar-nav">
-                {showFinanceSidebar && (
+                {showFinanceSidebar && !isBusinessUser && (
                     <>
                         {/* Dashboard (Main Finance Page) */}
                         <button
@@ -158,7 +175,7 @@ const Sidebar = ({ isOpen }) => {
                     </>
                 )}
 
-                {showBooksSidebar && (
+                {showBooksSidebar && !isBusinessUser && (
                     <>
                         {/* Books Dashboard */}
                         <button
@@ -166,7 +183,7 @@ const Sidebar = ({ isOpen }) => {
                             onClick={() => handleItemClick('Books Dashboard', '/books/dashboard')}
                         >
                             <div className="flex items-center gap-3">
-                                <Home size={20} style={{ color: '#195BAC' }} />
+                                <Home size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">Dashboard</span>
                             </div>
                         </button>
@@ -177,7 +194,7 @@ const Sidebar = ({ isOpen }) => {
                             onClick={() => handleItemClick('Stock', '/books/stock')}
                         >
                             <div className="flex items-center gap-3">
-                                <TrendingUp size={20} style={{ color: '#195BAC' }} />
+                                <TrendingUp size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">Stock</span>
                             </div>
                         </button>
@@ -188,7 +205,7 @@ const Sidebar = ({ isOpen }) => {
                             onClick={() => handleItemClick('Financial Plan', '/books/financial-plan')}
                         >
                             <div className="flex items-center gap-3">
-                                <Wallet size={20} style={{ color: '#195BAC' }} />
+                                <Wallet size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">Financial Plan</span>
                             </div>
                         </button>
@@ -199,7 +216,7 @@ const Sidebar = ({ isOpen }) => {
                             onClick={() => handleItemClick('People', '/books/people')}
                         >
                             <div className="flex items-center gap-3">
-                                <Users size={20} style={{ color: '#195BAC' }} />
+                                <Users size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">People</span>
                             </div>
                         </button>
@@ -207,10 +224,10 @@ const Sidebar = ({ isOpen }) => {
 
                         <button
                             className={`sidebar-item ${activeItem === 'Goal Wallets' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Goal Wallets', '/books/segregation')}
+                            onClick={() => handleItemClick('Goal Wallets', '/books/goal-wallets')}
                         >
                             <div className="flex items-center gap-3">
-                                <Target size={20} style={{ color: '#195BAC' }} />
+                                <Target size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">Goal Wallets</span>
                             </div>
                         </button>
@@ -219,7 +236,7 @@ const Sidebar = ({ isOpen }) => {
                             onClick={() => handleItemClick('Split Expense', '/books/split-expense')}
                         >
                             <div className="flex items-center gap-3">
-                                <Split size={20} style={{ color: '#195BAC' }} />
+                                <Split size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">Split Expense</span>
                             </div>
                         </button>
@@ -237,7 +254,7 @@ const Sidebar = ({ isOpen }) => {
 
                 {showPublicSidebar && (
                     <>
-                        {/* Trading Dropdown */}
+                        {/* Trading Dropdown (Commented Out)
                         <div className="mb-1">
                             <div
                                 role="button"
@@ -286,37 +303,104 @@ const Sidebar = ({ isOpen }) => {
                                 </div>
                             </div>
                         </div>
+                        */}
 
                         {/* Investors */}
                         <button
                             className={`sidebar-item ${activeItem === 'Investors' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Investors', '/public?page=investors')}
+                            onClick={() => handleItemClick('Investors', isBusinessUser ? '/business/investors' : '/public?page=investors')}
                         >
                             <div className="flex items-center gap-3">
-                                <UsersRound size={20} style={{ color: '#8B5CF6' }} />
-                                <span className="sidebar-label">Investors</span>
-                            </div>
-                        </button>
-
-                        {/* Games */}
-                        <button
-                            className={`sidebar-item ${activeItem === 'Games' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Games', '/public?page=games')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Gamepad2 size={20} style={{ color: '#10B981' }} />
-                                <span className="sidebar-label">Games</span>
+                                <UsersRound size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">{isBusinessUser ? 'Business Investors' : 'Investors'}</span>
                             </div>
                         </button>
 
                         {/* Meetup */}
                         <button
                             className={`sidebar-item ${activeItem === 'Meetup' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Meetup', '/public?page=meetup')}
+                            onClick={() => handleItemClick('Meetup', isBusinessUser ? '/business/meetup' : '/public?page=meetup')}
                         >
                             <div className="flex items-center gap-3">
-                                <Handshake size={20} style={{ color: '#EC4899' }} />
-                                <span className="sidebar-label">Meetup</span>
+                                <Handshake size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">{isBusinessUser ? 'Business Meetup' : 'Meetup'}</span>
+                            </div>
+                        </button>
+                    </>
+                )}
+
+                {(showBooksSidebar || showBusinessSidebar) && isBusinessUser && (
+                    <>
+                        <button
+                            className={`sidebar-item ${activeItem === 'Dashboard' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Dashboard', '/business/dashboard')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <LayoutDashboard size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Dashboard</span>
+                            </div>
+                        </button>
+                        <button
+                            className={`sidebar-item ${activeItem === 'Inventory' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Inventory', '/business/inventory')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Package size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Inventory</span>
+                            </div>
+                        </button>
+                        <button
+                            className={`sidebar-item ${activeItem === 'Billing' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Billing', '/business/billing')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Banknote size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Billing</span>
+                            </div>
+                        </button>
+                        <button
+                            className={`sidebar-item ${activeItem === 'Financial Plan' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Financial Plan', '/business/plan')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Calendar size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Financial Plan</span>
+                            </div>
+                        </button>
+                        <button
+                            className={`sidebar-item ${activeItem === 'Compare' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Compare', '/business/compare')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Layers size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Compare</span>
+                            </div>
+                        </button>
+                        <button
+                            className={`sidebar-item ${activeItem === 'Staffing' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Staffing', '/business/staffing')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Users size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Staffing</span>
+                            </div>
+                        </button>
+                        <button
+                            className={`sidebar-item ${activeItem === 'Segregation' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Segregation', '/business/segregation')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Split size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Segregation</span>
+                            </div>
+                        </button>
+                        <button
+                            className={`sidebar-item ${activeItem === 'CRM' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('CRM', '/business/crm')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <UserPlus size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">CRM</span>
                             </div>
                         </button>
                     </>

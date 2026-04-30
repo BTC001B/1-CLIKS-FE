@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, User as UserIcon } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, User as UserIcon, Settings, LogOut, HelpCircle, User } from "lucide-react";
 import { useAuth } from "../context";
 
 export function ProfileDropdown({
@@ -11,174 +11,185 @@ export function ProfileDropdown({
 }) {
     const [open, setOpen] = useState(false);
     const { user } = useAuth();
+    const dropdownRef = useRef(null);
     
-    // Fallback if user is not loaded yet
     const displayEmail = user?.email || "Guest";
     const displayName = user?.username || user?.name || "User";
 
-    // Inline styles to replicate the visual design without relying on Tailwind
+    // Close on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     const styles = {
         container: {
             position: 'relative',
             display: 'inline-block',
-            textAlign: 'left',
         },
         triggerButton: {
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            borderRadius: '6px',
-            backgroundColor: '#ffffff',
-            border: '1px solid #d1d5db',
-            padding: '8px 16px',
+            gap: '10px',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            padding: '6px 14px',
             fontSize: '14px',
-            fontWeight: 500,
-            color: '#374151',
+            fontWeight: 600,
+            color: '#ffffff',
             cursor: 'pointer',
-            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+            transition: 'all 0.2s ease',
             outline: 'none',
         },
         dropdownMenu: {
             position: 'absolute',
             right: 0,
-            zIndex: 50,
-            marginTop: '8px',
-            width: '240px',
-            transformOrigin: 'top right',
-            borderRadius: '8px',
-            backgroundColor: '#ffffff', // The "Tile" background
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            top: 'calc(100% + 10px)',
+            zIndex: 1000,
+            width: '260px',
+            borderRadius: '16px',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.25)',
             border: '1px solid #e5e7eb',
             overflow: 'hidden',
+            padding: '8px',
         },
         header: {
-            padding: '12px 16px',
+            padding: '16px',
             borderBottom: '1px solid #f3f4f6',
+            marginBottom: '8px',
         },
         signedInText: {
-            fontSize: '12px',
-            color: '#6b7280',
+            fontSize: '11px',
+            fontWeight: 700,
+            color: '#9ca3af',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
             marginBottom: '4px',
         },
         emailText: {
             fontSize: '14px',
-            fontWeight: 500,
+            fontWeight: 700,
             color: '#111827',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
         },
-        menuGroup: {
-            padding: '4px 0',
-        },
         menuItem: {
-            display: 'block',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
             width: '100%',
             textAlign: 'left',
-            padding: '8px 16px',
+            padding: '10px 12px',
             fontSize: '14px',
-            color: '#374151',
+            fontWeight: 600,
+            color: '#4b5563',
             backgroundColor: 'transparent',
             border: 'none',
+            borderRadius: '10px',
             cursor: 'pointer',
-            transition: 'background-color 0.15s ease, color 0.15s ease',
+            transition: 'all 0.15s ease',
         },
-        divider: {
-            borderTop: '1px solid #f3f4f6',
-            margin: '0',
+        logoutItem: {
+            color: '#ef4444',
         }
     };
 
     return (
-        <div style={styles.container}>
-            {/* Trigger Button */}
+        <div style={styles.container} ref={dropdownRef}>
             <button
                 type="button"
-                onClick={() => setOpen((v) => !v)}
+                onClick={() => setOpen(!open)}
                 style={styles.triggerButton}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
             >
-                <UserIcon size={16} color="#195BAC" />
-                <span style={{ textTransform: 'uppercase' }}>{displayName}</span>
+                <div style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#1B6B3A'
+                }}>
+                    <UserIcon size={14} />
+                </div>
+                <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>{displayName}</span>
                 <ChevronDown
                     size={16}
                     style={{
                         transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s',
-                        color: '#6b7280'
+                        transition: 'transform 0.3s ease',
+                        opacity: 0.8
                     }}
                 />
             </button>
 
-            {/* Dropdown Menu */}
             <AnimatePresence>
                 {open && (
-                    <Motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                        transition={{ duration: 0.1, ease: "easeOut" }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                         style={styles.dropdownMenu}
-                        onMouseLeave={() => setOpen(false)}
                     >
                         <div style={styles.header}>
                             <p style={styles.signedInText}>Signed in as</p>
                             <p style={styles.emailText} title={displayEmail}>{displayEmail}</p>
                         </div>
 
-                        <div style={styles.menuGroup}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                             <button
-                                onClick={() => {
-                                    onAccount?.();
-                                    setOpen(false);
-                                }}
+                                onClick={() => { onAccount?.(); setOpen(false); }}
                                 style={styles.menuItem}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
-                                Account
+                                <User size={18} />
+                                Account Profile
                             </button>
                             <button
-                                onClick={() => {
-                                    onSettings?.();
-                                    setOpen(false);
-                                }}
+                                onClick={() => { onSettings?.(); setOpen(false); }}
                                 style={styles.menuItem}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
-                                Settings
+                                <Settings size={18} />
+                                System Settings
                             </button>
                             <button
-                                onClick={() => {
-                                    onFAQ?.();
-                                    setOpen(false);
-                                }}
+                                onClick={() => { onFAQ?.(); setOpen(false); }}
                                 style={styles.menuItem}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
-                                FAQ
+                                <HelpCircle size={18} />
+                                Help & Support
                             </button>
-                        </div>
-
-                        <div style={styles.divider}></div>
-
-                        <div style={styles.menuGroup}>
+                            
+                            <div style={{ height: '1px', backgroundColor: '#f3f4f6', margin: '8px 0' }} />
+                            
                             <button
-                                onClick={() => {
-                                    onLogout?.();
-                                    setOpen(false);
-                                }}
-                                style={styles.menuItem}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                                onClick={() => { onLogout?.(); setOpen(false); }}
+                                style={{ ...styles.menuItem, ...styles.logoutItem }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
+                                <LogOut size={18} />
                                 Sign out
                             </button>
                         </div>
-                    </Motion.div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>

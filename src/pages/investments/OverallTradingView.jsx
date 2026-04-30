@@ -19,7 +19,7 @@ const OverallTradingView = () => {
     const profitLoss = currentValue - totalInvested;
 
     const summaryCards = [
-        { label: 'Total Portfolio', value: `₹${(currentValue / 100000).toFixed(1)}L`, trend: '+15.0%', positive: true, icon: Briefcase, color: '#2563EB', bg: '#DBEAFE' },
+        { label: 'Total Portfolio', value: `₹${(currentValue / 100000).toFixed(1)}L`, trend: '+15.0%', positive: true, icon: Briefcase, color: '#1B6B3A', bg: '#DBEAFE' },
         { label: 'Total Invested', value: `₹${(totalInvested / 100000).toFixed(1)}L`, trend: null, icon: Layers, color: '#7C3AED', bg: '#EDE9FE' },
         { label: 'Current Value', value: `₹${(currentValue / 100000).toFixed(1)}L`, trend: '+15.0%', positive: true, icon: TrendingUp, color: '#16A34A', bg: '#DCFCE7' },
         { label: "Total P&L", value: `+₹${profitLoss.toLocaleString()}`, trend: '+15.0%', positive: true, icon: BarChart3, color: '#EA580C', bg: '#FFF7ED' },
@@ -33,7 +33,7 @@ const OverallTradingView = () => {
             name: type,
             pct: `${pct.toFixed(1)}%`,
             value: `₹${(typeTotal / 100000).toFixed(1)}L`,
-            color: type === 'Mutual Fund' ? '#2563EB' : type === 'Crypto' ? '#EA580C' : type === 'SIP' ? '#16A34A' : '#7C3AED',
+            color: type === 'Mutual Fund' ? '#1B6B3A' : type === 'Crypto' ? '#EA580C' : type === 'SIP' ? '#16A34A' : '#7C3AED',
             icon: type === 'Mutual Fund' ? PiggyBank : type === 'Crypto' ? Bitcoin : type === 'SIP' ? TrendingUp : LineChart
         };
     });
@@ -48,7 +48,7 @@ const OverallTradingView = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '300px' }}>
-                <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid #E3F2FD', borderTopColor: '#2563EB', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid #DCF2E4', borderTopColor: '#1B6B3A', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -169,7 +169,7 @@ const OverallTradingView = () => {
                 .ot-txn-icon {
                     width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
                 }
-                .ot-txn-icon.buy { background: #DBEAFE; color: #2563EB; }
+                .ot-txn-icon.buy { background: #DBEAFE; color: #1B6B3A; }
                 .ot-txn-icon.sell { background: #DCFCE7; color: #16A34A; }
                 .ot-txn-icon.sip { background: #EDE9FE; color: #7C3AED; }
                 .ot-txn-name { font-weight: 500; font-size: 0.9rem; color: var(--text-main); }

@@ -35,7 +35,7 @@ const MutualFundsView = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '300px' }}>
-                <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid #E3F2FD', borderTopColor: '#2563EB', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid #DCF2E4', borderTopColor: '#1B6B3A', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -133,13 +133,13 @@ const MutualFundsView = () => {
                 .mf-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
                 .mf-card-left { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0; }
                 .mf-card-icon {
-                    width: 44px; height: 44px; border-radius: 12px; background: #EFF6FF; color: var(--primary);
+                    width: 44px; height: 44px; border-radius: 12px; background: #F0FDF4; color: var(--primary);
                     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
                 }
                 .mf-card-info { min-width: 0; }
                 .mf-fund-name { font-weight: 600; font-size: 0.9rem; color: var(--text-main); margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px; }
                 .mf-fund-meta { display: flex; align-items: center; gap: 0.75rem; }
-                .mf-fund-cat { font-size: 0.75rem; color: var(--text-muted); background: #F1F5F9; padding: 0.1rem 0.5rem; border-radius: 4px; }
+                .mf-fund-cat { font-size: 0.75rem; color: var(--text-muted); background: #F0FDF4; padding: 0.1rem 0.5rem; border-radius: 4px; }
                 .mf-stars { display: flex; gap: 1px; }
 
                 .mf-card-middle { display: flex; gap: 2rem; align-items: center; margin: 0 1.5rem; }

@@ -75,7 +75,7 @@ const Debts = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '400px' }}>
-                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #E3F2FD', borderTopColor: '#EF4444', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #DCF2E4', borderTopColor: '#EF4444', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -245,7 +245,7 @@ const Debts = () => {
                 .text-orange { color: #F97316; font-weight: 600; }
 
                 .progress-section { margin-bottom: 1rem; }
-                .progress-bar-bg { width: 100%; height: 8px; background: #F1F5F9; border-radius: 99px; overflow: hidden; margin-bottom: 0.5rem; }
+                .progress-bar-bg { width: 100%; height: 8px; background: #F0FDF4; border-radius: 99px; overflow: hidden; margin-bottom: 0.5rem; }
                 .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease-out; }
                 .bg-green { background: #16A34A; }
 

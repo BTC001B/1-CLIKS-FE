@@ -134,8 +134,8 @@ const CRYPTO_DATA = [
 const EVENTS = [
     { name: 'Fed Rate Decision',    date: 'Mar 20, 2026 · 2:00 PM', dotColor: '#EF4444', badge: 'soon',     badgeLabel: 'Soon'     },
     { name: 'NVDA Earnings Call',   date: 'Mar 25, 2026 · 5:00 PM', dotColor: '#F59E0B', badge: 'upcoming', badgeLabel: 'Coming'   },
-    { name: 'Bitcoin ETF Summit',   date: 'Apr 02, 2026 · All Day',  dotColor: '#195BAC', badge: 'upcoming', badgeLabel: 'Upcoming' },
-    { name: 'CPI Data Release',     date: 'Apr 10, 2026 · 8:30 AM',  dotColor: '#10B981', badge: 'upcoming', badgeLabel: 'Upcoming' },
+    { name: 'Bitcoin ETF Summit',   date: 'Apr 02, 2026 · All Day',  dotColor: '#1B6B3A', badge: 'upcoming', badgeLabel: 'Upcoming' },
+    { name: 'CPI Data Release',     date: 'Apr 10, 2026 · 8:30 AM',  dotColor: '#1B6B3A', badge: 'upcoming', badgeLabel: 'Upcoming' },
 ];
 
 // ─────────────────────────────────────────────
@@ -457,8 +457,8 @@ export default function SocialFeed() {
                 </div>
 
                 {/* Community Stats mini card */}
-                <div className="sf-widget" style={{ background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', border: '1px solid #BFDBFE' }}>
-                    <div className="sf-widget-title" style={{ color: '#1D4ED8' }}>
+                <div className="sf-widget sf-community-stats">
+                    <div className="sf-widget-title">
                         <Star size={12} style={{ marginRight: '0.4rem', display: 'inline', verticalAlign: 'middle' }} />
                         Community
                     </div>

@@ -278,7 +278,7 @@ const Accounts = () => {
                 .stat-subtext { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
                 
                 .stat-icon-wrapper { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-                .icon-blue { background: #DBEAFE; color: #2563EB; }
+                .icon-blue { background: #DBEAFE; color: #1B6B3A; }
                 .icon-green { background: #DCFCE7; color: #16A34A; }
                 .icon-red { background: #FEE2E2; color: #EF4444; }
 
@@ -298,7 +298,7 @@ const Accounts = () => {
                 .bank-card:hover { transform: translateY(-5px); }
                 .bank-card:hover .card-actions-overlay { opacity: 1; }
 
-                .theme-dark-blue { background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%); }
+                .theme-dark-blue { background: linear-gradient(135deg, #064E3B 0%, #22C55E 100%); }
                 .theme-emerald { background: linear-gradient(135deg, #065F46 0%, #10B981 100%); }
                 .theme-purple { background: linear-gradient(135deg, #581C87 0%, #8B5CF6 100%); }
                 .theme-orange { background: linear-gradient(135deg, #9A3412 0%, #F97316 100%); }
@@ -335,7 +335,7 @@ const Accounts = () => {
                     display: flex; align-items: center; justify-content: center;
                     cursor: pointer; background: #F8FAFC; transition: all 0.2s; color: var(--text-muted);
                 }
-                .add-card-placeholder:hover { border-color: var(--primary); color: var(--primary); background: #EFF6FF; }
+                .add-card-placeholder:hover { border-color: var(--primary); color: var(--primary); background: #F0FDF4; }
                 .placeholder-content { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
                 .plus-circle { width: 48px; height: 48px; border-radius: 50%; background: white; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; }
             `}</style>

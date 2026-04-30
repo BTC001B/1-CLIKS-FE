@@ -261,7 +261,7 @@
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
-  background: #EFF6FF;
+  background: #F0FDF4;
   color: #1D4ED8;
   border: 1px solid #BFDBFE;
 }
@@ -290,7 +290,7 @@
 }
 
 .fp-action-btn--edit:hover {
-  background: #EFF6FF;
+  background: #F0FDF4;
   color: #1D4ED8;
 }
 
@@ -380,7 +380,7 @@
 }
 
 .fp-modal-close:hover {
-  background: #F1F5F9;
+  background: #F0FDF4;
   color: var(--text-main);
 }
 
@@ -421,7 +421,7 @@
 .fp-input:focus {
   border-color: var(--primary);
   background: var(--card-bg);
-  box-shadow: 0 0 0 3px rgba(25, 91, 172, 0.12);
+  box-shadow: 0 0 0 3px rgba(27, 107, 58, 0.12);
 }
 
 .fp-input::placeholder {
@@ -476,10 +476,10 @@
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 2px 8px rgba(25, 91, 172, 0.25);
+  box-shadow: 0 2px 8px rgba(27, 107, 58, 0.25);
 }
 
 .fp-btn-submit:hover {
   background: var(--primary-hover);
-  box-shadow: 0 4px 12px rgba(25, 91, 172, 0.35);
+  box-shadow: 0 4px 12px rgba(27, 107, 58, 0.35);
 }

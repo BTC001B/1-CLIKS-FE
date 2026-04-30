@@ -51,7 +51,7 @@ const FinancialContacts = () => {
         const newContact = {
             id: Date.now(),
             initials: initials.toUpperCase(),
-            avatarBg: '#0EA5E9',
+            avatarBg: '#10B981',
             name: formData.name,
             time: 'Just now',
             phone: formData.phone,
@@ -342,7 +342,7 @@ const FinancialContacts = () => {
                     outline: none;
                 }
                 .form-input:focus {
-                    border-color: #3B82F6;
+                    border-color: #22C55E;
                     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
                 }
                 .form-error {
@@ -448,7 +448,7 @@ const FinancialContacts = () => {
                     outline: none;
                 }
                 .filter-input-text:focus {
-                    border-color: #3B82F6;
+                    border-color: #22C55E;
                 }
                 .filter-select {
                     width: 100%;
@@ -475,7 +475,7 @@ const FinancialContacts = () => {
                     width: 16px;
                     height: 16px;
                     cursor: pointer;
-                    accent-color: #3B82F6;
+                    accent-color: #22C55E;
                 }
                 .filter-footer {
                     padding: 0.75rem 1rem;
@@ -511,7 +511,7 @@ const FinancialContacts = () => {
                 }
 
                 .btn-primary {
-                    background: #195BAC;
+                    background: #1B6B3A;
                     border: none;
                     color: white;
                     padding: 8px 16px;

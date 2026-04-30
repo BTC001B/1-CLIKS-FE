@@ -7,11 +7,11 @@ import { ProtectedRoute } from './routes/ProtectedRoute';
 import { ErrorBoundary } from './components/common';
 import MainLayout from './layouts/MainLayout';
 import AuditorLayout from './layouts/AuditorLayout';
-import Landing from './pages/Landing'; // Keep Landing eager for LCP
+import Landing from './pages/Landing';
+import { useAuth } from './context';
 
 // Lazy Load Pages to optimize bundle size
 const Auth = React.lazy(() => import('./pages/Auth'));
-
 const Income = React.lazy(() => import('./pages/Income'));
 const Expenses = React.lazy(() => import('./pages/Expenses'));
 const Transactions = React.lazy(() => import('./pages/Transactions'));
@@ -46,13 +46,16 @@ const PeopleTransactions = React.lazy(() => import('./pages/people/PeopleTransac
 const PeopleReminders = React.lazy(() => import('./pages/people/PeopleReminders'));
 const PeopleRecords = React.lazy(() => import('./pages/people/PeopleRecords'));
 const PersonProfile = React.lazy(() => import('./pages/people/PersonProfile'));
-
 const Segregation = React.lazy(() => import('./pages/Segregation'));
 const SplitExpense = React.lazy(() => import('./pages/SplitExpense'));
 const GoalWallets = React.lazy(() => import('./pages/GoalWallets'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const FAQ = React.lazy(() => import('./pages/FAQ'));
+import BusinessDashboard from './pages/BusinessDashboard';
+import BusinessPlaceholder from './pages/BusinessPlaceholder';
+import BusinessInventory from './pages/BusinessInventory';
+import BusinessBilling from './pages/BusinessBilling';
 
 import './App.css';
 
@@ -62,93 +65,107 @@ const PageLoader = () => (
   </div>
 );
 
+function AppContent() {
+  const { user } = useAuth();
+  return (
+    <Router>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/auth" element={
+          <Suspense fallback={<PageLoader />}>
+            <Auth />
+          </Suspense>
+        } />
+        <Route path="/auditor" element={
+          <Suspense fallback={<PageLoader />}>
+            <AuditorLayout>
+              <Auditor />
+            </AuditorLayout>
+          </Suspense>
+        } />
+        <Route path="/books/profile" element={
+          <Suspense fallback={<PageLoader />}>
+            <Profile />
+          </Suspense>
+        } />
+
+        {/* Protected Routes - All routes within MainLayout require authentication */}
+        <Route path="*" element={
+          <ProtectedRoute>
+            <ErrorBoundary>
+              <MainLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* Root Redirect based on role */}
+                    <Route path="/" element={<Navigate to={user?.role === 'business' ? '/business/dashboard' : '/books/dashboard'} replace />} />
+                    
+                    {/* Finance (formerly Home) Section */}
+                    <Route path="/finance" element={<Finance />} />
+                    <Route path="/finance/income" element={<Income />} />
+                    <Route path="/finance/expenses" element={<Expenses />} />
+                    <Route path="/finance/budgets" element={<Budgets />} />
+                    <Route path="/finance/accounts" element={<Accounts />} />
+                    <Route path="/finance/transactions" element={<Transactions />} />
+                    <Route path="/finance/planned-payments" element={<PlannedPayments />} />
+                    <Route path="/finance/savings" element={<Savings />} />
+                    <Route path="/finance/investments" element={<Investments />} />
+                    <Route path="/finance/debts" element={<Debts />} />
+
+                    {/* Books Section */}
+                    <Route path="/books" element={<Books />} />
+                    <Route path="/books/dashboard" element={<BooksDashboard />} />
+                    <Route path="/books/stock" element={<Stock />} />
+                    <Route path="/books/financial-plan" element={<FinancialPlan />} />
+                    <Route path="/books/plan/budget" element={<PlanBudget />} />
+                    <Route path="/books/plan/income" element={<PlanIncome />} />
+                    <Route path="/books/plan/expense" element={<PlanExpense />} />
+                    <Route path="/books/plan/calendar" element={<FinancialCalendar />} />
+                    <Route path="/books/plan/goals" element={<PlanGoals />} />
+                    <Route path="/books/plan/reminders" element={<PlanReminders />} />
+                    <Route path="/books/plan/analysis" element={<PlanAnalysis />} />
+                    <Route path="/books/people" element={<People />} />
+                    <Route path="/books/people/overview" element={<PeopleOverview />} />
+                    <Route path="/books/people/:id" element={<PersonProfile />} />
+                    <Route path="/books/people/transactions" element={<PeopleTransactions />} />
+                    <Route path="/books/people/reminders" element={<PeopleReminders />} />
+                    <Route path="/books/people/records" element={<PeopleRecords />} />
+
+                    <Route path="/books/segregation" element={<Segregation />} />
+                    <Route path="/books/goal-wallets" element={<GoalWallets />} />
+                    <Route path="/books/split-expense" element={<SplitExpense />} />
+                    <Route path="/books/settings" element={<Settings />} />
+                    <Route path="/books/faq" element={<FAQ />} />
+
+                    {/* Public Section */}
+                    <Route path="/public" element={<Public />} />
+
+                    {/* Business Section */}
+                    <Route path="/business/dashboard" element={<BusinessDashboard />} />
+                    <Route path="/business/inventory" element={<BusinessInventory />} />
+                    <Route path="/business/billing" element={<BusinessBilling />} />
+                    <Route path="/business/plan" element={<BusinessPlaceholder title="Business Financial Plan" />} />
+                    <Route path="/business/compare" element={<BusinessPlaceholder title="Business Compare" />} />
+                    <Route path="/business/staffing" element={<BusinessPlaceholder title="Business Staffing" />} />
+                    <Route path="/business/segregation" element={<BusinessPlaceholder title="Business Segregation" />} />
+                    <Route path="/business/crm" element={<BusinessPlaceholder title="Business CRM" />} />
+                    <Route path="/business/meetup" element={<BusinessPlaceholder title="Business Meetup" />} />
+                    <Route path="/business/investors" element={<BusinessPlaceholder title="Business Investors" />} />
+                  </Routes>
+                </Suspense>
+              </MainLayout>
+            </ErrorBoundary>
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </Router>
+  );
+}
+
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={
-              <Suspense fallback={<PageLoader />}>
-                <Auth />
-              </Suspense>
-            } />
-            <Route path="/auditor" element={
-              <Suspense fallback={<PageLoader />}>
-                <AuditorLayout>
-                  <Auditor />
-                </AuditorLayout>
-              </Suspense>
-            } />
-            <Route path="/books/profile" element={
-              <Suspense fallback={<PageLoader />}>
-                <Profile />
-              </Suspense>
-            } />
-
-            {/* Protected Routes - All routes within MainLayout require authentication */}
-            <Route path="*" element={
-              <ProtectedRoute>
-                <ErrorBoundary>
-                  <MainLayout>
-                    <Suspense fallback={<PageLoader />}>
-                      <Routes>
-                        {/* Finance (formerly Home) Section */}
-                        <Route path="/finance" element={<Finance />} />
-                        <Route path="/finance/income" element={<Income />} />
-                        <Route path="/finance/expenses" element={<Expenses />} />
-                        <Route path="/finance/budgets" element={<Budgets />} />
-                        <Route path="/finance/accounts" element={<Accounts />} />
-                        <Route path="/finance/transactions" element={<Transactions />} />
-                        <Route path="/finance/planned-payments" element={<PlannedPayments />} />
-                        <Route path="/finance/savings" element={<Savings />} />
-                        <Route path="/finance/investments" element={<Investments />} />
-                        <Route path="/finance/debts" element={<Debts />} />
-
-
-
-                        {/* Books Section */}
-                        <Route path="/books" element={<Books />} />
-                        <Route path="/books/dashboard" element={<BooksDashboard />} />
-                        <Route path="/books/stock" element={<Stock />} />
-                        <Route path="/books/financial-plan" element={<FinancialPlan />} />
-                        <Route path="/books/plan/budget" element={<PlanBudget />} />
-                        <Route path="/books/plan/income" element={<PlanIncome />} />
-                        <Route path="/books/plan/expense" element={<PlanExpense />} />
-                        <Route path="/books/plan/calendar" element={<FinancialCalendar />} />
-                        <Route path="/books/plan/goals" element={<PlanGoals />} />
-                        <Route path="/books/plan/reminders" element={<PlanReminders />} />
-                        <Route path="/books/plan/analysis" element={<PlanAnalysis />} />
-                        <Route path="/books/people" element={<People />} />
-                        <Route path="/books/people/overview" element={<PeopleOverview />} />
-                        <Route path="/books/people/:id" element={<PersonProfile />} />
-                        <Route path="/books/people/transactions" element={<PeopleTransactions />} />
-                        <Route path="/books/people/reminders" element={<PeopleReminders />} />
-                        <Route path="/books/people/records" element={<PeopleRecords />} />
-
-                        <Route path="/books/segregation" element={<Segregation />} />
-                        <Route path="/books/split-expense" element={<SplitExpense />} />
-                        <Route path="/books/goal-wallets" element={<GoalWallets />} />
-                        <Route path="/books/settings" element={<Settings />} />
-                        <Route path="/books/faq" element={<FAQ />} />
-
-                        {/* Public Section */}
-                        <Route path="/public" element={<Public />} />
-                      </Routes>
-                    </Suspense>
-                  </MainLayout>
-                </ErrorBoundary>
-              </ProtectedRoute>
-            } />
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </QueryClientProvider >
+    <AppContent />
   );
 }
 
 export default App;
-
-

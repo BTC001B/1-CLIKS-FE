@@ -70,7 +70,7 @@ const Books = () => {
                     <OverviewCard
                         title="Stock"
                         icon={TrendingUp}
-                        color="#0EA5E9"
+                        color="#10B981"
                         path="/books/stock"
                         stats={[
                             { label: 'Total Items', value: '26' },

@@ -142,8 +142,8 @@ async function request(endpoint, options = {}) {
 
     clearTimeout(timeoutId);
 
-    // Handle error responses
-    if (!response.ok) {
+    // Handle error responses (304 is technically not 'ok' but is a success for caching)
+    if (!response.ok && response.status !== 304) {
         throw await normalizeError(null, response);
     }
 

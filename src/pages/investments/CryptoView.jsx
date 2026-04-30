@@ -22,7 +22,7 @@ const CryptoView = () => {
     });
 
     const overviewCards = [
-        { label: 'Market Cap', value: '$2.1T', icon: Globe, color: '#2563EB', bg: '#DBEAFE' },
+        { label: 'Market Cap', value: '$2.1T', icon: Globe, color: '#1B6B3A', bg: '#DBEAFE' },
         { label: '24h Volume', value: '$98.5B', icon: BarChart3, color: '#7C3AED', bg: '#EDE9FE' },
         { label: 'Bitcoin Dominance', value: '48.2%', icon: Bitcoin, color: '#EA580C', bg: '#FFF7ED' },
         { label: 'Active Coins', value: cryptos.length.toString(), icon: Activity, color: '#16A34A', bg: '#DCFCE7' },
@@ -31,7 +31,7 @@ const CryptoView = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '300px' }}>
-                <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid #E3F2FD', borderTopColor: '#F7931A', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid #DCF2E4', borderTopColor: '#F7931A', borderRadius: '50%' }} />
             </div>
         );
     }

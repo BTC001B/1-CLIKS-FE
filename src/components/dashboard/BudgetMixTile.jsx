@@ -14,7 +14,7 @@ const ICON_MAP = {
 };
 
 const COLOR_MAP = [
-    '#195BAC', '#3B82F6', '#60A5FA', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'
+    '#1B6B3A', '#22C55E', '#60A5FA', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'
 ];
 
 const BudgetItem = (props) => {
@@ -44,7 +44,7 @@ const BudgetItem = (props) => {
             <div style={{
                 width: '100%',
                 height: '8px',
-                backgroundColor: '#F1F5F9',
+                backgroundColor: '#F0FDF4',
                 borderRadius: '99px',
                 overflow: 'hidden'
             }}>
@@ -81,15 +81,15 @@ const BudgetMixTile = () => {
                         key={b.id}
                         icon={ICON_MAP[b.category] || Globe}
                         label={b.category}
-                        current={Number(b.spent || 0)}
-                        total={Number(b.amount)}
+                        current={Number(b.amount_spent || 0)}
+                        total={Number(b.amount_limit || 0)}
                         color={COLOR_MAP[i % COLOR_MAP.length]}
                     />
                 ))}
             </div>
 
             <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'center', paddingTop: '0.5rem' }}>
-                <a href="#view-all" style={{ fontSize: '0.85rem', color: '#195BAC', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <a href="#view-all" style={{ fontSize: '0.85rem', color: '#1B6B3A', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                     View All Categories
                 </a>
             </div>

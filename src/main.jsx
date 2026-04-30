@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext'
 import './styles/tokens.css'
 import './index.css'
 import './styles/layout.css'
+import './styles/premium.css'
 import App from './App.jsx'
 
 const queryClient = new QueryClient({

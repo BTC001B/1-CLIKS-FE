@@ -88,7 +88,7 @@ const Expenses = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '400px' }}>
-                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #E3F2FD', borderTopColor: '#F44336', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #DCF2E4', borderTopColor: '#F44336', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -246,7 +246,7 @@ const Expenses = () => {
                 .stat-icon-wrapper { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
                 .icon-red { background: #FEE2E2; color: #EF4444; }
                 .icon-orange { background: #FFEDD5; color: #F97316; }
-                .icon-blue { background: #DBEAFE; color: #2563EB; }
+                .icon-blue { background: #DBEAFE; color: #1B6B3A; }
 
                 /* Reuse search/filter styles from Income page implicitly via copy-paste consistency or global classes if promoted */
                 .search-wrapper { position: relative; flex: 1; max-width: 400px; }
@@ -264,14 +264,14 @@ const Expenses = () => {
                 .expense-table tr:last-child td { border-bottom: none; }
                 .expense-table tr:hover td { background: #F8FAFC; }
 
-                .table-icon-bg { width: 36px; height: 36px; background: #F1F5F9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
-                .category-pill { padding: 0.25rem 0.75rem; background: #F1F5F9; border-radius: 6px; font-size: 0.85rem; color: var(--text-muted); }
+                .table-icon-bg { width: 36px; height: 36px; background: #F0FDF4; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+                .category-pill { padding: 0.25rem 0.75rem; background: #F0FDF4; border-radius: 6px; font-size: 0.85rem; color: var(--text-muted); }
                 
                 .text-danger { color: #EF4444; }
                 .text-main { color: var(--text-main); }
 
                 .action-btn { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s; }
-                .hover-blue:hover { background: #EFF6FF; color: #2563EB; }
+                .hover-blue:hover { background: #F0FDF4; color: #1B6B3A; }
                 .hover-red:hover { background: #FEF2F2; color: #DC2626; }
                 
                 @media (max-width: 768px) {

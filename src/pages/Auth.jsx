@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wallet, Mail, Lock, User, ArrowRight, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Wallet, Mail, Lock, User, ArrowRight, CheckCircle2, Loader2, AlertCircle, Briefcase } from 'lucide-react';
 import { useAuth } from '../context';
+import logoSvg from '../assets/logo.svg';
 
 const Auth = () => {
     const navigate = useNavigate();
@@ -13,7 +14,10 @@ const Auth = () => {
     const [formData, setFormData] = useState({
         username: '', // Frontend input for email
         password: '',
-        fullName: '' // Frontend input for full name
+        fullName: '', // Frontend input for full name
+        role: 'user', // Default role
+        businessName: '',
+        industry: ''
     });
 
     const handleSubmit = async (e) => {
@@ -23,19 +27,32 @@ const Auth = () => {
 
         try {
             if (isLogin) {
-                await login(formData.username, formData.password);
-                navigate('/finance');
+                const response = await login(formData.username, formData.password);
+                const role = response.user?.role || 'user';
+                if (role === 'business') {
+                    navigate('/business/dashboard');
+                } else {
+                    navigate('/books/dashboard');
+                }
             } else {
                 // Register with backend expected fields
                 // Generate username from email prefix (user@domain.com -> user)
                 const generatedUsername = formData.username.split('@')[0].toLowerCase();
                 
-                await register({
+                const response = await register({
                     username: generatedUsername,
                     email: formData.username,
-                    password: formData.password
+                    password: formData.password,
+                    role: formData.role,
+                    business_name: formData.businessName,
+                    industry: formData.industry
                 });
-                navigate('/finance');
+                
+                if (formData.role === 'business') {
+                    navigate('/business/dashboard');
+                } else {
+                    navigate('/books/dashboard');
+                }
             }
         } catch (err) {
             console.error('[Auth] error:', err);
@@ -53,7 +70,7 @@ const Auth = () => {
         <div style={{
             minHeight: "100vh",
             display: "flex",
-            background: "#E9F4FF",
+            background: "#F0FDF4",
             fontFamily: "Inter, sans-serif"
         }}>
             {/* Left Side - Form */}
@@ -66,7 +83,7 @@ const Auth = () => {
                 padding: "40px",
                 position: "relative",
                 background: "#FFFFFF",
-                boxShadow: "20px 0 50px rgba(25, 91, 172, 0.05)"
+                boxShadow: "20px 0 50px rgba(27, 107, 58, 0.05)"
             }}>
 
                 <div style={{
@@ -78,15 +95,15 @@ const Auth = () => {
                     gap: "10px",
                     cursor: "pointer"
                 }} onClick={() => navigate('/')}>
-                    <div style={{ padding: '8px', background: '#E3F2FD', borderRadius: '8px', color: '#195BAC' }}>
-                        <Wallet size={24} />
+                    <div style={{ padding: '4px', background: '#E8F5E9', borderRadius: '50%' }}>
+                        <img src={logoSvg} alt="CLIKS Logo" style={{ width: '32px', height: '32px' }} />
                     </div>
-                    <span style={{ fontSize: "20px", fontWeight: "800", color: "#195BAC" }}>Books & Finance</span>
+                    <span style={{ fontSize: "20px", fontWeight: "800", color: "#1B6B3A" }}>CLIKS</span>
                 </div>
 
                 <div style={{ maxWidth: "400px", width: "100%" }}>
                     <div style={{ marginBottom: "40px" }}>
-                        <h1 style={{ fontSize: "36px", fontWeight: "800", color: "#1A1A2E", marginBottom: "12px" }}>
+                        <h1 style={{ fontSize: "36px", fontWeight: "800", color: "#064E3B", marginBottom: "12px" }}>
                             {isLogin ? "Welcome back" : "Create an account"}
                         </h1>
                         <p style={{ fontSize: "16px", color: "#546E7A" }}>
@@ -97,6 +114,37 @@ const Auth = () => {
                     </div>
 
                     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                        {!isLogin && (
+                            <div style={{ display: 'flex', background: '#F1F5F9', padding: '4px', borderRadius: '12px', marginBottom: '8px' }}>
+                                <button 
+                                    type="button"
+                                    onClick={() => setFormData({...formData, role: 'user'})}
+                                    style={{ 
+                                        flex: 1, padding: '8px', borderRadius: '10px', border: 'none', 
+                                        fontSize: '13px', fontWeight: '600', cursor: 'pointer',
+                                        background: formData.role === 'user' ? 'white' : 'transparent',
+                                        color: formData.role === 'user' ? '#1B6B3A' : '#64748B',
+                                        boxShadow: formData.role === 'user' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none'
+                                    }}
+                                >
+                                    Personal
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={() => setFormData({...formData, role: 'business'})}
+                                    style={{ 
+                                        flex: 1, padding: '8px', borderRadius: '10px', border: 'none', 
+                                        fontSize: '13px', fontWeight: '600', cursor: 'pointer',
+                                        background: formData.role === 'business' ? 'white' : 'transparent',
+                                        color: formData.role === 'business' ? '#1B6B3A' : '#64748B',
+                                        boxShadow: formData.role === 'business' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none'
+                                    }}
+                                >
+                                    Business
+                                </button>
+                            </div>
+                        )}
+
                         {error && (
                             <div style={{ 
                                 display: 'flex', alignItems: 'center', gap: '8px', 
@@ -122,12 +170,61 @@ const Auth = () => {
                                         className="auth-input"
                                         style={{
                                             width: "100%", padding: "14px 16px 14px 44px", borderRadius: "12px",
-                                            border: "2px solid #E3F2FD", fontSize: "15px", outline: "none",
+                                            border: "2px solid #DCF2E4", fontSize: "15px", outline: "none",
                                             transition: "border-color 0.3s", boxSizing: "border-box"
                                         }}
-                                        onFocus={(e) => e.target.style.borderColor = "#195BAC"}
-                                        onBlur={(e) => e.target.style.borderColor = "#E3F2FD"}
+                                        onFocus={(e) => e.target.style.borderColor = "#1B6B3A"}
+                                        onBlur={(e) => e.target.style.borderColor = "#DCF2E4"}
                                     />
+                                </div>
+                            </div>
+                        )}
+
+                        {!isLogin && formData.role === 'business' && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <div>
+                                    <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#546E7A", marginBottom: "8px", letterSpacing: "0.5px" }}>BUSINESS NAME</label>
+                                    <div style={{ position: "relative" }}>
+                                        <Briefcase size={18} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#90A4AE" }} />
+                                        <input
+                                            type="text"
+                                            placeholder="Acme Corp"
+                                            value={formData.businessName}
+                                            onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                                            required
+                                            className="auth-input"
+                                            style={{
+                                                width: "100%", padding: "14px 16px 14px 44px", borderRadius: "12px",
+                                                border: "2px solid #DCF2E4", fontSize: "15px", outline: "none",
+                                                transition: "border-color 0.3s", boxSizing: "border-box"
+                                            }}
+                                            onFocus={(e) => e.target.style.borderColor = "#1B6B3A"}
+                                            onBlur={(e) => e.target.style.borderColor = "#DCF2E4"}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#546E7A", marginBottom: "8px", letterSpacing: "0.5px" }}>INDUSTRY</label>
+                                    <select
+                                        value={formData.industry}
+                                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                                        required
+                                        style={{
+                                            width: "100%", padding: "14px 16px", borderRadius: "12px",
+                                            border: "2px solid #DCF2E4", fontSize: "15px", outline: "none",
+                                            background: "white", transition: "border-color 0.3s", boxSizing: "border-box"
+                                        }}
+                                        onFocus={(e) => e.target.style.borderColor = "#1B6B3A"}
+                                        onBlur={(e) => e.target.style.borderColor = "#DCF2E4"}
+                                    >
+                                        <option value="">Select Industry</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="Finance">Finance</option>
+                                        <option value="Healthcare">Healthcare</option>
+                                        <option value="Retail">Retail</option>
+                                        <option value="Manufacturing">Manufacturing</option>
+                                        <option value="Other">Other</option>
+                                    </select>
                                 </div>
                             </div>
                         )}
@@ -145,11 +242,11 @@ const Auth = () => {
                                     className="auth-input"
                                     style={{
                                         width: "100%", padding: "14px 16px 14px 44px", borderRadius: "12px",
-                                        border: "2px solid #E3F2FD", fontSize: "15px", outline: "none",
+                                        border: "2px solid #DCF2E4", fontSize: "15px", outline: "none",
                                         transition: "border-color 0.3s", boxSizing: "border-box"
                                     }}
-                                    onFocus={(e) => e.target.style.borderColor = "#195BAC"}
-                                    onBlur={(e) => e.target.style.borderColor = "#E3F2FD"}
+                                    onFocus={(e) => e.target.style.borderColor = "#1B6B3A"}
+                                    onBlur={(e) => e.target.style.borderColor = "#DCF2E4"}
                                 />
                             </div>
                         </div>
@@ -157,7 +254,7 @@ const Auth = () => {
                         <div>
                             <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", fontWeight: "600", color: "#546E7A", marginBottom: "8px", letterSpacing: "0.5px" }}>
                                 <span>PASSWORD</span>
-                                {isLogin && <span style={{ color: "#195BAC", cursor: "pointer", textTransform: "none" }}>Forgot password?</span>}
+                                {isLogin && <span style={{ color: "#1B6B3A", cursor: "pointer", textTransform: "none" }}>Forgot password?</span>}
                             </label>
                             <div style={{ position: "relative" }}>
                                 <Lock size={18} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#90A4AE" }} />
@@ -170,11 +267,11 @@ const Auth = () => {
                                     className="auth-input"
                                     style={{
                                         width: "100%", padding: "14px 16px 14px 44px", borderRadius: "12px",
-                                        border: "2px solid #E3F2FD", fontSize: "15px", outline: "none",
+                                        border: "2px solid #DCF2E4", fontSize: "15px", outline: "none",
                                         transition: "border-color 0.3s", boxSizing: "border-box"
                                     }}
-                                    onFocus={(e) => e.target.style.borderColor = "#195BAC"}
-                                    onBlur={(e) => e.target.style.borderColor = "#E3F2FD"}
+                                    onFocus={(e) => e.target.style.borderColor = "#1B6B3A"}
+                                    onBlur={(e) => e.target.style.borderColor = "#DCF2E4"}
                                 />
                             </div>
                         </div>
@@ -183,9 +280,9 @@ const Auth = () => {
                             type="submit" 
                             disabled={isLoading}
                             style={{
-                                width: "100%", padding: "16px", background: isLoading ? "#90A4AE" : "linear-gradient(135deg, #195BAC 0%, #1E88E5 100%)",
+                                width: "100%", padding: "16px", background: isLoading ? "#90A4AE" : "linear-gradient(135deg, #1B6B3A 0%, #228B4C 100%)",
                                 color: "#FFFFFF", border: "none", borderRadius: "12px", fontSize: "16px", fontWeight: "700",
-                                cursor: isLoading ? "not-allowed" : "pointer", marginTop: "10px", boxShadow: isLoading ? "none" : "0 8px 25px rgba(25, 91, 172, 0.3)",
+                                cursor: isLoading ? "not-allowed" : "pointer", marginTop: "10px", boxShadow: isLoading ? "none" : "0 8px 25px rgba(27, 107, 58, 0.3)",
                                 display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", transition: "transform 0.2s"
                             }}
                             onMouseEnter={(e) => !isLoading && (e.currentTarget.style.transform = "translateY(-2px)")}
@@ -202,7 +299,7 @@ const Auth = () => {
                         {isLogin ? "Don't have an account? " : "Already a user? "}
                         <span
                             onClick={toggleMode}
-                            style={{ color: "#195BAC", fontWeight: "700", cursor: "pointer" }}
+                            style={{ color: "#1B6B3A", fontWeight: "700", cursor: "pointer" }}
                         >
                             {isLogin ? "Create a new one" : "Sign in"}
                         </span>
@@ -218,7 +315,7 @@ const Auth = () => {
                 justifyContent: "center",
                 alignItems: "center",
                 padding: "60px",
-                background: "linear-gradient(135deg, #195BAC 0%, #1E88E5 100%)",
+                background: "linear-gradient(135deg, #1B6B3A 0%, #228B4C 100%)",
                 position: "relative",
                 overflow: "hidden"
             }} className="desktop-visual">

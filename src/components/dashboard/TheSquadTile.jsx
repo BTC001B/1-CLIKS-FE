@@ -1,3 +1,4 @@
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { contactsService } from '../../services';
 import { Plus, Send } from 'lucide-react';
@@ -40,7 +41,7 @@ const TheSquadTile = () => {
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                 }}
-                    onMouseOver={(e) => { e.currentTarget.style.borderColor = '#195BAC'; e.currentTarget.style.color = '#195BAC'; }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = '#1B6B3A'; e.currentTarget.style.color = '#1B6B3A'; }}
                     onMouseOut={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#94A3B8'; }}
                 >
                     <Plus size={24} />
@@ -50,7 +51,7 @@ const TheSquadTile = () => {
             <button style={{
                 width: '100%',
                 padding: '0.85rem',
-                background: '#195BAC',
+                background: '#1B6B3A',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
@@ -60,7 +61,7 @@ const TheSquadTile = () => {
                 justifyContent: 'center',
                 gap: '0.5rem',
                 cursor: 'pointer',
-                boxShadow: '0 4px 6px -1px rgba(25, 91, 172, 0.3)',
+                boxShadow: '0 4px 6px -1px rgba(27, 107, 58, 0.3)',
                 marginTop: 'auto'
             }}>
                 <Send size={18} />

@@ -64,7 +64,7 @@ const ErrorState = ({
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            background: #F1F5F9;
+            background: #F0FDF4;
             border: 1px solid #E2E8F0;
             border-radius: 8px;
             font-size: 0.875rem;

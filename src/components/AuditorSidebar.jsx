@@ -9,7 +9,7 @@ const AuditorSidebar = ({ isOpen }) => {
     return (
         <aside className={`sidebar ${isOpen ? 'open' : 'collapsed'}`} style={{ borderRight: '1px solid #E2E8F0', height: '100vh' }}>
             <div className="sidebar-header">
-                <div className="brand-logo" style={{ background: '#195BAC' }}>
+                <div className="brand-logo" style={{ background: '#1B6B3A' }}>
                     <Bot size={20} color="white" />
                 </div>
                 <h2 className="app-title">Auditor</h2>

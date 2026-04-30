@@ -114,7 +114,7 @@ const Investments = () => {
                 }
 
                 .inv-nav-item.active {
-                    background: #EFF6FF;
+                    background: #F0FDF4;
                     color: var(--primary);
                     font-weight: 600;
                 }

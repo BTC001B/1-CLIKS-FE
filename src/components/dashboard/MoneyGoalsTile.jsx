@@ -1,3 +1,4 @@
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { financialPlanService } from '../../services';
 import { Plane, Footprints, Plus, Target, Globe } from 'lucide-react';
@@ -11,36 +12,36 @@ const ICON_MAP = {
 const GoalItem = (props) => {
     const { title, current, total, percent, color, icon: Icon } = props;
     return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 0' }}>
-        <div style={{ position: 'relative', width: '48px', height: '48px' }}>
-            <svg viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
-                <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#E2E8F0"
-                    strokeWidth="3"
-                />
-                <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke={color}
-                    strokeWidth="3"
-                    strokeDasharray={`${percent}, 100`}
-                />
-            </svg>
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '0.65rem', fontWeight: 700, color: color }}>
-                {percent}%
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 0' }}>
+            <div style={{ position: 'relative', width: '48px', height: '48px' }}>
+                <svg viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
+                    <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="#E2E8F0"
+                        strokeWidth="3"
+                    />
+                    <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="3"
+                        strokeDasharray={`${percent}, 100`}
+                    />
+                </svg>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '0.65rem', fontWeight: 700, color: color }}>
+                    {percent}%
+                </div>
+            </div>
+            <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {title} <Icon size={14} className="text-muted-foreground" />
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px' }}>
+                    <span style={{ fontWeight: 600 }}>${current}</span> of ${total}
+                </div>
             </div>
         </div>
-        <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {title} <Icon size={14} className="text-muted-foreground" />
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px' }}>
-                <span style={{ fontWeight: 600 }}>${current}</span> of ${total}
-            </div>
-        </div>
-    </div>
     );
 };
 
@@ -73,7 +74,7 @@ const MoneyGoalsTile = () => {
                     border: '2px dashed #CBD5E1',
                     borderRadius: '99px',
                     background: 'transparent',
-                    color: '#195BAC',
+                    color: '#1B6B3A',
                     fontWeight: 600,
                     cursor: 'pointer'
                 }}>
@@ -96,7 +97,7 @@ const MoneyGoalsTile = () => {
                             current={goal.current_amount}
                             total={goal.target_amount}
                             percent={percent}
-                            color="#195BAC"
+                            color="#1B6B3A"
                             icon={Icon}
                         />
                     );
@@ -110,7 +111,7 @@ const MoneyGoalsTile = () => {
                 border: '2px dashed #CBD5E1',
                 borderRadius: '99px',
                 background: 'transparent',
-                color: '#195BAC',
+                color: '#1B6B3A',
                 fontWeight: 600,
                 fontSize: '0.9rem',
                 cursor: 'pointer',

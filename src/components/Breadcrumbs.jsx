@@ -122,7 +122,7 @@ const Breadcrumbs = ({ items }) => {
                         width: '32px',
                         height: '32px',
                         borderRadius: '50%',
-                        backgroundColor: '#195BAC',
+                        backgroundColor: '#1B6B3A',
                         color: 'white',
                         display: 'flex',
                         alignItems: 'center',
@@ -153,7 +153,7 @@ const Breadcrumbs = ({ items }) => {
 
                             {isLast ? (
                                 <span style={{
-                                    color: '#195BAC',
+                                    color: '#1B6B3A',
                                     fontWeight: 700,
                                     fontSize: '1rem'
                                 }}>
@@ -169,7 +169,7 @@ const Breadcrumbs = ({ items }) => {
                                         fontWeight: 600,
                                         transition: 'color 0.2s'
                                     }}
-                                    onMouseEnter={(e) => e.target.style.color = '#195BAC'}
+                                    onMouseEnter={(e) => e.target.style.color = '#1B6B3A'}
                                     onMouseLeave={(e) => e.target.style.color = '#64748B'}
                                 >
                                     {item.label}

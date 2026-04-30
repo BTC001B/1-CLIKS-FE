@@ -398,42 +398,42 @@ const GoalWallets = () => {
                 .page-subtitle { color: #64748B; font-size: 0.9rem; }
                 
                 .btn-refresh { background: white; border: 1px solid #E2E8F0; padding: 10px; border-radius: 50%; cursor: pointer; color: #64748B; transition: all 0.2s; }
-                .btn-new-wallet { background: #195BAC; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 99px; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+                .btn-new-wallet { background: #1B6B3A; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 99px; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
                 
                 .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
                 .stat-card { background: white; border-radius: 1.25rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
                 .stat-label-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; }
                 .stat-value { font-size: 1.75rem; font-weight: 800; color: #0F172A; margin-bottom: 0.5rem; }
                 .stat-trend { font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-                .text-blue { color: #195BAC; }
+                .text-blue { color: #1B6B3A; }
                 .text-orange { color: #F97316; }
                 
-                .progress-bar-bg { width: 100%; height: 8px; background: #F1F5F9; border-radius: 4px; overflow: hidden; }
+                .progress-bar-bg { width: 100%; height: 8px; background: #F0FDF4; border-radius: 4px; overflow: hidden; }
                 .progress-bar-bg.large { height: 12px; border-radius: 6px; }
                 .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease-out; }
-                .bg-blue { background: #195BAC; }
+                .bg-blue { background: #1B6B3A; }
                 .bg-green { background: #10B981; }
 
                 .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #E2E8F0; padding-bottom: 1rem; }
                 .tabs-group { display: flex; gap: 2rem; }
                 .tab-btn { background: none; border: none; font-size: 0.85rem; font-weight: 700; color: #64748B; cursor: pointer; padding-bottom: 0.5rem; position: relative; display: flex; align-items: center; }
-                .tab-btn.active { color: #195BAC; }
-                .tab-btn.active::after { content: ''; position: absolute; bottom: -1rem; left: 0; width: 100%; height: 3px; background: #195BAC; border-radius: 3px; }
+                .tab-btn.active { color: #1B6B3A; }
+                .tab-btn.active::after { content: ''; position: absolute; bottom: -1rem; left: 0; width: 100%; height: 3px; background: #1B6B3A; border-radius: 3px; }
                 .search-wrapper { background: white; border-radius: 99px; padding: 0.6rem 1.25rem; display: flex; align-items: center; gap: 0.75rem; border: 1px solid #E2E8F0; width: 300px; }
                 .search-wrapper input { border: none; outline: none; font-size: 0.9rem; width: 100%; }
 
                 .wallets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
-                .wallet-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: relative; border: 1px solid #F1F5F9; }
+                .wallet-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: relative; border: 1px solid #F0FDF4; }
                 .wallet-card.completed { opacity: 0.8; background: #F8FAFC; }
                 
                 .wallet-card-header { display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: flex-start; }
-                .wallet-icon-box { background: #F1F5F9; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+                .wallet-icon-box { background: #F0FDF4; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
                 .wallet-name-area { flex: 1; }
                 .wallet-name { font-size: 1.1rem; font-weight: 800; color: #0F172A; margin: 0; }
                 .wallet-desc { font-size: 0.8rem; color: #64748B; margin: 4px 0 0 0; }
                 
                 .badge { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; }
-                .badge.active { background: #E9F4FF; color: #195BAC; }
+                .badge.active { background: #F0FDF4; color: #1B6B3A; }
                 .badge.completed { background: #ECFDF5; color: #10B981; }
 
                 .wallet-progress-area { margin-bottom: 1.5rem; }
@@ -443,13 +443,13 @@ const GoalWallets = () => {
 
                 .wallet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
                 .btn-action { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; border: none; }
-                .btn-action.add-money { background: #F1F5F9; color: #0F172A; }
+                .btn-action.add-money { background: #F0FDF4; color: #0F172A; }
                 .btn-action.add-money:hover { background: #E2E8F0; }
-                .btn-action.claim { background: #195BAC; color: white; }
+                .btn-action.claim { background: #1B6B3A; color: white; }
                 .btn-action.claim.disabled { background: #E2E8F0; color: #94A3B8; cursor: not-allowed; }
                 .btn-action.claim.enabled:hover { background: #14488A; transform: scale(1.02); }
                 
-                .claimed-message { grid-column: span 2; background: #F1F5F9; padding: 10px; border-radius: 12px; color: #64748B; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+                .claimed-message { grid-column: span 2; background: #F0FDF4; padding: 10px; border-radius: 12px; color: #64748B; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
                 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
                 .modal-content { background: white; border-radius: 24px; width: 100%; max-width: 500px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; }
@@ -461,8 +461,8 @@ const GoalWallets = () => {
                 .form-group { margin-bottom: 20px; }
                 .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 8px; }
                 .form-input { width: 100%; padding: 12px 16px; border: 1px solid #E2E8F0; border-radius: 12px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
-                .form-input:focus { border-color: #195BAC; }
-                .form-input.highlight { border-color: #195BAC; background: #F0F7FF; font-weight: 700; color: #195BAC; }
+                .form-input:focus { border-color: #1B6B3A; }
+                .form-input.highlight { border-color: #1B6B3A; background: #F0F7FF; font-weight: 700; color: #1B6B3A; }
                 .form-error { color: #EF4444; font-size: 0.8rem; margin-top: -10px; margin-bottom: 15px; }
 
                 .current-status-box { background: #F8FAFC; padding: 16px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-around; }
@@ -470,7 +470,7 @@ const GoalWallets = () => {
 
                 .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
                 .btn-secondary { padding: 10px 20px; border-radius: 10px; border: 1px solid #E2E8F0; background: white; font-weight: 600; cursor: pointer; }
-                .btn-primary { padding: 10px 24px; border-radius: 10px; background: #195BAC; color: white; border: none; font-weight: 700; cursor: pointer; }
+                .btn-primary { padding: 10px 24px; border-radius: 10px; background: #1B6B3A; color: white; border: none; font-weight: 700; cursor: pointer; }
                 .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
 
                 .animate-spin { animation: spin 1s linear infinite; }

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { Loader } from '../components/common';
+import logoSvg from '../assets/logo.svg';
 
 // Animation hooks
 const useScrollAnimation = (loading) => {
@@ -61,7 +62,7 @@ const Landing = () => {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                background: '#E9F4FF'
+                background: '#F0FDF4'
             }}>
                 <Loader />
             </div>
@@ -91,7 +92,7 @@ const Landing = () => {
             left: 0,
             right: 0,
             zIndex: 1000,
-            boxShadow: scrolled ? "0 4px 30px rgba(25, 91, 172, 0.15)" : "0 2px 20px rgba(25, 91, 172, 0.1)",
+            boxShadow: scrolled ? "0 4px 30px rgba(27, 107, 58, 0.15)" : "0 2px 20px rgba(27, 107, 58, 0.1)",
             transition: "all 0.3s ease",
             display: "flex",
             justifyContent: "space-between",
@@ -106,28 +107,29 @@ const Landing = () => {
             alignItems: "center",
             position: "relative",
             overflow: "hidden",
-            background: "#E9F4FF"
+            background: "#F0FDF4"
         },
         gradientText: {
-            background: "linear-gradient(120deg, #195BAC 0%, #2196F3 100%)",
+            background: "linear-gradient(135deg, #1B6B3A 0%, #22C55E 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
-            color: "transparent"
+            color: "transparent",
+            fontWeight: "900"
         },
         statsBar: {
             padding: "40px 40px",
-            background: "linear-gradient(135deg, #195BAC 0%, #1E88E5 100%)",
+            background: "linear-gradient(135deg, #064E3B 0%, #1B6B3A 100%)",
             color: "white"
         },
         section: {
             padding: "80px 40px",
-            background: "#E9F4FF",
+            background: "#F0FDF4",
             position: "relative"
         },
         whiteSection: {
             padding: "80px 40px",
-            background: "linear-gradient(180deg, #FFFFFF 0%, #F5FAFF 100%)",
+            background: "linear-gradient(180deg, #FFFFFF 0%, #F0FDF4 100%)",
             position: "relative"
         }
     };
@@ -146,10 +148,10 @@ const Landing = () => {
                 .hover-scale:hover { transform: scale(1.05); }
                 
                 .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-                .hover-lift:hover { transform: translateY(-8px); box-shadow: 0 12px 40px rgba(25, 91, 172, 0.15); }
+                .hover-lift:hover { transform: translateY(-8px); box-shadow: 0 12px 40px rgba(27, 107, 58, 0.15); }
 
                 .nav-link { color: #546E7A; font-weight: 500; cursor: pointer; transition: color 0.3s; }
-                .nav-link:hover { color: #195BAC; }
+                .nav-link:hover { color: #1B6B3A; }
 
                 .desktop-only { display: block; }
 
@@ -173,9 +175,9 @@ const Landing = () => {
 
             {/* Navbar */}
             <nav style={styles.navbar}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '700', color: '#195BAC' }}>
-                    <CircleDot size={20} style={{ color: '#4CAF50', animation: 'pulse 2s infinite' }} />
-                    <span style={{ fontSize: '16px' }}>Books & Finance</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '700', color: '#1B6B3A' }}>
+                    <img src={logoSvg} alt="CLIKS Logo" style={{ width: '32px', height: '32px' }} />
+                    <span style={{ fontSize: '18px', letterSpacing: '0.5px' }}>CLIKS</span>
                 </div>
 
                 <div className="nav-items" style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
@@ -188,14 +190,14 @@ const Landing = () => {
                         onClick={handleLogin}
                         style={{
                             padding: "10px 24px",
-                            background: "linear-gradient(135deg, #195BAC 0%, #1E88E5 100%)",
+                            background: "linear-gradient(135deg, #1B6B3A 0%, #228B4C 100%)",
                             color: "#FFFFFF",
                             borderRadius: "8px",
                             fontWeight: "600",
                             fontSize: "14px",
                             border: "none",
                             cursor: "pointer",
-                            boxShadow: "0 4px 15px rgba(25, 91, 172, 0.3)"
+                            boxShadow: "0 4px 15px rgba(27, 107, 58, 0.3)"
                         }}
                     >
                         Get Started
@@ -207,13 +209,13 @@ const Landing = () => {
             <section id="hero" className="hero-grid" style={styles.hero}>
                 <div className="hero-content scroll-animate">
                     <div style={{
-                        display: "inline-block", padding: "8px 16px", background: "rgba(25, 91, 172, 0.1)",
-                        color: "#195BAC", borderRadius: "30px", fontSize: "12px", fontWeight: "600", marginBottom: "16px",
-                        border: "1px solid rgba(25, 91, 172, 0.2)"
+                        display: "inline-block", padding: "8px 16px", background: "rgba(27, 107, 58, 0.1)",
+                        color: "#1B6B3A", borderRadius: "30px", fontSize: "12px", fontWeight: "600", marginBottom: "16px",
+                        border: "1px solid rgba(27, 107, 58, 0.2)"
                     }}>
                         🚀 NEW: Smart Budget Predictions
                     </div>
-                    <h1 style={{ fontSize: "52px", fontWeight: "800", lineHeight: "1.1", marginBottom: "24px", color: "#1A1A2E" }}>
+                    <h1 style={{ fontSize: "52px", fontWeight: "800", lineHeight: "1.1", marginBottom: "24px", color: "#064E3B" }}>
                         Make your money <br />
                         <span style={styles.gradientText}>easy to understand.</span>
                     </h1>
@@ -223,14 +225,14 @@ const Landing = () => {
 
                     <div style={{ display: "flex", gap: "12px", marginBottom: "40px", flexWrap: "wrap", justifyContent: "center" }}>
                         <button onClick={handleLogin} className="hover-scale" style={{
-                            padding: "14px 28px", background: "linear-gradient(135deg, #195BAC 0%, #1E88E5 100%)",
+                            padding: "14px 28px", background: "linear-gradient(135deg, #1B6B3A 0%, #228B4C 100%)",
                             color: "#FFFFFF", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "600",
-                            cursor: "pointer", boxShadow: "0 8px 25px rgba(25, 91, 172, 0.35)", display: "flex", alignItems: "center", gap: "8px"
+                            cursor: "pointer", boxShadow: "0 8px 25px rgba(27, 107, 58, 0.35)", display: "flex", alignItems: "center", gap: "8px"
                         }}>
                             Start Free Trial <ArrowRight size={18} />
                         </button>
                         <button style={{
-                            padding: "14px 28px", background: "#FFFFFF", color: "#195BAC", border: "2px solid #195BAC",
+                            padding: "14px 28px", background: "#FFFFFF", color: "#1B6B3A", border: "2px solid #1B6B3A",
                             borderRadius: "10px", fontSize: "15px", fontWeight: "600", cursor: "pointer",
                             display: "flex", alignItems: "center", gap: "8px"
                         }}>
@@ -241,9 +243,9 @@ const Landing = () => {
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
                         <div className="hover-lift" style={{
                             padding: "20px", background: "#FFFFFF", borderRadius: "14px",
-                            boxShadow: "0 4px 20px rgba(25, 91, 172, 0.08)", border: "1px solid #E3F2FD", display: "flex", gap: "14px", alignItems: "center", textAlign: "left"
+                            boxShadow: "0 4px 20px rgba(27, 107, 58, 0.08)", border: "1px solid #DCF2E4", display: "flex", gap: "14px", alignItems: "center", textAlign: "left"
                         }}>
-                            <div style={{ padding: "10px", background: "#E3F2FD", borderRadius: "10px", color: "#195BAC" }}>
+                            <div style={{ padding: "10px", background: "#DCF2E4", borderRadius: "10px", color: "#1B6B3A" }}>
                                 <ShieldCheck size={20} />
                             </div>
                             <div>
@@ -253,7 +255,7 @@ const Landing = () => {
                         </div>
                         <div className="hover-lift" style={{
                             padding: "20px", background: "#FFFFFF", borderRadius: "14px",
-                            boxShadow: "0 4px 20px rgba(25, 91, 172, 0.08)", border: "1px solid #E3F2FD", display: "flex", gap: "14px", alignItems: "center", textAlign: "left"
+                            boxShadow: "0 4px 20px rgba(27, 107, 58, 0.08)", border: "1px solid #DCF2E4", display: "flex", gap: "14px", alignItems: "center", textAlign: "left"
                         }}>
                             <div style={{ padding: "10px", background: "#FFEBEE", borderRadius: "10px", color: "#FF6B6B" }}>
                                 <TrendingUp size={20} />
@@ -269,12 +271,12 @@ const Landing = () => {
                 <div className="scroll-animate" style={{ position: "relative", zIndex: 10 }}>
                     <div style={{
                         background: "#FFFFFF", borderRadius: "20px", padding: "32px 30px",
-                        boxShadow: "0 20px 60px rgba(25, 91, 172, 0.15)", border: "1px solid #E3F2FD", maxWidth: "420px", margin: "0 auto"
+                        boxShadow: "0 20px 60px rgba(27, 107, 58, 0.15)", border: "1px solid #DCF2E4", maxWidth: "420px", margin: "0 auto"
                     }}>
-                        <div style={{ display: 'inline-flex', padding: '12px', background: '#E3F2FD', borderRadius: '12px', color: '#195BAC', marginBottom: '16px' }}>
-                            <Wallet size={40} />
+                        <div style={{ display: 'inline-flex', padding: '12px', background: '#E8F5E9', borderRadius: '12px', marginBottom: '16px' }}>
+                            <img src={logoSvg} alt="CLIKS Logo" style={{ width: '40px', height: '40px' }} />
                         </div>
-                        <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#1A1A2E", marginBottom: "8px" }}>Sign in to continue</h2>
+                        <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#064E3B", marginBottom: "8px" }}>Sign in to continue</h2>
                         <p style={{ fontSize: "14px", color: "#78909C", marginBottom: "24px", lineHeight: "1.6" }}>
                             Use your email to create a new workspace or return to an existing one.
                         </p>
@@ -285,25 +287,25 @@ const Landing = () => {
                                     type="email"
                                     placeholder="you@example.com"
                                     style={{
-                                        marginBottom: "20px", padding: "12px 16px", borderRadius: "10px", border: "2px solid #E3F2FD",
+                                        marginBottom: "20px", padding: "12px 16px", borderRadius: "10px", border: "2px solid #DCF2E4",
                                         fontSize: "14px", width: "100%", outline: "none", boxSizing: "border-box"
                                     }}
-                                    onFocus={(e) => e.target.style.borderColor = "#195BAC"}
-                                    onBlur={(e) => e.target.style.borderColor = "#E3F2FD"}
+                                    onFocus={(e) => e.target.style.borderColor = "#1B6B3A"}
+                                    onBlur={(e) => e.target.style.borderColor = "#DCF2E4"}
                                 />
                             </div>
                             <button type="submit" className="hover-scale" style={{
-                                width: "100%", padding: "12px 20px", background: "linear-gradient(135deg, #195BAC 0%, #1E88E5 100%)",
+                                width: "100%", padding: "12px 20px", background: "linear-gradient(135deg, #1B6B3A 0%, #228B4C 100%)",
                                 color: "#FFFFFF", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "600",
-                                cursor: "pointer", marginBottom: "16px", boxShadow: "0 8px 20px rgba(25, 91, 172, 0.3)"
+                                cursor: "pointer", marginBottom: "16px", boxShadow: "0 8px 20px rgba(27, 107, 58, 0.3)"
                             }}>
                                 Continue with email
                             </button>
                         </form>
                         <div style={{ textAlign: "center", color: "#B0BEC5", fontSize: "13px", margin: "16px 0" }}>or</div>
                         <button onClick={handleLogin} style={{
-                            width: "100%", padding: "12px 20px", background: "#FFFFFF", color: "#195BAC",
-                            border: "2px solid #E3F2FD", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer"
+                            width: "100%", padding: "12px 20px", background: "#FFFFFF", color: "#1B6B3A",
+                            border: "2px solid #DCF2E4", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer"
                         }} onMouseEnter={(e) => e.target.style.background = "#F8FAFC"} onMouseLeave={(e) => e.target.style.background = "#FFFFFF"}>
                             Continue as guest
                         </button>
@@ -338,8 +340,8 @@ const Landing = () => {
             {/* Features Grid */}
             <section id="features" style={styles.section}>
                 <div style={{ textAlign: "center", maxWidth: "800px", margin: "0 auto 40px" }} className="scroll-animate">
-                    <span style={{ display: "inline-block", padding: "6px 16px", background: "rgba(25, 91, 172, 0.1)", color: "#195BAC", borderRadius: "20px", fontSize: "12px", fontWeight: "700", marginBottom: "16px" }}>FEATURES</span>
-                    <h2 style={{ fontSize: "36px", fontWeight: "800", color: "#1A1A2E", marginBottom: "16px" }}>Everything you need to manage your finances</h2>
+                    <span style={{ display: "inline-block", padding: "6px 16px", background: "rgba(27, 107, 58, 0.1)", color: "#1B6B3A", borderRadius: "20px", fontSize: "12px", fontWeight: "700", marginBottom: "16px" }}>FEATURES</span>
+                    <h2 style={{ fontSize: "36px", fontWeight: "800", color: "#064E3B", marginBottom: "16px" }}>Everything you need to manage your finances</h2>
                     <p style={{ fontSize: "16px", color: "#546E7A" }}>Powerful tools designed to give you complete control over your financial life</p>
                 </div>
 
@@ -347,7 +349,7 @@ const Landing = () => {
                     display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", maxWidth: "1200px", margin: "0 auto"
                 }}>
                     {[
-                        { title: "Smart Budgeting", icon: PieChart, color: "#195BAC", bg: "#E3F2FD", desc: "AI-powered budget recommendations based on your spending patterns." },
+                        { title: "Smart Budgeting", icon: PieChart, color: "#1B6B3A", bg: "#DCF2E4", desc: "AI-powered budget recommendations based on your spending patterns." },
                         { title: "Debt Management", icon: CreditCard, color: "#FF6B6B", bg: "#FFEBEE", desc: "Track multiple debts, visualize payoff timelines, and optimize repayment." },
                         { title: "Investment Tracking", icon: LineChart, color: "#4CAF50", bg: "#E8F5E9", desc: "Monitor your portfolio performance with real-time updates and analytics." },
                         { title: "Bill Reminders", icon: Calendar, color: "#9C27B0", bg: "#F3E5F5", desc: "Never miss a payment with intelligent reminders and automatic bill tracking." },
@@ -356,12 +358,12 @@ const Landing = () => {
                     ].map((feature, i) => (
                         <div key={i} className="hover-lift" style={{
                             padding: "30px 24px", background: "#FFFFFF", borderRadius: "16px",
-                            boxShadow: "0 4px 20px rgba(25, 91, 172, 0.08)", border: "1px solid #E3F2FD"
+                            boxShadow: "0 4px 20px rgba(27, 107, 58, 0.08)", border: "1px solid #DCF2E4"
                         }}>
                             <div style={{ width: "fit-content", padding: "10px", background: feature.bg, borderRadius: "10px", color: feature.color, marginBottom: "16px" }}>
                                 <feature.icon size={24} />
                             </div>
-                            <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "10px", color: "#1A1A2E" }}>{feature.title}</h3>
+                            <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "10px", color: "#064E3B" }}>{feature.title}</h3>
                             <p style={{ color: "#546E7A", lineHeight: "1.6", fontSize: "14px" }}>{feature.desc}</p>
                         </div>
                     ))}
@@ -371,17 +373,17 @@ const Landing = () => {
             {/* How It Works */}
             <section id="how-it-works" style={styles.whiteSection}>
                 <div style={{ textAlign: "center", marginBottom: "60px" }} className="scroll-animate">
-                    <span style={{ display: "inline-block", padding: "6px 16px", background: "rgba(25, 91, 172, 0.1)", color: "#195BAC", borderRadius: "20px", fontSize: "12px", fontWeight: "700", marginBottom: "16px" }}>HOW IT WORKS</span>
-                    <h2 style={{ fontSize: "36px", fontWeight: "800", color: "#1A1A2E", marginBottom: "16px" }}>Get started in minutes</h2>
+                    <span style={{ display: "inline-block", padding: "6px 16px", background: "rgba(27, 107, 58, 0.1)", color: "#1B6B3A", borderRadius: "20px", fontSize: "12px", fontWeight: "700", marginBottom: "16px" }}>HOW IT WORKS</span>
+                    <h2 style={{ fontSize: "36px", fontWeight: "800", color: "#064E3B", marginBottom: "16px" }}>Get started in minutes</h2>
                     <p style={{ fontSize: "16px", color: "#546E7A" }}>Three simple steps to take control of your finances</p>
                 </div>
 
                 <div className="steps-grid scroll-animate" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "40px", maxWidth: "1000px", margin: "0 auto", position: "relative" }}>
                     {/* Connector Line (Desktop only) */}
-                    <div className="desktop-only" style={{ position: "absolute", top: "50px", left: "0", right: "0", height: "2px", background: "linear-gradient(90deg, #E3F2FD 0%, #195BAC 50%, #E3F2FD 100%)", zIndex: 0 }} />
+                    <div className="desktop-only" style={{ position: "absolute", top: "50px", left: "0", right: "0", height: "2px", background: "linear-gradient(90deg, #DCF2E4 0%, #1B6B3A 50%, #DCF2E4 100%)", zIndex: 0 }} />
 
                     {[
-                        { num: "01", title: "Create Your Account", desc: "Sign up in seconds with your email.", icon: UserPlus, color: "#195BAC" },
+                        { num: "01", title: "Create Your Account", desc: "Sign up in seconds with your email.", icon: UserPlus, color: "#1B6B3A" },
                         { num: "02", title: "Connect Your Accounts", desc: "Securely link your bank accounts & cards.", icon: Link, color: "#FF6B6B" },
                         { num: "03", title: "Watch the Magic Happen", desc: "Get instant insights & automated budgets.", icon: Sparkles, color: "#4CAF50" }
                     ].map((step, i) => (
@@ -394,7 +396,7 @@ const Landing = () => {
                                 <step.icon size={26} />
                             </div>
                             <h1 style={{ position: "absolute", top: "-30px", left: "50%", transform: "translateX(-50%)", fontSize: "60px", fontWeight: "800", color: step.color, opacity: 0.1, zIndex: -1 }}>{step.num}</h1>
-                            <h3 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px", color: "#1A1A2E" }}>{step.title}</h3>
+                            <h3 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px", color: "#064E3B" }}>{step.title}</h3>
                             <p style={{ color: "#546E7A", lineHeight: "1.6", fontSize: "14px" }}>{step.desc}</p>
                         </div>
                     ))}
@@ -404,8 +406,8 @@ const Landing = () => {
             {/* Pricing */}
             <section id="pricing" style={styles.whiteSection}>
                 <div style={{ textAlign: "center", marginBottom: "40px" }} className="scroll-animate">
-                    <span style={{ display: "inline-block", padding: "6px 16px", background: "rgba(25, 91, 172, 0.1)", color: "#195BAC", borderRadius: "20px", fontSize: "12px", fontWeight: "700", marginBottom: "16px" }}>PRICING</span>
-                    <h2 style={{ fontSize: "36px", fontWeight: "800", color: "#1A1A2E", marginBottom: "16px" }}>Choose your plan</h2>
+                    <span style={{ display: "inline-block", padding: "6px 16px", background: "rgba(27, 107, 58, 0.1)", color: "#1B6B3A", borderRadius: "20px", fontSize: "12px", fontWeight: "700", marginBottom: "16px" }}>PRICING</span>
+                    <h2 style={{ fontSize: "36px", fontWeight: "800", color: "#064E3B", marginBottom: "16px" }}>Choose your plan</h2>
                 </div>
 
                 <div className="pricing-grid scroll-animate" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", maxWidth: "1000px", margin: "0 auto", alignItems: "center" }}>
@@ -425,11 +427,11 @@ const Landing = () => {
                     ].map((plan, i) => (
                         <div key={i} style={{
                             padding: "32px 28px",
-                            background: plan.highlight ? "linear-gradient(135deg, #195BAC 0%, #1E88E5 100%)" : "#FFFFFF",
-                            color: plan.highlight ? "#FFFFFF" : "#1A1A2E",
+                            background: plan.highlight ? "linear-gradient(135deg, #1B6B3A 0%, #228B4C 100%)" : "#FFFFFF",
+                            color: plan.highlight ? "#FFFFFF" : "#064E3B",
                             borderRadius: "20px",
-                            boxShadow: plan.highlight ? "0 12px 50px rgba(25, 91, 172, 0.25)" : "0 4px 20px rgba(25, 91, 172, 0.08)",
-                            border: plan.highlight ? "none" : "2px solid #E3F2FD",
+                            boxShadow: plan.highlight ? "0 12px 50px rgba(27, 107, 58, 0.25)" : "0 4px 20px rgba(27, 107, 58, 0.08)",
+                            border: plan.highlight ? "none" : "2px solid #DCF2E4",
                             transform: plan.highlight ? "scale(1.05)" : "scale(1)",
                             position: "relative",
                             zIndex: plan.highlight ? 10 : 1
@@ -458,8 +460,8 @@ const Landing = () => {
                             <button onClick={handleLogin} style={{
                                 width: "100%", padding: "12px 20px", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer",
                                 background: plan.highlight ? "#FFFFFF" : "transparent",
-                                color: plan.highlight ? "#195BAC" : "#195BAC",
-                                border: plan.highlight ? "none" : "2px solid #195BAC"
+                                color: plan.highlight ? "#1B6B3A" : "#1B6B3A",
+                                border: plan.highlight ? "none" : "2px solid #1B6B3A"
                             }} onMouseEnter={(e) => e.target.style.opacity = '0.9'} onMouseLeave={(e) => e.target.style.opacity = '1'}>
                                 {plan.cta}
                             </button>
@@ -469,13 +471,13 @@ const Landing = () => {
             </section>
 
             {/* Final CTA */}
-            <section style={{ padding: "80px 40px", background: "linear-gradient(135deg, #195BAC 0%, #1E88E5 100%)", textAlign: "center", position: "relative", overflow: "hidden", color: "white" }}>
+            <section style={{ padding: "80px 40px", background: "linear-gradient(135deg, #1B6B3A 0%, #228B4C 100%)", textAlign: "center", position: "relative", overflow: "hidden", color: "white" }}>
                 <div className="scroll-animate" style={{ position: "relative", zIndex: 10, maxWidth: "800px", margin: "0 auto" }}>
                     <h2 style={{ fontSize: "40px", fontWeight: "800", marginBottom: "20px" }}>Ready to take control of your finances?</h2>
                     <p style={{ fontSize: "18px", opacity: 0.9, marginBottom: "32px" }}>Join 50,000+ users who are already managing their money smarter</p>
                     <div style={{ display: "flex", gap: "16px", justifyContent: "center", marginBottom: "24px", flexWrap: "wrap" }}>
                         <button onClick={handleLogin} className="hover-scale" style={{
-                            padding: "16px 36px", background: "#FFFFFF", color: "#195BAC", border: "none", borderRadius: "10px",
+                            padding: "16px 36px", background: "#FFFFFF", color: "#1B6B3A", border: "none", borderRadius: "10px",
                             fontSize: "16px", fontWeight: "700", cursor: "pointer", boxShadow: "0 8px 30px rgba(0,0,0,0.2)"
                         }}>
                             Start Free Trial
@@ -495,16 +497,19 @@ const Landing = () => {
             </section>
 
             {/* Footer */}
-            <footer style={{ padding: "60px 40px 30px", background: "#1A1A2E", color: "#FFFFFF" }}>
+            <footer style={{ padding: "60px 40px 30px", background: "#064E3B", color: "#FFFFFF" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: "40px", maxWidth: "1200px", margin: "0 auto 40px", paddingBottom: "40px", borderBottom: "1px solid rgba(255,255,255,0.1)" }} className="footer-grid">
                     <div style={{ gridColumn: "span 1" }}>
-                        <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "12px" }}>Books & Finance</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                            <img src={logoSvg} alt="CLIKS Logo" style={{ width: '28px', height: '28px', filter: 'brightness(0) invert(1)' }} />
+                            <h3 style={{ fontSize: "18px", fontWeight: "700", margin: 0 }}>CLIKS</h3>
+                        </div>
                         <p style={{ fontSize: "14px", lineHeight: "1.7", opacity: 0.7, marginBottom: "20px", maxWidth: "300px" }}>
                             Make your money easy to understand. Track accounts, budgets, debts and investments in one clean dashboard.
                         </p>
                         <div style={{ display: "flex", gap: "12px" }}>
                             {[Twitter, Linkedin, Facebook].map((Icon, i) => (
-                                <div key={i} style={{ width: "40px", height: "40px", background: "rgba(255,255,255,0.1)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }} onMouseEnter={(e) => e.target.style.background = "#195BAC"} onMouseLeave={(e) => e.target.style.background = "rgba(255,255,255,0.1)"}>
+                                <div key={i} style={{ width: "40px", height: "40px", background: "rgba(255,255,255,0.1)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }} onMouseEnter={(e) => e.target.style.background = "#1B6B3A"} onMouseLeave={(e) => e.target.style.background = "rgba(255,255,255,0.1)"}>
                                     <Icon size={20} />
                                 </div>
                             ))}
@@ -531,7 +536,7 @@ const Landing = () => {
                 </div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1400px", margin: "0 auto", fontSize: "14px", opacity: 0.6, flexWrap: "wrap", gap: "20px" }}>
-                    <div>© 2026 Books & Finance. All rights reserved.</div>
+                    <div>© 2026 CLIKS. All rights reserved.</div>
                     <div style={{ display: "flex", gap: "20px" }}>
                         <span>🔒 Bank-level Security</span>
                         <span>⚡ 99.9% Uptime</span>

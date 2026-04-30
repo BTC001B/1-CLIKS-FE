@@ -50,7 +50,7 @@ const WIDGET_CATALOGUE = [
 ];
 
 // Random accent colors for accounts summary
-const ACC_COLORS = ['#195BAC', '#10B981', '#8B5CF6', '#F97316'];
+const ACC_COLORS = ['#1B6B3A', '#10B981', '#8B5CF6', '#F97316'];
 
 // ─────────────────────────────────────────────
 //  Modal animation variant (shared)

@@ -84,7 +84,7 @@ const Income = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '400px' }}>
-                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #E3F2FD', borderTopColor: '#195BAC', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #DCF2E4', borderTopColor: '#1B6B3A', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -275,7 +275,7 @@ const Income = () => {
                 }
 
                 .icon-green { background: #DCFCE7; color: #16A34A; }
-                .icon-blue { background: #DBEAFE; color: #2563EB; }
+                .icon-blue { background: #DBEAFE; color: #1B6B3A; }
                 .icon-purple { background: #F3E8FF; color: #9333EA; }
 
                 /* Search & Filters */
@@ -303,7 +303,7 @@ const Income = () => {
                 }
                 .search-input:focus {
                     border-color: var(--primary);
-                    box-shadow: 0 0 0 3px rgba(25, 91, 172, 0.1);
+                    box-shadow: 0 0 0 3px rgba(27, 107, 58, 0.1);
                 }
 
                 .filter-btn {
@@ -368,7 +368,7 @@ const Income = () => {
                 .table-icon-bg {
                     width: 36px;
                     height: 36px;
-                    background: #F1F5F9;
+                    background: #F0FDF4;
                     border-radius: 8px;
                     display: flex;
                     align-items: center;
@@ -380,8 +380,8 @@ const Income = () => {
                     display: inline-block;
                     font-size: 0.65rem;
                     padding: 0.1rem 0.5rem;
-                    background: #EFF6FF;
-                    color: #2563EB;
+                    background: #F0FDF4;
+                    color: #1B6B3A;
                     border-radius: 999px;
                     margin-top: 2px;
                     font-weight: 600;
@@ -390,7 +390,7 @@ const Income = () => {
 
                 .category-pill {
                     padding: 0.25rem 0.75rem;
-                    background: #F1F5F9;
+                    background: #F0FDF4;
                     border-radius: 6px;
                     font-size: 0.85rem;
                     color: var(--text-muted);
@@ -410,7 +410,7 @@ const Income = () => {
                     transition: all 0.2s;
                 }
                 
-                .hover-blue:hover { background: #EFF6FF; color: #2563EB; }
+                .hover-blue:hover { background: #F0FDF4; color: #1B6B3A; }
                 .hover-red:hover { background: #FEF2F2; color: #DC2626; }
 
                 @media (max-width: 768px) {

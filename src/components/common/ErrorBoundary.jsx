@@ -92,7 +92,7 @@ class ErrorBoundary extends React.Component {
               align-items: center;
               justify-content: center;
               gap: 0.5rem;
-              background-color: #2563EB;
+              background-color: #1B6B3A;
               color: white;
               border: none;
               padding: 0.75rem 1.5rem;

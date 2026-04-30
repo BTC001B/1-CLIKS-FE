@@ -115,105 +115,56 @@ const PlanGoals = () => {
 
     return (
         <div className="goals-module">
-            <style>{`
-                .goals-module { font-family: 'Inter', sans-serif; color: #0F172A; }
-                .goals-loader { display: flex; justify-content: center; align-items: center; min-height: 400px; }
-                .spinner { width: 40px; height: 40px; border: 3px solid #F1F5F9; border-top-color: #F59E0B; border-radius: 50%; animation: spin 1s linear infinite; }
-                @keyframes spin { to { transform: rotate(360deg); } }
-
-                .milestone-hero { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; padding: 2.5rem; border-radius: 32px; margin-bottom: 2rem; position: relative; overflow: hidden; }
-                .hero-content { position: relative; z-index: 2; }
-                .hero-label { font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; }
-                .hero-value { font-size: 2.5rem; font-weight: 900; margin: 0.5rem 0; letter-spacing: -1.5px; }
-                .hero-progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 1.5rem 0 0.5rem; }
-                .hero-progress-fill { height: 100%; background: white; border-radius: 10px; transition: width 1s ease-out; }
-                .hero-icon-bg { position: absolute; right: -20px; bottom: -20px; opacity: 0.15; transform: rotate(-10deg); }
-
-                .goals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-                .goal-card { background: white; border-radius: 28px; border: 1px solid #F1F5F9; padding: 1.75rem; position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-                .goal-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.04); border-color: #F59E0B; }
-                
-                .goal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-                .goal-icon-box { width: 48px; height: 48px; border-radius: 16px; background: #FFFBEB; color: #F59E0B; display: flex; align-items: center; justify-content: center; }
-                .goal-name { font-weight: 800; font-size: 1.1rem; color: #1E293B; }
-                
-                .goal-stats { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
-                .stat-lbl { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; }
-                .stat-val { font-size: 14px; font-weight: 800; color: #1E293B; }
-
-                .bar-container { height: 10px; background: #F1F5F9; border-radius: 10px; overflow: hidden; margin-bottom: 1rem; }
-                .bar-fill { height: 100%; background: #F59E0B; border-radius: 10px; }
-                
-                .goal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #F1F5F9; }
-                .date-box { display: flex; align-items: center; gap: 0.5rem; font-size: 12px; font-weight: 700; color: #94A3B8; }
-                
-                .add-goal-placeholder { background: #F8FAFC; border: 2px dashed #E2E8F0; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: #94A3B8; cursor: pointer; min-height: 240px; transition: all 0.2s; }
-                .add-goal-placeholder:hover { background: white; border-color: #F59E0B; color: #F59E0B; }
-                .plus-circle { width: 50px; height: 50px; border-radius: 50%; background: white; border: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-
-                /* Premium Form Modal */
-                .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
-                .modal-container { background: white; width: 420px; padding: 2.5rem; border-radius: 36px; box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2); }
-                .form-title { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 2rem; }
-                .input-field { margin-bottom: 1.5rem; }
-                .input-field label { display: block; font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; margin-bottom: 0.5rem; }
-                .input-field input { width: 100%; height: 50px; border-radius: 16px; border: 1px solid #F1F5F9; background: #F8FAFC; padding: 0 1.25rem; font-weight: 700; outline: none; transition: all 0.2s; }
-                .input-field input:focus { border-color: #F59E0B; background: white; box-shadow: 0 0 0 4px rgba(245,158,11,0.1); }
-                .footer-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-top: 2rem; }
-                .btn-cancel { height: 50px; border-radius: 16px; border: none; background: #F1F5F9; font-weight: 700; cursor: pointer; }
-                .btn-submit { height: 50px; border-radius: 16px; border: none; background: #0F172A; color: white; font-weight: 800; cursor: pointer; transition: all 0.2s; }
-                .btn-submit:hover { background: #F59E0B; }
-            `}</style>
-
-            <div className="milestone-hero">
-                <div className="hero-content">
-                    <span className="hero-label">Combined Objectives</span>
-                    <h1 className="hero-value">{formatCurrency(totalCurrent)} / {formatCurrency(totalTarget)}</h1>
-                    <div className="hero-progress-track">
-                        <div className="hero-progress-fill" style={{ width: `${overallProgress}%` }}></div>
+            <div className="premium-card glass" style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: 'white', padding: '2.5rem', borderRadius: '32px', marginBottom: '2rem', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                    <span className="label-caps" style={{ color: 'rgba(255,255,255,0.7)' }}>Combined Objectives</span>
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: '0.5rem 0', letterSpacing: '-1.5px' }}>{formatCurrency(totalCurrent)} / {formatCurrency(totalTarget)}</h1>
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.2)', border_radius: '10px', margin: '1.5rem 0 0.5rem' }}>
+                        <div style={{ height: '100%', background: 'white', borderRadius: '10px', transition: 'width 1s ease-out', width: `${overallProgress}%` }}></div>
                     </div>
                     <p style={{ fontSize: '13px', fontWeight: 800, color: 'rgba(255,255,255,0.9)' }}>
                         You've reached {overallProgress.toFixed(1)}% of your total financial targets!
                     </p>
                 </div>
-                <div className="hero-icon-bg"><Trophy size={180} /></div>
+                <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.15, transform: 'rotate(-10deg)' }}><Trophy size={180} /></div>
             </div>
 
-            <div className="goals-grid">
+            <div className="dashboard-grid">
                 {filteredGoals.map(goal => {
                     const progress = goal.target > 0 ? Math.min((goal.current / goal.target) * 100, 100) : 0;
                     return (
                         <Motion.div 
                             key={goal.id} 
-                            className="goal-card"
+                            className="premium-card"
+                            style={{ padding: '1.75rem' }}
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                         >
-                            <div className="goal-head">
-                                <div className="flex items-center gap-3">
-                                    <div className="goal-icon-box"><Target size={22} /></div>
-                                    <span className="goal-name">{goal.name}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#FFFBEB', color: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Target size={22} /></div>
+                                    <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1E293B' }}>{goal.name}</span>
                                 </div>
-                                <Trash2 size={16} className="text-slate-300 cursor-pointer hover:text-red-500" onClick={() => deleteMutation.mutate(goal.id)} />
+                                <button className="icon-btn" style={{ border: 'none', color: '#CBD5E1' }} onClick={() => deleteMutation.mutate(goal.id)}><Trash2 size={16} /></button>
                             </div>
 
-                            <div className="goal-stats">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                                 <div>
-                                    <span className="stat-lbl">Saved</span>
-                                    <div className="stat-val">{formatCurrency(goal.current)}</div>
+                                    <span className="label-caps">Saved</span>
+                                    <div style={{ fontSize: '14px', fontWeight: 800, color: '#1E293B' }}>{formatCurrency(goal.current)}</div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
-                                    <span className="stat-lbl">Target</span>
-                                    <div className="stat-val">{formatCurrency(goal.target)}</div>
+                                    <span className="label-caps">Target</span>
+                                    <div style={{ fontSize: '14px', fontWeight: 800, color: '#1E293B' }}>{formatCurrency(goal.target)}</div>
                                 </div>
                             </div>
 
-                            <div className="bar-container">
-                                <div className="bar-fill" style={{ width: `${progress}%` }}></div>
+                            <div style={{ height: '10px', background: '#F0FDF4', borderRadius: '10px', overflow: 'hidden', marginBottom: '1rem' }}>
+                                <div style={{ height: '100%', background: '#F59E0B', borderRadius: '10px', width: `${progress}%` }}></div>
                             </div>
 
-                            <div className="goal-footer">
-                                <div className="date-box">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #F0FDF4' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '12px', fontWeight: 700, color: '#94A3B8' }}>
                                     <Calendar size={14} />
                                     <span>{new Date(goal.deadline).toLocaleDateString()}</span>
                                 </div>
@@ -223,65 +174,70 @@ const PlanGoals = () => {
                     );
                 })}
 
-                <button className="add-goal-placeholder" onClick={openModal}>
-                    <div className="plus-circle"><Plus size={24} /></div>
+                <button className="premium-card" style={{ background: '#F8FAFC', border: '2px dashed #E2E8F0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: '#94A3B8', cursor: 'pointer', minHeight: '240px' }} onClick={openModal}>
+                    <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'white', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}><Plus size={24} /></div>
                     <span style={{ fontWeight: 800 }}>Create New Goal</span>
                 </button>
             </div>
 
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="modal-backdrop" onClick={closeModal}>
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={closeModal}>
                         <Motion.div 
-                            className="modal-container" 
+                            className="premium-card" 
+                            style={{ width: '420px', padding: '2.5rem', background: 'white' }}
                             onClick={e => e.stopPropagation()}
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 30 }}
                         >
-                            <h2 className="form-title">Define Your Goal</h2>
-                            <form onSubmit={handleAddGoal}>
-                                <div className="input-field">
-                                    <label>Goal Name</label>
+                            <h2 style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.5px', marginBottom: '2rem' }}>Define Your Goal</h2>
+                            <form onSubmit={handleAddGoal} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div>
+                                    <label className="label-caps">Goal Name</label>
                                     <input 
+                                        className="premium-input"
                                         type="text" 
                                         placeholder="e.g. Dream House" 
                                         value={formData.name}
                                         onChange={e => setFormData({...formData, name: e.target.value})}
                                     />
                                 </div>
-                                <div className="input-field">
-                                    <label>Financial Target</label>
+                                <div>
+                                    <label className="label-caps">Financial Target</label>
                                     <input 
+                                        className="premium-input"
                                         type="number" 
                                         placeholder="0.00" 
                                         value={formData.target}
                                         onChange={e => setFormData({...formData, target: e.target.value})}
                                     />
                                 </div>
-                                <div className="input-field">
-                                    <label>Initial Deposit</label>
+                                <div>
+                                    <label className="label-caps">Initial Deposit</label>
                                     <input 
+                                        className="premium-input"
                                         type="number" 
                                         placeholder="0.00" 
                                         value={formData.current}
                                         onChange={e => setFormData({...formData, current: e.target.value})}
                                     />
                                 </div>
-                                <div className="input-field">
-                                    <label>Target Achievement Date</label>
+                                <div>
+                                    <label className="label-caps">Target Achievement Date</label>
                                     <input 
+                                        className="premium-input"
                                         type="date" 
                                         value={formData.deadline}
                                         onChange={e => setFormData({...formData, deadline: e.target.value})}
                                     />
                                 </div>
 
-                                {formError && <p style={{ color: '#EF4444', fontSize: '12px', fontWeight: 700, margin: '0 0 1rem' }}>{formError}</p>}
+                                {formError && <p style={{ color: '#EF4444', fontSize: '12px', fontWeight: 700, margin: 0 }}>{formError}</p>}
 
-                                <div className="footer-actions">
-                                    <button type="button" className="btn-cancel" onClick={closeModal}>Cancel</button>
-                                    <button type="submit" className="btn-submit">Set Goal</button>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginTop: '1rem' }}>
+                                    <button type="button" className="btn-premium secondary" onClick={closeModal} style={{ justifyContent: 'center' }}>Cancel</button>
+                                    <button type="submit" className="btn-premium primary" style={{ justifyContent: 'center' }}>Set Goal</button>
                                 </div>
                             </form>
                         </Motion.div>

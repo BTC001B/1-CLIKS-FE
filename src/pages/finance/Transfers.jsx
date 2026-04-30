@@ -39,7 +39,7 @@ const Transfers = () => {
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-4px)';
-                                e.currentTarget.style.borderColor = '#0EA5E9';
+                                e.currentTarget.style.borderColor = '#10B981';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0)';
@@ -51,7 +51,7 @@ const Transfers = () => {
                                 height: '56px',
                                 borderRadius: '16px',
                                 background: '#E0F2FE',
-                                color: '#0EA5E9',
+                                color: '#10B981',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',

@@ -23,5 +23,6 @@ export * from './splitExpenseService';
 export * from './publicService';
 export * from './profileService';
 export * from './settingsService';
+export * from './meetupsService';
 export * from './stockService';
 export * from './goalWalletService';

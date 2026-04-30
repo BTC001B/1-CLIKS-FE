@@ -142,7 +142,7 @@ const PlannedPayments = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '400px' }}>
-                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #E3F2FD', borderTopColor: '#2563EB', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #DCF2E4', borderTopColor: '#1B6B3A', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -346,7 +346,7 @@ const PlannedPayments = () => {
                 .stat-subtext { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
                 
                 .stat-icon-wrapper { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-                .icon-blue { background: #DBEAFE; color: #2563EB; }
+                .icon-blue { background: #DBEAFE; color: #1B6B3A; }
                 .icon-green { background: #DCFCE7; color: #16A34A; }
                 .icon-red { background: #FEE2E2; color: #EF4444; }
 
@@ -364,7 +364,7 @@ const PlannedPayments = () => {
                 .payment-row:hover { background: #F8FAFC; border-color: #CBD5E1; }
 
                 .payment-left { display: flex; align-items: center; gap: 1rem; flex: 1.5; }
-                .payment-icon-box { width: 40px; height: 40px; background: #F1F5F9; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+                .payment-icon-box { width: 40px; height: 40px; background: #F0FDF4; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
                 .payment-name { font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
                 .payment-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
                 .dot { font-size: 1.2rem; line-height: 0; }
@@ -373,7 +373,7 @@ const PlannedPayments = () => {
                 .status-badge { font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 99px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
                 .status-overdue { background: #FEE2E2; color: #DC2626; }
                 .status-due-soon { background: #FFEDD5; color: #C2410C; }
-                .status-upcoming { background: #EFF6FF; color: #2563EB; }
+                .status-upcoming { background: #F0FDF4; color: #1B6B3A; }
                 .date-text { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
                 .text-red { color: #DC2626; }
 

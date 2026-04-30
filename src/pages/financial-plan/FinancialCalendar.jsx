@@ -8,7 +8,8 @@ import {
     Clock, 
     MoreHorizontal 
 } from 'lucide-react';
-import '../../App.css';
+import { motion as Motion } from 'framer-motion';
+import { formatCurrency } from '../../lib/formatCurrency';
 
 const FinancialCalendar = () => {
     const { data: events = [], isLoading } = useQuery({
@@ -33,93 +34,101 @@ const FinancialCalendar = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '400px' }}>
-                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #E3F2FD', borderTopColor: '#2563EB', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #DCF2E4', borderTopColor: '#1B6B3A', borderRadius: '50%' }} />
             </div>
         );
     }
 
     return (
-        <div className="page-fade-in">
-            <div className="dashboard-header">
+        <div className="calendar-module">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Financial Calendar</h1>
-                    <p className="text-muted text-sm mt-1">Timeline of your financial activities</p>
+                    <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Financial Calendar</h1>
+                    <p style={{ fontSize: '0.875rem', color: '#64748B', marginTop: '0.3rem' }}>Timeline of your financial activities</p>
                 </div>
-                <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-lg border border-[var(--border-color)]">
-                    <button className="text-muted hover:text-[var(--text-main)]"><ChevronLeft size={20} /></button>
-                    <div className="flex items-center gap-2 font-semibold">
-                        <Calendar size={18} className="text-[var(--primary)]" />
-                        <span>{currentMonth}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div className="premium-card" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', borderRadius: '12px' }}>
+                        <button className="icon-btn" style={{ padding: '4px' }}><ChevronLeft size={18} /></button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '14px', color: '#1E293B' }}>
+                            <Calendar size={16} style={{ color: '#22C55E' }} />
+                            <span>{currentMonth}</span>
+                        </div>
+                        <button className="icon-btn" style={{ padding: '4px' }}><ChevronRight size={18} /></button>
                     </div>
-                    <button className="text-muted hover:text-[var(--text-main)]"><ChevronRight size={20} /></button>
+                    <button className="btn-premium primary">
+                        <span>Sync Calendar</span>
+                    </button>
                 </div>
             </div>
 
-            <div className="content-wrapper">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-[var(--border-color)] shadow-sm">
-                        <div className="grid grid-cols-7 gap-4 mb-4 text-center text-sm font-medium text-muted uppercase tracking-wider">
-                            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                        </div>
-                        <div className="grid grid-cols-7 gap-4">
-                            {[null, null, null].map((_, i) => <div key={`empty-${i}`}></div>)}
-                            {days.map(day => {
-                                const dayEvents = events.filter(e => e.date === day);
-                                return (
-                                    <div key={day} className={`min-h-[100px] border border-gray-100 rounded-lg p-2 relative hover:border-[var(--primary)] transition-colors ${dayEvents.length > 0 ? 'bg-gray-50' : ''}`}>
-                                        <span className={`text-sm font-medium ${dayEvents.length > 0 ? 'text-[var(--text-main)]' : 'text-muted'}`}>{day}</span>
-                                        <div className="mt-2 space-y-1">
-                                            {dayEvents.map(event => (
-                                                <div key={event.id} className={`text-[10px] truncate px-1.5 py-0.5 rounded font-medium ${event.color === 'green' ? 'bg-green-100 text-green-700' :
-                                                    event.color === 'red' ? 'bg-red-100 text-red-700' :
-                                                        event.color === 'blue' ? 'bg-blue-100 text-blue-700' :
-                                                            event.color === 'purple' ? 'bg-purple-100 text-purple-700' :
-                                                                'bg-orange-100 text-orange-700'
-                                                    }`}>
-                                                    {event.title}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+            <div className="content-grid" style={{ gridTemplateColumns: '1fr 340px' }}>
+                <div className="premium-card" style={{ padding: '1.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                            <div key={day} className="label-caps" style={{ fontSize: '10px', color: '#94A3B8' }}>{day}</div>
+                        ))}
                     </div>
-
-                    <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-2xl border border-[var(--border-color)] shadow-sm h-full">
-                            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                                <Clock size={20} className="text-[var(--primary)]" />
-                                Upcoming This Month
-                            </h3>
-                            <div className="space-y-4">
-                                {events.length === 0 ? (
-                                    <p className="text-center py-8 text-muted">No events scheduled.</p>
-                                ) : events.map(event => (
-                                    <div key={event.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer group">
-                                        <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center border font-bold ${event.color === 'green' ? 'bg-green-50 border-green-100 text-green-700' :
-                                            event.color === 'red' ? 'bg-red-50 border-red-100 text-red-700' :
-                                                event.color === 'blue' ? 'bg-blue-50 border-blue-100 text-blue-700' :
-                                                    event.color === 'purple' ? 'bg-purple-50 border-purple-100 text-purple-700' :
-                                                        'bg-orange-50 border-orange-100 text-orange-700'
-                                            }`}>
-                                            <span className="text-xs uppercase opacity-70">{event.monthName || 'Feb'}</span>
-                                            <span className="text-lg leading-none">{event.date}</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-medium text-[var(--text-main)]">{event.title}</h4>
-                                            <p className="text-xs text-muted">{event.type}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className={`font-bold ${event.type === 'Income' ? 'text-green-600' : 'text-[var(--text-main)]'}`}>
-                                                {event.type === 'Income' ? '+' : '-'}${event.amount.toLocaleString()}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.75rem' }}>
+                        {[null, null, null].map((_, i) => <div key={`empty-${i}`}></div>)}
+                        {days.map(day => {
+                            const dayEvents = events.filter(e => e.date === day);
+                            return (
+                                <div key={day} style={{ 
+                                    minHeight: '90px', borderRadius: '16px', padding: '0.6rem', border: '1px solid #F0FDF4', position: 'relative',
+                                    background: dayEvents.length > 0 ? '#F8FAFC' : 'transparent',
+                                    transition: 'all 0.2s'
+                                }}>
+                                    <span style={{ fontSize: '13px', fontWeight: 800, color: dayEvents.length > 0 ? '#1E293B' : '#CBD5E1' }}>{day}</span>
+                                    <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                        {dayEvents.map(event => (
+                                            <div key={event.id} style={{ 
+                                                fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                                background: event.color === 'green' ? '#DCFCE7' : event.color === 'red' ? '#FEE2E2' : event.color === 'blue' ? '#DBEAFE' : '#F3E8FF',
+                                                color: event.color === 'green' ? '#15803D' : event.color === 'red' ? '#B91C1C' : event.color === 'blue' ? '#1D4ED8' : '#7E22CE'
+                                            }}>
+                                                {event.title}
                                             </div>
-                                            <MoreHorizontal size={16} className="text-gray-300 ml-auto mt-1 opacity-0 group-hover:opacity-100" />
-                                        </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                        </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="premium-card" style={{ padding: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Clock size={20} style={{ color: '#22C55E' }} />
+                        Upcoming Activities
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {events.length === 0 ? (
+                            <p style={{ textAlign: 'center', padding: '2rem', color: '#94A3B8', fontWeight: 600 }}>No events scheduled.</p>
+                        ) : events.map(event => (
+                            <Motion.div 
+                                key={event.id} 
+                                style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #F0FDF4', cursor: 'pointer' }}
+                                whileHover={{ scale: 1.02, background: 'white', borderColor: '#22C55E' }}
+                            >
+                                <div style={{ 
+                                    width: '44px', height: '44px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                    background: 'white', border: '1px solid #F0FDF4', fontWeight: 900
+                                }}>
+                                    <span style={{ fontSize: '9px', textTransform: 'uppercase', color: '#94A3B8' }}>{event.monthName || 'Feb'}</span>
+                                    <span style={{ fontSize: '16px', color: '#1E293B', lineHeight: 1 }}>{event.date}</span>
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <h4 style={{ fontSize: '13px', fontWeight: 800, color: '#1E293B', margin: 0 }}>{event.title}</h4>
+                                    <p style={{ fontSize: '11px', fontWeight: 600, color: '#94A3B8', margin: 0 }}>{event.type}</p>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <div style={{ fontSize: '14px', fontWeight: 900, color: event.type === 'Income' ? '#10B981' : '#1E293B' }}>
+                                        {event.type === 'Income' ? '+' : '-'}{formatCurrency(event.amount)}
+                                    </div>
+                                    <button className="icon-btn" style={{ marginLeft: 'auto', marginTop: '4px' }}><MoreHorizontal size={14} /></button>
+                                </div>
+                            </Motion.div>
+                        ))}
                     </div>
                 </div>
             </div>

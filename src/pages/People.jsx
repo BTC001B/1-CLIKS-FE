@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { peopleService } from '../services/peopleService';
 import '../App.css';
 import { formatCurrency } from '../lib/formatCurrency';
+import { PageHeader } from '../components/common';
 
 const FeatureCard = (props) => {
     const { title, icon: Icon, color, path, stats, loading } = props;
@@ -18,90 +19,58 @@ const FeatureCard = (props) => {
 
     return (
         <div
-            className="dashboard-tile"
+            className="premium-card glass"
             onClick={() => navigate(path)}
             style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '24px',
-                border: '1px solid #E2E8F0',
                 cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                position: 'relative',
-                overflow: 'hidden'
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 12px 24px -8px rgba(0, 0, 0, 0.15)';
-                e.currentTarget.style.borderColor = color;
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.05)';
-                e.currentTarget.style.borderColor = '#E2E8F0';
+                position: 'relative'
             }}
         >
             {loading && (
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyCenter: 'center', zIndex: 10 }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
                     <div className="loader-small" />
                 </div>
             )}
             
-            {/* Header Section */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
-                <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: `${color}15`,
-                    color: color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                }}>
-                    <Icon size={24} strokeWidth={2.5} />
-                </div>
-                <div style={{ flex: 1 }}>
-                    <h3 style={{
-                        fontSize: '18px',
-                        fontWeight: '700',
-                        color: '#1E293B',
-                        margin: '0 0 6px 0',
-                        lineHeight: '1.2'
-                    }}>
-                        {title}
-                    </h3>
+            <div className="card-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '12px',
+                        background: `${color}15`,
+                        color: color,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        fontSize: '13px',
-                        color: '#64748B',
-                        fontWeight: '500'
+                        justifyContent: 'center',
+                        flexShrink: 0
                     }}>
-                        View Details <ArrowRight size={14} />
+                        <Icon size={24} strokeWidth={2.5} />
                     </div>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>{title}</h3>
                 </div>
+                <button 
+                    className="icon-btn"
+                    onClick={(e) => { e.stopPropagation(); navigate(path); }}
+                >
+                    <ArrowRight size={20} />
+                </button>
             </div>
 
-            {/* Stats List */}
-            <div style={{ marginTop: 'auto' }}>
+            <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {stats.map((stat, index) => (
                     <div key={index} style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: '10px 0',
-                        borderTop: index === 0 ? 'none' : '1px solid #F1F5F9',
-                        fontSize: '14px'
+                        paddingBottom: '10px',
+                        borderBottom: index === stats.length - 1 ? 'none' : '1px solid #F0FDF4'
                     }}>
-                        <span style={{ color: '#64748B', fontWeight: '500' }}>{stat.label}</span>
-                        <span style={{ color: '#0F172A', fontWeight: '700' }}>{stat.value}</span>
+                        <span className="label-caps">{stat.label}</span>
+                        <span style={{ color: '#0F172A', fontWeight: 800 }}>{stat.value}</span>
                     </div>
                 ))}
             </div>
@@ -110,7 +79,7 @@ const FeatureCard = (props) => {
 };
 
 const People = () => {
-    // ── Queries ─────────────────────────────────────────────────────────────
+    // Queries
     const { data: peopleRes, isLoading: loadingPeople } = useQuery({ 
         queryKey: ['people-summary'], 
         queryFn: () => peopleService.getPeople() 
@@ -131,18 +100,16 @@ const People = () => {
         queryFn: () => peopleService.getAllRecords() 
     });
 
-    // ── Derived Data ────────────────────────────────────────────────────────
     const contactSummary = peopleRes?.meta?.summary || { total_contacts: 0, total_receivables: 0, total_payables: 0 };
     const reminderStats = remindRes?.meta?.stats || { upcoming: 0, overdue: 0, due_today: 0 };
     const recordStats = recordsRes?.meta?.stats || { total_records: 0 };
     const transactionMeta = transRes?.meta || { totalItems: 0 };
 
-    // ── Configuration ───────────────────────────────────────────────────────
     const sections = [
         {
             title: "People & Network",
             icon: Users,
-            color: "#2563EB",
+            color: "#1B6B3A",
             path: "/books/people/overview",
             loading: loadingPeople,
             stats: [
@@ -190,18 +157,15 @@ const People = () => {
     ];
 
     return (
-        <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '24px' }}>
-            <div className="dashboard-header" style={{ marginBottom: '32px' }}>
+        <div className="premium-container">
+            <PageHeader 
+                title={<>People & <span className="text-highlight">Network</span></>}
+                subtitle="Manage your network, track shared expenses, and organize records."
+                breadcrumb="PEOPLE"
+            />
 
-                <p className="section-subtitle" style={{ fontSize: '16px', color: '#64748B' }}>Manage your network, track shared expenses, and organize records.</p>
-            </div>
-
-            <div className="content-wrapper">
-                <div className="dashboard-grid" style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
-                    gap: '24px'
-                }}>
+            <div style={{ marginTop: '3rem' }}>
+                <div className="dashboard-grid">
                     {sections.map((section, index) => (
                         <FeatureCard
                             key={index}

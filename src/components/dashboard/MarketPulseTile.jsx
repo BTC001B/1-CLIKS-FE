@@ -44,14 +44,14 @@ const MarketPulseTile = ({ totalValue, totalInvested, data: externalData }) => {
                         <div style={{ fontSize: '1rem', fontWeight: 600, color: isPositive ? '#10B981' : '#EF4444' }}>{currentData.change}</div>
                     </div>
                 </div>
-                <div style={{ display: 'flex', background: '#F1F5F9', borderRadius: '8px', padding: '4px' }}>
+                <div style={{ display: 'flex', background: '#F0FDF4', borderRadius: '8px', padding: '4px' }}>
                     {Object.keys(displayData).map(p => (
                         <button
                             key={p}
                             onClick={() => setPeriod(p)}
                             style={{
                                 border: 'none',
-                                background: period === p ? '#195BAC' : 'transparent',
+                                background: period === p ? '#1B6B3A' : 'transparent',
                                 color: period === p ? 'white' : '#64748B',
                                 padding: '4px 12px',
                                 borderRadius: '6px',

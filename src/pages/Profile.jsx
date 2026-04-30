@@ -82,9 +82,9 @@ const Profile = () => {
                         disabled={mutation.isLoading}
                         style={{
                             padding: '0.4rem 0.8rem',
-                            background: isEditing ? '#195BAC' : 'white',
-                            color: isEditing ? 'white' : '#195BAC',
-                            border: '1px solid #195BAC',
+                            background: isEditing ? '#1B6B3A' : 'white',
+                            color: isEditing ? 'white' : '#1B6B3A',
+                            border: '1px solid #1B6B3A',
                             borderRadius: '6px',
                             fontSize: '0.8rem',
                             fontWeight: 600,
@@ -174,11 +174,11 @@ const Profile = () => {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <button style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'pointer' }}>
-                        <Download size={24} color="#195BAC" />
+                        <Download size={24} color="#1B6B3A" />
                         <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Export All Data</span>
                     </button>
                     <button style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'pointer' }}>
-                        <Upload size={24} color="#195BAC" />
+                        <Upload size={24} color="#1B6B3A" />
                         <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Import Records</span>
                     </button>
                 </div>
@@ -189,7 +189,7 @@ const Profile = () => {
     if (isProfileLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #F1F5F9', borderTopColor: '#195BAC', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #F0FDF4', borderTopColor: '#1B6B3A', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -249,9 +249,9 @@ const Profile = () => {
                                             alignItems: 'center',
                                             gap: '0.5rem',
                                             padding: '0.75rem 0',
-                                            borderBottom: activeSection === item.label ? '2px solid #195BAC' : '2px solid transparent',
+                                            borderBottom: activeSection === item.label ? '2px solid #1B6B3A' : '2px solid transparent',
                                             background: 'transparent',
-                                            color: activeSection === item.label ? '#195BAC' : '#64748B',
+                                            color: activeSection === item.label ? '#1B6B3A' : '#64748B',
                                             fontSize: '0.95rem',
                                             fontWeight: activeSection === item.label ? 600 : 500,
                                             cursor: 'pointer',

@@ -57,7 +57,7 @@
 }
 
 .modal-close-btn:hover {
-  background: #F1F5F9;
+  background: #F0FDF4;
   color: var(--text-main);
 }
 
@@ -102,7 +102,7 @@
 .modal-textarea:focus {
   border-color: var(--primary);
   background: var(--card-bg);
-  box-shadow: 0 0 0 3px rgba(25, 91, 172, 0.12);
+  box-shadow: 0 0 0 3px rgba(27, 107, 58, 0.12);
 }
 
 .modal-input::placeholder,
@@ -170,12 +170,12 @@
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s, box-shadow 0.15s;
-  box-shadow: 0 2px 8px rgba(25, 91, 172, 0.25);
+  box-shadow: 0 2px 8px rgba(27, 107, 58, 0.25);
 }
 
 .modal-btn-submit:hover {
   background: var(--primary-hover);
-  box-shadow: 0 4px 14px rgba(25, 91, 172, 0.35);
+  box-shadow: 0 4px 14px rgba(27, 107, 58, 0.35);
 }
 
 /* ── Toggle switch ── */

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { splitExpenseService } from '../../services';
 import { Share2, Film, Utensils } from 'lucide-react';
@@ -24,20 +25,20 @@ const SplitBillsTile = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {splits.slice(0, 3).map(split => {
-                const Icon = ICON_MAP[split.description] || Share2;
+                const Icon = ICON_MAP[split.title] || Share2;
                 return (
-                    <div key={split.id} style={{ display: 'flex', alignItems: 'center', background: 'white', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', border: '1px solid #F1F5F9' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#195BAC', marginRight: '1rem' }}>
+                    <div key={split.id} style={{ display: 'flex', alignItems: 'center', background: 'white', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', border: '1px solid #F0FDF4' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A', marginRight: '1rem' }}>
                             <Icon size={20} />
                         </div>
                         <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1E293B' }}>{split.description}</div>
+                            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1E293B' }}>{split.title}</div>
                             <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
                                 Total: <span style={{ fontWeight: 600 }}>${split.total_amount}</span>
                             </div>
                         </div>
-                        <div style={{ fontWeight: 700, color: split.user_share > 0 ? '#EF4444' : '#10B981' }}>
-                            {split.user_share > 0 ? `-$${split.user_share}` : `+$${Math.abs(split.user_share)}`}
+                        <div style={{ fontWeight: 700, color: (split.user_share || 0) > 0 ? '#EF4444' : '#10B981' }}>
+                            {(split.user_share || 0) > 0 ? `-$${split.user_share}` : `+$${Math.abs(split.user_share || 0)}`}
                         </div>
                     </div>
                 );

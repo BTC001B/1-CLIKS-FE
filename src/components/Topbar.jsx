@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { User, QrCode, Wallet, Home, BookOpen, Calculator, Users } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context';
+import logoWhite from '../assets/logo-white.svg';
 
 import { ProfileDropdown } from './ProfileDropdown';
 
 const Topbar = ({ onToggleSidebar }) => {
+    const { logout, user } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
@@ -19,10 +22,16 @@ const Topbar = ({ onToggleSidebar }) => {
         setIsOpen(false);
     }
 
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
+
     const navItems = [
-        { name: 'Books', url: '/books/dashboard', icon: BookOpen, activeBase: '/books' },
-        { name: 'Finance', url: '/finance', icon: Calculator, activeBase: '/finance' },
-        { name: 'Social', url: '/public', icon: Users, activeBase: '/public' },
+        { name: 'Books', url: user?.role === 'business' ? '/business/dashboard' : '/books/dashboard', icon: BookOpen, activeBase: user?.role === 'business' ? '/business' : '/books' },
+        // { name: 'Finance', url: '/finance', icon: Calculator, activeBase: '/finance' },
+        // { name: 'Social', url: '/public', icon: Users, activeBase: '/public' },
+        { name: 'Social', url: '/public?page=investors', icon: Users, activeBase: '/public' },
     ];
 
     return (
@@ -45,11 +54,11 @@ const Topbar = ({ onToggleSidebar }) => {
                     style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     title="Toggle Sidebar"
                 >
-                    <div className="brand-logo-small" style={{ backgroundColor: 'white' }}>
-                        <Wallet size={18} color="#195BAC" />
+                    <div className="brand-logo-small" style={{ backgroundColor: 'transparent', borderRadius: '50%' }}>
+                        <img src={logoWhite} alt="CLIKS Logo" style={{ width: '28px', height: '28px' }} />
                     </div>
-                    <span style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: '700' }}>
-                        Books & Finance
+                    <span style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: '700', letterSpacing: '0.5px' }}>
+                        CLIKS
                     </span>
                 </div>
             </div>

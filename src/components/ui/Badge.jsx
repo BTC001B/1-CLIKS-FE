@@ -4,7 +4,7 @@ import { Check, X, AlertTriangle, Info } from 'lucide-react';
 const Badge = ({ variant = 'default', children, className = '', style = {} }) => {
     const variants = {
         default: {
-            bg: '#F1F5F9',
+            bg: '#F0FDF4',
             color: '#475569',
             icon: null
         },

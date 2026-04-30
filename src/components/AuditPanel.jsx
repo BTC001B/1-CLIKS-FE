@@ -290,7 +290,7 @@ const AuditPanel = ({ isOpen, onClose }) => {
                     }
 
                     .user .msg-bubble {
-                        background: #195BAC;
+                        background: #1B6B3A;
                         color: white;
                         border-bottom-right-radius: 4px;
                     }
@@ -334,7 +334,7 @@ const AuditPanel = ({ isOpen, onClose }) => {
                     }
 
                     .send-btn.enabled {
-                        background: #195BAC;
+                        background: #1B6B3A;
                         color: white;
                         cursor: pointer;
                     }

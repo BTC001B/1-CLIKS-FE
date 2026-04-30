@@ -17,8 +17,10 @@ import {
     Trash2,
     AlertTriangle,
     LayoutGrid,
-    LineChart
+    LineChart,
+    Loader2
 } from 'lucide-react';
+import { PageHeader } from '../../components/common';
 import '../../App.css';
 import { formatCurrency } from '../../lib/formatCurrency';
 import AnalyticsSection from '../../components/AnalyticsSection';
@@ -37,48 +39,50 @@ const StatsCard = () => null;
 const AccountCard = (props) => {
     const { name, amount, color, icon: Icon } = props;
     return (
-    <div className="account-card" style={{ backgroundColor: color }}>
-        <div className="account-icon">
-            <Icon size={24} />
+        <div className="premium-card glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', minHeight: '120px' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: color || '#1B6B3A', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {Icon ? <Icon size={28} /> : <Building2 size={28} />}
+            </div>
+            <div>
+                <div className="label-caps" style={{ marginBottom: '4px' }}>{name}</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>{formatCurrency(amount)}</div>
+            </div>
         </div>
-        <div className="account-details">
-            <div className="account-name">{name}</div>
-            <div className="account-amount">{formatCurrency(amount)}</div>
-        </div>
-    </div>
     );
 };
 
 const DonutChart = (props) => {
     const { label, value, colorClass, percent = 75, icon: Icon } = props;
+    const strokeColor = colorClass === 'chart-success' ? '#10B981' : colorClass === 'chart-warning' ? '#F59E0B' : '#EF4444';
+    
     return (
-    <div className="circular-chart-container">
-        <div className="relative">
-            <svg viewBox="0 0 36 36" className="circular-chart">
-                <path
-                    className="circle-bg"
-                    d="M18 2.0845
-            a 15.9155 15.9155 0 0 1 0 31.831
-            a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path
-                    className={`circle-progress ${colorClass}`}
-                    strokeDasharray={`${percent}, 100`}
-                    d="M18 2.0845
-            a 15.9155 15.9155 0 0 1 0 31.831
-            a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-            </svg>
-            {Icon && (
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400">
-                    <Icon size={20} />
-                </div>
-            )}
+        <div className="circular-chart-container" style={{ textAlign: 'center' }}>
+            <div style={{ position: 'relative', width: '80px', height: '80px', margin: '0 auto 1rem' }}>
+                <svg viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
+                    <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="#F0FDF4"
+                        strokeWidth="3"
+                    />
+                    <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke={strokeColor}
+                        strokeWidth="3"
+                        strokeDasharray={`${percent}, 100`}
+                        strokeLinecap="round"
+                    />
+                </svg>
+                {Icon && (
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#94A3B8' }}>
+                        <Icon size={20} />
+                    </div>
+                )}
+            </div>
+            <div className="label-caps" style={{ fontSize: '9px' }}>{label}</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A', marginTop: '2px' }}>{value}</div>
         </div>
-
-        <div className="chart-label">{label}</div>
-        <div className="chart-value">{value}</div>
-    </div>
     );
 };
 
@@ -88,83 +92,37 @@ const DashboardTile = (props) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                setMenuOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handleMenuClick = (e) => {
-        e.stopPropagation();
-        setMenuOpen(!menuOpen);
-    };
-
     return (
-        <div className={`dashboard-tile ${expanded ? 'expanded' : ''} ${className}`} style={style}>
+        <div className={`premium-card ${expanded ? 'expanded' : ''} ${className}`} style={{ ...style, display: 'flex', flexDirection: 'column' }}>
             {title && (
-                <div className="tile-header">
-                    <div className="tile-title">
-                        {Icon && <Icon size={18} className="text-muted" />}
+                <div className="card-header" style={{ padding: '1.25rem 1.5rem' }}>
+                    <div className="card-title" style={{ fontSize: '1.1rem' }}>
+                        {Icon && <Icon size={18} color="#1B6B3A" />}
                         <span>{title}</span>
                     </div>
-                    <div className="flex gap-2 relative" ref={menuRef}>
-                        <button
-                            className="icon-btn hover:bg-gray-100"
-                            onClick={handleMenuClick}
-                        >
+                    <div style={{ position: 'relative' }} ref={menuRef}>
+                        <button className="icon-btn" style={{ width: '32px', height: '32px' }} onClick={() => setMenuOpen(!menuOpen)}>
                             <MoreVertical size={16} />
                         </button>
 
                         {menuOpen && (
-                            <div className="tile-menu-dropdown">
-                                <button className="tile-menu-item danger" onClick={() => { onRemove(); setMenuOpen(false); }}>
-                                    <Trash2 size={14} />
-                                    Remove tile
-                                </button>
-                                <button className="tile-menu-item" onClick={() => { alert('Issue reported!'); setMenuOpen(false); }}>
-                                    <AlertTriangle size={14} />
-                                    Report issue !
+                            <div style={{ position: 'absolute', top: '100%', right: 0, background: 'white', border: '1px solid #F0FDF4', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', zIndex: 50, minWidth: '160px', padding: '0.5rem' }}>
+                                <button style={{ width: '100%', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#EF4444', fontWeight: 900, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '0.75rem' }} onClick={() => { onRemove(); setMenuOpen(false); }}>
+                                    <Trash2 size={14} /> Remove tile
                                 </button>
                             </div>
                         )}
                     </div>
                 </div>
             )}
-            {!title && (
-                <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10 }} ref={menuRef}>
-                    <button
-                        className="icon-btn hover:bg-gray-100"
-                        onClick={handleMenuClick}
-                    >
-                        <MoreVertical size={16} />
-                    </button>
-                    {menuOpen && (
-                        <div className="tile-menu-dropdown">
-                            <button className="tile-menu-item danger" onClick={() => { onRemove(); setMenuOpen(false); }}>
-                                <Trash2 size={14} />
-                                Remove tile
-                            </button>
-                            <button className="tile-menu-item" onClick={() => { alert('Issue reported!'); setMenuOpen(false); }}>
-                                <AlertTriangle size={14} />
-                                Report issue !
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
-            <div className="tile-content" style={{ padding: title ? '1.25rem' : '0' }}>
+            <div style={{ flex: 1, padding: title ? '1.5rem' : '0' }}>
                 {children}
             </div>
             <div
-                className="tile-footer"
+                style={{ height: '6px', background: '#F8FAFC', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                 onClick={() => setExpanded(!expanded)}
-                title={expanded ? "Collapse" : "Expand"}
             >
-                <div className="expand-handle"></div>
+                <div style={{ width: '24px', height: '3px', background: '#E2E8F0', borderRadius: '2px' }}></div>
             </div>
         </div>
     );
@@ -175,17 +133,15 @@ const AddWidgetModal = ({ isOpen, onClose, widgets, activeWidgets, onAddWidget }
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <div className="flex items-center gap-2">
-                        <LayoutGrid size={24} className="text-primary" />
-                        <h2 className="modal-title">Add Widget</h2>
+            <div className="premium-card" style={{ width: '100%', maxWidth: '500px', background: 'white' }} onClick={e => e.stopPropagation()}>
+                <div className="card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <LayoutGrid size={24} color="#1B6B3A" />
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0 }}>Add Widget</h2>
                     </div>
-                    <button className="modal-close" onClick={onClose}>
-                        <X size={20} />
-                    </button>
+                    <button className="icon-btn" onClick={onClose}><X size={20} /></button>
                 </div>
-                <div className="modal-body">
+                <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '70vh', overflowY: 'auto' }}>
                     {widgets.map(widget => {
                         const isActive = activeWidgets.includes(widget.id);
                         const WidgetIcon = widget.icon || LayoutGrid;
@@ -193,45 +149,26 @@ const AddWidgetModal = ({ isOpen, onClose, widgets, activeWidgets, onAddWidget }
                         return (
                             <div
                                 key={widget.id}
-                                className={`widget-option ${isActive ? 'disabled' : ''}`}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderRadius: '16px',
+                                    background: isActive ? '#F8FAFC' : 'white', border: '1px solid #F0FDF4',
+                                    opacity: isActive ? 0.6 : 1, cursor: isActive ? 'default' : 'pointer', transition: 'all 0.2s'
+                                }}
                                 onClick={() => !isActive && onAddWidget(widget.id)}
                             >
-                                <div style={{
-                                    width: '48px',
-                                    height: '48px',
-                                    borderRadius: '10px',
-                                    background: '#F1F5F9',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: '#64748B'
-                                }}>
-                                    <WidgetIcon size={24} />
+                                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
+                                    <WidgetIcon size={22} />
                                 </div>
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 600, color: '#1E293B' }}>{widget.title || widget.id}</div>
-                                    <div style={{ fontSize: '0.85rem', color: '#64748B' }}>
-                                        {isActive ? 'Already added to dashboard' : 'Click to add to dashboard'}
-                                    </div>
+                                    <div style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.95rem' }}>{widget.title || widget.id}</div>
+                                    <div className="label-caps" style={{ fontSize: '8px' }}>{isActive ? 'Already added' : 'Available'}</div>
                                 </div>
                                 {isActive ? (
-                                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10B981', background: '#DCFCE7', padding: '0.25rem 0.5rem', borderRadius: '999px' }}>
-                                        Added
-                                    </div>
+                                    <CheckCircle2 size={20} color="#10B981" />
                                 ) : (
-                                    <button style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '50%',
-                                        background: '#EFF6FF',
-                                        color: '#3B82F6',
-                                        border: 'none',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F0FDF4', color: '#1B6B3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <Plus size={16} />
-                                    </button>
+                                    </div>
                                 )}
                             </div>
                         );
@@ -247,48 +184,20 @@ const ConfirmRemoveModal = ({ isOpen, onClose, onConfirm, widgetName }) => {
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <div className="flex items-center gap-2 text-red-600">
+            <div className="premium-card" style={{ width: '100%', maxWidth: '400px', background: 'white' }} onClick={e => e.stopPropagation()}>
+                <div className="card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#EF4444' }}>
                         <AlertTriangle size={24} />
-                        <h2 className="modal-title">Remove Tile</h2>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0 }}>Remove Tile</h2>
                     </div>
                 </div>
-                <div className="modal-body">
-                    <p style={{ color: '#64748B', lineHeight: '1.5' }}>
-                        Do you want to remove the <strong>{widgetName}</strong> tile?
+                <div style={{ padding: '2rem' }}>
+                    <p style={{ color: '#64748B', fontWeight: 600, marginBottom: '2rem', textAlign: 'center' }}>
+                        Remove <strong>{widgetName}</strong> from your dashboard?
                     </p>
-                    <div className="flex gap-3 justify-end mt-4">
-                        <button
-                            className="btn-secondary"
-                            style={{
-                                background: '#F1F5F9',
-                                color: '#64748B',
-                                padding: '0.5rem 1.5rem',
-                                borderRadius: '8px',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontWeight: 600
-                            }}
-                            onClick={onClose}
-                        >
-                            No
-                        </button>
-                        <button
-                            className="btn-danger"
-                            style={{
-                                background: '#EF4444',
-                                color: 'white',
-                                padding: '0.5rem 1.5rem',
-                                borderRadius: '8px',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontWeight: 600
-                            }}
-                            onClick={onConfirm}
-                        >
-                            Yes
-                        </button>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <button className="btn-premium secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={onClose}>No, Keep</button>
+                        <button className="btn-premium primary" style={{ flex: 1, justifyContent: 'center', background: '#EF4444' }} onClick={onConfirm}>Yes, Remove</button>
                     </div>
                 </div>
             </div>
@@ -317,36 +226,35 @@ const BooksDashboard = () => {
         },
         {
             id: 'budget',
-            title: 'Budget',
-            icon: null,
+            title: 'Budget Mix',
+            icon: PiggyBank,
             className: '',
             style: { gridColumn: 'span 1', gridRow: 'span 1' }
         },
         {
             id: 'goals',
             title: null,
-            icon: null,
+            icon: Target,
             className: '',
             style: { gridColumn: 'span 1', gridRow: 'span 1' }
         },
         {
             id: 'split',
-            title: 'Split Bills',
-            icon: null,
+            title: 'Expense Splits',
+            icon: User,
             className: '',
             style: { gridColumn: 'span 1', gridRow: 'span 1' }
         },
-
         {
             id: 'overview',
-            title: 'Financial Overview',
+            title: 'Financial Health',
             icon: Target,
             className: '',
             style: { gridColumn: 'span 1', gridRow: 'span 1' }
         },
         {
             id: 'transactions',
-            title: 'Recent Transactions',
+            title: 'Recent Activity',
             icon: History,
             className: '',
             style: { gridColumn: 'span 2', gridRow: 'span 1' }
@@ -385,10 +293,10 @@ const BooksDashboard = () => {
                 const balance = stats?.totalBalance || 0;
                 const income = stats?.monthlyIncome || 0;
                 const expenses = stats?.monthlyExpenses || 0;
-                const total = income || 1; // avoid division by zero
+                const total = income || 1;
                 
                 return (
-                    <div className="gauges-container">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
                         <DonutChart 
                             label="Balance" 
                             value={formatCurrency(balance)} 
@@ -396,13 +304,13 @@ const BooksDashboard = () => {
                             percent={75} 
                         />
                         <DonutChart 
-                            label="Monthly Income" 
+                            label="Income" 
                             value={formatCurrency(income)} 
                             colorClass="chart-warning" 
                             percent={100} 
                         />
                         <DonutChart 
-                            label="Monthly Expenses" 
+                            label="Expenses" 
                             value={formatCurrency(expenses)} 
                             colorClass="chart-danger" 
                             percent={Math.min((expenses / total) * 100, 100)} 
@@ -415,41 +323,28 @@ const BooksDashboard = () => {
                 return (
                     <div className="hide-scrollbar" style={{ overflowX: 'auto', width: '100%' }}>
                         {transactions.length === 0 ? (
-                            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748B' }}>No recent transactions</div>
+                            <div style={{ padding: '2rem', textAlign: 'center', color: '#94A3B8' }} className="label-caps">No recent transactions</div>
                         ) : (
-                            <table className="table-auto" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
-                                    <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                        <th style={{ textAlign: 'left', padding: '16px', color: '#94A3B8', fontWeight: '500', fontSize: '0.85rem' }}>Type</th>
-                                        <th style={{ textAlign: 'left', padding: '16px', color: '#94A3B8', fontWeight: '500', fontSize: '0.85rem' }}>Description</th>
-                                        <th style={{ textAlign: 'left', padding: '16px', color: '#94A3B8', fontWeight: '500', fontSize: '0.85rem' }}>Date</th>
-                                        <th style={{ textAlign: 'right', padding: '16px', color: '#94A3B8', fontWeight: '500', fontSize: '0.85rem' }}>Amount</th>
+                                    <tr style={{ borderBottom: '1px solid #F0FDF4' }}>
+                                        <th style={{ textAlign: 'left', padding: '12px 16px' }} className="label-caps">Log</th>
+                                        <th style={{ textAlign: 'left', padding: '12px 16px' }} className="label-caps">Description</th>
+                                        <th style={{ textAlign: 'left', padding: '12px 16px' }} className="label-caps">Date</th>
+                                        <th style={{ textAlign: 'right', padding: '12px 16px' }} className="label-caps">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {transactions.map((item, index) => (
                                         <tr key={item.id || index} style={{ borderBottom: '1px solid #F8FAFC' }}>
-                                            <td style={{ padding: '16px' }}>
-                                                <div style={{
-                                                    width: '36px',
-                                                    height: '36px',
-                                                    borderRadius: '50%',
-                                                    background: item.type === 'income' ? '#DCFCE7' : '#FFE4E6',
-                                                    color: item.type === 'income' ? '#16A34A' : '#E11D48',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    {item.type === 'income' ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+                                            <td style={{ padding: '12px 16px' }}>
+                                                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: item.type === 'income' ? '#DCFCE7' : '#FEE2E2', color: item.type === 'income' ? '#10B981' : '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {item.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '16px', fontWeight: '500', color: '#1E293B' }}>
-                                                {item.description}
-                                            </td>
-                                            <td style={{ padding: '16px', color: '#64748B' }}>
-                                                {new Date(item.date).toLocaleDateString()}
-                                            </td>
-                                            <td style={{ padding: '16px', textAlign: 'right', fontWeight: '700', color: '#1E293B' }}>
+                                            <td style={{ padding: '12px 16px', fontWeight: 800, color: '#0F172A', fontSize: '0.9rem' }}>{item.description}</td>
+                                            <td style={{ padding: '12px 16px', color: '#64748B', fontSize: '0.85rem', fontWeight: 600 }}>{new Date(item.date).toLocaleDateString()}</td>
+                                            <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 900, color: '#0F172A' }}>
                                                 {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
                                             </td>
                                         </tr>
@@ -460,57 +355,43 @@ const BooksDashboard = () => {
                     </div>
                 );
             }
-            case 'budget':
-                return <BudgetMixTile />;
-            case 'split':
-                return <SplitBillsTile />;
-
-            default:
-                return null;
+            case 'budget': return <BudgetMixTile />;
+            case 'split': return <SplitBillsTile />;
+            default: return null;
         }
     };
 
-    if (isLoading) return <div className="flex items-center justify-center h-full">Loading dashboard...</div>;
-    if (error) return <div className="flex items-center justify-center h-full text-red-500">Error loading dashboard: {error.message}</div>;
-
+    if (isLoading) return <div style={{ display: 'flex', height: '80vh', alignItems: 'center', justifyContent: 'center' }}><Loader2 size={48} className="animate-spin" color="#1B6B3A" /></div>;
+    
     return (
-        <>
-            {/* Top Header */}
-            <div className="dashboard-header" style={{ justifyContent: 'flex-end' }}>
-                <div className="header-actions">
-                    <button className="btn-primary" onClick={() => setIsAddWidgetOpen(true)}>
-                        <Plus size={16} />
-                        <span>Add Widget</span>
-                    </button>
+        <div className="premium-container">
+            <PageHeader 
+                title={<>Books <span className="text-highlight">Dashboard</span></>}
+                subtitle="Central command for your inventory, financial plans, and personal accounting."
+                breadcrumb="DASHBOARD"
+                primaryAction={{
+                    label: "Add Widget",
+                    onClick: () => setIsAddWidgetOpen(true)
+                }}
+            />
 
-                </div>
-            </div>
-
-            <div className="content-wrapper">
-                {/* Accounts Row */}
-                <div className="accounts-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+            <div style={{ marginTop: '2.5rem' }}>
+                <div className="stats-grid">
                     {(stats?.accounts || []).map(account => (
-                        <AccountCard
-                            key={account.id}
-                            name={account.name}
-                            amount={account.balance}
-                            color={account.color || '#195BAC'} 
-                            icon={Building2}
-                        />
+                        <AccountCard key={account.id} name={account.name} amount={account.balance} color={account.color} />
                     ))}
-
-                    <button className="add-account-btn">
-                        <Plus size={20} />
-                        <span>Add Account</span>
-                    </button>
+                    <div className="premium-card glass" style={{ border: '2px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', cursor: 'pointer', background: 'transparent' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F0FDF4', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Plus size={20} />
+                        </div>
+                        <span className="label-caps" style={{ color: '#64748B' }}>Add Account</span>
+                    </div>
                 </div>
 
-                {/* Dashboard Tiles Grid */}
                 <div className="dashboard-grid">
                     {activeWidgets.map(widgetId => {
                         const widgetDef = ALL_WIDGETS.find(w => w.id === widgetId);
                         if (!widgetDef) return null;
-
                         return (
                             <DashboardTile
                                 key={widgetDef.id}
@@ -541,8 +422,9 @@ const BooksDashboard = () => {
                 onConfirm={confirmRemoveWidget}
                 widgetName={ALL_WIDGETS.find(w => w.id === widgetToRemove)?.title || widgetToRemove}
             />
-        </>
+        </div>
     );
 };
+
 
 export default BooksDashboard;

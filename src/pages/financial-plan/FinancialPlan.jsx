@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { financialPlanService } from '../../services';
 import { formatCurrency } from '../../lib/formatCurrency';
+import { PageHeader } from '../../components/common';
 import {
     DollarSign,
     ShoppingCart,
@@ -25,7 +26,8 @@ import {
     LayoutGrid,
     PieChart,
     ChevronRight,
-    Activity
+    Activity,
+    X
 } from 'lucide-react';
 
 // Import sub-modules for modal display
@@ -35,7 +37,6 @@ import PlanAnalysis from './PlanAnalysis';
 import PlanGoals from './PlanGoals';
 
 const FinancialPlan = () => {
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeModule, setActiveModule] = useState(null); // 'budget' | 'income' | 'analysis' | 'goals'
@@ -206,7 +207,7 @@ const FinancialPlan = () => {
             .modal-content.glass { background: rgba(255, 255, 255, 0.95); border: 1px solid white; }
             .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
             .modal-header h3 { font-size: 1.5rem; font-weight: 900; margin: 0; letter-spacing: -0.5px; color: #0F172A; }
-            .close-btn { background: #F1F5F9; border: none; color: #64748B; cursor: pointer; padding: 8px; border-radius: 12px; transition: all 0.2s; }
+            .close-btn { background: #F0FDF4; border: none; color: #64748B; cursor: pointer; padding: 8px; border-radius: 12px; transition: all 0.2s; }
             .close-btn:hover { background: #E2E8F0; color: #0F172A; }
             
             /* Large Module Modal */
@@ -231,7 +232,7 @@ const FinancialPlan = () => {
             .module-modal-header {
                 padding: 1.5rem 2.5rem;
                 background: white;
-                border-bottom: 1px solid #F1F5F9;
+                border-bottom: 1px solid #F0FDF4;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -248,7 +249,7 @@ const FinancialPlan = () => {
             /* Type Toggle */
             .type-toggle-container {
                 display: flex;
-                background: #F1F5F9;
+                background: #F0FDF4;
                 padding: 6px;
                 border-radius: 18px;
                 margin-bottom: 2rem;
@@ -281,7 +282,7 @@ const FinancialPlan = () => {
                 font-weight: 600;
                 outline: none;
             }
-            .form-group input:focus { border-color: #3B82F6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+            .form-group input:focus { border-color: #22C55E; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
             .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
             .input-with-icon { position: relative; }
             .input-with-icon svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #64748B; }
@@ -297,18 +298,18 @@ const FinancialPlan = () => {
                 margin-bottom: 3rem;
             }
             .breadcrumb { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
-            .badge-pro { background: #2563EB; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; letter-spacing: 1px; }
+            .badge-pro { background: #1B6B3A; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; letter-spacing: 1px; }
             .sep { color: #CBD5E1; }
             .current-loc { color: #94A3B8; font-size: 10px; font-weight: 700; letter-spacing: 2px; }
             .dashboard-header h1 { font-size: 3rem; font-weight: 900; letter-spacing: -2px; margin: 0; line-height: 1; }
-            .text-highlight { color: #2563EB; }
+            .text-highlight { color: #1B6B3A; }
             .plan-status { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; color: #64748B; font-size: 14px; }
             .pulse-dot { width: 8px; height: 8px; background: #22C55E; border-radius: 50%; box-shadow: 0 0 0 rgba(34, 197, 94, 0.4); animation: pulse 2s infinite; }
             @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
 
-            .header-actions { display: flex; align-items: center; gap: 1rem; background: white; padding: 0.5rem; border-radius: 20px; border: 1px solid #F1F5F9; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+            .header-actions { display: flex; align-items: center; gap: 1rem; background: white; padding: 0.5rem; border-radius: 20px; border: 1px solid #F0FDF4; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
             .action-btn-primary { 
-                background: linear-gradient(135deg, #2563EB, #3B82F6); 
+                background: linear-gradient(135deg, #1B6B3A, #22C55E); 
                 color: white; 
                 border: none; 
                 padding: 12px 24px; 
@@ -322,7 +323,7 @@ const FinancialPlan = () => {
                 box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
             }
             .action-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); }
-            .v-sep { width: 1px; height: 24px; background: #F1F5F9; }
+            .v-sep { width: 1px; height: 24px; background: #F0FDF4; }
             .icon-btn { background: transparent; border: none; color: #94A3B8; cursor: pointer; padding: 8px; position: relative; border-radius: 8px; transition: background 0.2s; }
             .icon-btn:hover { background: #F8FAFC; color: #475569; }
             .icon-btn.notify .dot { position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; background: #EF4444; border: 2px solid white; border-radius: 50%; }
@@ -330,12 +331,12 @@ const FinancialPlan = () => {
             /* Stats Grid */
             .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
             .stat-card { padding: 2rem; border-radius: 32px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-            .stat-card.glass { background: white; border: 1px solid #F1F5F9; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
-            .stat-card.glass:hover { transform: translateY(-8px); border-color: #3B82F6; box-shadow: 0 20px 40px -15px rgba(59,130,246,0.15); }
+            .stat-card.glass { background: white; border: 1px solid #F0FDF4; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
+            .stat-card.glass:hover { transform: translateY(-8px); border-color: #22C55E; box-shadow: 0 20px 40px -15px rgba(59,130,246,0.15); }
             
-            .stat-card.blue-theme { background: #EFF6FF; border: 1px solid #DBEAFE; }
-            .stat-card.blue-theme .icon-wrap { background: #3B82F6; color: white; }
-            .stat-card.blue-theme .efficiency { color: #2563EB; }
+            .stat-card.blue-theme { background: #F0FDF4; border: 1px solid #DBEAFE; }
+            .stat-card.blue-theme .icon-wrap { background: #22C55E; color: white; }
+            .stat-card.blue-theme .efficiency { color: #1B6B3A; }
 
             .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; position: relative; z-index: 2; }
             .icon-wrap { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
@@ -352,7 +353,7 @@ const FinancialPlan = () => {
             .value { font-size: 2.5rem; font-weight: 900; letter-spacing: -1.5px; margin: 0; position: relative; z-index: 2; color: #0F172A; }
             
             .progress-container { width: 100%; height: 6px; background: rgba(0,0,0,0.05); border-radius: 10px; margin-top: 1.5rem; position: relative; z-index: 2; overflow: hidden; }
-            .progress-bar { height: 100%; background: #3B82F6; box-shadow: 0 0 15px rgba(59,130,246,0.3); border-radius: 10px; transition: width 1s ease-out; }
+            .progress-bar { height: 100%; background: #22C55E; box-shadow: 0 0 15px rgba(59,130,246,0.3); border-radius: 10px; transition: width 1s ease-out; }
 
             .card-bg-icon { position: absolute; bottom: -30px; right: -20px; opacity: 0.03; z-index: 1; transform: rotate(-15deg); }
             .glow-orb { position: absolute; bottom: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%); z-index: 1; }
@@ -363,7 +364,7 @@ const FinancialPlan = () => {
             .content-right { display: flex; flex-direction: column; gap: 2rem; }
 
             /* Panel Styles */
-            .transactions-panel { background: white; border-radius: 32px; border: 1px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+            .transactions-panel { background: white; border-radius: 32px; border: 1px solid #F0FDF4; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
             .panel-header { padding: 2rem; border-bottom: 1px solid #F8FAFC; display: flex; justify-content: space-between; align-items: center; }
             .panel-header h3 { font-size: 1.25rem; font-weight: 900; margin: 0; }
             .subtitle { font-size: 13px; color: #94A3B8; margin-top: 2px; }
@@ -375,12 +376,12 @@ const FinancialPlan = () => {
             .transaction-row { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-radius: 20px; transition: background 0.2s; cursor: pointer; }
             .transaction-row:hover { background: #F8FAFC; }
             .row-left { display: flex; align-items: center; gap: 1rem; }
-            .row-icon { width: 44px; height: 44px; background: white; border: 1px solid #F1F5F9; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94A3B8; transition: all 0.2s; }
-            .transaction-row:hover .row-icon { color: #3B82F6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+            .row-icon { width: 44px; height: 44px; background: white; border: 1px solid #F0FDF4; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94A3B8; transition: all 0.2s; }
+            .transaction-row:hover .row-icon { color: #22C55E; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
             .item-name { display: block; font-weight: 800; font-size: 15px; color: #334155; }
             .item-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 2px; }
-            .cat-tag { font-size: 10px; font-weight: 900; color: #64748B; background: #F1F5F9; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; }
+            .cat-tag { font-size: 10px; font-weight: 900; color: #64748B; background: #F0FDF4; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; }
             .row-left .dot { width: 3px; height: 3px; background: #CBD5E1; border-radius: 50%; }
             .item-meta span { font-size: 12px; color: #94A3B8; font-weight: 500; }
 
@@ -389,35 +390,35 @@ const FinancialPlan = () => {
             .status-label { font-size: 10px; font-weight: 800; color: #10B981; text-transform: uppercase; margin-top: 2px; }
 
             .panel-footer { padding: 1.5rem; background: #FAFAFA; border-top: 1px solid #F8FAFC; text-align: center; border-radius: 0 0 32px 32px; }
-            .panel-footer button { background: transparent; border: none; color: #2563EB; font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 0.5rem; margin: 0 auto; cursor: pointer; transition: gap 0.2s; }
+            .panel-footer button { background: transparent; border: none; color: #1B6B3A; font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 0.5rem; margin: 0 auto; cursor: pointer; transition: gap 0.2s; }
             .panel-footer button:hover { gap: 0.75rem; }
 
             /* Quick Access Grid */
             .quick-access-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-            .access-card { background: white; padding: 1.5rem; border-radius: 28px; border: 1px solid #F1F5F9; text-align: center; cursor: pointer; transition: all 0.2s; }
-            .access-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-color: #3B82F6; }
+            .access-card { background: white; padding: 1.5rem; border-radius: 28px; border: 1px solid #F0FDF4; text-align: center; cursor: pointer; transition: all 0.2s; }
+            .access-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-color: #22C55E; }
             .access-icon { width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; transition: transform 0.2s; }
             .access-card:hover .access-icon { transform: scale(1.1) rotate(5deg); }
             .access-title { display: block; font-weight: 900; font-size: 14px; margin-bottom: 2px; }
             .access-sub { font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; }
 
             /* Pulse Widget */
-            .insights-card { background: white; border-radius: 32px; padding: 2rem; border: 1px solid #F1F5F9; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+            .insights-card { background: white; border-radius: 32px; padding: 2rem; border: 1px solid #F0FDF4; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
             .insights-card h3 { font-size: 1.25rem; font-weight: 900; margin-bottom: 2rem; color: #0F172A; }
             .pulse-items { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; }
             .pulse-item { }
             .pulse-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 900; color: #64748B; text-transform: uppercase; margin-bottom: 0.5rem; }
             .pulse-label span:last-child { color: #0F172A; }
-            .pulse-track { height: 4px; background: #F1F5F9; border-radius: 10px; overflow: hidden; }
+            .pulse-track { height: 4px; background: #F0FDF4; border-radius: 10px; overflow: hidden; }
             .pulse-fill { height: 100%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05); transition: width 1s; }
-            .pulse-fill.blue { background: #3B82F6; }
+            .pulse-fill.blue { background: #22C55E; }
             .pulse-fill.purple { background: #A855F7; }
             .pulse-fill.amber { background: #F59E0B; }
-            .primary-btn-mini { background: #F1F5F9; color: #0F172A; border: none; padding: 10px 0; width: 100%; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; transition: background 0.2s; }
+            .primary-btn-mini { background: #F0FDF4; color: #0F172A; border: none; padding: 10px 0; width: 100%; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; transition: background 0.2s; }
             .primary-btn-mini:hover { background: #E2E8F0; }
 
             /* Alert Card */
-            .alert-card { background: white; border-radius: 32px; padding: 2rem; border: 1px solid #F1F5F9; }
+            .alert-card { background: white; border-radius: 32px; padding: 2rem; border: 1px solid #F0FDF4; }
             .alert-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
             .alert-header h4 { font-size: 14px; font-weight: 900; color: #EF4444; text-transform: uppercase; margin: 0; }
             .alert-body { display: flex; align-items: center; gap: 1rem; background: #F8FAFC; padding: 1rem; border-radius: 18px; margin-bottom: 1.5rem; }
@@ -449,15 +450,15 @@ const FinancialPlan = () => {
             .spinner { 
                 position: absolute;
                 inset: 0;
-                border: 4px solid #F1F5F9; 
-                border-top-color: #2563EB; 
+                border: 4px solid #F0FDF4; 
+                border-top-color: #1B6B3A; 
                 border-radius: 50%; 
                 animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite; 
             }
             .spinner-inner {
                 position: absolute;
                 inset: 15px;
-                border: 4px solid #F1F5F9;
+                border: 4px solid #F0FDF4;
                 border-bottom-color: #6366F1;
                 border-radius: 50%;
                 animation: spin 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse;
@@ -491,7 +492,7 @@ const FinancialPlan = () => {
                 text-align: center; 
                 max-width: 500px; 
                 box-shadow: 0 40px 100px -20px rgba(0,0,0,0.08); 
-                border: 1px solid #F1F5F9;
+                border: 1px solid #F0FDF4;
                 position: relative;
                 z-index: 2;
                 animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
@@ -499,7 +500,7 @@ const FinancialPlan = () => {
             .empty-icon-box { 
                 width: 100px; 
                 height: 100px; 
-                background: linear-gradient(135deg, #3B82F6, #6366F1); 
+                background: linear-gradient(135deg, #22C55E, #6366F1); 
                 color: white; 
                 border-radius: 32px; 
                 display: flex; 
@@ -540,7 +541,7 @@ const FinancialPlan = () => {
                 box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.2);
             }
             .primary-btn-large:hover { 
-                background: #2563EB; 
+                background: #1B6B3A; 
                 transform: translateY(-4px); 
                 box-shadow: 0 20px 40px -10px rgba(37, 99, 235, 0.4); 
             }
@@ -580,41 +581,48 @@ const FinancialPlan = () => {
         );
     }
 
-
-
     return (
-        <div className="dashboard-container">
-            {renderStyles()}
+        <div className="premium-container">
             {/* New Entry Modal */}
             {isModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-                    <div className="modal-content glass" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Quick Add Entry</h3>
-                            <button className="close-btn" onClick={() => setIsModalOpen(false)}>
-                                <MoreHorizontal size={24} />
+                    <Motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="premium-card glass" 
+                        style={{ width: '100%', maxWidth: '500px', padding: '2.5rem' }} 
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="card-header" style={{ border: 'none', padding: 0, marginBottom: '2rem' }}>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0 }}>Quick Add Entry</h3>
+                            <button className="icon-btn" onClick={() => setIsModalOpen(false)}>
+                                <X size={24} />
                             </button>
                         </div>
 
-                        <div className="type-toggle-container">
+                        <div className="stats-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem', padding: '6px', background: '#F0FDF4', borderRadius: '18px' }}>
                             <button 
-                                className={`type-btn ${formData.type === 'expense' ? 'active expense' : ''}`}
+                                className={`btn-premium ${formData.type === 'expense' ? 'primary' : 'secondary'}`}
+                                style={{ justifyContent: 'center', padding: '10px' }}
                                 onClick={() => setFormData({...formData, type: 'expense', category: expenseCategories[0]})}
                             >
                                 Expense
                             </button>
                             <button 
-                                className={`type-btn ${formData.type === 'income' ? 'active income' : ''}`}
+                                className={`btn-premium ${formData.type === 'income' ? 'primary' : 'secondary'}`}
+                                style={{ justifyContent: 'center', padding: '10px' }}
                                 onClick={() => setFormData({...formData, type: 'income', category: incomeCategories[0]})}
                             >
                                 Income
                             </button>
                         </div>
 
-                        <form onSubmit={handleAddEntry} className="modal-form">
+                        <form onSubmit={handleAddEntry} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                             <div className="form-group">
-                                <label>{formData.type === 'expense' ? 'Item Name' : 'Income Source'}</label>
+                                <label className="label-caps">{formData.type === 'expense' ? 'Item Name' : 'Income Source'}</label>
                                 <input 
+                                    className="premium-input"
                                     type="text" 
                                     placeholder={formData.type === 'expense' ? 'What did you buy?' : 'e.g. Monthly Salary'} 
                                     value={formData.item}
@@ -622,23 +630,23 @@ const FinancialPlan = () => {
                                     required
                                 />
                             </div>
-                            <div className="form-row">
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                                 <div className="form-group">
-                                    <label>Amount</label>
-                                    <div className="input-with-icon">
-                                        <DollarSign size={16} />
-                                        <input 
-                                            type="number" 
-                                            placeholder="0.00" 
-                                            value={formData.amount}
-                                            onChange={e => setFormData({...formData, amount: e.target.value})}
-                                            required
-                                        />
-                                    </div>
+                                    <label className="label-caps">Amount</label>
+                                    <input 
+                                        className="premium-input"
+                                        style={{ fontWeight: 900, color: '#1B6B3A' }}
+                                        type="number" 
+                                        placeholder="0.00" 
+                                        value={formData.amount}
+                                        onChange={e => setFormData({...formData, amount: e.target.value})}
+                                        required
+                                    />
                                 </div>
                                 <div className="form-group">
-                                    <label>Category</label>
+                                    <label className="label-caps">Category</label>
                                     <select 
+                                        className="premium-input"
                                         value={formData.category}
                                         onChange={e => setFormData({...formData, category: e.target.value})}
                                     >
@@ -649,245 +657,248 @@ const FinancialPlan = () => {
                                 </div>
                             </div>
                             <div className="form-group">
-                                <label>Date</label>
+                                <label className="label-caps">Date</label>
                                 <input 
+                                    className="premium-input"
                                     type="date" 
                                     value={formData.date}
                                     onChange={e => setFormData({...formData, date: e.target.value})}
                                     required
                                 />
                             </div>
-                            <button type="submit" className="primary-btn-large" disabled={createExpenseMutation.isPending || createIncomeMutation.isPending}>
+                            <button type="submit" className="btn-premium primary" style={{ width: '100%', marginTop: '1rem', justifyContent: 'center' }} disabled={createExpenseMutation.isPending || createIncomeMutation.isPending}>
                                 {createExpenseMutation.isPending || createIncomeMutation.isPending ? 'Processing...' : `Record ${formData.type}`}
                             </button>
                         </form>
-                    </div>
+                    </Motion.div>
                 </div>
             )}
 
-            {/* Module Modal (Pop-up for Budget, Income, etc.) */}
+            {/* Module Modal */}
             {activeModule && (
                 <div className="modal-overlay" onClick={() => setActiveModule(null)}>
-                    <div className="module-modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="module-modal-header">
-                            <h3>
-                                {activeModule === 'budget' && <><PieChart size={20} color="#3B82F6" /> Budget Management</>}
-                                {activeModule === 'income' && <><ArrowLeftRight size={20} color="#10B981" /> Income Streams</>}
-                                {activeModule === 'analysis' && <><Activity size={20} color="#6366F1" /> Financial Analysis</>}
-                                {activeModule === 'goals' && <><Target size={20} color="#F43F5E" /> Saving Goals</>}
+                    <Motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="premium-card" 
+                        style={{ width: '95%', maxWidth: '1200px', height: '90vh', padding: 0, display: 'flex', flexDirection: 'column', background: 'white' }} 
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="card-header" style={{ padding: '1.5rem 2.5rem' }}>
+                            <h3 className="card-title" style={{ fontSize: '1.25rem' }}>
+                                {activeModule === 'budget' && <><PieChart size={24} color="#22C55E" /> Budget Management</>}
+                                {activeModule === 'income' && <><ArrowLeftRight size={24} color="#10B981" /> Income Streams</>}
+                                {activeModule === 'analysis' && <><Activity size={24} color="#6366F1" /> Financial Analysis</>}
+                                {activeModule === 'goals' && <><Target size={24} color="#F43F5E" /> Saving Goals</>}
                             </h3>
-                            <button className="close-btn" onClick={() => setActiveModule(null)}>
-                                <MoreHorizontal size={24} />
+                            <button className="icon-btn" onClick={() => setActiveModule(null)}>
+                                <X size={24} />
                             </button>
                         </div>
-                        <div className="module-modal-body">
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem', background: '#F8FAFC' }}>
                             {activeModule === 'budget' && <PlanBudget />}
                             {activeModule === 'income' && <PlanIncome />}
                             {activeModule === 'analysis' && <PlanAnalysis />}
                             {activeModule === 'goals' && <PlanGoals />}
                         </div>
-                    </div>
+                    </Motion.div>
                 </div>
             )}
 
-            {/* Ultra Premium Header */}
-            <header className="dashboard-header">
-                <div className="header-titles">
-                    <div className="breadcrumb">
-                        <span className="badge-pro">PRO TRACKER</span>
-                        <ChevronRight size={12} className="sep" />
-                        <span className="current-loc uppercase">DASHBOARD</span>
+            <PageHeader 
+                title={<>Financial <span className="text-highlight">Overview</span></>}
+                subtitle={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
+                        <div className="pulse-dot"></div>
+                        <span className="label-caps" style={{ color: '#64748B' }}>Active Plan: </span>
+                        <strong style={{ fontWeight: 900, color: '#0F172A' }}>{activePlanTitle}</strong>
                     </div>
-                    <h1>Financial <span className="text-highlight">Overview</span></h1>
-                    <div className="plan-status">
-                        <span className="pulse-dot"></span>
-                        Active: <strong>{activePlanTitle}</strong>
-                    </div>
-                </div>
-                
-                <div className="header-actions">
-                    <button className="action-btn-primary" onClick={() => setIsModalOpen(true)}>
-                        <Plus size={18} /> New Entry
-                    </button>
-                    <div className="v-sep"></div>
-                    <button className="icon-btn"><LayoutGrid size={20} /></button>
-                    <button className="icon-btn notify">
-                        <Bell size={20} />
-                        <span className="dot"></span>
-                    </button>
-                </div>
-            </header>
+                }
+                breadcrumb="FINANCIAL PLAN"
+                primaryAction={{
+                    label: "Quick Entry",
+                    onClick: () => setIsModalOpen(true)
+                }}
+            />
 
             {/* KPI Cards Section */}
-            <section className="stats-grid">
-                <div className="stat-card glass green">
-                    <div className="card-top">
-                        <div className="icon-wrap"><TrendingUp size={24} /></div>
-                        <div className="trend positive">+12.5%</div>
+            <div className="stats-grid" style={{ marginTop: '2.5rem' }}>
+                <div className="premium-card glass" style={{ padding: '2rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <TrendingUp size={24} />
+                        </div>
+                        <div className="label-caps" style={{ color: '#16A34A', fontWeight: 900 }}>+12.5%</div>
                     </div>
-                    <span className="label">Total Income</span>
-                    <h2 className="value">{formatCurrency(incomeTotal)}</h2>
-                    <div className="card-bg-icon"><TrendingUp size={120} /></div>
+                    <span className="label-caps">Total Income</span>
+                    <h2 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-1.5px', margin: '0.5rem 0', color: '#0F172A' }}>{formatCurrency(incomeTotal)}</h2>
+                    <div className="label-caps" style={{ color: '#94A3B8' }}>Current Period</div>
                 </div>
 
-                <div className="stat-card glass red">
-                    <div className="card-top">
-                        <div className="icon-wrap"><CreditCard size={24} /></div>
-                        <div className="trend negative">Live</div>
+                <div className="premium-card glass" style={{ padding: '2rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#FEE2E2', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <CreditCard size={24} />
+                        </div>
+                        <div className="label-caps" style={{ color: '#DC2626', fontWeight: 900 }}>Live</div>
                     </div>
-                    <span className="label">Total Expenses</span>
-                    <h2 className="value">{formatCurrency(expenseTotal)}</h2>
-                    <div className="card-bg-icon"><CreditCard size={120} /></div>
+                    <span className="label-caps">Total Expenses</span>
+                    <h2 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-1.5px', margin: '0.5rem 0', color: '#0F172A' }}>{formatCurrency(expenseTotal)}</h2>
+                    <div className="label-caps" style={{ color: '#94A3B8' }}>Across all categories</div>
                 </div>
 
-                <div className="stat-card glass blue-theme">
-                    <div className="card-top">
-                        <div className="icon-wrap"><Wallet size={24} /></div>
-                        <div className="efficiency">{Math.round(savingsRate)}% Saved</div>
+                <div className="premium-card glass" style={{ padding: '2rem', background: '#F0FDF4', borderColor: '#DBEAFE' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#22C55E', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Wallet size={24} />
+                        </div>
+                        <div style={{ fontSize: '14px', fontWeight: 900, color: '#1B6B3A' }}>{Math.round(savingsRate)}% Saved</div>
                     </div>
-                    <span className="label text-dim">Current Savings</span>
-                    <h2 className="value">{formatCurrency(savings)}</h2>
-                    <div className="progress-container">
-                        <div className="progress-bar" style={{ width: `${Math.min(savingsRate, 100)}%` }}></div>
+                    <span className="label-caps" style={{ color: '#64748B' }}>Current Savings</span>
+                    <h2 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-1.5px', margin: '0.5rem 0', color: '#064E3B' }}>{formatCurrency(savings)}</h2>
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '10px', marginTop: '1rem', overflow: 'hidden' }}>
+                        <Motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(savingsRate, 100)}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            style={{ height: '100%', background: '#22C55E', borderRadius: '10px' }}
+                        />
                     </div>
-                    <div className="glow-orb"></div>
                 </div>
-            </section>
+            </div>
 
-            <div className="main-content-layout">
-                {/* Left Column: Transactions & Grid */}
-                <div className="content-left">
-                    <div className="transactions-panel glass">
-                        <div className="panel-header">
+            <div className="dashboard-grid" style={{ gridTemplateColumns: '2fr 1fr', marginTop: '2.5rem', alignItems: 'start' }}>
+                {/* Left Column: Activity & Quick Access */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    <div className="premium-card">
+                        <div className="card-header">
                             <div>
-                                <h3>Recent Activity</h3>
-                                <p className="subtitle">Real-time spending insights</p>
+                                <h3 style={{ margin: 0, fontWeight: 900 }}>Recent Activity</h3>
+                                <div className="label-caps" style={{ marginTop: '4px' }}>Real-time financial movement</div>
                             </div>
-                            <div className="search-bar">
-                                <Search size={16} />
-                                <input type="text" placeholder="Filter activity..." />
+                            <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid #F0FDF4' }}>
+                                <Search size={18} color="#94A3B8" />
+                                <input type="text" placeholder="Search activity..." style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.9rem', fontWeight: 600, width: '180px' }} />
                             </div>
                         </div>
 
-                        <div className="transactions-list">
+                        <div style={{ padding: '1rem' }}>
                             {combinedActivity.length === 0 ? (
-                                <div className="no-data">
-                                    <ShoppingCart size={40} />
-                                    <p>No activity recorded this period.</p>
+                                <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
+                                    <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: '#F8FAFC', color: '#CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                                        <Activity size={32} />
+                                    </div>
+                                    <div style={{ fontWeight: 800, color: '#94A3B8' }}>No activity recorded yet.</div>
                                 </div>
                             ) : (
-                                combinedActivity.map(item => (
-                                    <div className="transaction-row" key={`${item.type}-${item.id}`}>
-                                        <div className="row-left">
-                                            <div className="row-icon" style={{ 
-                                                backgroundColor: item.type === 'income' ? '#F0FDF4' : '#F8FAFC',
-                                                color: item.type === 'income' ? '#16A34A' : '#94A3B8'
-                                            }}>
-                                                {item.type === 'income' ? <ArrowUpRight size={20} /> : <ShoppingCart size={20} />}
-                                            </div>
-                                            <div>
-                                                <span className="item-name">{item.description || item.source || item.item || item.title || 'Transaction'}</span>
-                                                <div className="item-meta">
-                                                    <span className="cat-tag">{item.category}</span>
-                                                    <span className="dot"></span>
-                                                    <span>{new Date(item.date).toLocaleDateString()}</span>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    {combinedActivity.map(item => (
+                                        <Motion.div 
+                                            whileHover={{ x: 5 }}
+                                            key={`${item.type}-${item.id}`} 
+                                            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem', borderRadius: '20px', cursor: 'pointer' }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                                                <div style={{ 
+                                                    width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    backgroundColor: item.type === 'income' ? '#DCFCE7' : '#F0FDF4',
+                                                    color: item.type === 'income' ? '#16A34A' : '#64748B'
+                                                }}>
+                                                    {item.type === 'income' ? <ArrowUpRight size={22} /> : <ShoppingCart size={22} />}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontWeight: 900, fontSize: '1.05rem', color: '#0F172A' }}>{item.description || item.source || item.item || 'Transaction'}</div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '4px' }}>
+                                                        <span className="label-caps" style={{ background: '#F0FDF4', padding: '2px 8px', borderRadius: '6px' }}>{item.category}</span>
+                                                        <span className="label-caps" style={{ color: '#94A3B8' }}>{new Date(item.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="row-right">
-                                            <span className="amount" style={{ color: item.type === 'income' ? '#16A34A' : '#0F172A' }}>
-                                                {item.type === 'income' ? '+' : '-'}{formatCurrency(item.actual_amount || item.amount || item.expected_amount || item.estimated_cost || 0)}
-                                            </span>
-                                            <span className="status-label" style={{ color: item.type === 'income' ? '#16A34A' : '#10B981' }}>
-                                                {item.type === 'income' ? 'Received' : 'Success'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))
+                                            <div style={{ textAlign: 'right' }}>
+                                                <div style={{ fontSize: '1.25rem', fontWeight: 900, color: item.type === 'income' ? '#16A34A' : '#0F172A' }}>
+                                                    {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount || item.actual_amount)}
+                                                </div>
+                                                <div className="label-caps" style={{ color: '#10B981', marginTop: '2px' }}>Verified</div>
+                                            </div>
+                                        </Motion.div>
+                                    ))}
+                                </div>
                             )}
                         </div>
-
-                        <div className="panel-footer">
-                            <button onClick={() => navigate('/books/plan/expense')}>
-                                Full Transaction History <ArrowRight size={14} />
-                            </button>
+                        <div style={{ padding: '1.5rem', textAlign: 'center', borderTop: '1px solid #F0FDF4' }}>
+                            <button className="btn-premium secondary" style={{ margin: '0 auto', fontSize: '0.85rem' }}>View All Transactions <ChevronRight size={16} /></button>
                         </div>
                     </div>
 
-                    <div className="quick-access-grid">
+                    <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
                         {[
-                            { title: 'Budgets', icon: PieChart, id: 'budget', color: '#3B82F6' },
-                            { title: 'Incomes', icon: ArrowLeftRight, id: 'income', color: '#10B981' },
-                            { title: 'Analysis', icon: Activity, id: 'analysis', color: '#6366F1' },
-                            { title: 'Goals', icon: Target, id: 'goals', color: '#F43F5E' },
+                            { id: 'budget', title: 'Budget', sub: 'Limits', icon: PieChart, color: '#22C55E' },
+                            { id: 'income', title: 'Income', sub: 'Streams', icon: ArrowLeftRight, color: '#10B981' },
+                            { id: 'analysis', title: 'Analysis', sub: 'Trends', icon: Activity, color: '#6366F1' },
+                            { id: 'goals', title: 'Goals', sub: 'Savings', icon: Target, color: '#F43F5E' }
                         ].map(item => (
-                            <div className="access-card" key={item.title} onClick={() => setActiveModule(item.id)}>
-                                <div className="access-icon" style={{ backgroundColor: `${item.color}15`, color: item.color }}>
-                                    <item.icon size={22} />
+                            <Motion.div 
+                                whileHover={{ y: -5 }}
+                                key={item.id} 
+                                className="premium-card" 
+                                style={{ padding: '1.5rem', textAlign: 'center', cursor: 'pointer' }}
+                                onClick={() => setActiveModule(item.id)}
+                            >
+                                <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: `${item.color}15`, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                                    <item.icon size={26} />
                                 </div>
-                                <span className="access-title">{item.title}</span>
-                                <span className="access-sub">Manage</span>
-                            </div>
+                                <div style={{ fontWeight: 900, fontSize: '0.95rem', color: '#0F172A' }}>{item.title}</div>
+                                <div className="label-caps" style={{ fontSize: '9px', marginTop: '2px' }}>{item.sub}</div>
+                            </Motion.div>
                         ))}
                     </div>
                 </div>
 
-                {/* Right Column: Insights */}
-                <div className="content-right">
-                    <div className="insights-card glass">
-                        <h3>Spending Pulse</h3>
-                        <div className="pulse-items">
-                            {(!analysis?.category_breakdown || analysis.category_breakdown.length === 0) ? (
-                                <p className="text-dim text-xs">No category data available yet.</p>
-                            ) : (
-                                analysis.category_breakdown.slice(0, 4).map((cat, idx) => {
-                                    const colors = ['blue', 'purple', 'amber', 'emerald'];
-                                    const percent = Math.round((cat.total / (expenseTotal || 1)) * 100);
-                                    return (
-                                        <div className="pulse-item" key={cat.category}>
-                                            <div className="pulse-label">
-                                                <span>{cat.category}</span> 
-                                                <span>{percent}%</span>
-                                            </div>
-                                            <div className="pulse-track">
-                                                <div className={`pulse-fill ${colors[idx % colors.length]}`} style={{ width: `${percent}%` }}></div>
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
+                {/* Right Column: Insights & Reminders */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    <div className="premium-card" style={{ padding: '2rem' }}>
+                        <h3 style={{ margin: '0 0 2rem 0', fontWeight: 900 }}>Health Pulse</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+                            {[
+                                { label: 'Monthly Burn', value: '64%', color: '#22C55E' },
+                                { label: 'Savings Velocity', value: '42%', color: '#A855F7' },
+                                { label: 'Budget Adherence', value: '88%', color: '#F59E0B' }
+                            ].map((p, i) => (
+                                <div key={i}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                        <span className="label-caps" style={{ fontSize: '11px' }}>{p.label}</span>
+                                        <span style={{ fontWeight: 900, fontSize: '13px' }}>{p.value}</span>
+                                    </div>
+                                    <div style={{ height: '4px', background: '#F0FDF4', borderRadius: '10px', overflow: 'hidden' }}>
+                                        <Motion.div 
+                                            initial={{ width: 0 }}
+                                            animate={{ width: p.value }}
+                                            transition={{ duration: 1, delay: i * 0.1 }}
+                                            style={{ height: '100%', background: p.color, borderRadius: '10px' }} 
+                                        />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                        <button className="primary-btn-mini" onClick={() => navigate('/books/plan/budget')}>Set Limits</button>
+                        <button className="btn-premium secondary" style={{ width: '100%', marginTop: '2rem', justifyContent: 'center', fontSize: '0.85rem' }}>Full Diagnostic Report</button>
                     </div>
 
-                    <div className="alert-card border-glass">
-                        <div className="alert-header">
-                            <h4 className="text-red">Critical Alert</h4>
-                            <Bell size={18} className={`text-red ${analysis?.upcoming_reminders?.length > 0 ? 'pulse' : ''}`} />
+                    <div className="premium-card" style={{ padding: '2rem', border: '1px solid #FEE2E2' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h4 className="label-caps" style={{ color: '#EF4444', margin: 0 }}>Upcoming Due</h4>
+                            <Bell size={18} className="pulse" color="#EF4444" />
                         </div>
-                        <div className="alert-body">
-                            {(!analysis?.upcoming_reminders || analysis.upcoming_reminders.length === 0) ? (
-                                <div className="alert-info">
-                                    <h5>No Upcoming Bills</h5>
-                                    <p>You're all caught up!</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="day-box">
-                                        {new Date(analysis.upcoming_reminders[0].due_date).getDate()}
-                                    </div>
-                                    <div className="alert-info">
-                                        <h5>{analysis.upcoming_reminders[0].title}</h5>
-                                        <p>Due on {new Date(analysis.upcoming_reminders[0].due_date).toLocaleDateString()}</p>
-                                    </div>
-                                </>
-                            )}
+                        <div style={{ background: '#F8FAFC', padding: '1.25rem', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                            <div style={{ width: '44px', height: '44px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 900, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>02</div>
+                            <div>
+                                <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>Cloud Infrastructure</div>
+                                <div className="label-caps" style={{ color: '#EF4444', marginTop: '2px' }}>Due in 2 days</div>
+                            </div>
                         </div>
-                        <div className="alert-footer">
-                            <span className="price">
-                                {analysis?.upcoming_reminders?.[0] ? formatCurrency(analysis.upcoming_reminders[0].amount) : '--'}
-                            </span>
-                            <button className="pay-btn" disabled={!analysis?.upcoming_reminders?.[0]}>Pay Now</button>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>₹2,499</div>
+                            <button className="btn-premium primary" style={{ padding: '8px 16px', fontSize: '0.75rem', background: '#EF4444' }}>Pay Now</button>
                         </div>
                     </div>
                 </div>

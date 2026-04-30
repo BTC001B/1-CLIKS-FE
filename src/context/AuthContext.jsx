@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initAuth = async () => {
-            if (!token) {
+            if (!token || user) {
                 setLoading(false);
                 return;
             }
@@ -28,7 +28,10 @@ export const AuthProvider = ({ children }) => {
                 setUser(userData);
             } catch (error) {
                 console.error('[AuthContext] Failed to fetch profile:', error);
-                logout();
+                // Only logout on 401 Unauthorized to prevent loops on other errors
+                if (error.status === 401) {
+                    logout();
+                }
             } finally {
                 setLoading(false);
             }

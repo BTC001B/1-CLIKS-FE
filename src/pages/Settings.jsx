@@ -44,7 +44,7 @@ const Settings = () => {
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '400px' }}>
-                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #E3F2FD', borderTopColor: '#2563EB', borderRadius: '50%' }} />
+                <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #DCF2E4', borderTopColor: '#1B6B3A', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -126,7 +126,7 @@ const Settings = () => {
                         borderRadius: '8px',
                         fontWeight: 600,
                         cursor: mutation.isLoading ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 4px 6px -1px rgba(25, 91, 172, 0.2)',
+                        boxShadow: '0 4px 6px -1px rgba(27, 107, 58, 0.2)',
                         opacity: mutation.isLoading ? 0.7 : 1
                     }}
                 >
@@ -160,7 +160,7 @@ const SettingItem = ({ label, description, isToggled, onToggle, last = false }) 
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '1.25rem 1.5rem',
-        borderBottom: last ? 'none' : '1px solid #F1F5F9'
+        borderBottom: last ? 'none' : '1px solid #F0FDF4'
     }}>
         <div style={{ marginRight: '1rem' }}>
             <div style={{ fontWeight: 600, color: '#334155', marginBottom: '0.25rem' }}>{label}</div>

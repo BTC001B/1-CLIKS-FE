@@ -25,7 +25,7 @@ export const Toggle = ({ checked, onChange, size = 'md', label, disabled = false
                 style={{
                     width: `${width}px`,
                     height: `${height}px`,
-                    backgroundColor: checked ? '#195BAC' : '#CBD5E1',
+                    backgroundColor: checked ? '#1B6B3A' : '#CBD5E1',
                     borderRadius: '999px',
                     position: 'relative',
                     transition: 'background-color 0.2s ease',
