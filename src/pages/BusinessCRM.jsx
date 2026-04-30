@@ -18,7 +18,9 @@ import {
     Globe,
     IndianRupee,
     User,
-    Plus
+    Plus,
+    Edit2,
+    Trash2
 } from 'lucide-react';
 import { crmService } from '../services';
 import '../App.css';
@@ -27,6 +29,8 @@ const BusinessCRM = () => {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeMenu, setActiveMenu] = useState(null);
+    const [editingCustomer, setEditingCustomer] = useState(null);
     const [formData, setFormData] = useState({ name: '', email: '', phone: '', company: '', status: 'lead', notes: '' });
 
     // Fetch Customers
@@ -38,15 +42,65 @@ const BusinessCRM = () => {
         }
     });
 
-    // Create Mutation
+    // Mutations
     const createMutation = useMutation({
         mutationFn: crmService.createCustomer,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['business-customers'] });
-            setIsModalOpen(false);
-            setFormData({ name: '', email: '', phone: '', company: '', status: 'lead', notes: '' });
+            closeModal();
         }
     });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }) => crmService.updateCustomer(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['business-customers'] });
+            closeModal();
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: crmService.deleteCustomer,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['business-customers'] });
+            setActiveMenu(null);
+        }
+    });
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setEditingCustomer(null);
+        setFormData({ name: '', email: '', phone: '', company: '', status: 'lead', notes: '' });
+    };
+
+    const handleEdit = (customer) => {
+        setEditingCustomer(customer);
+        setFormData({
+            name: customer.name,
+            email: customer.email,
+            phone: customer.phone || '',
+            company: customer.company || '',
+            status: customer.status,
+            notes: customer.notes || ''
+        });
+        setIsModalOpen(true);
+        setActiveMenu(null);
+    };
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this customer?')) {
+            deleteMutation.mutate(id);
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (editingCustomer) {
+            updateMutation.mutate({ id: editingCustomer.id, data: formData });
+        } else {
+            createMutation.mutate(formData);
+        }
+    };
 
     const filteredCustomers = customers.filter(c => 
         c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -70,7 +124,7 @@ const BusinessCRM = () => {
     };
 
     return (
-        <div style={{ padding: '2.5rem', background: '#F0F9F4', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ padding: '2.5rem', background: '#F0F9F4', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }} onClick={() => setActiveMenu(null)}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
                 <div>
@@ -83,7 +137,7 @@ const BusinessCRM = () => {
                     <p style={{ color: '#475569', fontSize: '1.05rem', fontWeight: '500' }}>Manage your professional network and business leads.</p>
                 </div>
                 <button 
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
                     style={{ 
                         display: 'flex', alignItems: 'center', gap: '0.6rem', 
                         padding: '0.85rem 1.75rem', borderRadius: '14px', 
@@ -185,10 +239,29 @@ const BusinessCRM = () => {
                                             <td style={{ padding: '1.5rem 2rem' }}>
                                                 <span style={{ fontSize: '1.05rem', fontWeight: '850', color: '#064E3B' }}>₹{parseFloat(customer.total_spent || 0).toLocaleString()}</span>
                                             </td>
-                                            <td style={{ padding: '1.5rem 2rem', textAlign: 'right' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                                    <button style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><MoreHorizontal size={18} /></button>
-                                                </div>
+                                            <td style={{ padding: '1.5rem 2rem', textAlign: 'right', position: 'relative' }}>
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === customer.id ? null : customer.id); }}
+                                                    style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                >
+                                                    <MoreHorizontal size={18} />
+                                                </button>
+                                                {activeMenu === customer.id && (
+                                                    <div style={{ position: 'absolute', right: '2rem', top: '3.5rem', background: 'white', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', zIndex: 10, width: '120px', overflow: 'hidden' }}>
+                                                        <button 
+                                                            onClick={() => handleEdit(customer)}
+                                                            style={{ width: '100%', padding: '0.75rem 1rem', border: 'none', background: 'white', textAlign: 'left', fontSize: '0.8rem', fontWeight: '700', color: '#475569', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
+                                                        >
+                                                            <Edit2 size={14} /> Edit
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDelete(customer.id)}
+                                                            style={{ width: '100%', padding: '0.75rem 1rem', border: 'none', background: 'white', textAlign: 'left', fontSize: '0.8rem', fontWeight: '700', color: '#EF4444', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', borderTop: '1px solid #F1F5F9' }}
+                                                        >
+                                                            <Trash2 size={14} /> Delete
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </td>
                                         </tr>
                                     );
@@ -197,6 +270,9 @@ const BusinessCRM = () => {
                         </table>
                     )}
                 </div>
+                {filteredCustomers.length === 0 && !isLoading && (
+                    <div style={{ padding: '4rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>No customers found. Click "Add Customer" to start building your database.</div>
+                )}
             </div>
 
             {/* Modal */}
@@ -204,16 +280,10 @@ const BusinessCRM = () => {
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)' }}>
                     <div style={{ background: 'white', width: '560px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-                            <h2 style={{ fontSize: '1.75rem', fontWeight: '850', color: '#064E3B' }}>New Customer</h2>
-                            <button onClick={() => setIsModalOpen(false)} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer' }}><X size={22} /></button>
+                            <h2 style={{ fontSize: '1.75rem', fontWeight: '850', color: '#064E3B' }}>{editingCustomer ? 'Edit Customer' : 'New Customer'}</h2>
+                            <button onClick={closeModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer' }}><X size={22} /></button>
                         </div>
-                        <form 
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                createMutation.mutate(formData);
-                            }}
-                            style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
-                        >
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase' }}>Full Name</label>
@@ -236,8 +306,8 @@ const BusinessCRM = () => {
                                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase' }}>Company</label>
                                 <input value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none' }} />
                             </div>
-                            <button type="submit" disabled={createMutation.isLoading} style={{ width: '100%', padding: '1.25rem', borderRadius: '18px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', fontWeight: '750', fontSize: '1.1rem', marginTop: '1rem', cursor: 'pointer' }}>
-                                {createMutation.isLoading ? <Loader2 className="animate-spin" /> : 'Add Customer'}
+                            <button type="submit" disabled={createMutation.isLoading || updateMutation.isLoading} style={{ width: '100%', padding: '1.25rem', borderRadius: '18px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', fontWeight: '750', fontSize: '1.1rem', marginTop: '1rem', cursor: 'pointer' }}>
+                                {createMutation.isLoading || updateMutation.isLoading ? <Loader2 className="animate-spin" /> : (editingCustomer ? 'Update Customer' : 'Add Customer')}
                             </button>
                         </form>
                     </div>

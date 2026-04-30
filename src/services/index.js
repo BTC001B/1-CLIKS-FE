@@ -30,3 +30,6 @@ export * from './crmService';
 export * from './inventoryService';
 export * from './billingService';
 export * from './staffingService';
+export * from './businessPlanService';
+export * from './businessSegregationService';
+export * from './businessCompareService';

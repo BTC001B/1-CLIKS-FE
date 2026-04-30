@@ -20,7 +20,9 @@ import {
     CreditCard,
     ShieldCheck,
     Building2,
-    User
+    User,
+    Edit2,
+    Trash2
 } from 'lucide-react';
 import { staffingService } from '../services';
 import '../App.css';
@@ -29,6 +31,8 @@ const BusinessStaffing = () => {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeMenu, setActiveMenu] = useState(null);
+    const [editingEmployee, setEditingEmployee] = useState(null);
     const [formData, setFormData] = useState({ name: '', role: '', email: '', phone: '', salary: '', status: 'active', hire_date: '' });
 
     const { data: employees = [], isLoading } = useQuery({
@@ -43,10 +47,61 @@ const BusinessStaffing = () => {
         mutationFn: staffingService.createEmployee,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['business-employees'] });
-            setIsModalOpen(false);
-            setFormData({ name: '', role: '', email: '', phone: '', salary: '', status: 'active', hire_date: '' });
+            closeModal();
         }
     });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }) => staffingService.updateEmployee(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['business-employees'] });
+            closeModal();
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: staffingService.deleteEmployee,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['business-employees'] });
+            setActiveMenu(null);
+        }
+    });
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setEditingEmployee(null);
+        setFormData({ name: '', role: '', email: '', phone: '', salary: '', status: 'active', hire_date: '' });
+    };
+
+    const handleEdit = (emp) => {
+        setEditingEmployee(emp);
+        setFormData({
+            name: emp.name,
+            role: emp.role,
+            email: emp.email,
+            phone: emp.phone || '',
+            salary: emp.salary,
+            status: emp.status,
+            hire_date: emp.hire_date ? emp.hire_date.split('T')[0] : ''
+        });
+        setIsModalOpen(true);
+        setActiveMenu(null);
+    };
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this employee?')) {
+            deleteMutation.mutate(id);
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (editingEmployee) {
+            updateMutation.mutate({ id: editingEmployee.id, data: formData });
+        } else {
+            createMutation.mutate(formData);
+        }
+    };
 
     const stats = {
         total: employees.length,
@@ -70,7 +125,7 @@ const BusinessStaffing = () => {
     };
 
     return (
-        <div style={{ padding: '2.5rem', background: '#F0F9F4', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ padding: '2.5rem', background: '#F0F9F4', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }} onClick={() => setActiveMenu(null)}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
                 <div>
@@ -83,7 +138,7 @@ const BusinessStaffing = () => {
                     <p style={{ color: '#475569', fontSize: '1.05rem', fontWeight: '500' }}>Manage your professional workforce and payroll.</p>
                 </div>
                 <button 
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
                     style={{ 
                         display: 'flex', alignItems: 'center', gap: '0.6rem', 
                         padding: '0.85rem 1.75rem', borderRadius: '14px', 
@@ -185,10 +240,29 @@ const BusinessStaffing = () => {
                                             <td style={{ padding: '1.5rem 2rem' }}>
                                                 <span style={{ fontSize: '1.05rem', fontWeight: '850', color: '#064E3B' }}>₹{parseFloat(emp.salary || 0).toLocaleString()}</span>
                                             </td>
-                                            <td style={{ padding: '1.5rem 2rem', textAlign: 'right' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                                    <button style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><MoreHorizontal size={18} /></button>
-                                                </div>
+                                            <td style={{ padding: '1.5rem 2rem', textAlign: 'right', position: 'relative' }}>
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === emp.id ? null : emp.id); }}
+                                                    style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                >
+                                                    <MoreHorizontal size={18} />
+                                                </button>
+                                                {activeMenu === emp.id && (
+                                                    <div style={{ position: 'absolute', right: '2rem', top: '3.5rem', background: 'white', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', zIndex: 10, width: '120px', overflow: 'hidden' }}>
+                                                        <button 
+                                                            onClick={() => handleEdit(emp)}
+                                                            style={{ width: '100%', padding: '0.75rem 1rem', border: 'none', background: 'white', textAlign: 'left', fontSize: '0.8rem', fontWeight: '700', color: '#475569', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
+                                                        >
+                                                            <Edit2 size={14} /> Edit
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDelete(emp.id)}
+                                                            style={{ width: '100%', padding: '0.75rem 1rem', border: 'none', background: 'white', textAlign: 'left', fontSize: '0.8rem', fontWeight: '700', color: '#EF4444', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', borderTop: '1px solid #F1F5F9' }}
+                                                        >
+                                                            <Trash2 size={14} /> Delete
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </td>
                                         </tr>
                                     );
@@ -197,6 +271,9 @@ const BusinessStaffing = () => {
                         </table>
                     )}
                 </div>
+                {filteredEmployees.length === 0 && !isLoading && (
+                    <div style={{ padding: '4rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>No employees found. Click "Onboard Staff" to build your team.</div>
+                )}
             </div>
 
             {/* Modal */}
@@ -204,16 +281,10 @@ const BusinessStaffing = () => {
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)' }}>
                     <div style={{ background: 'white', width: '600px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-                            <h2 style={{ fontSize: '1.75rem', fontWeight: '850', color: '#064E3B' }}>Staff Onboarding</h2>
-                            <button onClick={() => setIsModalOpen(false)} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer' }}><X size={22} /></button>
+                            <h2 style={{ fontSize: '1.75rem', fontWeight: '850', color: '#064E3B' }}>{editingEmployee ? 'Edit Staff' : 'Staff Onboarding'}</h2>
+                            <button onClick={closeModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer' }}><X size={22} /></button>
                         </div>
-                        <form 
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                createMutation.mutate(formData);
-                            }}
-                            style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
-                        >
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase' }}>Full Name</label>
@@ -248,8 +319,8 @@ const BusinessStaffing = () => {
                                     <input required type="date" value={formData.hire_date} onChange={e => setFormData({...formData, hire_date: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none' }} />
                                 </div>
                             </div>
-                            <button type="submit" disabled={createMutation.isLoading} style={{ width: '100%', padding: '1.25rem', borderRadius: '18px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', fontWeight: '750', fontSize: '1.1rem', marginTop: '1rem', cursor: 'pointer' }}>
-                                {createMutation.isLoading ? <Loader2 className="animate-spin" /> : 'Confirm Onboarding'}
+                            <button type="submit" disabled={createMutation.isLoading || updateMutation.isLoading} style={{ width: '100%', padding: '1.25rem', borderRadius: '18px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', fontWeight: '750', fontSize: '1.1rem', marginTop: '1rem', cursor: 'pointer' }}>
+                                {createMutation.isLoading || updateMutation.isLoading ? <Loader2 className="animate-spin" /> : (editingEmployee ? 'Update Staff' : 'Confirm Onboarding')}
                             </button>
                         </form>
                     </div>

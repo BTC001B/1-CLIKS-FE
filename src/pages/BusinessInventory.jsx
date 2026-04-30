@@ -130,13 +130,24 @@ const BusinessInventory = () => {
         }
     };
 
-    const filteredItems = items.filter(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.sku.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const [filterStatus, setFilterStatus] = useState('all'); // 'all' or 'low'
 
-    const totalValue = items.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+    const filteredItems = items.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            item.sku.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesFilter = filterStatus === 'all' || item.quantity < 10;
+        return matchesSearch && matchesFilter;
+    });
+
+    const totalValue = items.reduce((acc, i) => acc + (parseFloat(i.price || 0) * parseInt(i.quantity || 0)), 0);
     const lowStockCount = items.filter(i => i.quantity < 10).length;
+    const totalUnits = items.reduce((acc, i) => acc + parseInt(i.quantity || 0), 0);
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this item?')) {
+            deleteMutation.mutate(id);
+        }
+    };
 
     return (
         <div style={{ padding: '2.5rem', background: '#F0F9F4', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
@@ -181,7 +192,7 @@ const BusinessInventory = () => {
                     { label: 'Total Inventory Value', value: `₹${totalValue.toLocaleString()}`, icon: TrendingUp, color: '#1B6B3A', bg: '#F0FDF4' },
                     { label: 'Low Stock Alerts', value: lowStockCount, icon: AlertTriangle, color: '#EF4444', bg: '#FEF2F2' },
                     { label: 'Active SKUs', value: items.length, icon: Layers, color: '#064E3B', bg: '#ECFDF5' },
-                    { label: 'Total Units', value: items.reduce((acc, i) => acc + i.quantity, 0), icon: Package, color: '#0D9488', bg: '#F0FDFA' }
+                    { label: 'Total Units', value: totalUnits, icon: Package, color: '#0D9488', bg: '#F0FDFA' }
                 ].map((stat, idx) => (
                     <div key={idx} style={{ background: 'white', padding: '1.75rem', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
@@ -224,8 +235,14 @@ const BusinessInventory = () => {
                     </div>
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', background: '#F1F5F9', padding: '4px', borderRadius: '14px' }}>
-                            <button style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: 'white', color: '#064E3B', fontWeight: '700', fontSize: '0.85rem', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', cursor: 'pointer' }}>All Stock</button>
-                            <button style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: 'transparent', color: '#64748B', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer' }}>Low Stock</button>
+                            <button 
+                                onClick={() => setFilterStatus('all')}
+                                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'all' ? 'white' : 'transparent', color: filterStatus === 'all' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'all' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' }}
+                            >All Stock</button>
+                            <button 
+                                onClick={() => setFilterStatus('low')}
+                                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'low' ? 'white' : 'transparent', color: filterStatus === 'low' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'low' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' }}
+                            >Low Stock</button>
                         </div>
                         <button style={{ width: '44px', height: '44px', borderRadius: '14px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                             <Filter size={20} />
@@ -320,7 +337,7 @@ const BusinessInventory = () => {
                                                 </div>
                                                 <div style={{ width: '1px', height: '24px', background: '#E2E8F0', margin: '0 0.5rem' }}></div>
                                                 <button onClick={() => handleEdit(item)} style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Edit2 size={16} /></button>
-                                                <button onClick={() => deleteMutation.mutate(item.id)} style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #FEF2F2', background: 'white', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                                                <button onClick={() => handleDelete(item.id)} style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #FEF2F2', background: 'white', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={16} /></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -329,6 +346,9 @@ const BusinessInventory = () => {
                         </table>
                     )}
                 </div>
+                {filteredItems.length === 0 && !isLoading && (
+                    <div style={{ padding: '4rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>No inventory items found. Click "Add New Item" to initialize your stock.</div>
+                )}
             </div>
 
             {/* Modal - Add/Edit Item */}

@@ -58,6 +58,9 @@ import BusinessInventory from './pages/BusinessInventory';
 import BusinessBilling from './pages/BusinessBilling';
 import BusinessCRM from './pages/BusinessCRM';
 import BusinessStaffing from './pages/BusinessStaffing';
+import BusinessFinancialPlan from './pages/BusinessFinancialPlan';
+import BusinessSegregation from './pages/BusinessSegregation';
+import BusinessCompare from './pages/BusinessCompare';
 
 import './App.css';
 
@@ -146,10 +149,10 @@ function AppContent() {
                     <Route path="/business/dashboard" element={<BusinessDashboard />} />
                     <Route path="/business/inventory" element={<BusinessInventory />} />
                     <Route path="/business/billing" element={<BusinessBilling />} />
-                    <Route path="/business/plan" element={<BusinessPlaceholder title="Business Financial Plan" />} />
-                    <Route path="/business/compare" element={<BusinessPlaceholder title="Business Compare" />} />
+                    <Route path="/business/plan" element={<BusinessFinancialPlan />} />
+                    <Route path="/business/compare" element={<BusinessCompare />} />
                     <Route path="/business/staffing" element={<BusinessStaffing />} />
-                    <Route path="/business/segregation" element={<BusinessPlaceholder title="Business Segregation" />} />
+                    <Route path="/business/segregation" element={<BusinessSegregation />} />
                     <Route path="/business/crm" element={<BusinessCRM />} />
                     <Route path="/business/meetup" element={<BusinessPlaceholder title="Business Meetup" />} />
                     <Route path="/business/investors" element={<BusinessPlaceholder title="Business Investors" />} />
