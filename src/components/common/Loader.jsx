@@ -1,19 +1,6 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
-
-const draw = keyframes`
-  0% {
-    stroke-dashoffset: 1000;
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-`;
+import logoPng from '../../assets/cliks.png';
 
 const pulse = keyframes`
   0%, 100% {
@@ -26,46 +13,12 @@ const pulse = keyframes`
   }
 `;
 
-const rotate = keyframes`
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-`;
-
 const Loader = () => {
     return (
         <StyledWrapper>
             <div className="loader-container">
                 <div className="logo-pulse">
-                    <svg viewBox="0 0 500 500" className="cliks-svg">
-                        {/* Outer rotating ring */}
-                        <circle 
-                            cx="250" 
-                            cy="250" 
-                            r="230" 
-                            fill="none" 
-                            stroke="#1B6B3A" 
-                            strokeWidth="4" 
-                            strokeDasharray="40 120"
-                            className="rotating-ring"
-                        />
-                        
-                        {/* Main logo circle */}
-                        <circle cx="250" cy="250" r="200" fill="#064E3B" />
-                        
-                        {/* Inner white ring */}
-                        <circle cx="250" cy="250" r="145" fill="none" stroke="white" strokeWidth="35" opacity="1" />
-                        
-                        {/* New Refined Stylized checkmark */}
-                        <path 
-                            d="M160 249C160 249 180 219 200 229C220 239 240 319 240 319C240 319 325 174 425 109C375 184 265 364 240 364C215 364 160 249 160 249Z" 
-                            fill="white"
-                            className="checkmark-fade"
-                        />
-                    </svg>
+                    <img src={logoPng} alt="CLIKS" className="loader-logo" />
                 </div>
                 <div className="loading-text">
                     <span>C</span>
@@ -96,22 +49,16 @@ const StyledWrapper = styled.div`
     height: 120px;
     animation: ${pulse} 2s ease-in-out infinite;
     border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
-  .cliks-svg {
+  .loader-logo {
     width: 100%;
     height: 100%;
+    object-fit: contain;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-  }
-
-  .rotating-ring {
-    animation: ${rotate} 4s linear infinite;
-    transform-origin: center;
-  }
-
-  .checkmark-fade {
-    animation: ${pulse} 2s ease-in-out infinite;
-    transform-origin: center;
   }
 
   .loading-text {
