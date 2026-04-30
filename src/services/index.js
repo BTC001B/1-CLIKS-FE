@@ -26,3 +26,7 @@ export * from './settingsService';
 export * from './meetupsService';
 export * from './stockService';
 export * from './goalWalletService';
+export * from './crmService';
+export * from './inventoryService';
+export * from './billingService';
+export * from './staffingService';
