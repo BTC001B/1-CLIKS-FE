@@ -3,7 +3,7 @@ import { User, QrCode, Wallet, Home, BookOpen, Calculator, Users } from 'lucide-
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
-import logoWhite from '../assets/logo-white.svg';
+import logoPng from '../assets/cliks.png'; // Final branding
 
 import { ProfileDropdown } from './ProfileDropdown';
 
@@ -55,7 +55,7 @@ const Topbar = ({ onToggleSidebar }) => {
                     title="Toggle Sidebar"
                 >
                     <div className="brand-logo-small" style={{ backgroundColor: 'transparent', borderRadius: '50%' }}>
-                        <img src={logoWhite} alt="CLIKS Logo" style={{ width: '28px', height: '28px' }} />
+                        <img src={logoPng} alt="CLIKS Logo" style={{ width: '28px', height: '28px' }} />
                     </div>
                     <span style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: '700', letterSpacing: '0.5px' }}>
                         CLIKS

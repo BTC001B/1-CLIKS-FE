@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, Mail, Lock, User, ArrowRight, CheckCircle2, Loader2, AlertCircle, Briefcase } from 'lucide-react';
 import { useAuth } from '../context';
-import logoSvg from '../assets/logo.svg';
+import logoPng from '../assets/cliks.png';
 
 const Auth = () => {
     const navigate = useNavigate();
@@ -96,7 +96,7 @@ const Auth = () => {
                     cursor: "pointer"
                 }} onClick={() => navigate('/')}>
                     <div style={{ padding: '4px', background: '#E8F5E9', borderRadius: '50%' }}>
-                        <img src={logoSvg} alt="CLIKS Logo" style={{ width: '32px', height: '32px' }} />
+                        <img src={logoPng} alt="CLIKS Logo" style={{ width: '48px', height: '48px' }} />
                     </div>
                     <span style={{ fontSize: "20px", fontWeight: "800", color: "#1B6B3A" }}>CLIKS</span>
                 </div>

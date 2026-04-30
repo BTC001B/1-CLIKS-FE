@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 import { Loader } from '../components/common';
-import logoSvg from '../assets/logo.svg';
+import logoPng from '../assets/cliks.png';
 
 // Animation hooks
 const useScrollAnimation = (loading) => {
@@ -176,7 +176,7 @@ const Landing = () => {
             {/* Navbar */}
             <nav style={styles.navbar}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: '700', color: '#1B6B3A' }}>
-                    <img src={logoSvg} alt="CLIKS Logo" style={{ width: '32px', height: '32px' }} />
+                    <img src={logoPng} alt="CLIKS Logo" style={{ width: '32px', height: '32px' }} />
                     <span style={{ fontSize: '18px', letterSpacing: '0.5px' }}>CLIKS</span>
                 </div>
 
@@ -274,7 +274,7 @@ const Landing = () => {
                         boxShadow: "0 20px 60px rgba(27, 107, 58, 0.15)", border: "1px solid #DCF2E4", maxWidth: "420px", margin: "0 auto"
                     }}>
                         <div style={{ display: 'inline-flex', padding: '12px', background: '#E8F5E9', borderRadius: '12px', marginBottom: '16px' }}>
-                            <img src={logoSvg} alt="CLIKS Logo" style={{ width: '40px', height: '40px' }} />
+                            <img src={logoPng} alt="CLIKS Logo" style={{ width: '40px', height: '40px' }} />
                         </div>
                         <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#064E3B", marginBottom: "8px" }}>Sign in to continue</h2>
                         <p style={{ fontSize: "14px", color: "#78909C", marginBottom: "24px", lineHeight: "1.6" }}>
@@ -501,7 +501,7 @@ const Landing = () => {
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: "40px", maxWidth: "1200px", margin: "0 auto 40px", paddingBottom: "40px", borderBottom: "1px solid rgba(255,255,255,0.1)" }} className="footer-grid">
                     <div style={{ gridColumn: "span 1" }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                            <img src={logoSvg} alt="CLIKS Logo" style={{ width: '28px', height: '28px', filter: 'brightness(0) invert(1)' }} />
+                            <img src={logoPng} alt="CLIKS Logo" style={{ width: '28px', height: '28px' }} />
                             <h3 style={{ fontSize: "18px", fontWeight: "700", margin: 0 }}>CLIKS</h3>
                         </div>
                         <p style={{ fontSize: "14px", lineHeight: "1.7", opacity: 0.7, marginBottom: "20px", maxWidth: "300px" }}>

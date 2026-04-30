@@ -53,7 +53,7 @@ import {
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
-import logoSvg from '../assets/logo.svg';
+import logoPng from '../assets/cliks.png'; // Final branding
 
 const Sidebar = ({ isOpen }) => {
     const { user } = useAuth();
@@ -135,7 +135,7 @@ const Sidebar = ({ isOpen }) => {
         <aside className={`sidebar ${isOpen ? 'open' : 'collapsed'}`}>
             <div className="sidebar-header">
                 <div className="brand-logo" style={{ background: 'transparent' }}>
-                    <img src={logoSvg} alt="CLIKS Logo" style={{ width: '24px', height: '24px' }} />
+                    <img src={logoPng} alt="CLIKS Logo" style={{ width: '24px', height: '24px' }} />
                 </div>
                 <h2 className="app-title">CLIKS</h2>
             </div>
