@@ -1,28 +1,55 @@
-name: Deploy to Hetzner
+name: Deploy Frontend
 
 on:
   push:
     branches:
-      - main
+      - main   # make sure you push to main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      # ✅ STEP 1: Clean old files on server (VERY IMPORTANT)
+      - name: Clean server directory
+        uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
+          username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          timeout: 60s
-          command_timeout: 10m
-          debug: true
           script: |
-            cd /var/www/cliks-FE
-            git pull origin main
-            npm install
-            npm run build
+            rm -rf /var/www/app/*
+
+      # ✅ STEP 2: Upload new build
+      - name: Upload new build
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/*"
+          target: "/var/www/app"
+
+      # ✅ STEP 3: Restart Nginx (if using)
+      - name: Restart Nginx
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
             systemctl restart nginx
