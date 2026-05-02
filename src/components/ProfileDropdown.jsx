@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, User as UserIcon, Settings, LogOut, HelpCircle, User } from "lucide-react";
 import { useAuth } from "../context";

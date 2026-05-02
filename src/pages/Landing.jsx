@@ -9,6 +9,7 @@ import {
 
 import { Loader } from '../components/common';
 import logoPng from '../assets/cliks.png';
+import { useAuth } from '../context';
 
 // Animation hooks
 const useScrollAnimation = (loading) => {
@@ -41,10 +42,17 @@ const Landing = () => {
     const [scrolled, setScrolled] = useState(false);
     const [loading, setLoading] = useState(true);
 
+    const { isAuthenticated, user } = useAuth();
     useScrollAnimation(loading);
 
     useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 2500);
+        if (isAuthenticated) {
+            navigate(user?.role === 'business' ? '/business/dashboard' : '/books/dashboard', { replace: true });
+        }
+    }, [isAuthenticated, user, navigate]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 500);
         const handleScroll = () => setScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll);
 

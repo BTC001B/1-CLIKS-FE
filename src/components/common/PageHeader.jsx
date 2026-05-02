@@ -1,6 +1,5 @@
 import React from 'react';
 import { ChevronRight, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const PageHeader = ({ 
     title, 

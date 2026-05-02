@@ -35,11 +35,8 @@ const Auth = () => {
                     navigate('/books/dashboard');
                 }
             } else {
-                // Register with backend expected fields
-                // Generate username from email prefix (user@domain.com -> user)
                 const generatedUsername = formData.username.split('@')[0].toLowerCase();
-                
-                const response = await register({
+                await register({
                     username: generatedUsername,
                     email: formData.username,
                     password: formData.password,

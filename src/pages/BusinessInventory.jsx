@@ -53,7 +53,7 @@ const BusinessInventory = () => {
     const addMutation = useMutation({
         mutationFn: inventoryService.addItem,
         onSuccess: () => {
-            queryClient.invalidateQueries(['inventory']);
+            queryClient.invalidateQueries({ queryKey: ['inventory'] });
             closeModal();
         }
     });
@@ -61,7 +61,7 @@ const BusinessInventory = () => {
     const updateMutation = useMutation({
         mutationFn: ({ id, data }) => inventoryService.updateItem(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['inventory']);
+            queryClient.invalidateQueries({ queryKey: ['inventory'] });
             closeModal();
         }
     });
@@ -69,14 +69,14 @@ const BusinessInventory = () => {
     const deleteMutation = useMutation({
         mutationFn: inventoryService.deleteItem,
         onSuccess: () => {
-            queryClient.invalidateQueries(['inventory']);
+            queryClient.invalidateQueries({ queryKey: ['inventory'] });
         }
     });
 
     const adjustMutation = useMutation({
         mutationFn: ({ id, amount }) => inventoryService.adjustStock(id, amount),
         onSuccess: () => {
-            queryClient.invalidateQueries(['inventory']);
+            queryClient.invalidateQueries({ queryKey: ['inventory'] });
             closeAdjustModal();
         }
     });

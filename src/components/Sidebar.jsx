@@ -108,7 +108,7 @@ const Sidebar = ({ isOpen }) => {
         }
     }
 
-    const toggleDropdown = (name) => {
+    const _toggleDropdown = (name) => {
         setOpenDropdown(openDropdown === name ? null : name);
     };
 
@@ -117,7 +117,7 @@ const Sidebar = ({ isOpen }) => {
         if (path) navigate(path);
     };
 
-    const handleKeyDown = (e, callback) => {
+    const _handleKeyDown = (e, callback) => {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             callback();
@@ -241,7 +241,7 @@ const Sidebar = ({ isOpen }) => {
                             </div>
                         </button>
 
-                        {/* Audit */}
+                        {/* Audit
                         <div style={{ marginTop: '6rem' }}>
                             <Tooltip
                                 onClick={() => handleItemClick('Audit', '/auditor')}
@@ -249,6 +249,7 @@ const Sidebar = ({ isOpen }) => {
                                 tooltipText="Auditor"
                             />
                         </div>
+                        */}
                     </>
                 )}
 

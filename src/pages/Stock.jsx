@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PageHeader } from '../components/common';
 import { 
-    Plus, Search, Package, Loader2, 
-    AlertCircle, X, CheckCircle2, Minus, 
-    History, Trash2, Edit3, 
-    TrendingUp, Box, MoreVertical
+    Package, 
+    Plus, 
+    Search, 
+    Filter, 
+    Edit2, 
+    Trash2, 
+    AlertTriangle,
+    CheckCircle2,
+    Clock,
+    X,
+    Loader2,
+    ArrowUpRight,
+    ArrowDownRight,
+    Box,
+    Layers,
+    TrendingUp,
+    Download
 } from 'lucide-react';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { 
     fetchStockItems, 
     fetchStockStats, 
@@ -18,259 +29,31 @@ import {
     fetchStockHistory 
 } from '../services/stockService';
 import { formatCurrency } from '../lib/formatCurrency';
+import '../App.css';
 
-// ---------------------------------------------------------------------------
-// Components
-// ---------------------------------------------------------------------------
-
-const StockItem = ({ item, onAdjust, onDelete, onEdit, onViewHistory }) => {
-    const [isDeleting, setIsDeleting] = useState(false);
-    const isLowStock = Number(item.quantity) < 5;
-    const isOutOfStock = Number(item.quantity) === 0;
-
-    return (
-        <Motion.div 
-            className={`premium-card ${isOutOfStock ? 'opacity-75' : ''}`} 
-            style={{ padding: '1.5rem', position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-        >
-            <AnimatePresence>
-                {isDeleting && (
-                    <Motion.div 
-                        style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.98)', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', textAlign: 'center', borderRadius: '32px' }}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#FEE2E2', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-                            <Trash2 size={24} />
-                        </div>
-                        <div style={{ fontWeight: 800, color: '#0F172A', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Remove Item?</div>
-                        <p style={{ fontSize: '0.875rem', color: '#64748B', marginBottom: '1.5rem' }}>This action cannot be undone. All transaction history will be purged.</p>
-                        <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
-                            <button className="btn-premium secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setIsDeleting(false)}>Cancel</button>
-                            <button className="btn-premium primary" style={{ flex: 1, justifyContent: 'center', background: '#EF4444' }} onClick={() => { onDelete(item.id); setIsDeleting(false); }}>Delete</button>
-                        </div>
-                    </Motion.div>
-                )}
-            </AnimatePresence>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: isLowStock ? '#FEF2F2' : '#F0FDF4', color: isLowStock ? '#EF4444' : '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid currentColor' }}>
-                        <Box size={24} />
-                    </div>
-                    <div>
-                        <div style={{ fontWeight: 900, fontSize: '1.1rem', color: '#1E293B' }}>{item.name}</div>
-                        <div className="label-caps" style={{ color: '#64748B' }}>{item.category}</div>
-                    </div>
-                </div>
-                {isLowStock && (
-                    <div style={{ background: '#FEF2F2', color: '#EF4444', padding: '4px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid #FEE2E2' }}>
-                        <AlertCircle size={12} /> LOW STOCK
-                    </div>
-                )}
-            </div>
-
-            <div style={{ background: '#F8FAFC', padding: '1.25rem', borderRadius: '20px', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #F0FDF4' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <button className="icon-btn" style={{ background: 'white', width: '36px', height: '36px' }} onClick={() => onAdjust(item.id, -1)} disabled={isOutOfStock}>
-                        <Minus size={18} />
-                    </button>
-                    <div style={{ textAlign: 'center', minWidth: '60px' }}>
-                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A', lineHeight: 1 }}>{item.quantity}</div>
-                        <div className="label-caps" style={{ fontSize: '9px', marginTop: '4px' }}>{item.unit || 'pcs'}</div>
-                    </div>
-                    <button className="icon-btn" style={{ background: 'white', width: '36px', height: '36px' }} onClick={() => onAdjust(item.id, 1)}>
-                        <Plus size={18} />
-                    </button>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                    <div className="label-caps" style={{ fontSize: '9px' }}>Inventory Value</div>
-                    <div style={{ fontWeight: 900, color: '#1B6B3A', fontSize: '1.1rem' }}>{formatCurrency(item.value || 0)}</div>
-                </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="icon-btn" onClick={() => onViewHistory(item)} title="Activity History"><History size={18} /></button>
-                    <button className="icon-btn" onClick={() => onEdit(item)} title="Edit Item"><Edit3 size={18} /></button>
-                </div>
-                <button className="icon-btn" style={{ color: '#EF4444', background: '#FEF2F2' }} onClick={() => setIsDeleting(true)} title="Remove Item"><Trash2 size={18} /></button>
-            </div>
-        </Motion.div>
-    );
-};
-
-const AddItemModal = ({ isOpen, onClose, onSave, editingItem }) => {
+const Stock = () => {
+    const queryClient = useQueryClient();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+    const [adjustType, setAdjustType] = useState('in'); // 'in' or 'out'
+    const [adjustAmount, setAdjustAmount] = useState(1);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         category: 'Stationery',
         quantity: 1,
         unit: 'pcs',
-        unit_price: ''
+        unit_price: '',
+        status: 'In Stock',
+        low_stock_threshold: 5
     });
-
-    React.useEffect(() => {
-        if (editingItem) {
-            setFormData({
-                name: editingItem.name,
-                category: editingItem.category,
-                quantity: editingItem.quantity,
-                unit: editingItem.unit || 'pcs',
-                unit_price: editingItem.unit_price || ''
-            });
-        } else {
-            setFormData({
-                name: '',
-                category: 'Stationery',
-                quantity: 1,
-                unit: 'pcs',
-                unit_price: ''
-            });
-        }
-    }, [editingItem, isOpen]);
-
-    if (!isOpen) return null;
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSave(formData);
-    };
-
-    return (
-        <div className="modal-overlay" onClick={onClose}>
-            <Motion.div 
-                className="premium-card" 
-                style={{ width: '100%', maxWidth: '500px', background: 'white', padding: '2.5rem' }} 
-                onClick={e => e.stopPropagation()}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-            >
-                <div className="card-header" style={{ padding: '0 0 2rem 0', border: 'none' }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0 }}>{editingItem ? 'Edit Asset' : 'New Asset'}</h2>
-                    <button onClick={onClose} className="icon-btn"><X size={24} /></button>
-                </div>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div className="form-group">
-                        <label className="label-caps">Item Name</label>
-                        <input 
-                            className="premium-input"
-                            required type="text" placeholder="e.g. MacBook Pro M3" 
-                            value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} 
-                        />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group">
-                            <label className="label-caps">Category</label>
-                            <select className="premium-input" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-                                <option value="Stationery">Stationery</option>
-                                <option value="Electronics">Electronics</option>
-                                <option value="Furniture">Furniture</option>
-                                <option value="Supplies">Supplies</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label className="label-caps">Unit</label>
-                            <input className="premium-input" type="text" placeholder="pcs / units" value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} />
-                        </div>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group">
-                            <label className="label-caps">Initial Qty</label>
-                            <input className="premium-input" required type="number" min="0" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} disabled={!!editingItem} />
-                        </div>
-                        <div className="form-group">
-                            <label className="label-caps">Unit Cost (₹)</label>
-                            <input className="premium-input" required type="number" step="0.01" placeholder="0.00" value={formData.unit_price} onChange={e => setFormData({...formData, unit_price: e.target.value})} />
-                        </div>
-                    </div>
-                    <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <button type="button" className="btn-premium secondary" style={{ justifyContent: 'center' }} onClick={onClose}>Discard</button>
-                        <button type="submit" className="btn-premium primary" style={{ justifyContent: 'center' }}>
-                            {editingItem ? 'Save Changes' : 'Confirm Entry'}
-                        </button>
-                    </div>
-                </form>
-            </Motion.div>
-        </div>
-    );
-};
-
-const HistoryPanel = ({ item, isOpen, onClose }) => {
-    const { data: history = [], isLoading } = useQuery({
-        queryKey: ['stock-history', item?.id],
-        queryFn: () => fetchStockHistory(item.id),
-        enabled: !!item && isOpen
-    });
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="modal-overlay" onClick={onClose}>
-            <Motion.div 
-                className="premium-card" 
-                style={{ width: '100%', maxWidth: '480px', background: 'white', height: '80vh', display: 'flex', flexDirection: 'column', padding: '2rem' }} 
-                onClick={e => e.stopPropagation()}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-            >
-                <div className="card-header" style={{ padding: '0 0 1.5rem 0', border: 'none' }}>
-                    <div>
-                        <h3 style={{ margin: 0, fontWeight: 900, fontSize: '1.25rem' }}>Asset Flow Log</h3>
-                        <div className="label-caps" style={{ color: '#1B6B3A', marginTop: '4px' }}>{item?.name}</div>
-                    </div>
-                    <button onClick={onClose} className="icon-btn"><X size={24} /></button>
-                </div>
-                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }} className="hide-scrollbar">
-                    {isLoading ? (
-                        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}><Loader2 size={32} className="animate-spin" color="#1B6B3A" /></div>
-                    ) : history.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '4rem', color: '#94A3B8' }}>
-                            <History size={48} style={{ opacity: 0.2, margin: '0 auto 1rem' }} />
-                            <div className="label-caps">No transaction record found</div>
-                        </div>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {history.map(tx => (
-                                <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #F0FDF4' }}>
-                                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: tx.type === 'in' ? '#DCFCE7' : '#FEE2E2', color: tx.type === 'in' ? '#16A34A' : '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid currentColor' }}>
-                                        {tx.type === 'in' ? <Plus size={16} /> : <Minus size={16} />}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1E293B' }}>{tx.type === 'in' ? 'Procured' : 'Consumed'}</div>
-                                        <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600 }}>{new Date(tx.created_at).toLocaleString()}</div>
-                                    </div>
-                                    <div style={{ fontWeight: 900, fontSize: '1.1rem', color: tx.type === 'in' ? '#16A34A' : '#EF4444' }}>
-                                        {tx.type === 'in' ? '+' : '-'}{tx.quantity}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </Motion.div>
-        </div>
-    );
-};
-
-const Stock = () => {
-    const queryClient = useQueryClient();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('All');
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState(null);
-    const [historyItem, setHistoryItem] = useState(null);
 
     // Queries
     const { data: items = [], isLoading } = useQuery({
-        queryKey: ['stock', searchQuery, selectedCategory],
-        queryFn: () => fetchStockItems({ 
-            search: searchQuery, 
-            category: selectedCategory === 'All' ? undefined : selectedCategory 
-        })
+        queryKey: ['stock', searchTerm],
+        queryFn: () => fetchStockItems({ search: searchTerm })
     });
 
     const { data: stats } = useQuery({
@@ -284,27 +67,7 @@ const Stock = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['stock'] });
             queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
-            setIsAddModalOpen(false);
-        }
-    });
-
-    const adjustMutation = useMutation({
-        mutationFn: ({ id, delta }) => adjustStockQuantity(id, delta),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['stock'] });
-            queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
-        }
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: deleteStockItem,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['stock'] });
-            queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
-        },
-        onError: (err) => {
-            console.error('Delete failed:', err);
-            alert('Failed to delete item. Please try again.');
+            closeModal();
         }
     });
 
@@ -313,18 +76,75 @@ const Stock = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['stock'] });
             queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
-            setIsAddModalOpen(false);
-            setEditingItem(null);
+            closeModal();
         }
     });
 
-    const handleSave = (data) => {
-        const payload = {
-            ...data,
-            quantity: Number(data.quantity),
-            unit_price: Number(data.unit_price)
-        };
+    const deleteMutation = useMutation({
+        mutationFn: deleteStockItem,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['stock'] });
+            queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
+        }
+    });
 
+    const adjustMutation = useMutation({
+        mutationFn: ({ id, delta }) => adjustStockQuantity(id, delta),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['stock'] });
+            queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
+            closeAdjustModal();
+        }
+    });
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setEditingItem(null);
+        setFormData({
+            name: '',
+            category: 'Stationery',
+            quantity: 1,
+            unit: 'pcs',
+            unit_price: '',
+            status: 'In Stock',
+            low_stock_threshold: 5
+        });
+    };
+
+    const handleEdit = (item) => {
+        setEditingItem(item);
+        setFormData({
+            name: item.name,
+            category: item.category || 'Stationery',
+            quantity: item.quantity,
+            unit: item.unit || 'pcs',
+            unit_price: item.unit_price || '',
+            status: item.status || 'In Stock',
+            low_stock_threshold: item.low_stock_threshold ?? item.lowstockthreshold ?? item.lowStockThreshold ?? item.low_stock_threshold ?? 5
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleAdjustClick = (item, type) => {
+        setSelectedItem(item);
+        setAdjustType(type);
+        setAdjustAmount(1);
+        setIsAdjustModalOpen(true);
+    };
+
+    const closeAdjustModal = () => {
+        setIsAdjustModalOpen(false);
+        setSelectedItem(null);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const payload = {
+            ...formData,
+            quantity: Number(formData.quantity || 0),
+            unit_price: Number(formData.unit_price || 0),
+            low_stock_threshold: Number(formData.low_stock_threshold || 5)
+        };
         if (editingItem) {
             updateMutation.mutate({ id: editingItem.id, data: payload });
         } else {
@@ -332,125 +152,400 @@ const Stock = () => {
         }
     };
 
-    const handleAdjust = (id, delta) => {
-        adjustMutation.mutate({ id, delta });
-    };
+    const [filterStatus, setFilterStatus] = useState('all'); // 'all' or 'low'
+
+    const filteredItems = items.filter(item => {
+        const matchesFilter = filterStatus === 'all' || item.quantity < (item.low_stock_threshold || 5);
+        return matchesFilter;
+    });
+
+    const totalValue = stats?.totalValue || 0;
+    const lowStockCount = stats?.lowStockCount || 0;
+    const totalUnits = items.reduce((acc, i) => acc + parseInt(i.quantity || 0), 0);
 
     const handleDelete = (id) => {
-        if (!id) return;
-        deleteMutation.mutate(id);
+        if (window.confirm('Are you sure you want to delete this asset?')) {
+            deleteMutation.mutate(id);
+        }
     };
 
     return (
-        <div className="premium-container">
-            <PageHeader 
-                title={<>Inventory <span className="text-highlight">Control</span></>}
-                subtitle="Central management for assets, supplies, and real-time stock tracking."
-                breadcrumb="INVENTORY"
-                primaryAction={{
-                    label: "Add New Asset",
-                    onClick: () => setIsAddModalOpen(true)
-                }}
-            />
-
-            <section className="stats-grid" style={{ marginTop: '2.5rem' }}>
-                <div className="premium-card glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#F0FDF4', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Package size={28} />
+        <div style={{ padding: '2.5rem', background: '#F0F9F4', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
+            {/* Top Navigation / Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                        <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 8px 16px rgba(27, 107, 58, 0.2)' }}>
+                            <Box size={22} />
+                        </div>
+                        <h1 style={{ fontSize: '2rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em' }}>Inventory Suite</h1>
                     </div>
-                    <div>
-                        <div className="label-caps">Managed Assets</div>
-                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A' }}>{stats?.totalItems || 0}</div>
-                    </div>
+                    <p style={{ color: '#475569', fontSize: '1.05rem', fontWeight: '500' }}>Precision stock management for enterprise growth.</p>
                 </div>
-                <div className="premium-card glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#F0FDF4', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <TrendingUp size={28} />
-                    </div>
-                    <div>
-                        <div className="label-caps">Inventory Valuation</div>
-                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A' }}>{formatCurrency(stats?.totalValue || 0)}</div>
-                    </div>
-                </div>
-                <div className="premium-card glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#FEF2F2', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <AlertCircle size={28} />
-                    </div>
-                    <div>
-                        <div className="label-caps">Low Inventory</div>
-                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#EF4444' }}>{stats?.lowStockCount || 0}</div>
-                    </div>
-                </div>
-            </section>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3rem', borderBottom: '1px solid #F0FDF4', paddingBottom: '1rem' }}>
-                <div style={{ display: 'flex', gap: '1.5rem' }}>
-                    {['All', 'Stationery', 'Electronics', 'Furniture', 'Supplies'].map(cat => (
-                        <button 
-                            key={cat} 
-                            style={{ 
-                                background: 'none', border: 'none', padding: '0 0 1rem 0', cursor: 'pointer',
-                                fontSize: '0.85rem', fontWeight: 900, color: selectedCategory === cat ? '#1B6B3A' : '#94A3B8',
-                                borderBottom: selectedCategory === cat ? '2px solid #1B6B3A' : 'none',
-                                textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'all 0.2s'
-                            }}
-                            onClick={() => setSelectedCategory(cat)}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-                <div style={{ background: 'white', borderRadius: '12px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid #F0FDF4', width: '300px' }}>
-                    <Search size={18} color="#94A3B8" />
-                    <input 
-                        style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontWeight: 600, fontSize: '0.9rem' }}
-                        type="text" placeholder="Search inventory..." 
-                        value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                    />
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.85rem 1.25rem', borderRadius: '14px', background: 'white', color: '#1B6B3A', border: '1px solid #DCF2E4', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}>
+                        <Download size={18} />
+                        Export Report
+                    </button>
+                    <button 
+                        onClick={() => setIsModalOpen(true)}
+                        style={{ 
+                            display: 'flex', alignItems: 'center', gap: '0.6rem', 
+                            padding: '0.85rem 1.75rem', borderRadius: '14px', 
+                            background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', 
+                            fontWeight: '700', cursor: 'pointer',
+                            boxShadow: '0 10px 20px rgba(27, 107, 58, 0.25)',
+                            transition: 'transform 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                        <Plus size={20} />
+                        Add New Asset
+                    </button>
                 </div>
             </div>
 
-            {isLoading ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6rem' }}>
-                    <Loader2 size={48} className="animate-spin" color="#1B6B3A" />
-                    <p className="label-caps" style={{ marginTop: '1rem', color: '#94A3B8' }}>Syncing Inventory...</p>
-                </div>
-            ) : items.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '6rem', background: '#F8FAFC', borderRadius: '32px', border: '2px dashed #E2E8F0', marginTop: '2rem' }}>
-                    <Package size={64} style={{ margin: '0 auto 1.5rem', opacity: 0.1 }} />
-                    <h3 style={{ fontWeight: 900, color: '#1E293B', marginBottom: '0.5rem' }}>No Items Found</h3>
-                    <p style={{ color: '#64748B', fontWeight: 600 }}>Try adjusting your search or category filters.</p>
-                </div>
-            ) : (
-                <div className="dashboard-grid" style={{ marginTop: '2rem' }}>
-                    {items.map(item => (
-                        <StockItem 
-                            key={item.id} 
-                            item={item} 
-                            onAdjust={handleAdjust}
-                            onDelete={handleDelete}
-                            onEdit={(item) => { setEditingItem(item); setIsAddModalOpen(true); }}
-                            onViewHistory={setHistoryItem}
+            {/* Premium Stats Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+                {[
+                    { label: 'Total Inventory Value', value: formatCurrency(totalValue), icon: TrendingUp, color: '#1B6B3A', bg: '#F0FDF4' },
+                    { label: 'Low Stock Alerts', value: lowStockCount, icon: AlertTriangle, color: '#EF4444', bg: '#FEF2F2' },
+                    { label: 'Active Items', value: items.length, icon: Layers, color: '#064E3B', bg: '#ECFDF5' },
+                    { label: 'Total Units', value: totalUnits, icon: Package, color: '#0D9488', bg: '#F0FDFA' }
+                ].map((stat, idx) => (
+                    <div key={idx} style={{ background: 'white', padding: '1.75rem', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
+                                <stat.icon size={24} />
+                            </div>
+                            <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
+                        </div>
+                        <p style={{ fontSize: '0.9rem', fontWeight: '600', color: '#64748B', marginBottom: '0.5rem' }}>{stat.label}</p>
+                        <h3 style={{ fontSize: '1.75rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{stat.value}</h3>
+                    </div>
+                ))}
+            </div>
+
+            {/* Main Content Area */}
+            <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #E2E8F0', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+                {/* Custom Toolbar */}
+                <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
+                    <div style={{ position: 'relative', width: '400px' }}>
+                        <Search size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                        <input 
+                            type="text" 
+                            placeholder="Search by product name or category..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{ 
+                                width: '100%', padding: '0.85rem 1rem 0.85rem 3.25rem', borderRadius: '16px', 
+                                border: '1px solid #E2E8F0', outline: 'none', background: 'white',
+                                fontSize: '0.95rem', fontWeight: '500', transition: 'all 0.2s'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#1B6B3A';
+                                e.target.style.boxShadow = '0 0 0 4px rgba(27, 107, 58, 0.05)';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = '#E2E8F0';
+                                e.target.style.boxShadow = 'none';
+                            }}
                         />
-                    ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', background: '#F1F5F9', padding: '4px', borderRadius: '14px' }}>
+                            <button 
+                                onClick={() => setFilterStatus('all')}
+                                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'all' ? 'white' : 'transparent', color: filterStatus === 'all' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'all' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' }}
+                            >All Stock</button>
+                            <button 
+                                onClick={() => setFilterStatus('low')}
+                                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'low' ? 'white' : 'transparent', color: filterStatus === 'low' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'low' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' }}
+                            >Low Stock</button>
+                        </div>
+                        <button style={{ width: '44px', height: '44px', borderRadius: '14px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <Filter size={20} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Table Container */}
+                <div style={{ overflowX: 'auto' }}>
+                    {isLoading ? (
+                        <div style={{ padding: '6rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+                            <Loader2 className="animate-spin" size={40} color="#1B6B3A" />
+                            <p style={{ color: '#64748B', fontWeight: '600' }}>Synchronizing inventory data...</p>
+                        </div>
+                    ) : (
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Details</th>
+                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</th>
+                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock Level</th>
+                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Price</th>
+                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredItems.map((item) => {
+                                    const thresh = item.low_stock_threshold ?? item.lowstockthreshold ?? item.lowStockThreshold ?? item.low_stock_threshold ?? 5;
+                                    const isLowStock = Number(item.quantity) < thresh;
+                                    const isOutOfStock = Number(item.quantity) === 0;
+
+                                    return (
+                                        <tr key={item.id} style={{ borderBottom: '1px solid #F8FAFC', transition: 'all 0.2s' }} className="inventory-row">
+                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                    <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: '#F0FDF4', border: '1px solid #DCF2E4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A' }}>
+                                                        <Package size={24} />
+                                                    </div>
+                                                    <div>
+                                                        <p style={{ fontWeight: '750', color: '#1E293B', fontSize: '1rem', marginBottom: '0.25rem' }}>{item.name}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#1B6B3A' }}></div>
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#475569' }}>{item.category}</span>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.4rem' }}>
+                                                    <span style={{ fontSize: '1.15rem', fontWeight: '850', color: isLowStock ? '#EF4444' : '#1E293B' }}>{item.quantity}</span>
+                                                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#94A3B8', marginBottom: '2px' }}>{item.unit || 'pcs'}</span>
+                                                </div>
+                                                {isLowStock && (
+                                                    <div style={{ marginTop: '0.4rem', fontSize: '0.7rem', fontWeight: '800', color: '#EF4444', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                        <AlertTriangle size={12} /> CRITICAL LEVEL
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                                <span style={{ fontSize: '1.05rem', fontWeight: '800', color: '#064E3B' }}>{formatCurrency(item.unit_price || 0)}</span>
+                                            </td>
+                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                                <div style={{ 
+                                                    display: 'inline-flex', alignItems: 'center', gap: '0.5rem', 
+                                                    padding: '0.5rem 1rem', borderRadius: '12px',
+                                                    background: isOutOfStock ? '#FEF2F2' : (isLowStock ? '#FFFBEB' : '#F0FDF4'),
+                                                    color: isOutOfStock ? '#B91C1C' : (isLowStock ? '#B45309' : '#15803D'),
+                                                    fontSize: '0.85rem', fontWeight: '800'
+                                                }}>
+                                                    {isOutOfStock ? <Clock size={14} /> : <CheckCircle2 size={14} />}
+                                                    {isOutOfStock ? 'OUT OF STOCK' : (isLowStock ? 'LOW STOCK' : 'IN STOCK')}
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '1.5rem 2rem', textAlign: 'right' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <div style={{ display: 'flex', background: '#F8FAFC', padding: '4px', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                                                        <button 
+                                                            onClick={() => handleAdjustClick(item, 'in')}
+                                                            style={{ width: '36px', height: '36px', borderRadius: '8px', border: 'none', background: '#1B6B3A', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            title="Stock In"
+                                                        >
+                                                            <ArrowUpRight size={18} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleAdjustClick(item, 'out')}
+                                                            style={{ width: '36px', height: '36px', borderRadius: '8px', border: 'none', background: '#EF4444', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '4px' }}
+                                                            title="Stock Out"
+                                                            disabled={isOutOfStock}
+                                                        >
+                                                            <ArrowDownRight size={18} />
+                                                        </button>
+                                                    </div>
+                                                    <div style={{ width: '1px', height: '24px', background: '#E2E8F0', margin: '0 0.5rem' }}></div>
+                                                    <button onClick={() => handleEdit(item)} style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Edit2 size={16} /></button>
+                                                    <button onClick={() => handleDelete(item.id)} style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #FEF2F2', background: 'white', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+                {filteredItems.length === 0 && !isLoading && (
+                    <div style={{ padding: '4rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>No inventory items found. Click "Add New Asset" to initialize your stock.</div>
+                )}
+            </div>
+
+            {/* Modal - Add/Edit Asset */}
+            {isModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)' }}>
+                    <div style={{ background: 'white', width: '560px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                            <div>
+                                <h2 style={{ fontSize: '1.75rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em' }}>{editingItem ? 'Edit Asset' : 'Register Asset'}</h2>
+                                <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: '500' }}>Enter product specifications and initial stock levels.</p>
+                            </div>
+                            <button onClick={closeModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer', color: '#64748B' }}><X size={22} /></button>
+                        </div>
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Asset Name</label>
+                                    <input required placeholder="e.g. MacBook Pro M3" type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Label</label>
+                                    <input required placeholder="pcs / Units" type="text" value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Classification</label>
+                                    <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontSize: '1rem', fontWeight: '600' }}>
+                                        <option value="Stationery">Stationery</option>
+                                        <option value="Electronics">Electronics</option>
+                                        <option value="Furniture">Furniture</option>
+                                        <option value="Supplies">Supplies</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Valuation (₹)</label>
+                                    <input required type="number" step="0.01" value={formData.unit_price} onChange={(e) => setFormData({...formData, unit_price: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Initial Quantity</label>
+                                    <input required type="number" value={formData.quantity === 0 ? '' : formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value === '' ? '' : parseInt(e.target.value) || 0})} disabled={!!editingItem} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Inventory Status</label>
+                                    <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontSize: '1rem', fontWeight: '600' }}>
+                                        <option value="In Stock">In Stock</option>
+                                        <option value="Low Stock">Low Stock</option>
+                                        <option value="Out of Stock">Out of Stock</option>
+                                        <option value="On Order">On Order</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Low Stock Level</label>
+                                    <input required type="number" value={formData.low_stock_threshold === 0 ? '' : formData.low_stock_threshold} onChange={(e) => setFormData({...formData, low_stock_threshold: e.target.value === '' ? '' : parseInt(e.target.value) || 0})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
+                            </div>
+                            <button type="submit" disabled={addMutation.isPending || addMutation.isLoading || updateMutation.isPending || updateMutation.isLoading} style={{ 
+                                width: '100%', padding: '1.25rem', borderRadius: '18px', 
+                                background: (addMutation.isPending || addMutation.isLoading || updateMutation.isPending || updateMutation.isLoading) ? '#CBD5E1' : 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', 
+                                fontWeight: '750', fontSize: '1.1rem', marginTop: '1rem', cursor: (addMutation.isPending || addMutation.isLoading || updateMutation.isPending || updateMutation.isLoading) ? 'not-allowed' : 'pointer',
+                                boxShadow: '0 10px 20px rgba(27, 107, 58, 0.2)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                            }}>
+                                {(addMutation.isPending || addMutation.isLoading || updateMutation.isPending || updateMutation.isLoading) ? (
+                                    <>
+                                        <Loader2 size={20} className="animate-spin" /> {editingItem ? 'Updating...' : 'Initializing...'}
+                                    </>
+                                ) : (
+                                    editingItem ? 'Update Asset Catalog' : 'Initialize Asset'
+                                )}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             )}
 
-            <AddItemModal 
-                isOpen={isAddModalOpen} 
-                onClose={() => {setIsAddModalOpen(false); setEditingItem(null);}} 
-                onSave={handleSave} 
-                editingItem={editingItem}
-            />
+            {/* Stock Adjust Modal */}
+            {isAdjustModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(10px)' }}>
+                    <div style={{ background: 'white', width: '440px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <div>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em' }}>
+                                    {adjustType === 'in' ? 'Stock Induction' : 'Stock Depletion'}
+                                </h2>
+                                <p style={{ color: '#64748B', fontSize: '0.85rem', fontWeight: '600' }}>Adjust real-time inventory levels.</p>
+                            </div>
+                            <button onClick={closeAdjustModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer' }}><X size={22} /></button>
+                        </div>
+                        
+                        <div style={{ background: '#F8FAFC', padding: '1.25rem', borderRadius: '20px', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1.25rem', border: '1px solid #F1F5F9' }}>
+                            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+                                <Package size={28} />
+                            </div>
+                            <div>
+                                <p style={{ fontWeight: '800', color: '#1E293B', fontSize: '1.1rem' }}>{selectedItem?.name}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B' }}>Available Base:</span>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: '850', color: '#064E3B' }}>{selectedItem?.quantity}</span>
+                                </div>
+                            </div>
+                        </div>
 
-            <HistoryPanel 
-                item={historyItem} 
-                isOpen={!!historyItem} 
-                onClose={() => setHistoryItem(null)} 
-            />
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Adjustment Volume</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                                <button 
+                                    onClick={() => setAdjustAmount(Math.max(1, adjustAmount - 1))}
+                                    style={{ width: '52px', height: '52px', borderRadius: '16px', border: '2px solid #E2E8F0', background: 'white', fontSize: '1.5rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s', color: '#475569' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1B6B3A'}
+                                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#E2E8F0'}
+                                >-</button>
+                                <input 
+                                    type="number" 
+                                    value={adjustAmount} 
+                                    onChange={(e) => setAdjustAmount(Math.max(1, parseInt(e.target.value) || 0))}
+                                    style={{ flex: 1, padding: '1rem', borderRadius: '16px', border: '2px solid #1B6B3A', textAlign: 'center', fontSize: '1.5rem', fontWeight: '900', outline: 'none', color: '#1E293B', background: '#F0FDF4' }}
+                                />
+                                <button 
+                                    onClick={() => setAdjustAmount(adjustAmount + 1)}
+                                    style={{ width: '52px', height: '52px', borderRadius: '16px', border: '2px solid #E2E8F0', background: 'white', fontSize: '1.5rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s', color: '#475569' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1B6B3A'}
+                                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#E2E8F0'}
+                                >+</button>
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => adjustMutation.mutate({ 
+                                id: selectedItem.id, 
+                                delta: adjustType === 'in' ? adjustAmount : -adjustAmount 
+                            })}
+                            disabled={adjustMutation.isLoading}
+                            style={{ 
+                                width: '100%', padding: '1.25rem', borderRadius: '20px', 
+                                background: adjustType === 'in' ? 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)' : 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)', 
+                                color: 'white', border: 'none', fontWeight: '800', fontSize: '1.1rem', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
+                                boxShadow: adjustType === 'in' ? '0 10px 20px rgba(27, 107, 58, 0.25)' : '0 10px 20px rgba(239, 68, 68, 0.25)'
+                            }}
+                        >
+                            {adjustMutation.isLoading ? <Loader2 size={24} className="animate-spin" /> : (
+                                <>
+                                    {adjustType === 'in' ? <TrendingUp size={22} /> : <ArrowDownRight size={22} />}
+                                    Commit {adjustType === 'in' ? 'Induction' : 'Depletion'}
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            <style>{`
+                .inventory-row:hover {
+                    background-color: #F8FAFC !important;
+                    transform: scale(1.002);
+                }
+                .inventory-row:hover td {
+                    color: #1B6B3A;
+                }
+                input::-webkit-outer-spin-button,
+                input::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+            `}</style>
         </div>
     );
 };
 
 export default Stock;
-;
