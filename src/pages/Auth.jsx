@@ -13,7 +13,7 @@ const Auth = () => {
     const [error, setError] = useState('');
 
     const CLIENT_ID = 'cliks-app';
-    const REDIRECT_URI = 'https://cliks.beta-softnet.com';
+    const REDIRECT_URI = 'https://cliks.beta-softnet.com/auth';
     const BNX_AUTH_URL = 'https://www.b2auth.com';
     const BNX_API_URL = 'https://api.bnxmail.com';
 
