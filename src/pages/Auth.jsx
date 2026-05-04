@@ -44,6 +44,7 @@ const Auth = () => {
             });
 
             const tokenData = await tokenRes.json();
+            console.log(tokenData);
 
             if (!tokenData.success) {
                 throw new Error('Failed to get BNX token');
