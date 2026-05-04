@@ -489,7 +489,7 @@ export default function Public() {
         });
         const queryClient = useQueryClient();
 
-        const { data: events = [], isLoading } = useQuery({
+        const { data: events = [] } = useQuery({
             queryKey: ['meetups'],
             queryFn: meetupsService.getMeetups,
             retry: 1,

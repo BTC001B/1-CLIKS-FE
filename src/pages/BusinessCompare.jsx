@@ -38,7 +38,7 @@ const BusinessCompare = () => {
     });
 
     // Fetch Periodic Comparison
-    const { data: periodic = { current: { revenue: 0, expenses: 0 }, previous: { revenue: 0, expenses: 0 } }, isLoading: isPeriodicLoading } = useQuery({
+    const { data: periodic = { current: { revenue: 0, expenses: 0 }, previous: { revenue: 0, expenses: 0 } } } = useQuery({
         queryKey: ['business-periodic-compare'],
         queryFn: async () => {
             const res = await businessCompareService.getPeriodicComparison();

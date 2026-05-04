@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
         };
 
         initAuth();
-    }, [token, logout]);
+    }, [token, logout, user]);
 
     const ssoLogin = async (bnxToken) => {
         const data = await authService.ssoLogin(bnxToken);

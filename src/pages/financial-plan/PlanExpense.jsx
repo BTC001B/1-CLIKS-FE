@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { formatCurrency } from '../../lib/formatCurrency';
 import { financialPlanService } from '../../services';
 import { 
     Plus, 

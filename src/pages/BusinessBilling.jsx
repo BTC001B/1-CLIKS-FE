@@ -28,7 +28,7 @@ const BusinessBilling = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingInvoice, setEditingInvoice] = useState(null);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState(() => ({
         invoice_number: `INV-${Date.now().toString().slice(-6)}`,
         client_name: '',
         client_email: '',
@@ -36,7 +36,7 @@ const BusinessBilling = () => {
         status: 'Draft',
         due_date: new Date().toISOString().split('T')[0],
         items: []
-    });
+    }));
 
     // Queries
     const { data: invoices = [], isLoading } = useQuery({
@@ -48,7 +48,7 @@ const BusinessBilling = () => {
     const createMutation = useMutation({
         mutationFn: billingService.createInvoice,
         onSuccess: () => {
-            queryClient.invalidateQueries(['invoices']);
+            queryClient.invalidateQueries({ queryKey: ['invoices'] });
             closeModal();
         }
     });
@@ -56,7 +56,7 @@ const BusinessBilling = () => {
     const updateMutation = useMutation({
         mutationFn: ({ id, data }) => billingService.updateInvoice(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['invoices']);
+            queryClient.invalidateQueries({ queryKey: ['invoices'] });
             closeModal();
         }
     });
@@ -64,7 +64,7 @@ const BusinessBilling = () => {
     const deleteMutation = useMutation({
         mutationFn: billingService.deleteInvoice,
         onSuccess: () => {
-            queryClient.invalidateQueries(['invoices']);
+            queryClient.invalidateQueries({ queryKey: ['invoices'] });
         }
     });
 

@@ -28,9 +28,8 @@ import '../App.css';
 
 const BusinessFinancialPlan = () => {
     const queryClient = useQueryClient();
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState(null);
     const [formData, setFormData] = useState({ name: '', description: '', total_budget: '', start_date: '', end_date: '', status: 'Draft' });
 
     // Fetch Plans

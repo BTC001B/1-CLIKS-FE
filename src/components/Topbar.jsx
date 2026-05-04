@@ -141,7 +141,7 @@ const Topbar = ({ onToggleSidebar }) => {
                     onAccount={() => navigate('/books/profile')}
                     onSettings={() => navigate('/books/settings')}
                     onFAQ={() => navigate('/books/faq')}
-                    onLogout={() => navigate('/')}
+                    onLogout={handleLogout}
                 />
             </div>
         </header>
