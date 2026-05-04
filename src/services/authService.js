@@ -5,23 +5,10 @@ import { apiClient } from '../api/client';
  */
 export const authService = {
     /**
-     * Login with username and password
+     * SSO Login using BNX Token
      */
-    login: async (identifier, password) => {
-        // Send as both so backend finds by either email or username
-        return await authService.apiLogin({ email: identifier, username: identifier, password });
-    },
-
-    apiLogin: async (data) => {
-        const res = await apiClient.post('/auth/login', data);
-        return res.data;
-    },
-
-    /**
-     * Register a new user
-     */
-    register: async (userData) => {
-        const res = await apiClient.post('/auth/register', userData);
+    ssoLogin: async (bnxToken) => {
+        const res = await apiClient.post('/auth/sso', { bnxToken });
         return res.data;
     },
 

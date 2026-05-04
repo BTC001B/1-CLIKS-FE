@@ -40,9 +40,8 @@ export const AuthProvider = ({ children }) => {
         initAuth();
     }, [token, logout]);
 
-    const login = async (username, password) => {
-        const data = await authService.login(username, password);
-        // authService.login now returns response.data: { accessToken, refreshToken, user }
+    const ssoLogin = async (bnxToken) => {
+        const data = await authService.ssoLogin(bnxToken);
         const { accessToken, user: newUser } = data;
 
         localStorage.setItem('books_auth_token', accessToken);
@@ -55,27 +54,11 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
-    const register = async (userData) => {
-        const data = await authService.register(userData);
-        // authService.register now returns response.data: { accessToken, refreshToken, user }
-        const { accessToken, user: newUser } = data;
-
-        localStorage.setItem('books_auth_token', accessToken);
-        setToken(accessToken);
-        setUser(newUser);
-
-        // Invalidate and refetch
-        queryClient.invalidateQueries();
-
-        return data;
-    };
-
     const value = {
         user,
         token,
         loading,
-        login,
-        register,
+        ssoLogin,
         logout,
         isAuthenticated: !!token
     };
