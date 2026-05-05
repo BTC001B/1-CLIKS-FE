@@ -43,6 +43,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "dist/*"
           target: "/var/www/cliks-FE/dist"
+          strip_components: 1
 
       # 🔁 Restart nginx
       - name: Restart Nginx
@@ -52,4 +53,6 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            chown -R www-data:www-data /var/www/cliks-FE/dist
             systemctl restart nginx
+
