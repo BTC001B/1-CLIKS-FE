@@ -17,7 +17,8 @@ import {
     Box,
     Layers,
     TrendingUp,
-    Download
+    Download,
+    History
 } from 'lucide-react';
 import { 
     fetchStockItems, 
@@ -29,6 +30,7 @@ import {
     fetchStockHistory 
 } from '../services/stockService';
 import { formatCurrency } from '../lib/formatCurrency';
+import * as XLSX from 'xlsx';
 import '../App.css';
 
 const Stock = () => {
@@ -40,10 +42,12 @@ const Stock = () => {
     const [adjustAmount, setAdjustAmount] = useState(1);
     const [selectedItem, setSelectedItem] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [historyItem, setHistoryItem] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         sub_name: '',
-        category: 'Stationery',
+        category: '',
         quantity: 1,
         unit: 'pcs',
         unit_price: '',
@@ -60,6 +64,12 @@ const Stock = () => {
     const { data: stats } = useQuery({
         queryKey: ['stock-stats'],
         queryFn: fetchStockStats
+    });
+
+    const { data: historyData = [], isLoading: isHistoryLoading } = useQuery({
+        queryKey: ['stock-history', historyItem?.id],
+        queryFn: () => fetchStockHistory(historyItem.id),
+        enabled: !!historyItem
     });
 
     // Mutations
@@ -104,7 +114,7 @@ const Stock = () => {
         setFormData({
             name: '',
             sub_name: '',
-            category: 'Stationery',
+            category: '',
             quantity: 1,
             unit: 'pcs',
             unit_price: '',
@@ -118,7 +128,7 @@ const Stock = () => {
         setFormData({
             name: item.name,
             sub_name: item.sub_name || '',
-            category: item.category || 'Stationery',
+            category: item.category || '',
             quantity: item.quantity,
             unit: item.unit || 'pcs',
             unit_price: item.unit_price || '',
@@ -162,6 +172,31 @@ const Stock = () => {
         return matchesFilter;
     });
 
+    const handleExportReport = () => {
+        if (!filteredItems || filteredItems.length === 0) {
+            alert('No data to export.');
+            return;
+        }
+
+        const worksheetData = filteredItems.map(item => ({
+            'Asset Name': item.name || '',
+            'Sub Name': item.sub_name || '',
+            'Category': item.category || '',
+            'Quantity': item.quantity || 0,
+            'Unit': item.unit || '',
+            'Unit Price (₹)': item.unit_price || 0,
+            'Total Value (₹)': (item.quantity || 0) * (item.unit_price || 0),
+            'Low Stock Level': item.low_stock_threshold || 0
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Stock Report');
+
+        const fileName = `stock_report_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    };
+
     const totalValue = stats?.totalValue || 0;
     const lowStockCount = stats?.lowStockCount || 0;
     const totalUnits = items.reduce((acc, i) => acc + parseInt(i.quantity || 0), 0);
@@ -186,7 +221,7 @@ const Stock = () => {
                     <p style={{ color: '#475569', fontSize: '1.05rem', fontWeight: '500' }}>Precision stock management for enterprise growth.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.85rem 1.25rem', borderRadius: '14px', background: 'white', color: '#1B6B3A', border: '1px solid #DCF2E4', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}>
+                    <button onClick={handleExportReport} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.85rem 1.25rem', borderRadius: '14px', background: 'white', color: '#1B6B3A', border: '1px solid #DCF2E4', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}>
                         <Download size={18} />
                         Export Report
                     </button>
@@ -365,6 +400,7 @@ const Stock = () => {
                                                     <div style={{ width: '1px', height: '20px', background: '#E2E8F0', margin: '0 0.25rem' }}></div>
                                                     <button onClick={() => handleEdit(item)} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Edit2 size={14} /></button>
                                                     <button onClick={() => handleDelete(item.id)} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #FEF2F2', background: 'white', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={14} /></button>
+                                                    <button onClick={() => { setHistoryItem(item); setIsHistoryModalOpen(true); }} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #EFF6FF', background: 'white', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginLeft: '4px' }} title="View History"><History size={14} /></button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -397,24 +433,18 @@ const Stock = () => {
                                     <input required placeholder="e.g. MacBook Pro M3" type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Label</label>
-                                    <input required placeholder="pcs / Units" type="text" value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sub Name</label>
+                                    <input placeholder="Optional subtitle" type="text" value={formData.sub_name} onChange={(e) => setFormData({...formData, sub_name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</label>
-                                    <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontSize: '1rem', fontWeight: '600' }}>
-                                        <option value="Stationery">Stationery</option>
-                                        <option value="Electronics">Electronics</option>
-                                        <option value="Furniture">Furniture</option>
-                                        <option value="Supplies">Supplies</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                    <input required placeholder="e.g. Electronics" type="text" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Valuation (₹)</label>
-                                    <input required type="number" step="0.01" value={formData.unit_price} onChange={(e) => setFormData({...formData, unit_price: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Label</label>
+                                    <input required placeholder="pcs / Units" type="text" value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
@@ -423,8 +453,8 @@ const Stock = () => {
                                     <input required type="number" value={formData.quantity === 0 ? '' : formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value === '' ? '' : parseInt(e.target.value) || 0})} disabled={!!editingItem} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sub Name</label>
-                                    <input placeholder="Optional subtitle" type="text" value={formData.sub_name} onChange={(e) => setFormData({...formData, sub_name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Valuation (₹)</label>
+                                    <input required type="number" step="0.01" value={formData.unit_price} onChange={(e) => setFormData({...formData, unit_price: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
@@ -449,6 +479,48 @@ const Stock = () => {
                                 )}
                             </button>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* History Modal */}
+            {isHistoryModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)' }}>
+                    <div style={{ background: 'white', width: '560px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <div>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em' }}>Stock History</h2>
+                                <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: '500' }}>{historyItem?.name}</p>
+                            </div>
+                            <button onClick={() => { setIsHistoryModalOpen(false); setHistoryItem(null); }} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer', color: '#64748B' }}><X size={22} /></button>
+                        </div>
+                        
+                        <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.5rem' }}>
+                            {isHistoryLoading ? (
+                                <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}><Loader2 className="animate-spin" size={32} color="#1B6B3A" /></div>
+                            ) : historyData.length === 0 ? (
+                                <div style={{ textAlign: 'center', color: '#94A3B8', padding: '2rem', fontWeight: '600' }}>No history available for this item.</div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {historyData.map((record, idx) => (
+                                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #F1F5F9' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: record.type === 'in' ? '#DCFCE7' : '#FEE2E2', color: record.type === 'in' ? '#16A34A' : '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {record.type === 'in' ? <ArrowDownRight size={20} /> : <ArrowUpRight size={20} />}
+                                                </div>
+                                                <div>
+                                                    <p style={{ fontWeight: '700', color: '#1E293B', fontSize: '0.95rem', textTransform: 'capitalize' }}>Stock {record.type}</p>
+                                                    <p style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '500' }}>{new Date(record.created_at || record.date).toLocaleString()}</p>
+                                                </div>
+                                            </div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: '800', color: record.type === 'in' ? '#16A34A' : '#EF4444' }}>
+                                                {record.type === 'in' ? '+' : '-'}{record.quantity}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
