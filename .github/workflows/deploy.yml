@@ -28,7 +28,7 @@ jobs:
 
       # 🔥 Clean old files
       - name: Clean server directory
-        uses: appleboy/ssh-action@v0.1.6
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
           username: root
@@ -38,7 +38,7 @@ jobs:
 
       # 🚀 Upload new build
       - name: Upload new build
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
           username: root
@@ -49,7 +49,7 @@ jobs:
 
       # 🔁 Restart nginx
       - name: Restart Nginx
-        uses: appleboy/ssh-action@v0.1.6
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
           username: root
