@@ -170,9 +170,9 @@ const Stock = () => {
     };
 
     return (
-        <div style={{ padding: '2.5rem', background: '#F0F9F4', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ padding: '1.5rem 2rem', background: '#F0F9F4', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
             {/* Top Navigation / Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
                         <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 8px 16px rgba(27, 107, 58, 0.2)' }}>
@@ -207,22 +207,22 @@ const Stock = () => {
             </div>
 
             {/* Premium Stats Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem', marginBottom: '1.5rem' }}>
                 {[
                     { label: 'Total Inventory Value', value: formatCurrency(totalValue), icon: TrendingUp, color: '#1B6B3A', bg: '#F0FDF4' },
                     { label: 'Low Stock Alerts', value: lowStockCount, icon: AlertTriangle, color: '#EF4444', bg: '#FEF2F2' },
                     { label: 'Active Items', value: items.length, icon: Layers, color: '#064E3B', bg: '#ECFDF5' },
                     { label: 'Total Units', value: totalUnits, icon: Package, color: '#0D9488', bg: '#F0FDFA' }
                 ].map((stat, idx) => (
-                    <div key={idx} style={{ background: 'white', padding: '1.75rem', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                    <div key={idx} style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                             <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
                                 <stat.icon size={24} />
                             </div>
                             <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
                         </div>
-                        <p style={{ fontSize: '0.9rem', fontWeight: '600', color: '#64748B', marginBottom: '0.5rem' }}>{stat.label}</p>
-                        <h3 style={{ fontSize: '1.75rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{stat.value}</h3>
+                        <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>{stat.label}</p>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{stat.value}</h3>
                     </div>
                 ))}
             </div>
@@ -230,7 +230,7 @@ const Stock = () => {
             {/* Main Content Area */}
             <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #E2E8F0', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
                 {/* Custom Toolbar */}
-                <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
+                <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
                     <div style={{ position: 'relative', width: '400px' }}>
                         <Search size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                         <input 
@@ -273,20 +273,20 @@ const Stock = () => {
                 {/* Table Container */}
                 <div style={{ overflowX: 'auto' }}>
                     {isLoading ? (
-                        <div style={{ padding: '6rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+                        <div style={{ padding: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
                             <Loader2 className="animate-spin" size={40} color="#1B6B3A" />
                             <p style={{ color: '#64748B', fontWeight: '600' }}>Synchronizing inventory data...</p>
                         </div>
                     ) : (
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                             <thead>
-                                <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Details</th>
-                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</th>
-                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock Level</th>
-                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Price</th>
-                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
-                                    <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                                <tr style={{ borderBottom: '1px solid #F1F5F9', background: '#F8FAFC' }}>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Details</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock Level</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Price</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -296,26 +296,26 @@ const Stock = () => {
                                     const isOutOfStock = Number(item.quantity) === 0;
 
                                     return (
-                                        <tr key={item.id} style={{ borderBottom: '1px solid #F8FAFC', transition: 'all 0.2s' }} className="inventory-row">
-                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                        <tr key={item.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'all 0.2s' }} className="inventory-row">
+                                            <td style={{ padding: '1rem 1.5rem' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                    <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: '#F0FDF4', border: '1px solid #DCF2E4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A' }}>
-                                                        <Package size={24} />
+                                                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#F0FDF4', border: '1px solid #DCF2E4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A' }}>
+                                                        <Package size={20} />
                                                     </div>
                                                     <div>
-                                                        <p style={{ fontWeight: '750', color: '#1E293B', fontSize: '1rem', marginBottom: '0.25rem' }}>{item.name}</p>
+                                                        <p style={{ fontWeight: '750', color: '#1E293B', fontSize: '0.95rem', marginBottom: '0.1rem' }}>{item.name}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                            <td style={{ padding: '1rem 1.5rem' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#1B6B3A' }}></div>
                                                     <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#475569' }}>{item.category}</span>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                            <td style={{ padding: '1rem 1.5rem' }}>
                                                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.4rem' }}>
-                                                    <span style={{ fontSize: '1.15rem', fontWeight: '850', color: isLowStock ? '#EF4444' : '#1E293B' }}>{item.quantity}</span>
+                                                    <span style={{ fontSize: '1.1rem', fontWeight: '850', color: isLowStock ? '#EF4444' : '#1E293B' }}>{item.quantity}</span>
                                                     <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#94A3B8', marginBottom: '2px' }}>{item.unit || 'pcs'}</span>
                                                 </div>
                                                 {isLowStock && (
@@ -324,10 +324,10 @@ const Stock = () => {
                                                     </div>
                                                 )}
                                             </td>
-                                            <td style={{ padding: '1.5rem 2rem' }}>
-                                                <span style={{ fontSize: '1.05rem', fontWeight: '800', color: '#064E3B' }}>{formatCurrency(item.unit_price || 0)}</span>
+                                            <td style={{ padding: '1rem 1.5rem' }}>
+                                                <span style={{ fontSize: '1rem', fontWeight: '800', color: '#064E3B' }}>{formatCurrency(item.unit_price || 0)}</span>
                                             </td>
-                                            <td style={{ padding: '1.5rem 2rem' }}>
+                                            <td style={{ padding: '1rem 1.5rem' }}>
                                                 <div style={{ 
                                                     display: 'inline-flex', alignItems: 'center', gap: '0.5rem', 
                                                     padding: '0.5rem 1rem', borderRadius: '12px',
@@ -339,28 +339,28 @@ const Stock = () => {
                                                     {isOutOfStock ? 'OUT OF STOCK' : (isLowStock ? 'LOW STOCK' : 'IN STOCK')}
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '1.5rem 2rem', textAlign: 'right' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.75rem' }}>
-                                                    <div style={{ display: 'flex', background: '#F8FAFC', padding: '4px', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                                            <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <div style={{ display: 'flex', background: '#F8FAFC', padding: '4px', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
                                                         <button 
                                                             onClick={() => handleAdjustClick(item, 'in')}
-                                                            style={{ width: '36px', height: '36px', borderRadius: '8px', border: 'none', background: '#1B6B3A', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            style={{ width: '32px', height: '32px', borderRadius: '8px', border: 'none', background: '#1B6B3A', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                                             title="Stock In"
                                                         >
                                                             <ArrowUpRight size={18} />
                                                         </button>
                                                         <button 
                                                             onClick={() => handleAdjustClick(item, 'out')}
-                                                            style={{ width: '36px', height: '36px', borderRadius: '8px', border: 'none', background: '#EF4444', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '4px' }}
+                                                            style={{ width: '32px', height: '32px', borderRadius: '8px', border: 'none', background: '#EF4444', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '4px' }}
                                                             title="Stock Out"
                                                             disabled={isOutOfStock}
                                                         >
                                                             <ArrowDownRight size={18} />
                                                         </button>
                                                     </div>
-                                                    <div style={{ width: '1px', height: '24px', background: '#E2E8F0', margin: '0 0.5rem' }}></div>
-                                                    <button onClick={() => handleEdit(item)} style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Edit2 size={16} /></button>
-                                                    <button onClick={() => handleDelete(item.id)} style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #FEF2F2', background: 'white', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                                                    <div style={{ width: '1px', height: '20px', background: '#E2E8F0', margin: '0 0.25rem' }}></div>
+                                                    <button onClick={() => handleEdit(item)} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Edit2 size={14} /></button>
+                                                    <button onClick={() => handleDelete(item.id)} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #FEF2F2', background: 'white', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={14} /></button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -371,7 +371,7 @@ const Stock = () => {
                     )}
                 </div>
                 {filteredItems.length === 0 && !isLoading && (
-                    <div style={{ padding: '4rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>No inventory items found. Click "Add New Asset" to initialize your stock.</div>
+                    <div style={{ padding: '3rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>No inventory items found. Click "Add New Asset" to initialize your stock.</div>
                 )}
             </div>
 
@@ -531,9 +531,12 @@ const Stock = () => {
             )}
 
             <style>{`
+                .stat-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025) !important;
+                }
                 .inventory-row:hover {
                     background-color: #F8FAFC !important;
-                    transform: scale(1.002);
                 }
                 .inventory-row:hover td {
                     color: #1B6B3A;
