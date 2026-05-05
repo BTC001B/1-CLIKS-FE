@@ -42,6 +42,7 @@ const Stock = () => {
     const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
+        sub_name: '',
         category: 'Stationery',
         quantity: 1,
         unit: 'pcs',
@@ -102,6 +103,7 @@ const Stock = () => {
         setEditingItem(null);
         setFormData({
             name: '',
+            sub_name: '',
             category: 'Stationery',
             quantity: 1,
             unit: 'pcs',
@@ -115,6 +117,7 @@ const Stock = () => {
         setEditingItem(item);
         setFormData({
             name: item.name,
+            sub_name: item.sub_name || '',
             category: item.category || 'Stationery',
             quantity: item.quantity,
             unit: item.unit || 'pcs',
@@ -304,6 +307,7 @@ const Stock = () => {
                                                     </div>
                                                     <div>
                                                         <p style={{ fontWeight: '750', color: '#1E293B', fontSize: '0.95rem', marginBottom: '0.1rem' }}>{item.name}</p>
+                                                        {item.sub_name && <p style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748B' }}>{item.sub_name}</p>}
                                                     </div>
                                                 </div>
                                             </td>
@@ -399,7 +403,7 @@ const Stock = () => {
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Classification</label>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</label>
                                     <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontSize: '1rem', fontWeight: '600' }}>
                                         <option value="Stationery">Stationery</option>
                                         <option value="Electronics">Electronics</option>
@@ -419,13 +423,8 @@ const Stock = () => {
                                     <input required type="number" value={formData.quantity === 0 ? '' : formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value === '' ? '' : parseInt(e.target.value) || 0})} disabled={!!editingItem} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Inventory Status</label>
-                                    <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontSize: '1rem', fontWeight: '600' }}>
-                                        <option value="In Stock">In Stock</option>
-                                        <option value="Low Stock">Low Stock</option>
-                                        <option value="Out of Stock">Out of Stock</option>
-                                        <option value="On Order">On Order</option>
-                                    </select>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sub Name</label>
+                                    <input placeholder="Optional subtitle" type="text" value={formData.sub_name} onChange={(e) => setFormData({...formData, sub_name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
