@@ -58,11 +58,8 @@ const Auth = () => {
             // 3. Redirect based on role
             const role = authData.user?.role || 'user';
 
-            if (role === 'business') {
-                navigate('/business/dashboard', { replace: true });
-            } else {
-                navigate('/books/dashboard', { replace: true });
-            }
+            navigate('/books/dashboard', { replace: true });
+
 
         } catch (err) {
             console.error('[Auth] SSO error:', err);

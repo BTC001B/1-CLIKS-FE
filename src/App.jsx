@@ -50,15 +50,7 @@ const GoalWallets = React.lazy(() => import('./pages/GoalWallets'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const FAQ = React.lazy(() => import('./pages/FAQ'));
-import BusinessDashboard from './pages/BusinessDashboard';
-import BusinessPlaceholder from './pages/BusinessPlaceholder';
-import BusinessInventory from './pages/BusinessInventory';
-import BusinessBilling from './pages/BusinessBilling';
-import BusinessCRM from './pages/BusinessCRM';
-import BusinessStaffing from './pages/BusinessStaffing';
-import BusinessFinancialPlan from './pages/BusinessFinancialPlan';
-import BusinessSegregation from './pages/BusinessSegregation';
-import BusinessCompare from './pages/BusinessCompare';
+
 
 import './App.css';
 
@@ -100,8 +92,8 @@ function AppContent() {
               <MainLayout>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
-                    {/* Root Redirect based on role */}
-                    <Route path="/" element={<Navigate to={user?.role === 'business' ? '/business/dashboard' : '/books/dashboard'} replace />} />
+                    {/* Root Redirect */}
+                    <Route path="/" element={<Navigate to="/books/dashboard" replace />} />
                     
                     {/* Finance (formerly Home) Section */}
                     <Route path="/finance" element={<Finance />} />
@@ -143,17 +135,7 @@ function AppContent() {
                     {/* Public Section */}
                     <Route path="/public" element={<Public />} />
 
-                    {/* Business Section */}
-                    <Route path="/business/dashboard" element={<BusinessDashboard />} />
-                    <Route path="/business/inventory" element={<BusinessInventory />} />
-                    <Route path="/business/billing" element={<BusinessBilling />} />
-                    <Route path="/business/plan" element={<BusinessFinancialPlan />} />
-                    <Route path="/business/compare" element={<BusinessCompare />} />
-                    <Route path="/business/staffing" element={<BusinessStaffing />} />
-                    <Route path="/business/segregation" element={<BusinessSegregation />} />
-                    <Route path="/business/crm" element={<BusinessCRM />} />
-                    <Route path="/business/meetup" element={<BusinessPlaceholder title="Business Meetup" />} />
-                    <Route path="/business/investors" element={<BusinessPlaceholder title="Business Investors" />} />
+
                   </Routes>
                 </Suspense>
               </MainLayout>

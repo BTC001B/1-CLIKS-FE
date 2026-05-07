@@ -76,15 +76,7 @@ const Sidebar = ({ isOpen }) => {
         if (path.includes('/books/split-expense')) return 'Split Expense';
         if (path === '/auditor') return 'Audit';
 
-        // Business paths
-        if (path.includes('/business/dashboard')) return 'Dashboard';
-        if (path.includes('/business/inventory')) return 'Inventory';
-        if (path.includes('/business/billing')) return 'Billing';
-        if (path.includes('/business/crm')) return 'CRM';
-        if (path.includes('/business/plan')) return 'Financial Plan';
-        if (path.includes('/business/compare')) return 'Compare';
-        if (path.includes('/business/staffing')) return 'Staffing';
-        if (path.includes('/business/segregation')) return 'Segregation';
+
 
         return 'Dashboard';
     };
@@ -128,8 +120,7 @@ const Sidebar = ({ isOpen }) => {
     const showFinanceSidebar = location.pathname === '/' || location.pathname.startsWith('/home') || location.pathname.startsWith('/finance');
     const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor';
     const showPublicSidebar = location.pathname.startsWith('/public');
-    const showBusinessSidebar = location.pathname.startsWith('/business');
-    const isBusinessUser = user?.role === 'business';
+
 
     return (
         <aside className={`sidebar ${isOpen ? 'open' : 'collapsed'}`}>
@@ -141,7 +132,7 @@ const Sidebar = ({ isOpen }) => {
             </div>
 
             <nav className="sidebar-nav">
-                {showFinanceSidebar && !isBusinessUser && (
+                {showFinanceSidebar && (
                     <>
                         {/* Dashboard (Main Finance Page) */}
                         <button
@@ -175,7 +166,7 @@ const Sidebar = ({ isOpen }) => {
                     </>
                 )}
 
-                {showBooksSidebar && !isBusinessUser && (
+                {showBooksSidebar && (
                     <>
                         {/* Books Dashboard */}
                         <button
@@ -309,103 +300,28 @@ const Sidebar = ({ isOpen }) => {
                         {/* Investors */}
                         <button
                             className={`sidebar-item ${activeItem === 'Investors' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Investors', isBusinessUser ? '/business/investors' : '/public?page=investors')}
+                            onClick={() => handleItemClick('Investors', '/public?page=investors')}
                         >
                             <div className="flex items-center gap-3">
                                 <UsersRound size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">{isBusinessUser ? 'Business Investors' : 'Investors'}</span>
+                                <span className="sidebar-label">Investors</span>
                             </div>
                         </button>
 
                         {/* Meetup */}
                         <button
                             className={`sidebar-item ${activeItem === 'Meetup' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Meetup', isBusinessUser ? '/business/meetup' : '/public?page=meetup')}
+                            onClick={() => handleItemClick('Meetup', '/public?page=meetup')}
                         >
                             <div className="flex items-center gap-3">
                                 <Handshake size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">{isBusinessUser ? 'Business Meetup' : 'Meetup'}</span>
+                                <span className="sidebar-label">Meetup</span>
                             </div>
                         </button>
                     </>
                 )}
 
-                {(showBooksSidebar || showBusinessSidebar) && isBusinessUser && (
-                    <>
-                        <button
-                            className={`sidebar-item ${activeItem === 'Dashboard' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Dashboard', '/business/dashboard')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <LayoutDashboard size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Dashboard</span>
-                            </div>
-                        </button>
-                        <button
-                            className={`sidebar-item ${activeItem === 'Inventory' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Inventory', '/business/inventory')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Package size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Inventory</span>
-                            </div>
-                        </button>
-                        <button
-                            className={`sidebar-item ${activeItem === 'Billing' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Billing', '/business/billing')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Banknote size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Billing</span>
-                            </div>
-                        </button>
-                        <button
-                            className={`sidebar-item ${activeItem === 'Financial Plan' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Financial Plan', '/business/plan')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Calendar size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Financial Plan</span>
-                            </div>
-                        </button>
-                        <button
-                            className={`sidebar-item ${activeItem === 'Compare' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Compare', '/business/compare')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Layers size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Compare</span>
-                            </div>
-                        </button>
-                        <button
-                            className={`sidebar-item ${activeItem === 'Staffing' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Staffing', '/business/staffing')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Users size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Staffing</span>
-                            </div>
-                        </button>
-                        <button
-                            className={`sidebar-item ${activeItem === 'Segregation' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Segregation', '/business/segregation')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Split size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Segregation</span>
-                            </div>
-                        </button>
-                        <button
-                            className={`sidebar-item ${activeItem === 'CRM' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('CRM', '/business/crm')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <UserPlus size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">CRM</span>
-                            </div>
-                        </button>
-                    </>
-                )}
+
             </nav>
 
 

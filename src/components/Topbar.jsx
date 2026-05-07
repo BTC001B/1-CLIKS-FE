@@ -28,7 +28,8 @@ const Topbar = ({ onToggleSidebar }) => {
     };
 
     const navItems = [
-        { name: 'Books', url: user?.role === 'business' ? '/business/dashboard' : '/books/dashboard', icon: BookOpen, activeBase: user?.role === 'business' ? '/business' : '/books' },
+        { name: 'Books', url: '/books/dashboard', icon: BookOpen, activeBase: '/books' },
+
         // { name: 'Finance', url: '/finance', icon: Calculator, activeBase: '/finance' },
         // { name: 'Social', url: '/public', icon: Users, activeBase: '/public' },
         { name: 'Social', url: '/public?page=investors', icon: Users, activeBase: '/public' },
