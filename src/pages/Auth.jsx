@@ -24,9 +24,9 @@ const Auth = () => {
         if (code) {
             handleOAuthCallback(code);
         }
-    }, [location]);
+    }, [location, handleOAuthCallback]);
 
-    const handleOAuthCallback = async (code) => {
+    const handleOAuthCallback = React.useCallback(async (code) => {
         setIsLoading(true);
         setError('');
 
@@ -53,10 +53,7 @@ const Auth = () => {
             const bnxToken = tokenData.data.access_token;
 
             // 2. Perform SSO Login with backend
-            const authData = await ssoLogin(bnxToken);
-
-            // 3. Redirect based on role
-            const role = authData.user?.role || 'user';
+            await ssoLogin(bnxToken);
 
             navigate('/books/dashboard', { replace: true });
 
@@ -67,7 +64,7 @@ const Auth = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [ssoLogin, navigate]);
 
     const handleLoginWithBNX = () => {
         const state = 'cliks-auth-state';

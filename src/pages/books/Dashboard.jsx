@@ -224,7 +224,7 @@ const BooksDashboard = () => {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                        {modules.map((mod, idx) => (
+                        {modules.map((mod) => (
                             <HoverableCard key={mod.id} linkTo={mod.link} style={{ padding: '1.5rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>

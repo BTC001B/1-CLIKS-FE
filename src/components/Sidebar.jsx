@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context';
+
 import { Tooltip } from './common';
 import {
     Home,
@@ -56,7 +56,7 @@ import '../App.css';
 import logoPng from '../assets/cliks.png'; // Final branding
 
 const Sidebar = ({ isOpen }) => {
-    const { user } = useAuth();
+
     const location = useLocation();
     const navigate = useNavigate();
 
