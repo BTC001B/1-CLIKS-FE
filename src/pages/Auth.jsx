@@ -17,15 +17,6 @@ const Auth = () => {
     const BNX_AUTH_URL = 'https://www.b2auth.com';
     const BNX_API_URL = 'https://api.bnxmail.com';
 
-    useEffect(() => {
-        const urlParams = new URLSearchParams(location.search);
-        const code = urlParams.get('code');
-
-        if (code) {
-            handleOAuthCallback(code);
-        }
-    }, [location, handleOAuthCallback]);
-
     const handleOAuthCallback = React.useCallback(async (code) => {
         setIsLoading(true);
         setError('');
@@ -65,6 +56,15 @@ const Auth = () => {
             setIsLoading(false);
         }
     }, [ssoLogin, navigate]);
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(location.search);
+        const code = urlParams.get('code');
+
+        if (code) {
+            handleOAuthCallback(code);
+        }
+    }, [location, handleOAuthCallback]);
 
     const handleLoginWithBNX = () => {
         const state = 'cliks-auth-state';
