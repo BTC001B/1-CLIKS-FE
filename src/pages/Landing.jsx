@@ -189,7 +189,7 @@ const Landing = () => {
                 </div>
 
                 <div className="nav-items" style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-                    {['Features', 'How it Works', 'Testimonials', 'Pricing'].map(item => (
+                    {['Features', 'How it Works', 'Testimonials', 'Pricing' , 'Sridharan'].map(item => (
                         <span key={item} onClick={() => scrollToSection(item.toLowerCase().replace(/\s+/g, '-'))} className="nav-link">
                             {item}
                         </span>
