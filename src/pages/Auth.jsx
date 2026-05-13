@@ -33,7 +33,7 @@ const Auth = () => {
                     clientSecret: 'secure-cliks-secret-2026'
                 })
             });
-
+            console.log(tokenRes)
             const tokenData = await tokenRes.json();
             console.log(tokenData);
 
