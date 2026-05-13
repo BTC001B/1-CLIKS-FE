@@ -34,10 +34,15 @@ import { ApiError, normalizeError } from './errors';
  * Build the full URL for an API request.
  */
 function buildUrl(endpoint, params = null) {
-    // Ensure base URL ends with a slash so the URL constructor doesn't drop the last segment (/v1)
-    const baseUrl = API_BASE_URL
-        ? (API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`)
-        : window.location.origin;
+    let baseUrl = API_BASE_URL || window.location.origin;
+    
+    // Ensure base URL ends with /api/v1
+    if (!baseUrl.includes('/api/v1')) {
+        baseUrl = baseUrl.endsWith('/') ? `${baseUrl}api/v1` : `${baseUrl}/api/v1`;
+    }
+    
+    // Final slash for URL constructor
+    baseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 
     // Remove leading slash from endpoint if present. 
     // If endpoint has a leading slash, new URL(endpoint, baseUrl) resets to the root of the domain.

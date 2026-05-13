@@ -62,9 +62,11 @@ const Auth = () => {
         const code = urlParams.get('code');
 
         if (code) {
+            // ✅ Clean URL immediately to prevent 500 error on refresh (code is one-time use)
+            navigate(location.pathname, { replace: true });
             handleOAuthCallback(code);
         }
-    }, [location, handleOAuthCallback]);
+    }, [location, handleOAuthCallback, navigate]);
 
     const handleLoginWithBNX = () => {
         const state = 'cliks-auth-state';
