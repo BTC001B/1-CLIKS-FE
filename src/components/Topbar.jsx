@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { User, QrCode, Wallet, Home, BookOpen, Calculator, Users } from 'lucide-react';
+import { User, Wallet, Home, BookOpen, Calculator, Users } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
 import logoPng from '../assets/cliks.png'; // Final branding
 
 import { ProfileDropdown } from './ProfileDropdown';
+import { CalcPopover } from './common/CalcPopover';
 
 const Topbar = ({ onToggleSidebar }) => {
     const { logout } = useAuth();
@@ -133,10 +134,7 @@ const Topbar = ({ onToggleSidebar }) => {
 
             {/* Right Group (Audit + Profile) */}
             <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingRight: '1rem' }}>
-                {/* Audit Button (Standalone Pill) */}
-                <button className="icon-btn" title="Scan QR" aria-label="Scan QR Code" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                    <QrCode size={20} />
-                </button>
+                <CalcPopover />
 
                 <ProfileDropdown
                     onAccount={() => navigate('/books/profile')}
