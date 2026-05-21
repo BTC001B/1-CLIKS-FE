@@ -62,7 +62,13 @@ const Sidebar = ({ isOpen }) => {
 
     // Determine active item based on path
     const getActiveItemFromPath = (path) => {
-        if (path === '/' || path === '/finance') return 'Dashboard';
+        if (path.includes('/finance/financial-plan') || path.includes('/finance/plan/')) return 'Financial Plan';
+        if (path.includes('/finance/goal-wallets') || path.includes('/finance/segregation')) return 'Goal Wallets';
+        if (path.includes('/finance/split-expense')) return 'Split Expense';
+
+        // Keep old ones in case they are visited
+        if (path === '/' || path === '/finance') return 'Financial Plan';
+        if (path === '/finance/dashboard') return 'Dashboard';
         if (path === '/finance/transactions') return 'Transactions';
         if (path === '/finance/budgets') return 'Budgets';
         if (path === '/finance/accounts') return 'Accounts';
@@ -70,15 +76,10 @@ const Sidebar = ({ isOpen }) => {
 
         if (path.includes('/books/dashboard')) return 'Books Dashboard';
         if (path.includes('/books/stock')) return 'Stock';
-        if (path.includes('/books/financial-plan') || path.includes('/books/plan/')) return 'Financial Plan';
         if (path.includes('/books/people')) return 'People';
-        if (path.includes('/books/segregation')) return 'Goal Wallets';
-        if (path.includes('/books/split-expense')) return 'Split Expense';
         if (path === '/auditor') return 'Audit';
 
-
-
-        return 'Dashboard';
+        return 'Books Dashboard';
     };
 
     const [activeItem, setActiveItem] = useState(getActiveItemFromPath(location.pathname));
@@ -134,35 +135,38 @@ const Sidebar = ({ isOpen }) => {
             <nav className="sidebar-nav">
                 {showFinanceSidebar && (
                     <>
-                        {/* Dashboard (Main Finance Page) */}
+                        {/* Financial Plan */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Dashboard' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Dashboard', '/finance')}
+                            className={`sidebar-item ${activeItem === 'Financial Plan' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Financial Plan', '/finance/financial-plan')}
                         >
                             <div className="flex items-center gap-3">
-                                <Home size={20} />
-                                <span className="sidebar-label">Dashboard</span>
+                                <Wallet size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Financial Plan</span>
                             </div>
                         </button>
 
-                        {/* Merged Home Items */}
-                        {[
-                            { icon: Receipt, label: 'Transactions', path: '/finance/transactions' },
-                            { icon: Wallet, label: 'Budgets', path: '/finance/budgets' },
-                            { icon: CreditCard, label: 'Accounts', path: '/finance/accounts' },
-                            { icon: CalendarClock, label: 'Planned payments', path: '/finance/planned-payments' }
-                        ].map(item => (
-                            <button
-                                key={item.label}
-                                className={`sidebar-item ${activeItem === item.label ? 'active' : ''}`}
-                                onClick={() => handleItemClick(item.label, item.path)}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <item.icon size={20} />
-                                    <span className="sidebar-label">{item.label}</span>
-                                </div>
-                            </button>
-                        ))}
+                        {/* Goal Wallets */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Goal Wallets' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Goal Wallets', '/finance/goal-wallets')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Target size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Goal Wallet</span>
+                            </div>
+                        </button>
+
+                        {/* Split Expense */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Split Expense' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Split Expense', '/finance/split-expense')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Split size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Split Expense</span>
+                            </div>
+                        </button>
                     </>
                 )}
 
@@ -190,17 +194,6 @@ const Sidebar = ({ isOpen }) => {
                             </div>
                         </button>
 
-                        {/* Financial Plan Button (Converted from Dropdown) */}
-                        <button
-                            className={`sidebar-item ${activeItem === 'Financial Plan' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Financial Plan', '/books/financial-plan')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Wallet size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Financial Plan</span>
-                            </div>
-                        </button>
-
                         {/* People Button (Converted from Dropdown) */}
                         <button
                             className={`sidebar-item ${activeItem === 'People' ? 'active' : ''}`}
@@ -211,27 +204,8 @@ const Sidebar = ({ isOpen }) => {
                                 <span className="sidebar-label">People</span>
                             </div>
                         </button>
-
-
-                        <button
-                            className={`sidebar-item ${activeItem === 'Goal Wallets' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Goal Wallets', '/books/goal-wallets')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Target size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Goal Wallets</span>
-                            </div>
-                        </button>
-                        <button
-                            className={`sidebar-item ${activeItem === 'Split Expense' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Split Expense', '/books/split-expense')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Split size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Split Expense</span>
-                            </div>
-                        </button>
-
+                    </>
+                )}
                         {/* Audit
                         <div style={{ marginTop: '6rem' }}>
                             <Tooltip
@@ -241,8 +215,6 @@ const Sidebar = ({ isOpen }) => {
                             />
                         </div>
                         */}
-                    </>
-                )}
 
                 {showPublicSidebar && (
                     <>

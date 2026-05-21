@@ -1,11 +1,8 @@
 import React from 'react';
 import {
     TrendingUp,
-    CalendarClock,
     User,
     BookUser,
-    Split,
-    Banknote,
     ArrowRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -79,19 +76,6 @@ const Books = () => {
                         ]}
                     />
 
-                    {/* Financial Plan Overview */}
-                    <OverviewCard
-                        title="Financial Plan"
-                        icon={CalendarClock}
-                        color="#8B5CF6"
-                        path="/books/plan/budget"
-                        stats={[
-                            { label: 'Active Budgets', value: '4' },
-                            { label: 'Pending Goals', value: '2' },
-                            { label: 'Next Reminder', value: 'Today' }
-                        ]}
-                    />
-
                     {/* People Overview */}
                     <OverviewCard
                         title="People"
@@ -115,32 +99,6 @@ const Books = () => {
                             { label: 'Bankers', value: '2' },
                             { label: 'Advisors', value: '1' },
                             { label: 'Auditors', value: '1' }
-                        ]}
-                    />
-
-                    {/* Segregation */}
-                    <OverviewCard
-                        title="Segregation"
-                        icon={Split}
-                        color="#EC4899"
-                        // path="/books/segregation" // Placeholder
-                        stats={[
-                            { label: 'Categories', value: '8' },
-                            { label: 'Uncategorized', value: '3 Items' },
-                            { label: 'Tagged', value: '45 Transactions' }
-                        ]}
-                    />
-
-                    {/* Split Expenses */}
-                    <OverviewCard
-                        title="Split Expenses"
-                        icon={Banknote}
-                        color="#6366F1"
-                        // path="/books/split" // Placeholder
-                        stats={[
-                            { label: 'Active Splits', value: '2' },
-                            { label: 'Settled', value: '5' },
-                            { label: 'You Owe', value: '₹150' }
                         ]}
                     />
 

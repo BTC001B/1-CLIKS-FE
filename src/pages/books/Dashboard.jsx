@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
     Package, 
-    ClipboardList, 
     Users, 
     Wallet, 
     SplitSquareVertical, 
@@ -123,13 +122,6 @@ const BooksDashboard = () => {
             desc: 'Real-time overview of products, stock alerts, and individual restock thresholds.',
             icon: Package,
             link: '/books/stock'
-        },
-        {
-            id: 'plans',
-            label: 'Financial Planner',
-            desc: 'Comprehensive personal budgeting, monthly expenses, and draft target planners.',
-            icon: ClipboardList,
-            link: '/books/financial-plan'
         },
         {
             id: 'people',
@@ -259,7 +251,7 @@ const BooksDashboard = () => {
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                             <h3 style={{ fontSize: '1.15rem', fontWeight: '850', color: '#0F172A' }}>Goal Tracking</h3>
-                            <Link to="/books/goal-wallets" style={{ textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', color: '#1B6B3A' }}>
+                            <Link to="/finance/goal-wallets" style={{ textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', color: '#1B6B3A' }}>
                                 Manage Wallets
                             </Link>
                         </div>
@@ -303,7 +295,7 @@ const BooksDashboard = () => {
                             <p style={{ fontSize: '0.875rem', opacity: 0.85, marginBottom: '1.5rem', fontWeight: '500', lineHeight: '1.5' }}>
                                 Manage complex bill cost splits among groups, monitor personal accounting logs, and reconcile joint ledger statements.
                             </p>
-                            <Link to="/books/split-expense" style={{ textDecoration: 'none' }}>
+                            <Link to="/finance/split-expense" style={{ textDecoration: 'none' }}>
                                 <button style={{ 
                                     width: '100%', padding: '0.85rem', borderRadius: '14px', 
                                     background: 'white', color: '#064E3B', border: 'none', 

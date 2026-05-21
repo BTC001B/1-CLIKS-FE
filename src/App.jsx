@@ -96,7 +96,8 @@ function AppContent() {
                     <Route path="/" element={<Navigate to="/books/dashboard" replace />} />
                     
                     {/* Finance (formerly Home) Section */}
-                    <Route path="/finance" element={<Finance />} />
+                    <Route path="/finance" element={<Navigate to="/finance/financial-plan" replace />} />
+                    <Route path="/finance/dashboard" element={<Finance />} />
                     <Route path="/finance/income" element={<Income />} />
                     <Route path="/finance/expenses" element={<Expenses />} />
                     <Route path="/finance/budgets" element={<Budgets />} />
@@ -107,28 +108,29 @@ function AppContent() {
                     <Route path="/finance/investments" element={<Investments />} />
                     <Route path="/finance/debts" element={<Debts />} />
 
+                    {/* Payments Routes shifted from Books */}
+                    <Route path="/finance/financial-plan" element={<FinancialPlan />} />
+                    <Route path="/finance/plan/budget" element={<PlanBudget />} />
+                    <Route path="/finance/plan/income" element={<PlanIncome />} />
+                    <Route path="/finance/plan/expense" element={<PlanExpense />} />
+                    <Route path="/finance/plan/calendar" element={<FinancialCalendar />} />
+                    <Route path="/finance/plan/goals" element={<PlanGoals />} />
+                    <Route path="/finance/plan/reminders" element={<PlanReminders />} />
+                    <Route path="/finance/plan/analysis" element={<PlanAnalysis />} />
+                    <Route path="/finance/segregation" element={<Segregation />} />
+                    <Route path="/finance/goal-wallets" element={<GoalWallets />} />
+                    <Route path="/finance/split-expense" element={<SplitExpense />} />
+
                     {/* Books Section */}
                     <Route path="/books" element={<Books />} />
                     <Route path="/books/dashboard" element={<BooksDashboard />} />
                     <Route path="/books/stock" element={<Stock />} />
-                    <Route path="/books/financial-plan" element={<FinancialPlan />} />
-                    <Route path="/books/plan/budget" element={<PlanBudget />} />
-                    <Route path="/books/plan/income" element={<PlanIncome />} />
-                    <Route path="/books/plan/expense" element={<PlanExpense />} />
-                    <Route path="/books/plan/calendar" element={<FinancialCalendar />} />
-                    <Route path="/books/plan/goals" element={<PlanGoals />} />
-                    <Route path="/books/plan/reminders" element={<PlanReminders />} />
-                    <Route path="/books/plan/analysis" element={<PlanAnalysis />} />
                     <Route path="/books/people" element={<People />} />
                     <Route path="/books/people/overview" element={<PeopleOverview />} />
                     <Route path="/books/people/:id" element={<PersonProfile />} />
                     <Route path="/books/people/transactions" element={<PeopleTransactions />} />
                     <Route path="/books/people/reminders" element={<PeopleReminders />} />
                     <Route path="/books/people/records" element={<PeopleRecords />} />
-
-                    <Route path="/books/segregation" element={<Segregation />} />
-                    <Route path="/books/goal-wallets" element={<GoalWallets />} />
-                    <Route path="/books/split-expense" element={<SplitExpense />} />
                     <Route path="/books/settings" element={<Settings />} />
                     <Route path="/books/faq" element={<FAQ />} />
 

@@ -6,7 +6,7 @@ const Breadcrumbs = ({ items }) => {
     const location = useLocation();
 
     // List of paths where breadcrumbs should be hidden
-    const hiddenPaths = ['/books/dashboard', '/finance', '/'];
+    const hiddenPaths = ['/books/dashboard', '/finance', '/finance/financial-plan', '/'];
 
     if (hiddenPaths.includes(location.pathname)) {
         return null;
@@ -49,8 +49,8 @@ const Breadcrumbs = ({ items }) => {
 
     // Redirect specific paths to valid routes
     const pathRedirects = {
-        '/books/plan': '/books/financial-plan',
         '/books/people': '/books/people/overview',
+        '/finance/plan': '/finance/financial-plan',
     };
 
     let breadcrumbs = items;
@@ -65,9 +65,9 @@ const Breadcrumbs = ({ items }) => {
             const label = labelMapping[value.toLowerCase()] || value.charAt(0).toUpperCase() + value.slice(1).replace(/-/g, ' ');
             return { href: to, label };
         }).filter((crumb, index) => {
-            // Remove the first crumb if it's "Home" or the base "Books" route,
+            // Remove the first crumb if it's "Home" or the base "Books" or "Finance" route,
             // because we already show the Home Icon.
-            if (index === 0 && (crumb.label === 'Home' || crumb.href === '/books')) {
+            if (index === 0 && (crumb.label === 'Home' || crumb.href === '/books' || crumb.href === '/finance')) {
                 return false;
             }
             return true;
@@ -118,7 +118,7 @@ const Breadcrumbs = ({ items }) => {
             }}>
                 {/* Always specific Home Home Icon at start if following design exactly */}
                 <li style={{ display: 'flex', alignItems: 'center' }}>
-                    <Link to="/books/dashboard" style={{
+                    <Link to={location.pathname.startsWith('/finance') ? '/finance/financial-plan' : '/books/dashboard'} style={{
                         width: '32px',
                         height: '32px',
                         borderRadius: '50%',
