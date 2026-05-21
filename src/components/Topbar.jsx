@@ -30,9 +30,7 @@ const Topbar = ({ onToggleSidebar }) => {
 
     const navItems = [
         { name: 'Books', url: '/books/dashboard', icon: BookOpen, activeBase: '/books' },
-
-        // { name: 'Finance', url: '/finance', icon: Calculator, activeBase: '/finance' },
-        // { name: 'Social', url: '/public', icon: Users, activeBase: '/public' },
+        { name: 'Payments', url: '/finance', icon: Wallet, activeBase: '/finance' },
         { name: 'Social', url: '/public?page=investors', icon: Users, activeBase: '/public' },
     ];
 
