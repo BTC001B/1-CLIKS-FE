@@ -29,6 +29,7 @@ import {
     BookOpen,
     Layers,
     Split,
+    HelpCircle,
     // Finance icons
     Building2,
     Gift,
@@ -55,7 +56,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
 import logoPng from '../assets/cliks.png'; // Final branding
 
-const Sidebar = ({ isOpen }) => {
+const Sidebar = ({ isOpen, onReferralClick }) => {
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -77,6 +78,8 @@ const Sidebar = ({ isOpen }) => {
         if (path.includes('/books/dashboard')) return 'Books Dashboard';
         if (path.includes('/books/stock')) return 'Stock';
         if (path.includes('/books/people')) return 'People';
+        if (path.includes('/books/settings')) return 'Settings';
+        if (path.includes('/books/faq')) return 'Help & Support';
         if (path === '/auditor') return 'Audit';
 
         return 'Books Dashboard';
@@ -296,6 +299,118 @@ const Sidebar = ({ isOpen }) => {
 
             </nav>
 
+            {/* Refer & Earn Block */}
+            <div style={{ padding: '0rem 1rem', flexShrink: 0 }}>
+                <button
+                    onClick={() => {
+                        if (onReferralClick) onReferralClick();
+                    }}
+                    style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.65rem',
+                        padding: '0.60rem',
+                        background: 'transparent',
+                        color: '#6B7280',
+                        borderRadius: '12px',
+                        border: '1px solid transparent',
+                        cursor: 'pointer',
+                        fontWeight: '700',
+                        fontSize: '0.875rem',
+                        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                        outline: 'none',
+                        marginTop: '1.2rem'
+                    }}
+                    onMouseOver={(e) => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)';
+                        e.currentTarget.style.color = '#7C3AED';
+                        e.currentTarget.style.borderColor = '#DDD6FE';
+                        e.currentTarget.style.boxShadow = '0 4px 14px rgba(139, 92, 246, 0.15)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseOut={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#6B7280';
+                        e.currentTarget.style.borderColor = 'transparent';
+                        e.currentTarget.style.boxShadow = 'none';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                >
+                    <Gift size={18} strokeWidth={2.5} style={{ color: '#8B5CF6', flexShrink: 0 }} />
+                    <span>Refer &amp; Earn</span>
+                </button>
+            </div>
+
+            {/* Fixed Sidebar Footer */}
+            <div style={{ 
+                padding: '1rem', 
+                borderTop: '1px solid #F1F5F9', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '0.6rem',
+                flexShrink: 0,
+                background: '#FFFFFF'
+            }}>
+                {/* Bottom Settings Block */}
+                <button
+                    onClick={() => handleItemClick('Settings', '/books/settings')}
+                    style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.75rem 1rem',
+                        background: location.pathname.includes('/books/settings') ? '#F0FDF4' : '#F8FAFC',
+                        color: location.pathname.includes('/books/settings') ? '#1B6B3A' : '#334155',
+                        borderRadius: '10px',
+                        border: '1px solid',
+                        borderColor: location.pathname.includes('/books/settings') ? '#BBF7D0' : '#E2E8F0',
+                        cursor: 'pointer',
+                        fontWeight: '700',
+                        fontSize: '0.85rem',
+                        transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = location.pathname.includes('/books/settings') ? '#F0FDF4' : '#F1F5F9'}
+                    onMouseOut={(e) => e.currentTarget.style.background = location.pathname.includes('/books/settings') ? '#F0FDF4' : '#F8FAFC'}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                        <Settings size={18} style={{ opacity: 0.8 }} />
+                        <span>Settings</span>
+                    </div>
+                    <ChevronRight size={14} style={{ opacity: 0.5 }} />
+                </button>
+
+                {/* Help & Support Block */}
+                <button
+                    onClick={() => handleItemClick('Help & Support', '/books/faq')}
+                    style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.75rem 1rem',
+                        background: location.pathname.includes('/books/faq') ? '#F0FDF4' : '#F8FAFC',
+                        color: location.pathname.includes('/books/faq') ? '#1B6B3A' : '#334155',
+                        borderRadius: '10px',
+                        border: '1px solid',
+                        borderColor: location.pathname.includes('/books/faq') ? '#BBF7D0' : '#E2E8F0',
+                        cursor: 'pointer',
+                        fontWeight: '700',
+                        fontSize: '0.85rem',
+                        transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = location.pathname.includes('/books/faq') ? '#F0FDF4' : '#F1F5F9'}
+                    onMouseOut={(e) => e.currentTarget.style.background = location.pathname.includes('/books/faq') ? '#F0FDF4' : '#F8FAFC'}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                        <HelpCircle size={18} style={{ opacity: 0.8 }} />
+                        <span>Help & Support</span>
+                    </div>
+                    <ChevronRight size={14} style={{ opacity: 0.5 }} />
+                </button>
+            </div>
 
         </aside>
     );
