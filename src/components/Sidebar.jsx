@@ -62,12 +62,12 @@ const Sidebar = ({ isOpen }) => {
 
     // Determine active item based on path
     const getActiveItemFromPath = (path) => {
-        if (path.includes('/finance/financial-plan') || path.includes('/finance/plan/')) return 'Financial Plan';
+        if (path === '/finance/plan' || path.includes('/finance/plan/')) return 'Plan';
         if (path.includes('/finance/goal-wallets') || path.includes('/finance/segregation')) return 'Goal Wallets';
         if (path.includes('/finance/split-expense')) return 'Split Expense';
 
         // Keep old ones in case they are visited
-        if (path === '/' || path === '/finance') return 'Financial Plan';
+        if (path === '/' || path === '/finance') return 'Plan';
         if (path === '/finance/dashboard') return 'Dashboard';
         if (path === '/finance/transactions') return 'Transactions';
         if (path === '/finance/budgets') return 'Budgets';
@@ -135,14 +135,14 @@ const Sidebar = ({ isOpen }) => {
             <nav className="sidebar-nav">
                 {showFinanceSidebar && (
                     <>
-                        {/* Financial Plan */}
+                        {/* Plan */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Financial Plan' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Financial Plan', '/finance/financial-plan')}
+                            className={`sidebar-item ${activeItem === 'Plan' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Plan', '/finance/plan')}
                         >
                             <div className="flex items-center gap-3">
                                 <Wallet size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Financial Plan</span>
+                                <span className="sidebar-label">Plan</span>
                             </div>
                         </button>
 

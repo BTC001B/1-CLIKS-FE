@@ -715,7 +715,7 @@ const FinancialPlan = () => {
                         <strong style={{ fontWeight: 900, color: '#0F172A' }}>{activePlanTitle}</strong>
                     </div>
                 }
-                breadcrumb="FINANCIAL PLAN"
+                breadcrumb="PLAN"
                 primaryAction={{
                     label: "Quick Entry",
                     onClick: () => setIsModalOpen(true)

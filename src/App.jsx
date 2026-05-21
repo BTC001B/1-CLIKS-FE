@@ -96,7 +96,7 @@ function AppContent() {
                     <Route path="/" element={<Navigate to="/books/dashboard" replace />} />
                     
                     {/* Finance (formerly Home) Section */}
-                    <Route path="/finance" element={<Navigate to="/finance/financial-plan" replace />} />
+                    <Route path="/finance" element={<Navigate to="/finance/plan" replace />} />
                     <Route path="/finance/dashboard" element={<Finance />} />
                     <Route path="/finance/income" element={<Income />} />
                     <Route path="/finance/expenses" element={<Expenses />} />
@@ -109,7 +109,7 @@ function AppContent() {
                     <Route path="/finance/debts" element={<Debts />} />
 
                     {/* Payments Routes shifted from Books */}
-                    <Route path="/finance/financial-plan" element={<FinancialPlan />} />
+                    <Route path="/finance/plan" element={<FinancialPlan />} />
                     <Route path="/finance/plan/budget" element={<PlanBudget />} />
                     <Route path="/finance/plan/income" element={<PlanIncome />} />
                     <Route path="/finance/plan/expense" element={<PlanExpense />} />
