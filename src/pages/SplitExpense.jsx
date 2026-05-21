@@ -1,639 +1,1455 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { splitExpenseService } from '../services/splitExpenseService';
-import EmptyState from '../components/common/EmptyState';
 import {
     Plus,
     Search,
-    TrendingUp,
-    TrendingDown,
-    ArrowUpRight,
-    ArrowDownLeft,
-    Loader2,
-    RefreshCw,
     Users,
     Receipt,
     Calendar,
     ChevronRight,
-    CheckCircle2,
-    History,
-    Percent,
-    Hash,
-    PieChart,
-    ShoppingCart,
-    Wallet,
-    X
+    Trash2,
+    X,
+    ChevronLeft,
+    Globe,
+    FileText,
+    Check,
+    AlertCircle,
+    ArrowRight,
+    UserPlus,
+    Upload,
+    DollarSign,
+    CreditCard,
+    Share2,
+    Download,
+    Pin,
+    MoreVertical
 } from 'lucide-react';
-import { PageHeader } from '../components/common';
+import '../App.css';
+import { splitExpenseService } from '../services/splitExpenseService';
 
 const SplitExpense = () => {
-    const queryClient = useQueryClient();
-    const [activeTab, setActiveTab] = useState('ALL FRIENDS'); // ALL FRIENDS, RECENT EXPENSES
+    // ── State Management ───────────────────────────────────────────────────
+    const [splits, setSplits] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const [pinnedSplitIds, setPinnedSplitIds] = useState(() => {
+        const saved = localStorage.getItem('cliks_pinned_splits');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [activeMenuId, setActiveMenuId] = useState(null);
+
+    useEffect(() => {
+        const handleGlobalClick = () => setActiveMenuId(null);
+        window.addEventListener('click', handleGlobalClick);
+        return () => window.removeEventListener('click', handleGlobalClick);
+    }, []);
+
+    const [selectedSplitId, setSelectedSplitId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedExpense, setSelectedExpense] = useState(null);
-    const [splitType, setSplitType] = useState('equal');
+    const [detailSearchQuery, setDetailSearchQuery] = useState('');
+    const [showDetailSearch, setShowDetailSearch] = useState(false);
+    const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
+    const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
     
-    const [formData, setFormData] = useState({ 
-        title: '', 
-        amount: '', 
-        paidBy: 'You', 
+    // Group Form State
+    const [groupForm, setGroupForm] = useState({
+        title: '',
+        currency: 'INR',
+        description: '',
+        participants: ['You']
+    });
+    const [newParticipantName, setNewParticipantName] = useState('');
+
+    // Expense Form State
+    const [expenseForm, setExpenseForm] = useState({
+        title: '',
+        amount: '',
+        paidBy: 'You',
         date: new Date().toISOString().split('T')[0],
-        participants: [] 
-    });
-    
-    const [items, setItems] = useState([{ id: 1, name: '', amount: '', assignedTo: [] }]);
-    const [formError, setFormError] = useState('');
-
-    // ── Queries ─────────────────────────────────────────────────────────────
-    
-    // Friends Summary
-    const { 
-        data: summaryResponse, 
-        isLoading: isSummaryLoading
-    } = useQuery({
-        queryKey: ['split-summary'],
-        queryFn: () => splitExpenseService.getSummary(),
+        attachmentName: '',
+        splitType: 'equal', // equal, custom
+        shares: {} // Custom shares per participant
     });
 
-    // All Expenses List
-    const {
-        data: expensesResponse,
-        isLoading: isExpensesLoading
-    } = useQuery({
-        queryKey: ['split-expenses-list'],
-        queryFn: () => splitExpenseService.getSplits(),
-        enabled: activeTab === 'RECENT EXPENSES'
-    });
-
-    const friends = useMemo(() => {
-        const rawData = summaryResponse?.data !== undefined ? summaryResponse.data : summaryResponse;
-        return Array.isArray(rawData) ? rawData : [];
-    }, [summaryResponse]);
-
-    const expenses = useMemo(() => {
-        const rawData = expensesResponse?.data !== undefined ? expensesResponse.data : expensesResponse;
-        return Array.isArray(rawData) ? rawData : [];
-    }, [expensesResponse]);
-
-    // ── Mutations ───────────────────────────────────────────────────────────
-    
-    const createMutation = useMutation({
-        mutationFn: (newSplit) => splitExpenseService.createSplit(newSplit),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['split-summary'] });
-            queryClient.invalidateQueries({ queryKey: ['split-expenses-list'] });
-            setIsModalOpen(false);
-            resetForm();
-        },
-        onError: (error) => {
-            setFormError(error.message || 'Failed to create split');
-        }
-    });
-
-    const settleMutation = useMutation({
-        mutationFn: (name) => splitExpenseService.settleFriend(name),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['split-summary'] });
-            queryClient.invalidateQueries({ queryKey: ['split-expenses-list'] });
-        }
-    });
-
-    // ── Logic ──────────────────────────────────────────────────────────────
-
-    const calculateSplits = React.useCallback(() => {
-        const totalAmount = parseFloat(formData.amount) || 0;
-        const participants = formData.participants;
-        if (participants.length === 0) return [];
-
-        let results = [];
-
-        if (splitType === 'equal') {
-            const count = participants.length + 1;
-            const share = totalAmount / count;
-            results = participants.map(p => ({ ...p, share_amount: share }));
-            results.push({ name: 'You', share_amount: share, isSelf: true });
-        } 
-        else if (splitType === 'exact') {
-            results = participants.map(p => ({ ...p, share_amount: parseFloat(p.value) || 0 }));
-            const sumOthers = results.reduce((s, p) => s + p.share_amount, 0);
-            results.push({ name: 'You', share_amount: Math.max(0, totalAmount - sumOthers), isSelf: true });
-        } 
-        else if (splitType === 'percentage') {
-            results = participants.map(p => ({ ...p, share_amount: (parseFloat(p.value) / 100) * totalAmount }));
-            const sumPctOthers = participants.reduce((s, p) => s + (parseFloat(p.value) || 0), 0);
-            results.push({ name: 'You', share_amount: Math.max(0, ((100 - sumPctOthers) / 100) * totalAmount), isSelf: true });
-        } 
-        else if (splitType === 'shares') {
-            const sumSharesOthers = participants.reduce((sum, p) => sum + (parseFloat(p.value) || 0), 0);
-            const totalShares = sumSharesOthers + 1;
-            results = participants.map(p => ({ ...p, share_amount: ((parseFloat(p.value) || 0) / totalShares) * totalAmount }));
-            results.push({ name: 'You', share_amount: (1 / totalShares) * totalAmount, isSelf: true });
-        }
-        else if (splitType === 'items') {
-            const participantMap = {};
-            participants.forEach(p => participantMap[p.name] = 0);
-            participantMap['You'] = 0;
-            
-            items.forEach(item => {
-                const itemAmt = parseFloat(item.amount) || 0;
-                const shareCount = item.assignedTo.length;
-                if (shareCount > 0) {
-                    const share = itemAmt / shareCount;
-                    item.assignedTo.forEach(name => {
-                        if (participantMap[name] !== undefined) participantMap[name] += share;
-                    });
+    // Fetch splits from backend on mount
+    useEffect(() => {
+        const loadSplits = async () => {
+            try {
+                setLoading(true);
+                const data = await splitExpenseService.getSplits();
+                if (data && data.length > 0) {
+                    setSplits(data);
+                } else {
+                    setSplits([]);
                 }
-            });
-            results = participants.map(p => ({ ...p, share_amount: participantMap[p.name] || 0 }));
-            results.push({ name: 'You', share_amount: participantMap['You'] || 0, isSelf: true });
+            } catch (err) {
+                console.error("Error loading split data from backend:", err);
+                const saved = localStorage.getItem('cliks_splits_data');
+                setSplits(saved ? JSON.parse(saved) : []);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadSplits();
+    }, []);
+
+    // Active Split Lookup
+    const activeSplit = splits.find(s => s.id === selectedSplitId);
+
+    // Filtered Splits List
+    const filteredSplits = splits.filter(s =>
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (s.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Currency Symbols Helper
+    const getCurrencySymbol = (code) => {
+        switch (code) {
+            case 'USD': return '$';
+            case 'EUR': return '€';
+            case 'GBP': return '£';
+            default: return '₹';
         }
+    };
 
-        return results;
-    }, [formData, splitType, items]);
-
-    const handleAddSplit = (e) => {
+    // ── Group Actions ──────────────────────────────────────────────────────
+    const handleCreateGroup = async (e) => {
         e.preventDefault();
-        if (!formData.title || !formData.amount || !formData.date) {
-            setFormError('Basic details (Title, Amount, Date) are required');
-            return;
-        }
+        if (!groupForm.title.trim()) return alert('Please enter a group title.');
+        if (groupForm.participants.length < 2) return alert('Please add at least one other participant.');
 
-        const calculated = calculateSplits();
-        const finalParticipants = calculated.filter(p => !p.isSelf);
-        
-        if (finalParticipants.length === 0) {
-            setFormError('Add at least one participant to split with');
-            return;
-        }
-
-        if (splitType === 'exact') {
-            const sumOthers = finalParticipants.reduce((s, p) => s + p.share_amount, 0);
-            if (sumOthers > parseFloat(formData.amount)) {
-                setFormError('Exact amounts exceed total expense amount');
-                return;
-            }
-        }
-
-        if (splitType === 'percentage') {
-            const sumPct = finalParticipants.reduce((s, p) => s + (parseFloat(p.value) || 0), 0);
-            if (sumPct > 100) {
-                setFormError('Total percentage exceeds 100%');
-                return;
-            }
-        }
-
-        const payload = {
-            title: formData.title,
-            total_amount: parseFloat(formData.amount),
-            date: formData.date,
-            split_type: splitType,
-            paid_by: formData.paidBy,
-            participants: finalParticipants.map(p => ({
-                name: p.name,
-                share_amount: p.share_amount
-            }))
+        const tempId = 'split-' + Date.now();
+        const newGroup = {
+            id: tempId,
+            title: groupForm.title,
+            currency: groupForm.currency,
+            currencySymbol: getCurrencySymbol(groupForm.currency),
+            description: groupForm.description,
+            participants: [...groupForm.participants],
+            created_at: new Date().toISOString(),
+            expenses: []
         };
 
-        createMutation.mutate(payload);
-    };
-
-    const resetForm = () => {
-        setFormData({ title: '', amount: '', paidBy: 'You', date: new Date().toISOString().split('T')[0], participants: [] });
-        setItems([{ id: 1, name: '', amount: '', assignedTo: [] }]);
-        setSplitType('equal');
-        setFormError('');
-    };
-
-    const addParticipantField = () => {
-        setFormData({ ...formData, participants: [...formData.participants, { name: '', value: '' }] });
-    };
-
-    const updateParticipant = (index, field, value) => {
-        const newParticipants = [...formData.participants];
-        newParticipants[index][field] = value;
-        setFormData({ ...formData, participants: newParticipants });
-    };
-
-    const removeParticipant = (index) => {
-        setFormData({ ...formData, participants: formData.participants.filter((_, i) => i !== index) });
-    };
-
-    const openExpenseDetail = async (expense) => {
         try {
-            const detail = await splitExpenseService.getSplitById(expense.id);
-            setSelectedExpense(detail.data || detail);
+            const created = await splitExpenseService.createSplit(newGroup);
+            created.expenses = [];
+            setSplits([created, ...splits]);
+            setSelectedSplitId(created.id);
         } catch (err) {
-            console.error('Failed to fetch expense details', err);
+            console.error("Error creating group on backend:", err);
+            setSplits([newGroup, ...splits]);
+            setSelectedSplitId(tempId);
+        }
+
+        setIsCreateGroupModalOpen(false);
+        setGroupForm({ title: '', currency: 'INR', description: '', participants: ['You'] });
+    };
+
+    const addParticipantToForm = () => {
+        if (!newParticipantName.trim()) return;
+        if (groupForm.participants.includes(newParticipantName.trim())) {
+            alert('This participant is already added!');
+            return;
+        }
+        setGroupForm({
+            ...groupForm,
+            participants: [...groupForm.participants, newParticipantName.trim()]
+        });
+        setNewParticipantName('');
+    };
+
+    const removeParticipantFromForm = (name) => {
+        if (name === 'You') return;
+        setGroupForm({
+            ...groupForm,
+            participants: groupForm.participants.filter(p => p !== name)
+        });
+    };
+
+    const handleDeleteGroup = async (groupId) => {
+        if (window.confirm('Are you sure you want to delete this split group? All logged expenses will be lost.')) {
+            try {
+                await splitExpenseService.deleteSplit(groupId);
+            } catch (err) {
+                console.error("Error deleting group from backend:", err);
+            }
+            setSplits(splits.filter(s => s.id !== groupId));
+            setSelectedSplitId(null);
         }
     };
 
-    const totalOwesYou = friends.reduce((sum, f) => sum + parseFloat(f.total_owed || 0), 0);
-    const totalYouOwe = 0; 
+    // ── Expense Actions ────────────────────────────────────────────────────
+    const openAddExpenseModal = () => {
+        if (!activeSplit) return;
+        // Initialize shares
+        const initialShares = {};
+        activeSplit.participants.forEach(p => {
+            initialShares[p] = '';
+        });
+        setExpenseForm({
+            title: '',
+            amount: '',
+            paidBy: 'You',
+            date: new Date().toISOString().split('T')[0],
+            attachmentName: '',
+            splitType: 'equal',
+            shares: initialShares
+        });
+        setIsAddExpenseModalOpen(true);
+    };
 
-    const filteredFriends = friends.filter(f => 
-        (f.name || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const handleAddExpense = async (e) => {
+        e.preventDefault();
+        if (!expenseForm.title.trim()) return alert('Please enter expense title.');
+        const amount = parseFloat(expenseForm.amount);
+        if (isNaN(amount) || amount <= 0) return alert('Please enter a valid amount.');
 
-    const filteredExpenses = expenses.filter(e =>
-        (e.title || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
+        let finalShares = {};
+        if (expenseForm.splitType === 'equal') {
+            const equalShare = amount / activeSplit.participants.length;
+            activeSplit.participants.forEach(p => {
+                finalShares[p] = Math.round(equalShare * 100) / 100;
+            });
+        } else {
+            // Validate custom shares sum matches total amount
+            let sum = 0;
+            activeSplit.participants.forEach(p => {
+                const share = parseFloat(expenseForm.shares[p]) || 0;
+                finalShares[p] = share;
+                sum += share;
+            });
+            
+            if (Math.abs(sum - amount) > 0.1) {
+                alert(`The sum of custom shares (${activeSplit.currencySymbol}${sum.toFixed(2)}) must exactly match the total expense amount (${activeSplit.currencySymbol}${amount.toFixed(2)})!`);
+                return;
+            }
+        }
 
-    const calculatedPreview = useMemo(() => calculateSplits(), [calculateSplits]);
+        const newExpense = {
+            id: 'exp-' + Date.now(),
+            title: expenseForm.title,
+            amount: amount,
+            paidBy: expenseForm.paidBy,
+            date: expenseForm.date,
+            attachment: expenseForm.attachmentName || null,
+            splitType: expenseForm.splitType,
+            shares: finalShares
+        };
+
+        try {
+            const createdExpense = await splitExpenseService.addExpense(selectedSplitId, newExpense);
+            const updatedSplits = splits.map(s => {
+                if (s.id === selectedSplitId) {
+                    return {
+                        ...s,
+                        expenses: [createdExpense, ...s.expenses]
+                    };
+                }
+                return s;
+            });
+            setSplits(updatedSplits);
+        } catch (err) {
+            console.error("Error saving expense to backend:", err);
+            // Fallback to local state update
+            const updatedSplits = splits.map(s => {
+                if (s.id === selectedSplitId) {
+                    return {
+                        ...s,
+                        expenses: [newExpense, ...s.expenses]
+                    };
+                }
+                return s;
+            });
+            setSplits(updatedSplits);
+        }
+
+        setIsAddExpenseModalOpen(false);
+    };
+
+    const handleDeleteExpense = async (expenseId) => {
+        if (window.confirm('Delete this expense?')) {
+            try {
+                await splitExpenseService.deleteExpense(selectedSplitId, expenseId);
+            } catch (err) {
+                console.error("Error deleting expense from backend:", err);
+            }
+            const updatedSplits = splits.map(s => {
+                if (s.id === selectedSplitId) {
+                    return {
+                        ...s,
+                        expenses: s.expenses.filter(e => e.id !== expenseId)
+                    };
+                }
+                return s;
+            });
+            setSplits(updatedSplits);
+        }
+    };
+
+    // Simulated Attachment Upload
+    const triggerSimulatedUpload = () => {
+        const fileNames = ['invoice_rent.pdf', 'dinner_bill_482.jpg', 'uber_receipt.png', 'supplies_list.pdf', 'grocery_slip.jpg'];
+        const randomName = fileNames[Math.floor(Math.random() * fileNames.length)];
+        setExpenseForm({
+            ...expenseForm,
+            attachmentName: randomName
+        });
+    };
+
+    // ── Debts & Balances Calculations ──────────────────────────────────────
+    const calculatedBalances = React.useMemo(() => {
+        if (!activeSplit) return { members: {}, debts: [], totalSpent: 0 };
+
+        const balances = {};
+        let totalSpent = 0;
+        activeSplit.participants.forEach(p => {
+            balances[p] = 0;
+        });
+
+        activeSplit.expenses.forEach(exp => {
+            const payer = exp.paidBy;
+            const amt = exp.amount;
+            totalSpent += amt;
+
+            // Credit the payer
+            if (balances[payer] !== undefined) {
+                balances[payer] += amt;
+            }
+
+            // Debit everyone who shared
+            Object.keys(exp.shares).forEach(member => {
+                if (balances[member] !== undefined) {
+                    balances[member] -= exp.shares[member];
+                }
+            });
+        });
+
+        // Deep copy balances for debt simplification
+        const tempBalances = { ...balances };
+        const debts = [];
+
+        // Simplify debts algorithm (Splitwise style)
+        const participants = Object.keys(tempBalances);
+        
+        while (true) {
+            let debtor = null;
+            let creditor = null;
+            let maxDebit = 0;
+            let maxCredit = 0;
+
+            participants.forEach(p => {
+                const bal = tempBalances[p];
+                if (bal < -0.01 && bal < maxDebit) {
+                    maxDebit = bal;
+                    debtor = p;
+                }
+                if (bal > 0.01 && bal > maxCredit) {
+                    maxCredit = bal;
+                    creditor = p;
+                }
+            });
+
+            if (!debtor || !creditor) break;
+
+            const amtToSettle = Math.min(-maxDebit, maxCredit);
+            tempBalances[debtor] += amtToSettle;
+            tempBalances[creditor] -= amtToSettle;
+
+            debts.push({
+                from: debtor,
+                to: creditor,
+                amount: Math.round(amtToSettle * 100) / 100
+            });
+        }
+
+        return {
+            members: balances,
+            debts: debts,
+            totalSpent: totalSpent
+        };
+    }, [activeSplit]);
+
+    // Handle instant settlement log
+    const handleSettleDebt = async (debt) => {
+        if (!activeSplit) return;
+        if (window.confirm(`Mark settlement: does ${debt.from} paid ${activeSplit.currencySymbol}${debt.amount.toLocaleString()} to ${debt.to}?`)) {
+            // Settle creates a custom expense compensating the debt
+            const settlementExpense = {
+                id: 'exp-settle-' + Date.now(),
+                title: `Settlement: ${debt.from} paid ${debt.to}`,
+                amount: debt.amount,
+                paidBy: debt.from,
+                date: new Date().toISOString().split('T')[0],
+                attachment: null,
+                splitType: 'custom',
+                shares: {
+                    [debt.to]: debt.amount
+                }
+            };
+
+            // Set shares to 0 for everyone else
+            activeSplit.participants.forEach(p => {
+                if (p !== debt.to) {
+                    settlementExpense.shares[p] = 0;
+                }
+            });
+
+            try {
+                const createdSettlement = await splitExpenseService.addExpense(selectedSplitId, settlementExpense);
+                const updatedSplits = splits.map(s => {
+                    if (s.id === selectedSplitId) {
+                        return {
+                            ...s,
+                            expenses: [createdSettlement, ...s.expenses]
+                        };
+                    }
+                    return s;
+                });
+                setSplits(updatedSplits);
+                alert('Settlement logged perfectly!');
+            } catch (err) {
+                console.error("Error saving settlement to backend:", err);
+                // Fallback to local state update
+                const updatedSplits = splits.map(s => {
+                    if (s.id === selectedSplitId) {
+                        return {
+                            ...s,
+                            expenses: [settlementExpense, ...s.expenses]
+                        };
+                    }
+                    return s;
+                });
+                setSplits(updatedSplits);
+                alert('Settlement logged perfectly!');
+            }
+        }
+    };
+
+    const handleShareGroup = () => {
+        if (!activeSplit) return;
+        const groupTotal = activeSplit.expenses.reduce((sum, e) => sum + e.amount, 0);
+        let summaryText = `📊 SPLITWISE STATEMENT: ${activeSplit.title}\n`;
+        summaryText += `Total Spent: ${activeSplit.currencySymbol}${groupTotal.toLocaleString()}\n\n`;
+        summaryText += `👥 NET BALANCES:\n`;
+        activeSplit.participants.forEach(p => {
+            const bal = calculatedBalances.members[p] || 0;
+            summaryText += `- ${p}: ${bal > 0 ? '+' : ''}${activeSplit.currencySymbol}${bal.toLocaleString()}\n`;
+        });
+        summaryText += `\n🤝 SIMPLIFIED SETTLEMENTS:\n`;
+        if (calculatedBalances.debts.length === 0) {
+            summaryText += `All accounts completely settled! 🎉\n`;
+        } else {
+            calculatedBalances.debts.forEach(d => {
+                summaryText += `- ${d.from} owes ${d.to} ${activeSplit.currencySymbol}${d.amount.toLocaleString()}\n`;
+            });
+        }
+        
+        navigator.clipboard.writeText(summaryText);
+        alert('📋 Splitwise statement summary copied to clipboard!');
+    };
+
+    const handleDownloadPDF = () => {
+        if (!activeSplit) return;
+        const groupTotal = activeSplit.expenses.reduce((sum, e) => sum + e.amount, 0);
+        
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert('Popup blocked! Please allow popups to download/print the PDF.');
+            return;
+        }
+
+        const memberBalancesHTML = activeSplit.participants.map(m => {
+            const bal = calculatedBalances.members[m] || 0;
+            const balClass = bal > 0.01 ? 'balance-positive' : bal < -0.01 ? 'balance-negative' : '';
+            const sign = bal > 0.01 ? '+' : '';
+            return `
+                <tr>
+                    <td><strong>${m}</strong></td>
+                    <td class="${balClass}" style="text-align: right;">${sign}${activeSplit.currencySymbol}${bal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const debtsHTML = calculatedBalances.debts.length === 0 
+            ? `<tr><td colspan="2" style="text-align: center; color: #059669; font-weight: 700; padding: 15px;">All accounts completely settled! 🎉</td></tr>`
+            : calculatedBalances.debts.map(d => `
+                <tr>
+                    <td><strong>${d.from}</strong> owes <strong>${d.to}</strong></td>
+                    <td style="text-align: right; color: #2563EB; font-weight: 800;">${activeSplit.currencySymbol}${d.amount.toLocaleString()}</td>
+                </tr>
+            `).join('');
+
+        const expensesHTML = activeSplit.expenses.length === 0
+            ? `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #64748B;">No expenses logged yet.</td></tr>`
+            : activeSplit.expenses.map(e => `
+                <tr>
+                    <td>${e.date}</td>
+                    <td><strong>${e.title}</strong></td>
+                    <td>${e.paidBy}</td>
+                    <td><span class="badge">${e.splitType}</span></td>
+                    <td style="text-align: right; font-weight: 700;">${activeSplit.currencySymbol}${e.amount.toLocaleString()}</td>
+                </tr>
+            `).join('');
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Split Statement - ${activeSplit.title}</title>
+                <style>
+                    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #1E293B; background: white; }
+                    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #064E3B; padding-bottom: 20px; margin-bottom: 30px; }
+                    .logo-area { display: flex; align-items: center; gap: 8px; }
+                    .logo { font-size: 26px; font-weight: 900; color: #064E3B; letter-spacing: -0.5px; }
+                    .logo-sub { font-size: 11px; font-weight: 700; color: #16A34A; text-transform: uppercase; letter-spacing: 1px; }
+                    .title { font-size: 28px; font-weight: 900; color: #0F172A; margin: 0; }
+                    .subtitle { font-size: 13px; color: #64748B; margin-top: 5px; font-weight: 500; }
+                    .outlay-box { background: #ECFDF5; border: 1.5px solid #A7F3D0; border-radius: 14px; padding: 15px; text-align: right; min-width: 200px; }
+                    .outlay-title { font-size: 11px; font-weight: 800; color: #047857; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+                    .outlay-amount { font-size: 26px; font-weight: 900; color: #065F46; }
+                    .section-title { font-size: 14px; font-weight: 900; color: #064E3B; text-transform: uppercase; border-bottom: 2px solid #E2E8F0; padding-bottom: 6px; margin-top: 35px; margin-bottom: 15px; letter-spacing: 0.5px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+                    th { background: #F8FAFC; text-align: left; padding: 12px 14px; font-size: 11px; font-weight: 800; color: #475569; border-bottom: 1.5px solid #E2E8F0; text-transform: uppercase; }
+                    td { padding: 12px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #F1F5F9; }
+                    .badge { background: #EFF6FF; color: #1E40AF; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+                    .balance-positive { color: #16A34A; font-weight: 800; }
+                    .balance-negative { color: #DC2626; font-weight: 800; }
+                    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+                    .footer { text-align: center; font-size: 11px; color: #94A3B8; margin-top: 60px; border-top: 1px solid #E2E8F0; padding-top: 20px; font-weight: 500; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <div class="logo-area">
+                            <span class="logo" style="font-weight: 900; color: #064E3B;">CliKs</span>
+                            <span class="logo-sub" style="font-weight: 700; color: #16A34A; margin-left: 5px;">Books</span>
+                        </div>
+                        <h1 class="title" style="margin-top: 15px;">${activeSplit.title}</h1>
+                        <p class="subtitle">${activeSplit.description || 'Split Ticket Statement'}</p>
+                    </div>
+                    <div class="outlay-box">
+                        <div class="outlay-title">Total Outlay</div>
+                        <div class="outlay-amount">${activeSplit.currencySymbol}${groupTotal.toLocaleString()}</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <div class="section-title">Individual Balances</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left;">Member</th>
+                                    <th style="text-align: right;">Net Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${memberBalancesHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div class="section-title">Simplified Debts</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left;">Debt Settlement</th>
+                                    <th style="text-align: right;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${debtsHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section-title">Logged Expenses Ledger</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Date</th>
+                            <th style="width: 40%;">Description</th>
+                            <th style="width: 20%;">Paid By</th>
+                            <th style="width: 13%;">Protocol</th>
+                            <th style="text-align: right; width: 12%;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${expensesHTML}
+                    </tbody>
+                </table>
+
+                <div class="footer">
+                    Generated via CLIKS Books Ledger on ${new Date().toLocaleDateString('en-IN', { dateStyle: 'full' })}. All rights reserved.
+                </div>
+            </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        setTimeout(() => {
+            printWindow.print();
+        }, 300);
+    };
 
     return (
-        <div className="premium-container">
-            <PageHeader 
-                title={<>Split <span className="text-highlight">Expenses</span></>}
-                subtitle="Track by People or by Trip Details"
-                breadcrumb="EXPENSES"
-                primaryAction={{
-                    label: "New Expense",
-                    onClick: () => setIsModalOpen(true)
-                }}
-            />
-
-            {/* Stats Row */}
-            <div className="stats-grid" style={{ marginTop: '2.5rem' }}>
-                <div className="premium-card glass" style={{ padding: '2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#DCFCE7', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <ArrowDownLeft size={20} />
+        <div style={{ padding: '1.25rem 2rem', background: '#F8FAFC', height: '100%', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}>
+            
+            {/* Header Dashboard Banner */}
+            <div style={{ display: 'flex', flexShrink: 0, justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.2rem' }}>
+                        <div style={{ 
+                            width: '36px', 
+                            height: '36px', 
+                            borderRadius: '12px', 
+                            background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            color: 'white', 
+                            boxShadow: '0 4px 10px rgba(27, 107, 58, 0.15)' 
+                        }}>
+                            <CreditCard size={18} />
                         </div>
-                        <span className="label-caps">Total Receivable</span>
+                        <h1 style={{ fontSize: '1.4rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em', margin: 0 }}>Splitwise & Collect</h1>
                     </div>
-                    <div style={{ fontSize: '2rem', fontWeight: 900, color: '#0F172A' }}>₹{totalOwesYou.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                    <div className="label-caps" style={{ marginTop: '1rem', color: '#10B981' }}>Across {friends.length} people</div>
+                    <p style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: '500', margin: 0 }}>Divide collaborative bills, track expenses, and simplify balances with team members.</p>
                 </div>
 
-                <div className="premium-card glass" style={{ padding: '2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#FEE2E2', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <ArrowUpRight size={20} />
-                        </div>
-                        <span className="label-caps">Total Payable</span>
-                    </div>
-                    <div style={{ fontSize: '2rem', fontWeight: 900, color: '#0F172A' }}>₹{totalYouOwe.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                    <div className="label-caps" style={{ marginTop: '1rem', color: '#EF4444' }}>No pending debts</div>
-                </div>
-
-                <div className="premium-card glass" style={{ padding: '2rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <span className="label-caps">Recent Activity</span>
-                        <span style={{ fontWeight: 900, color: '#1B6B3A' }}>{expenses.length} Splits</span>
-                    </div>
-                    <div style={{ width: '100%', height: '8px', background: '#F0FDF4', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ width: `${Math.min(expenses.length * 10, 100)}%`, height: '100%', background: '#1B6B3A', borderRadius: '4px' }}></div>
-                    </div>
-                    <div className="label-caps" style={{ marginTop: '1rem' }}>Active tracking enabled</div>
-                </div>
-            </div>
-
-            {/* Tabs & Search */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3rem', borderBottom: '1px solid #F0FDF4', paddingBottom: '1rem' }}>
-                <div style={{ display: 'flex', gap: '2rem' }}>
-                    {['ALL FRIENDS', 'RECENT EXPENSES'].map(tab => (
-                        <button
-                            key={tab}
-                            style={{ 
-                                background: 'none', border: 'none', padding: '0 0 1rem 0', cursor: 'pointer',
-                                fontSize: '0.85rem', fontWeight: 900, color: activeTab === tab ? '#1B6B3A' : '#94A3B8',
-                                borderBottom: activeTab === tab ? '2px solid #1B6B3A' : 'none',
-                                textTransform: 'uppercase', letterSpacing: '0.05em'
-                            }}
-                            onClick={() => setActiveTab(tab)}
-                        >
-                            {tab}
-                        </button>
-                    ))}
-                </div>
-                <div style={{ background: 'white', borderRadius: '12px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid #F0FDF4', width: '320px' }}>
-                    <Search size={18} color="#94A3B8" />
-                    <input
-                        style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontWeight: 600, fontSize: '0.9rem' }}
-                        type="text"
-                        placeholder={`Search ${activeTab === 'ALL FRIENDS' ? 'people' : 'expenses'}...`}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div style={{ marginTop: '2rem' }}>
-                {activeTab === 'ALL FRIENDS' ? (
-                    isSummaryLoading ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem' }}>
-                            <Loader2 size={40} className="animate-spin" color="#1B6B3A" />
-                            <p className="label-caps" style={{ marginTop: '1rem' }}>Fetching balances...</p>
-                        </div>
-                    ) : filteredFriends.length === 0 ? (
-                        <EmptyState title="No Friends Found" description="Start a new split to see people listed here." />
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {filteredFriends.map(friend => (
-                                <div key={friend.name} className="premium-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
-                                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${friend.name}`} alt="avatar" />
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 900, fontSize: '1.1rem', marginBottom: '4px' }}>{friend.name}</div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div className="label-caps" style={{ color: '#1B6B3A' }}>{friend.split_count} Active Splits</div>
-                                        </div>
-                                    </div>
-                                    <div style={{ textAlign: 'right', minWidth: '140px' }}>
-                                        <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#10B981' }}>
-                                            ₹{(friend.total_owed || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                        </div>
-                                        <div className="label-caps" style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end', marginTop: '4px' }}>
-                                            Owed to You
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button className="btn-premium secondary" style={{ padding: '8px 14px', fontSize: '0.8rem', cursor: 'pointer' }}>Remind</button>
-                                        <button className="btn-premium primary" style={{ padding: '8px 14px', fontSize: '0.8rem', background: '#1B6B3A', cursor: 'pointer' }} onClick={() => settleMutation.mutate(friend.name)}>Settle</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )
-                ) : (
-                    isExpensesLoading ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem' }}>
-                            <Loader2 size={40} className="animate-spin" color="#1B6B3A" />
-                            <p className="label-caps" style={{ marginTop: '1rem' }}>Loading history...</p>
-                        </div>
-                    ) : filteredExpenses.length === 0 ? (
-                        <EmptyState title="No Recent Activity" description="Save your first expense to see it here." />
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {filteredExpenses.map(expense => (
-                                <div key={expense.id} className="premium-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.5rem', cursor: 'pointer' }} onClick={() => openExpenseDetail(expense)}>
-                                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A' }}>
-                                        <Receipt size={28} />
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 900, fontSize: '1.1rem', marginBottom: '4px' }}>{expense.title}</div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div className="label-caps" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <Users size={14} /> {expense.participant_count} People
-                                            </div>
-                                            <div className="label-caps">Paid by {expense.paid_by}</div>
-                                        </div>
-                                    </div>
-                                    <div style={{ textAlign: 'right', minWidth: '140px' }}>
-                                        <div style={{ fontSize: '1.25rem', fontWeight: 900 }}>₹{expense.total_amount.toLocaleString('en-IN')}</div>
-                                        <div className="label-caps" style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end', marginTop: '4px' }}>
-                                            <Calendar size={14} /> {new Date(expense.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                                        </div>
-                                    </div>
-                                    <div style={{ color: '#CBD5E1' }}>
-                                        <ChevronRight size={24} />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )
+                {!selectedSplitId && (
+                    <button 
+                        onClick={() => setIsCreateGroupModalOpen(true)}
+                        style={{ 
+                            display: 'flex', alignItems: 'center', gap: '0.4rem', 
+                            padding: '0.65rem 1.15rem', borderRadius: '12px', 
+                            background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', 
+                            fontWeight: '850', fontSize: '0.82rem', cursor: 'pointer',
+                            boxShadow: '0 4px 12px rgba(27, 107, 58, 0.15)',
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                    >
+                        <Plus size={16} strokeWidth={3} />
+                        New Split Ticket
+                    </button>
                 )}
             </div>
 
-            {/* Expense Detail Modal */}
-            <AnimatePresence>
-                {selectedExpense && (
-                    <div className="modal-overlay" onClick={() => setSelectedExpense(null)}>
-                        <Motion.div
-                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="premium-card" style={{ width: '100%', maxWidth: '500px', background: 'white' }} onClick={e => e.stopPropagation()}
+            {/* Scrollable Container Wrapper */}
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                <AnimatePresence mode="wait">
+                    {!selectedSplitId ? (
+                        
+                        // ── ALL SPLITS VIEW ──
+                        <Motion.div 
+                            key="splits-list"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', height: '100%' }}
                         >
-                            <div className="card-header">
-                                <h3 style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0 }}>Expense Details</h3>
-                                <button className="icon-btn" onClick={() => setSelectedExpense(null)}><X size={24} /></button>
+                            {/* Search bar */}
+                            <div style={{ background: 'white', borderRadius: '14px', padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #E2E8F0', maxWidth: '320px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+                                <Search size={16} color="#94A3B8" />
+                                <input
+                                    style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontWeight: '600', fontSize: '0.85rem', color: '#1E293B' }}
+                                    type="text"
+                                    placeholder="Search split tickets..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
                             </div>
-                            
-                            <div style={{ padding: '2rem' }}>
-                                <div style={{ marginBottom: '2rem' }}>
-                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0F172A', marginBottom: '4px' }}>{selectedExpense.title}</h3>
-                                    <div className="label-caps">{new Date(selectedExpense.date).toLocaleDateString('en-IN', { dateStyle: 'full' })}</div>
+
+                            {/* Splits Cards Grid */}
+                            {loading ? (
+                                <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                        <Motion.div
+                                            animate={{ rotate: 360 }}
+                                            transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                                            style={{ width: '36px', height: '36px', border: '3px solid #E2E8F0', borderTopColor: '#064E3B', borderRadius: '50%', margin: '0 auto 1rem auto' }}
+                                        />
+                                        <p style={{ fontSize: '0.85rem', color: '#64748B', fontWeight: '750' }}>Loading Split Tickets...</p>
+                                    </div>
                                 </div>
-
-                                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', background: '#F8FAFC', padding: '1.5rem', borderRadius: '20px', marginBottom: '2rem' }}>
-                                    <div>
-                                        <label className="label-caps" style={{ fontSize: '9px' }}>Amount</label>
-                                        <div style={{ fontWeight: 900, color: '#1B6B3A' }}>₹{selectedExpense.total_amount.toLocaleString('en-IN')}</div>
-                                    </div>
-                                    <div>
-                                        <label className="label-caps" style={{ fontSize: '9px' }}>Paid By</label>
-                                        <div style={{ fontWeight: 900 }}>{selectedExpense.paid_by}</div>
-                                    </div>
-                                    <div>
-                                        <label className="label-caps" style={{ fontSize: '9px' }}>Type</label>
-                                        <div style={{ fontWeight: 900, textTransform: 'capitalize' }}>{selectedExpense.split_type}</div>
+                            ) : filteredSplits.length === 0 ? (
+                                <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                        <Users size={48} style={{ color: '#CBD5E1', marginBottom: '1rem' }} />
+                                        <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#334155', margin: '0 0 0.25rem 0' }}>No Active Split Tickets</h3>
+                                        <p style={{ fontSize: '0.85rem', color: '#64748B', maxWidth: '320px', margin: 0 }}>Create a new split ticket to begin tracking collaborative expenses with your co-workers.</p>
                                     </div>
                                 </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    <h4 className="label-caps">Breakdown</h4>
-                                    {selectedExpense.participants?.map(p => (
-                                        <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '12px', background: '#F8FAFC', borderRadius: '14px' }}>
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #F0FDF4' }}>
-                                                <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.name}`} alt="" />
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{p.name}</div>
-                                                <div className="label-caps" style={{ fontSize: '8px', color: p.is_settled ? '#10B981' : '#94A3B8' }}>{p.is_settled ? 'Settle' : 'Pending'}</div>
-                                            </div>
-                                            <div style={{ fontWeight: 900 }}>₹{p.share_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                            {p.is_settled ? <CheckCircle2 size={18} color="#10B981" /> : <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E2E8F0' }}></div>}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="card-header" style={{ border: 'none', borderTop: '1px solid #F0FDF4', padding: '1.5rem', justifyContent: 'flex-end' }}>
-                                <button className="btn-premium primary">Edit Split</button>
-                            </div>
-                        </Motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            {/* Create Modal */}
-            <AnimatePresence>
-                {isModalOpen && (
-                    <div className="modal-overlay">
-                        <Motion.div
-                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="premium-card" style={{ width: '100%', maxWidth: '720px', background: 'white', maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: '26px', border: '1px solid #E2E8F0', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)' }}
-                        >
-                            <div className="card-header" style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #F1F5F9' }}>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0F172A', margin: 0, letterSpacing: '-0.5px' }}>New Expense</h2>
-                                <button className="icon-btn" onClick={() => setIsModalOpen(false)} style={{ background: '#F8FAFC', borderRadius: '50%' }}><X size={20} color="#64748B" /></button>
-                            </div>
-                            
-                            <form onSubmit={handleAddSplit} style={{ overflowY: 'auto', flex: 1, background: '#FAFAFA' }}>
-                                <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                                    
-                                    {/* Description and amount row */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.25rem' }}>
-                                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                            <label className="label-caps" style={{ color: '#64748B', fontSize: '0.72rem', letterSpacing: '0.05em' }}>Description</label>
-                                            <input 
-                                                className="premium-input"
-                                                style={{ padding: '12px 16px', background: 'white', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.925rem', fontWeight: '500' }}
-                                                type="text" value={formData.title} 
-                                                onChange={e => setFormData({...formData, title: e.target.value})}
-                                                placeholder="e.g. Food, Flight, Event"
-                                            />
-                                        </div>
-                                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                            <label className="label-caps" style={{ color: '#64748B', fontSize: '0.72rem', letterSpacing: '0.05em' }}>Total Amount (₹)</label>
-                                            <input 
-                                                className="premium-input"
-                                                style={{ padding: '12px 16px', background: 'white', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: 900, color: '#1B6B3A', fontSize: '1.1rem' }}
-                                                type="number" value={formData.amount} 
-                                                onChange={e => setFormData({...formData, amount: e.target.value})}
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Who paid & Date row */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                            <label className="label-caps" style={{ color: '#64748B', fontSize: '0.72rem', letterSpacing: '0.05em' }}>Who Paid?</label>
-                                            <select 
-                                                className="premium-input"
-                                                style={{ padding: '12px 16px', background: 'white', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.925rem', fontWeight: '600' }}
-                                                value={formData.paidBy} 
-                                                onChange={e => setFormData({...formData, paidBy: e.target.value})}
-                                            >
-                                                <option value="You">You</option>
-                                                {formData.participants.map(p => p.name && (
-                                                    <option key={p.name} value={p.name}>{p.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                            <label className="label-caps" style={{ color: '#64748B', fontSize: '0.72rem', letterSpacing: '0.05em' }}>Date</label>
-                                            <input 
-                                                className="premium-input" 
-                                                style={{ padding: '12px 16px', background: 'white', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.925rem', fontWeight: '600' }}
-                                                type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} 
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Split method selectors */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <label className="label-caps" style={{ color: '#64748B', fontSize: '0.72rem', letterSpacing: '0.05em' }}>Split Method</label>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.75rem' }}>
-                                            {[
-                                                { id: 'equal', label: 'Equally', icon: Users },
-                                                { id: 'exact', label: 'Exact', icon: Hash },
-                                                { id: 'percentage', label: 'Percent', icon: Percent },
-                                                { id: 'shares', label: 'Shares', icon: PieChart },
-                                                { id: 'items', label: 'Items', icon: ShoppingCart }
-                                            ].map(type => (
-                                                <button 
-                                                    key={type.id} type="button" 
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+                                    {filteredSplits
+                                        .sort((a, b) => {
+                                            const aPinned = pinnedSplitIds.includes(a.id);
+                                            const bPinned = pinnedSplitIds.includes(b.id);
+                                            if (aPinned && !bPinned) return -1;
+                                            if (!aPinned && bPinned) return 1;
+                                            return 0;
+                                        })
+                                        .map(s => {
+                                            const groupTotal = s.expenses.reduce((sum, e) => sum + e.amount, 0);
+                                            const isPinned = pinnedSplitIds.includes(s.id);
+                                            return (
+                                                <div 
+                                                    key={s.id} 
+                                                    onClick={() => setSelectedSplitId(s.id)}
                                                     style={{ 
-                                                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '12px 8px',
-                                                        borderRadius: '18px', border: splitType === type.id ? '2px solid #1B6B3A' : '1px solid #E2E8F0',
-                                                        background: splitType === type.id ? '#FFFFFF' : '#FAFAFA', cursor: 'pointer', transition: 'all 0.2s',
-                                                        boxShadow: splitType === type.id ? '0 4px 12px -2px rgba(27,107,58,0.1)' : 'none'
+                                                        background: 'white', 
+                                                        borderRadius: '20px', 
+                                                        border: '1.5px solid #E2E8F0', 
+                                                        padding: '1.5rem', 
+                                                        cursor: 'pointer',
+                                                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)',
+                                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                        position: 'relative',
+                                                        overflow: 'hidden'
                                                     }}
-                                                    onClick={() => setSplitType(type.id)}
+                                                    onMouseOver={(e) => {
+                                                        e.currentTarget.style.borderColor = '#1B6B3A';
+                                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                                        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.05)';
+                                                    }}
+                                                    onMouseOut={(e) => {
+                                                        e.currentTarget.style.borderColor = '#E2E8F0';
+                                                        e.currentTarget.style.transform = 'translateY(0)';
+                                                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.02)';
+                                                    }}
                                                 >
-                                                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: splitType === type.id ? '#1B6B3A' : '#F1F5F9', color: splitType === type.id ? 'white' : '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <type.icon size={18} />
+                                                    {/* Card Header */}
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                                                        <div>
+                                                            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '850', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                 {s.title}
+                                                                 {isPinned && (
+                                                                     <Pin size={12} style={{ color: '#004aad', transform: 'rotate(45deg)' }} />
+                                                                 )}
+                                                            </h3>
+                                                            <span style={{ fontSize: '0.65rem', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', background: '#F1F5F9', padding: '2px 8px', borderRadius: '6px', marginTop: '4px', display: 'inline-block' }}>
+                                                                {s.currency}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                                                            <button 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setActiveMenuId(activeMenuId === s.id ? null : s.id);
+                                                                }}
+                                                                style={{ background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '6px 10px', borderRadius: '8px' }}
+                                                                onMouseOver={(e) => e.currentTarget.style.color = '#004aad'}
+                                                                onMouseOut={(e) => e.currentTarget.style.color = '#94A3B8'}
+                                                            >
+                                                                <MoreVertical size={16} />
+                                                            </button>
+                                                            
+                                                            {activeMenuId === s.id && (
+                                                                <div style={{
+                                                                    position: 'absolute',
+                                                                    right: 0,
+                                                                    top: '100%',
+                                                                    background: 'white',
+                                                                    borderRadius: '12px',
+                                                                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05)',
+                                                                    border: '1px solid #E2E8F0',
+                                                                    padding: '6px',
+                                                                    zIndex: 100,
+                                                                    minWidth: '160px',
+                                                                    textAlign: 'left'
+                                                                }}>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const next = pinnedSplitIds.includes(s.id)
+                                                                                ? pinnedSplitIds.filter(id => id !== s.id)
+                                                                                : [...pinnedSplitIds, s.id];
+                                                                            setPinnedSplitIds(next);
+                                                                            localStorage.setItem('cliks_pinned_splits', JSON.stringify(next));
+                                                                            setActiveMenuId(null);
+                                                                        }}
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: '8px',
+                                                                            width: '100%',
+                                                                            padding: '8px 12px',
+                                                                            border: 'none',
+                                                                            background: 'none',
+                                                                            color: '#334155',
+                                                                            fontSize: '0.85rem',
+                                                                            fontWeight: '600',
+                                                                            cursor: 'pointer',
+                                                                            borderRadius: '8px',
+                                                                            transition: 'background 0.2s'
+                                                                        }}
+                                                                        onMouseOver={(e) => e.currentTarget.style.background = '#F1F5F9'}
+                                                                        onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                                                                    >
+                                                                        <Pin size={14} style={{ color: '#004aad', transform: isPinned ? 'rotate(45deg)' : 'none' }} />
+                                                                        {isPinned ? 'Unpin Ticket' : 'Pin to top'}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleDeleteGroup(s.id);
+                                                                            setActiveMenuId(null);
+                                                                        }}
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: '8px',
+                                                                            width: '100%',
+                                                                            padding: '8px 12px',
+                                                                            border: 'none',
+                                                                            background: 'none',
+                                                                            color: '#EF4444',
+                                                                            fontSize: '0.85rem',
+                                                                            fontWeight: '600',
+                                                                            cursor: 'pointer',
+                                                                            borderRadius: '8px',
+                                                                            transition: 'background 0.2s'
+                                                                        }}
+                                                                        onMouseOver={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                                                                        onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                                                                    >
+                                                                        <Trash2 size={14} style={{ color: '#EF4444' }} />
+                                                                        Delete Ticket
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <span style={{ fontSize: '0.75rem', fontWeight: '800', color: splitType === type.id ? '#1B6B3A' : '#1E293B' }}>{type.label}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                                    
+                                                    <p style={{ margin: '0 0 1.25rem 0', fontSize: '0.8rem', color: '#64748B', lineHeight: '1.4', height: '36px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                                        {s.description || 'No description provided.'}
+                                                    </p>
+                                                    
+                                                    {/* Card Footer Statistics */}
+                                                    <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#1B6B3A' }}>
+                                                            <Users size={14} />
+                                                            <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>{s.participants.length} Members</span>
+                                                        </div>
+                                                        <div style={{ textAlign: 'right' }}>
+                                                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>Total Spent</span>
+                                                            <span style={{ fontSize: '1.05rem', fontWeight: '950', color: '#064E3B' }}>
+                                                                {s.currencySymbol}{groupTotal.toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            )}
+                        </Motion.div>
+                    ) : (
+                        
+                        // ── DETAILED SPLIT VIEW ──
+                        <Motion.div 
+                            key="split-detail"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1.25rem' }}
+                        >
+                            {/* Back and Action Panel */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <button 
+                                    onClick={() => setSelectedSplitId(null)}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', border: 'none', background: 'transparent', color: '#064E3B', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', padding: 0 }}
+                                >
+                                    <ChevronLeft size={18} strokeWidth={2.5} /> Back to all tickets
+                                </button>
 
-                                    {/* Split participants */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <label className="label-caps" style={{ color: '#64748B', fontSize: '0.72rem', letterSpacing: '0.05em', margin: 0 }}>Split With</label>
-                                            <button 
-                                                type="button" onClick={addParticipantField} 
-                                                style={{ 
-                                                    padding: '6px 14px', fontSize: '0.75rem', borderRadius: '12px', background: '#F1F5F9', border: '1px solid #E2E8F0', 
-                                                    color: '#334155', fontWeight: '750', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' 
-                                                }}
-                                            >
-                                                <Plus size={14} /> Add Friend
-                                            </button>
-                                        </div>
-                                        
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                            {formData.participants.map((p, index) => (
-                                                <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '10px 14px', background: 'white', borderRadius: '18px', border: '1px solid #E2E8F0' }}>
-                                                    <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: '#F8FAFC', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
-                                                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.name || 'default'}`} alt="" />
-                                                    </div>
-                                                    <input 
-                                                        className="premium-input" style={{ margin: 0, padding: '8px 12px', flex: 2, background: 'transparent', border: 'none', borderBottom: '1px solid #E2E8F0', borderRadius: 0, outline: 'none', fontSize: '0.9rem', fontWeight: '600' }}
-                                                        type="text" placeholder="Name" 
-                                                        value={p.name} 
-                                                        onChange={e => updateParticipant(index, 'name', e.target.value)} 
-                                                    />
-                                                    {splitType !== 'equal' && (
-                                                        <input 
-                                                            className="premium-input" style={{ margin: 0, padding: '8px 12px', flex: 1, border: '1px solid #E2E8F0', borderRadius: '10px', background: '#FAFAFA', outline: 'none', fontWeight: '800', textAlign: 'right', fontSize: '0.9rem' }}
-                                                            type="number" value={p.value} 
-                                                            onChange={e => updateParticipant(index, 'value', e.target.value)} 
-                                                            placeholder={splitType === 'percentage' ? '%' : 'Val'}
+                                <button 
+                                    onClick={openAddExpenseModal}
+                                    style={{ 
+                                        display: 'flex', alignItems: 'center', gap: '0.4rem', 
+                                        padding: '0.6rem 1.15rem', borderRadius: '12px', 
+                                        background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', 
+                                        fontWeight: '850', fontSize: '0.82rem', cursor: 'pointer',
+                                        boxShadow: '0 4px 12px rgba(27, 107, 58, 0.15)'
+                                    }}
+                                >
+                                    <Plus size={16} strokeWidth={3} />
+                                    Add Expense
+                                </button>
+                            </div>
+
+                            {/* Split Banner Header */}
+                            <div style={{ background: 'white', borderRadius: '24px', border: '1.5px solid #E2E8F0', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <span style={{ fontSize: '0.62rem', color: '#1B6B3A', fontWeight: '850', textTransform: 'uppercase', background: '#ECFDF5', padding: '2px 8px', borderRadius: '6px', border: '1px solid #D1FAE5' }}>
+                                        {activeSplit.currency} Group
+                                    </span>
+                                    <h2 style={{ margin: '0.35rem 0 0.15rem 0', fontSize: '1.4rem', fontWeight: '900', color: '#0F172A' }}>{activeSplit.title}</h2>
+                                    <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748B', fontWeight: '500' }}>{activeSplit.description}</p>
+                                </div>
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <span style={{ display: 'block', fontSize: '0.6rem', color: '#64748B', fontWeight: '850', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Group Outlay</span>
+                                        <span style={{ fontSize: '1.5rem', fontWeight: '950', color: '#064E3B', letterSpacing: '-0.02em' }}>
+                                            {activeSplit.currencySymbol}{calculatedBalances.totalSpent.toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Grid Split Content */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.75fr', gap: '1.5rem', alignItems: 'start' }}>
+                                
+                                {/* LEFT SIDE: Ledger Expenses List */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '900', color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Logged Expenses</h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            {/* Search Toggle */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                <AnimatePresence>
+                                                    {showDetailSearch && (
+                                                        <Motion.input
+                                                            initial={{ width: 0, opacity: 0 }}
+                                                            animate={{ width: 140, opacity: 1 }}
+                                                            exit={{ width: 0, opacity: 0 }}
+                                                            type="text"
+                                                            placeholder="Search expenses..."
+                                                            value={detailSearchQuery}
+                                                            onChange={(e) => setDetailSearchQuery(e.target.value)}
+                                                            style={{
+                                                                padding: '0.35rem 0.65rem',
+                                                                borderRadius: '8px',
+                                                                border: '1px solid #CBD5E1',
+                                                                fontSize: '0.75rem',
+                                                                outline: 'none',
+                                                                fontWeight: '600'
+                                                            }}
                                                         />
                                                     )}
-                                                    <button type="button" onClick={() => removeParticipant(index)} className="icon-btn" style={{ color: '#94A3B8', border: 'none', background: 'transparent' }}><X size={18} /></button>
-                                                </div>
-                                            ))}
-                                            {formData.participants.length === 0 && (
-                                                <div style={{ border: '2px dashed #CBD5E1', borderRadius: '20px', padding: '24px', background: '#FFFFFF', textAlign: 'center', cursor: 'pointer', color: '#64748B' }} onClick={addParticipantField}>
-                                                    <Users size={32} style={{ margin: '0 auto 10px', color: '#94A3B8' }} />
-                                                    <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>Start adding friends to split</div>
-                                                    <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Click "Add Friend" to add the first person</span>
-                                                </div>
-                                            )}
+                                                </AnimatePresence>
+                                                <button 
+                                                    onClick={() => {
+                                                        setShowDetailSearch(!showDetailSearch);
+                                                        if (showDetailSearch) setDetailSearchQuery('');
+                                                     }}
+                                                     title="Search expenses"
+                                                     style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.45rem', cursor: 'pointer', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                 >
+                                                     <Search size={14} />
+                                                 </button>
+                                             </div>
+
+                                             {/* Share Icon */}
+                                             <button 
+                                                 onClick={handleShareGroup}
+                                                 title="Share Split Summary"
+                                                 style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.45rem', cursor: 'pointer', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                             >
+                                                 <Share2 size={14} />
+                                             </button>
+
+                                             {/* PDF Download Icon */}
+                                             <button 
+                                                 onClick={handleDownloadPDF}
+                                                 title="Download Statement (PDF)"
+                                                 style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.45rem', cursor: 'pointer', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                             >
+                                                 <Download size={14} />
+                                             </button>
+                                         </div>
+                                     </div>
+                                    
+                                    {(() => {
+                                        const filteredExpenses = (activeSplit.expenses || []).filter(e => {
+                                            if (!detailSearchQuery.trim()) return true;
+                                            const term = detailSearchQuery.toLowerCase().trim();
+                                            return e.title.toLowerCase().includes(term) ||
+                                                   e.paidBy.toLowerCase().includes(term) ||
+                                                   String(e.amount).includes(term) ||
+                                                   (e.attachment || '').toLowerCase().includes(term);
+                                        });
+                                        return filteredExpenses.length === 0 ? (
+                                            <div style={{ border: '2px dashed #E2E8F0', borderRadius: '24px', background: 'white', padding: '3.5rem 2rem', textAlign: 'center' }}>
+                                                <Receipt size={36} style={{ color: '#CBD5E1', marginBottom: '0.75rem' }} />
+                                                <h4 style={{ fontSize: '0.95rem', fontWeight: '850', color: '#334155', margin: '0 0 0.15rem 0' }}>No Expenses Found</h4>
+                                                <p style={{ fontSize: '0.8rem', color: '#64748B', maxWidth: '280px', margin: '0 auto' }}>
+                                                    {activeSplit.expenses.length === 0 
+                                                        ? 'Click "Add Expense" to record dinners, travel costs, or team bills in this split ticket.'
+                                                        : `No expenses match your search query "${detailSearchQuery}".`
+                                                    }
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                                {filteredExpenses.map(e => {
+                                                    const isSettlement = e.title.startsWith('Settlement:');
+                                                    return (
+                                                        <div 
+                                                            key={e.id} 
+                                                            style={{ 
+                                                                background: 'white', 
+                                                                borderRadius: '16px', 
+                                                                border: '1.5px solid #E2E8F0', 
+                                                                padding: '1rem 1.25rem', 
+                                                                display: 'flex', 
+                                                                alignItems: 'center', 
+                                                                gap: '1rem',
+                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.01)',
+                                                                position: 'relative'
+                                                            }}
+                                                        >
+                                                            {/* Icon indicator */}
+                                                            <div style={{ 
+                                                                width: '38px', 
+                                                                height: '38px', 
+                                                                borderRadius: '10px', 
+                                                                background: isSettlement ? '#F0FDF4' : '#F8FAFC', 
+                                                                color: isSettlement ? '#10B981' : '#475569', 
+                                                                display: 'flex', 
+                                                                alignItems: 'center', 
+                                                                justifyContent: 'center', 
+                                                                flexShrink: 0 
+                                                            }}>
+                                                                {isSettlement ? <Check size={18} strokeWidth={2.5} /> : <Receipt size={18} />}
+                                                            </div>
+
+                                                            {/* Details */}
+                                                            <div style={{ flex: 1 }}>
+                                                                <h4 style={{ margin: '0 0 0.15rem 0', fontSize: '0.9rem', fontWeight: '850', color: '#1F2937' }}>{e.title}</h4>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                                                    <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#64748B' }}>
+                                                                        Paid by <strong style={{ color: '#1E293B' }}>{e.paidBy}</strong>
+                                                                    </span>
+                                                                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#CBD5E1' }} />
+                                                                    <span style={{ fontSize: '0.65rem', fontWeight: '750', color: '#64748B', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                                        <Calendar size={12} /> {e.date}
+                                                                    </span>
+                                                                    {e.attachment && (
+                                                                        <>
+                                                                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#CBD5E1' }} />
+                                                                            <span 
+                                                                                title={`Attachment: ${e.attachment}`}
+                                                                                style={{ fontSize: '0.65rem', fontWeight: '800', color: '#2563EB', background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '1px 6px', borderRadius: '5px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                                                                            >
+                                                                                <FileText size={10} /> {e.attachment}
+                                                                            </span>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Amount & Actions */}
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                                <div style={{ textAlign: 'right' }}>
+                                                                    <span style={{ fontSize: '1.05rem', fontWeight: '950', color: isSettlement ? '#059669' : '#1E293B' }}>
+                                                                        {activeSplit.currencySymbol}{e.amount.toLocaleString()}
+                                                                    </span>
+                                                                    <span style={{ display: 'block', fontSize: '0.6rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase', marginTop: '1px' }}>
+                                                                        {e.splitType} Split
+                                                                    </span>
+                                                                </div>
+                                                                <button 
+                                                                    onClick={() => handleDeleteExpense(e.id)}
+                                                                    style={{ background: 'transparent', border: 'none', color: '#CBD5E1', cursor: 'pointer', padding: '4px' }}
+                                                                    onMouseOver={(e) => e.currentTarget.style.color = '#EF4444'}
+                                                                    onMouseOut={(e) => e.currentTarget.style.color = '#CBD5E1'}
+                                                                >
+                                                                    <X size={15} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+
+                                {/* RIGHT SIDE: Balances, Debts, Settlement */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                    
+                                    {/* 1. Net Balances Breakdown */}
+                                    <div style={{ background: 'white', borderRadius: '24px', border: '1.5px solid #E2E8F0', padding: '1.5rem' }}>
+                                        <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', fontWeight: '900', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Individual Balances</h3>
+                                        
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                            {activeSplit.participants.map(m => {
+                                                const bal = calculatedBalances.members[m] || 0;
+                                                return (
+                                                    <div key={m} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span style={{ fontWeight: '800', color: '#1F2937', fontSize: '0.85rem' }}>{m}</span>
+                                                        <span style={{ 
+                                                            fontWeight: '950', 
+                                                            fontSize: '0.88rem', 
+                                                            color: bal > 0.01 ? '#059669' : bal < -0.01 ? '#DC2626' : '#64748B' 
+                                                        }}>
+                                                            {bal > 0.01 ? '+' : ''}{activeSplit.currencySymbol}{bal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </div>
-                                    
-                                    {calculatedPreview.length > 0 && formData.amount > 0 && (
-                                        <div style={{ background: '#0F172A', borderRadius: '22px', padding: '1.25rem 1.5rem', color: 'white' }}>
-                                            <div className="label-caps" style={{ color: '#64748B', fontSize: '0.7rem', marginBottom: '1rem', letterSpacing: '0.05em' }}>Live Calculation Breakdown</div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                                {calculatedPreview.map((p, idx) => (
-                                                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <span style={{ fontWeight: 750, color: p.isSelf ? '#34D399' : '#F1F5F9', fontSize: '0.9rem' }}>{p.name} {p.isSelf && '(You)'}</span>
-                                                        <div style={{ flex: 1, borderBottom: '1px dotted rgba(255,255,255,0.15)', margin: '0 0.75rem' }}></div>
-                                                        <span style={{ fontWeight: 900, color: p.isSelf ? '#34D399' : '#38BDF8', fontSize: '0.95rem' }}>₹{p.share_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+
+                                    {/* 2. Simplified Settlements / Debts */}
+                                    <div style={{ background: '#0F172A', borderRadius: '24px', padding: '1.5rem', color: 'white', boxShadow: '0 12px 24px rgba(15,23,42,0.1)' }}>
+                                        <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '0.85rem', fontWeight: '900', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Simplified Debts</h3>
+
+                                        {calculatedBalances.debts.length === 0 ? (
+                                            <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                                                <Check size={28} color="#34D399" style={{ marginBottom: '0.5rem' }} />
+                                                <p style={{ margin: 0, fontSize: '0.8rem', color: '#94A3B8', fontWeight: '600' }}>All accounts completely settled!</p>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                                                {calculatedBalances.debts.map((d, index) => (
+                                                    <div 
+                                                        key={index}
+                                                        style={{ 
+                                                            background: 'rgba(255,255,255,0.03)', 
+                                                            padding: '0.85rem 1rem', 
+                                                            borderRadius: '16px', 
+                                                            border: '1px solid rgba(255,255,255,0.06)',
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center'
+                                                        }}
+                                                    >
+                                                        <div>
+                                                            <div style={{ fontSize: '0.85rem', fontWeight: '750', color: '#F8FAFC' }}>
+                                                                {d.from} owes {d.to}
+                                                            </div>
+                                                            <div style={{ fontSize: '1rem', fontWeight: '950', color: '#38BDF8', marginTop: '2px' }}>
+                                                                {activeSplit.currencySymbol}{d.amount.toLocaleString()}
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => handleSettleDebt(d)}
+                                                            style={{ 
+                                                                border: 'none', 
+                                                                background: '#34D399', 
+                                                                color: '#064E3B', 
+                                                                padding: '0.45rem 0.85rem', 
+                                                                borderRadius: '10px', 
+                                                                fontWeight: '900', 
+                                                                fontSize: '0.75rem', 
+                                                                cursor: 'pointer',
+                                                                boxShadow: '0 4px 10px rgba(52, 211, 153, 0.2)'
+                                                            }}
+                                                        >
+                                                            Settle Debt
+                                                        </button>
                                                     </div>
                                                 ))}
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid rgba(255,255,255,0.15)' }}>
-                                                    <span style={{ fontWeight: 850, color: 'white', fontSize: '0.95rem' }}>Total</span>
-                                                    <div style={{ flex: 1, borderBottom: '1px dotted rgba(255,255,255,0.25)', margin: '0 0.75rem' }}></div>
-                                                    <span style={{ fontWeight: 900, color: 'white', fontSize: '1.05rem' }}>₹{calculatedPreview.reduce((sum, p) => sum + p.share_amount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
+
                                 </div>
-                                {formError && <div style={{ background: '#FFF1F2', color: '#E11D48', padding: '12px', borderRadius: '14px', margin: '0 2rem', fontWeight: 800, textAlign: 'center', border: '1px solid #FFE4E6', fontSize: '0.85rem' }}>{formError}</div>}
-                                <div className="card-header" style={{ border: 'none', borderTop: '1px solid #F1F5F9', padding: '1.5rem 2rem', justifyContent: 'flex-end', gap: '1rem', background: 'white' }}>
-                                    <button type="button" className="btn-premium secondary" style={{ padding: '0.75rem 1.5rem', borderRadius: '14px', fontWeight: '750', fontSize: '0.9rem' }} onClick={() => setIsModalOpen(false)}>Cancel</button>
-                                    <button type="submit" className="btn-premium primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '14px', fontWeight: '800', background: 'linear-gradient(135deg, #1B6B3A 0%, #0D5C32 100%)', border: 'none', color: 'white', cursor: 'pointer', fontSize: '0.9rem' }} disabled={createMutation.isPending}>
-                                        {createMutation.isPending ? 'Saving...' : 'Save Expense'}
-                                    </button>
+
+                            </div>
+                        </Motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* ──────── MODAL: CREATE GROUP ──────── */}
+            <AnimatePresence>
+                {isCreateGroupModalOpen && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                        <Motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            style={{ background: 'white', width: '100%', maxWidth: '480px', borderRadius: '28px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden' }}
+                        >
+                            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h3 style={{ fontSize: '1.15rem', fontWeight: '900', color: '#064E3B', margin: 0 }}>Create Split Ticket</h3>
+                                <button style={{ background: '#F1F5F9', border: 'none', borderRadius: '10px', padding: '0.4rem', cursor: 'pointer', color: '#475569' }} onClick={() => setIsCreateGroupModalOpen(false)}><X size={18} /></button>
+                            </div>
+                            
+                            <form onSubmit={handleCreateGroup} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Ticket Title</label>
+                                    <input 
+                                        required
+                                        type="text" 
+                                        placeholder="e.g. Goa Trip, Office lunch split"
+                                        value={groupForm.title}
+                                        onChange={(e) => setGroupForm({ ...groupForm, title: e.target.value })}
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontWeight: '600' }}
+                                    />
                                 </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Group Currency</label>
+                                        <select 
+                                            value={groupForm.currency}
+                                            onChange={(e) => setGroupForm({ ...groupForm, currency: e.target.value })}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', outline: 'none' }}
+                                        >
+                                            <option value="INR">INR (₹)</option>
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Description</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Optional details"
+                                            value={groupForm.description}
+                                            onChange={(e) => setGroupForm({ ...groupForm, description: e.target.value })}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Participants Manager */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Participants ({groupForm.participants.length})</label>
+                                    
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Add participant name..."
+                                            value={newParticipantName}
+                                            onChange={(e) => setNewParticipantName(e.target.value)}
+                                            style={{ width: '100%', padding: '0.65rem', borderRadius: '10px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box' }}
+                                            onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); addParticipantToForm(); } }}
+                                        />
+                                        <button 
+                                            type="button"
+                                            onClick={addParticipantToForm}
+                                            style={{ border: 'none', background: '#ECFDF5', color: '#065F46', padding: '0.65rem 1rem', borderRadius: '10px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                        >
+                                            <UserPlus size={15} /> Add
+                                        </button>
+                                    </div>
+
+                                    {/* Participants Badges list */}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', maxHeight: '100px', overflowY: 'auto', background: '#F8FAFC', padding: '0.5rem', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
+                                        {groupForm.participants.map(p => (
+                                            <span 
+                                                key={p} 
+                                                style={{ 
+                                                    display: 'inline-flex', alignItems: 'center', gap: '4px', 
+                                                    background: p === 'You' ? '#ECFDF5' : 'white', 
+                                                    color: p === 'You' ? '#047857' : '#334155', 
+                                                    border: '1px solid #E2E8F0', 
+                                                    padding: '3px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '750' 
+                                                }}
+                                            >
+                                                {p}
+                                                {p !== 'You' && (
+                                                    <button type="button" onClick={() => removeParticipantFromForm(p)} style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={12} /></button>
+                                                )}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <button 
+                                    type="submit"
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', fontWeight: '850', fontSize: '0.88rem', cursor: 'pointer', marginTop: '0.5rem' }}
+                                >
+                                    Create Ticket
+                                </button>
                             </form>
                         </Motion.div>
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* ──────── MODAL: ADD EXPENSE ──────── */}
+            <AnimatePresence>
+                {isAddExpenseModalOpen && activeSplit && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                        <Motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            style={{ background: 'white', width: '100%', maxWidth: '520px', borderRadius: '28px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
+                        >
+                            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                                <h3 style={{ fontSize: '1.15rem', fontWeight: '900', color: '#064E3B', margin: 0 }}>Record Expense</h3>
+                                <button style={{ background: '#F1F5F9', border: 'none', borderRadius: '10px', padding: '0.4rem', cursor: 'pointer', color: '#475569' }} onClick={() => setIsAddExpenseModalOpen(false)}><X size={18} /></button>
+                            </div>
+                            
+                            <form onSubmit={handleAddExpense} style={{ padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1, background: '#FAFAFA' }}>
+                                
+                                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Expense Description</label>
+                                        <input 
+                                            required
+                                            type="text" 
+                                            placeholder="e.g. Dinner, Uber, Flight ticket"
+                                            value={expenseForm.title}
+                                            onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontWeight: '700', fontSize: '0.88rem' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Amount ({activeSplit.currencySymbol})</label>
+                                        <input 
+                                            required
+                                            type="number" 
+                                            placeholder="0.00"
+                                            value={expenseForm.amount}
+                                            onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontWeight: '900', color: '#1B6B3A', fontSize: '0.95rem' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Who Paid?</label>
+                                        <select 
+                                            value={expenseForm.paidBy}
+                                            onChange={(e) => setExpenseForm({ ...expenseForm, paidBy: e.target.value })}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', outline: 'none', fontWeight: '600' }}
+                                        >
+                                            {activeSplit.participants.map(p => (
+                                                <option key={p} value={p}>{p}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Date</label>
+                                        <input 
+                                            type="date"
+                                            value={expenseForm.date}
+                                            onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontWeight: '600' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Attachment Upload Panel */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Expense Attachment</label>
+                                    <div 
+                                        onClick={triggerSimulatedUpload}
+                                        style={{ border: '2px dashed #CBD5E1', borderRadius: '14px', padding: '0.75rem', background: '#F8FAFC', textAlign: 'center', cursor: 'pointer', color: '#475569', transition: 'border-color 0.2s' }}
+                                        onMouseOver={(e) => e.currentTarget.style.borderColor = '#1B6B3A'}
+                                        onMouseOut={(e) => e.currentTarget.style.borderColor = '#CBD5E1'}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                            <Upload size={16} />
+                                            <span style={{ fontSize: '0.78rem', fontWeight: '750' }}>
+                                                {expenseForm.attachmentName ? expenseForm.attachmentName : 'Click to upload invoice / receipt copy'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Split Type Protocol */}
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Splitting Protocol</label>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setExpenseForm({ ...expenseForm, splitType: 'equal' })}
+                                            style={{ 
+                                                padding: '0.6rem', borderRadius: '10px', 
+                                                border: expenseForm.splitType === 'equal' ? '2px solid #1B6B3A' : '1px solid #E2E8F0',
+                                                background: expenseForm.splitType === 'equal' ? 'white' : '#F8FAFC', 
+                                                fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer', color: expenseForm.splitType === 'equal' ? '#1B6B3A' : '#475569'
+                                            }}
+                                        >
+                                            Split Equally
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setExpenseForm({ ...expenseForm, splitType: 'custom' })}
+                                            style={{ 
+                                                padding: '0.6rem', borderRadius: '10px', 
+                                                border: expenseForm.splitType === 'custom' ? '2px solid #1B6B3A' : '1px solid #E2E8F0',
+                                                background: expenseForm.splitType === 'custom' ? 'white' : '#F8FAFC', 
+                                                fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer', color: expenseForm.splitType === 'custom' ? '#1B6B3A' : '#475569'
+                                            }}
+                                        >
+                                            Customize Shares
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Dynamic Shares Breakdown */}
+                                <div style={{ background: '#F8FAFC', borderRadius: '16px', padding: '1rem', border: '1px solid #E2E8F0' }}>
+                                    <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.75rem', fontWeight: '900', color: '#475569', textTransform: 'uppercase' }}>Shares Allocations</h4>
+                                    
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                        {activeSplit.participants.map(p => {
+                                            const totalAmt = parseFloat(expenseForm.amount) || 0;
+                                            const equalShare = totalAmt / activeSplit.participants.length;
+                                            return (
+                                                <div key={p} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <span style={{ fontSize: '0.82rem', fontWeight: '750', color: '#1F2937' }}>{p}</span>
+                                                    
+                                                    {expenseForm.splitType === 'equal' ? (
+                                                        <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#1E293B' }}>
+                                                            {activeSplit.currencySymbol}{Math.round(equalShare * 100) / 100}
+                                                        </span>
+                                                    ) : (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                            <span style={{ fontSize: '0.85rem', fontWeight: '850', color: '#64748B' }}>{activeSplit.currencySymbol}</span>
+                                                            <input 
+                                                                required
+                                                                type="number"
+                                                                placeholder="0.00"
+                                                                value={expenseForm.shares[p] || ''}
+                                                                onChange={(e) => {
+                                                                    const newShares = { ...expenseForm.shares };
+                                                                    newShares[p] = e.target.value;
+                                                                    setExpenseForm({ ...expenseForm, shares: newShares });
+                                                                }}
+                                                                style={{ width: '80px', padding: '0.35rem 0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', outline: 'none', fontWeight: '900', textAlign: 'right', fontSize: '0.82rem', color: '#1B6B3A' }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Custom Shares Sum Warning */}
+                                    {expenseForm.splitType === 'custom' && (() => {
+                                        const totalAmt = parseFloat(expenseForm.amount) || 0;
+                                        const sum = activeSplit.participants.reduce((s, p) => s + (parseFloat(expenseForm.shares[p]) || 0), 0);
+                                        const difference = totalAmt - sum;
+                                        return (
+                                            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '6px', color: Math.abs(difference) < 0.1 ? '#059669' : '#DC2626' }}>
+                                                <AlertCircle size={14} />
+                                                <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>
+                                                    {Math.abs(difference) < 0.1 
+                                                        ? 'All allocations match total perfectly!' 
+                                                        : `Allocated: ${activeSplit.currencySymbol}${sum.toFixed(2)} (${difference > 0 ? 'Remaining' : 'Over'}: ${activeSplit.currencySymbol}${Math.abs(difference).toFixed(2)})`
+                                                    }
+                                                </span>
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+
+                                <button 
+                                    type="submit"
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', fontWeight: '850', fontSize: '0.88rem', cursor: 'pointer', marginTop: '0.5rem' }}
+                                >
+                                    Log Expense
+                                </button>
+                            </form>
+                        </Motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 };
