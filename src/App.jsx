@@ -30,7 +30,7 @@ const BooksDashboard = React.lazy(() => import('./pages/books/Dashboard'));
 const Auditor = React.lazy(() => import('./pages/Auditor'));
 const Public = React.lazy(() => import('./pages/Public'));
 const Stock = React.lazy(() => import('./pages/Stock'));
-const FinancialPlan = React.lazy(() => import('./pages/financial-plan/FinancialPlan'));
+const Wallet = React.lazy(() => import('./pages/finance/Wallet'));
 
 const People = React.lazy(() => import('./pages/People'));
 const PeopleOverview = React.lazy(() => import('./pages/people/PeopleOverview'));
@@ -102,7 +102,7 @@ function AppContent() {
                     <Route path="/finance/debts" element={<Debts />} />
 
                     {/* Payments Routes shifted from Books */}
-                    <Route path="/finance/plan" element={<FinancialPlan />} />
+                    <Route path="/finance/plan" element={<Wallet />} />
 
                     <Route path="/finance/segregation" element={<Segregation />} />
                     <Route path="/finance/split-expense" element={<SplitExpense />} />

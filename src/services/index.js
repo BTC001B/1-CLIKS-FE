@@ -26,3 +26,4 @@ export * from './meetupsService';
 export * from './stockService';
 export * from './goalWalletService';
 export * from './calculatorService';
+export * from './pitchesService';

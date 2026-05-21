@@ -47,6 +47,7 @@ import {
     Gamepad2,
     UsersRound,
     Handshake,
+    Rocket,
     Bitcoin,
     Bot,
     Briefcase,
@@ -62,13 +63,13 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
     const navigate = useNavigate();
 
     // Determine active item based on path
-    const getActiveItemFromPath = (path) => {
-        if (path === '/finance/plan' || path.includes('/finance/plan/')) return 'Plan';
+    const getActiveItemFromPath = (path, search) => {
+        if (path === '/finance/plan' || path.includes('/finance/plan/')) return 'Wallet';
         if (path.includes('/finance/segregation')) return 'Segregation';
         if (path.includes('/finance/split-expense')) return 'Split Expense';
 
         // Keep old ones in case they are visited
-        if (path === '/' || path === '/finance') return 'Plan';
+        if (path === '/' || path === '/finance') return 'Wallet';
         if (path === '/finance/dashboard') return 'Dashboard';
         if (path === '/finance/transactions') return 'Transactions';
         if (path === '/finance/budgets') return 'Budgets';
@@ -82,16 +83,23 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
         if (path.includes('/books/faq')) return 'Help & Support';
         if (path === '/auditor') return 'Audit';
 
+        if (path.includes('/public')) {
+            const params = new URLSearchParams(search);
+            const page = params.get('page');
+            if (page === 'investors') return 'Beta Club';
+            if (page === 'meetup') return 'Meetup';
+        }
+
         return 'Books Dashboard';
     };
 
-    const [activeItem, setActiveItem] = useState(getActiveItemFromPath(location.pathname));
+    const [activeItem, setActiveItem] = useState(getActiveItemFromPath(location.pathname, location.search));
 
     // Update active item when location changes
     React.useEffect(() => {
-        const newItem = getActiveItemFromPath(location.pathname);
+        const newItem = getActiveItemFromPath(location.pathname, location.search);
         setActiveItem(newItem);
-    }, [location.pathname]);
+    }, [location.pathname, location.search]);
 
     // Books Section State (from snippet)
     const [openDropdown, setOpenDropdown] = useState(null);
@@ -138,14 +146,14 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
             <nav className="sidebar-nav">
                 {showFinanceSidebar && (
                     <>
-                        {/* Plan */}
+                        {/* Wallet */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Plan' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Plan', '/finance/plan')}
+                            className={`sidebar-item ${activeItem === 'Wallet' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Wallet', '/finance/plan')}
                         >
                             <div className="flex items-center gap-3">
                                 <Wallet size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Plan</span>
+                                <span className="sidebar-label">Wallet</span>
                             </div>
                         </button>
 
@@ -272,14 +280,14 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         </div>
                         */}
 
-                        {/* Investors */}
+                        {/* Beta Club */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Investors' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Investors', '/public?page=investors')}
+                            className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Beta Club', '/public?page=investors')}
                         >
                             <div className="flex items-center gap-3">
-                                <UsersRound size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Investors</span>
+                                <Rocket size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Beta Club</span>
                             </div>
                         </button>
 
