@@ -97,9 +97,9 @@ const BooksDashboard = () => {
             bgColor: '#ECFDF5' 
         },
         { 
-            label: 'Goal Wallets Total', 
+            label: 'Segregated Funds Total', 
             value: formatCurrency(stats?.wallets?.saved || 0), 
-            sub: `${stats?.wallets?.total || 0} Active wealth goals`,
+            sub: `${stats?.wallets?.total || 0} Segregation containers`,
             icon: Wallet, 
             color: '#8B5CF6', 
             bgColor: '#F5F3FF' 
@@ -250,9 +250,9 @@ const BooksDashboard = () => {
                         border: '1px solid #F1F5F9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' 
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3 style={{ fontSize: '1.15rem', fontWeight: '850', color: '#0F172A' }}>Goal Tracking</h3>
-                            <Link to="/finance/goal-wallets" style={{ textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', color: '#1B6B3A' }}>
-                                Manage Wallets
+                            <h3 style={{ fontSize: '1.15rem', fontWeight: '850', color: '#0F172A' }}>Fund Segregation</h3>
+                            <Link to="/finance/segregation" style={{ textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', color: '#1B6B3A' }}>
+                                Manage Segregations
                             </Link>
                         </div>
                         
@@ -265,7 +265,7 @@ const BooksDashboard = () => {
                                 <Wallet size={20} />
                             </div>
                             <div>
-                                <p style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Active Goal Wallets</p>
+                                <p style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Active Segregation Wallets</p>
                                 <p style={{ fontSize: '1.15rem', fontWeight: '850', color: '#1E293B', margin: '0.1rem 0 0 0' }}>{stats?.wallets?.total || 0} Wallets Established</p>
                             </div>
                         </div>

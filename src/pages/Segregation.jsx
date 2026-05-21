@@ -1,482 +1,741 @@
-import React, { useState, useMemo } from 'react';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { goalWalletService } from '../services/goalWalletService';
-import EmptyState from '../components/common/EmptyState';
-import {
-    Wallet,
-    Target,
-    TrendingUp,
-    Plus,
-    Coins,
-    CheckCircle2,
-    History,
-    Lock,
-    ArrowUpRight,
-    ChevronRight,
-    X,
+import { 
+    Wallet, 
+    Plus, 
+    Trash2, 
+    Target, 
+    CheckCircle2, 
+    X, 
     Loader2,
-    Trash2,
-    LayoutGrid
+    IndianRupee,
+    TrendingUp,
+    AlertCircle,
+    ArrowRight,
+    Sparkles,
+    Lock,
+    History,
+    Search
 } from 'lucide-react';
-import { PageHeader } from '../components/common';
+import { goalWalletService } from '../services';
+import '../App.css';
+import { customConfirm } from '../utils/customConfirm';
 
 const Segregation = () => {
     const queryClient = useQueryClient();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isAddMoneyModalOpen, setIsAddMoneyModalOpen] = useState(false);
-    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [selectedWallet, setSelectedWallet] = useState(null);
-    const [selectedId, setSelectedId] = useState(null);
     const [addAmount, setAddAmount] = useState('');
-    
-    const [formData, setFormData] = useState({ 
-        name: '', 
-        target_amount: '', 
-        description: '' 
-    });
-    
-    const [formError, setFormError] = useState('');
-
-    // ── Queries ─────────────────────────────────────────────────────────────
-    
-    const { 
-        data: walletsResponse, 
-        isLoading, 
-    } = useQuery({
-        queryKey: ['goal-wallets'],
-        queryFn: () => goalWalletService.getWallets(),
-    });
-    
-    const { 
-        data: walletDetailsResponse, 
-        isLoading: isLoadingDetails 
-    } = useQuery({
-        queryKey: ['goal-wallet', selectedId],
-        queryFn: () => goalWalletService.getWalletById(selectedId),
-        enabled: !!selectedId && isHistoryModalOpen
+    const [formData, setFormData] = useState({
+        name: '',
+        target_amount: '',
+        description: ''
     });
 
-    const walletDetails = useMemo(() => {
-        return walletDetailsResponse?.data || walletDetailsResponse;
-    }, [walletDetailsResponse]);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [historyWalletId, setHistoryWalletId] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showSearch, setShowSearch] = useState(false);
 
-    const wallets = useMemo(() => {
-        const rawData = walletsResponse?.data !== undefined ? walletsResponse.data : walletsResponse;
-        return Array.isArray(rawData) ? rawData : [];
-    }, [walletsResponse]);
+    // Fetch Singular Wallet Details & History
+    const { data: historyWalletRes, isLoading: isHistoryLoading } = useQuery({
+        queryKey: ['purpose-wallet-detail', historyWalletId],
+        queryFn: () => goalWalletService.getWallet(historyWalletId),
+        enabled: !!historyWalletId
+    });
+    const historyWallet = historyWalletRes?.data || historyWalletRes || {};
 
-    // ── Mutations ───────────────────────────────────────────────────────────
-    
+    // Fetch all Purpose Wallets
+    const { data: responseData = [], isLoading } = useQuery({
+        queryKey: ['purpose-wallets'],
+        queryFn: async () => {
+            const res = await goalWalletService.getWallets();
+            return Array.isArray(res) ? res : (res.rows || []);
+        }
+    });
+
+    // Mutations
     const createMutation = useMutation({
-        mutationFn: (data) => goalWalletService.createWallet(data),
+        mutationFn: goalWalletService.createWallet,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['goal-wallets'] });
-            setIsCreateModalOpen(false);
-            setFormData({ name: '', target_amount: '', description: '' });
+            queryClient.invalidateQueries({ queryKey: ['purpose-wallets'] });
+            closeCreateModal();
         },
-        onError: (err) => setFormError(err.response?.data?.error?.message || 'Failed to create wallet')
+        onError: (err) => {
+            alert(err?.response?.data?.message || "Failed to create new purpose wallet.");
+        }
     });
 
     const addMoneyMutation = useMutation({
-        mutationFn: ({ id, amount }) => goalWalletService.addMoney(id, amount),
+        mutationFn: ({ id, amount }) => goalWalletService.addMoney(id, parseFloat(amount)),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['goal-wallets'] });
-            setIsAddMoneyModalOpen(false);
-            setAddAmount('');
-            setSelectedWallet(null);
+            queryClient.invalidateQueries({ queryKey: ['purpose-wallets'] });
+            closeAddMoneyModal();
         },
-        onError: (err) => setFormError(err.response?.data?.error?.message || 'Failed to add money')
+        onError: (err) => {
+            alert(err?.response?.data?.message || "Allocation failed.");
+        }
     });
 
     const claimMutation = useMutation({
-        mutationFn: (id) => goalWalletService.claimWallet(id),
+        mutationFn: goalWalletService.claimWallet,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['goal-wallets'] });
+            queryClient.invalidateQueries({ queryKey: ['purpose-wallets'] });
         },
-        onError: (err) => alert(err.response?.data?.error?.message || 'Failed to claim wallet')
+        onError: (err) => {
+            alert(err?.response?.data?.message || "Could not claim. Ensure target threshold is reached.");
+        }
     });
-    
+
     const deleteMutation = useMutation({
-        mutationFn: (id) => goalWalletService.deleteWallet(id),
+        mutationFn: goalWalletService.deleteWallet,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['goal-wallets'] });
-        },
-        onError: (err) => alert(err.response?.data?.error?.message || 'Failed to delete wallet')
+            queryClient.invalidateQueries({ queryKey: ['purpose-wallets'] });
+        }
     });
 
-    // ── Logic ──────────────────────────────────────────────────────────────
+    const closeCreateModal = () => {
+        setIsCreateModalOpen(false);
+        setFormData({ name: '', target_amount: '', description: '' });
+    };
 
-    const activeWallets = wallets.filter(w => w.status === 'active');
-    const completedWallets = wallets.filter(w => w.status === 'completed');
+    const openAddMoneyModal = (wallet) => {
+        setSelectedWallet(wallet);
+        setIsAddMoneyModalOpen(true);
+    };
 
-    const totalSaved = wallets.reduce((sum, w) => sum + Number(w.current_amount || 0), 0);
-    const totalTarget = activeWallets.reduce((sum, w) => sum + Number(w.target_amount || 0), 0);
+    const closeAddMoneyModal = () => {
+        setIsAddMoneyModalOpen(false);
+        setSelectedWallet(null);
+        setAddAmount('');
+    };
 
     const handleCreateSubmit = (e) => {
         e.preventDefault();
-        if (!formData.name || !formData.target_amount) {
-            setFormError('Name and Target Amount are required');
-            return;
-        }
-        createMutation.mutate({
-            name: formData.name,
-            target_amount: parseFloat(formData.target_amount),
-            description: formData.description
-        });
+        const amt = parseFloat(formData.target_amount);
+        if (isNaN(amt) || amt <= 0) return alert("Please provide a valid target amount.");
+        createMutation.mutate({ ...formData, target_amount: amt });
     };
 
-    const handleAddMoneySubmit = (e) => {
+    const handleAddSubmit = (e) => {
         e.preventDefault();
         const amt = parseFloat(addAmount);
-        if (!amt || amt <= 0) {
-            setFormError('Please enter a valid amount');
-            return;
-        }
+        if (isNaN(amt) || amt <= 0) return alert("Enter a valid allocation amount.");
         addMoneyMutation.mutate({ id: selectedWallet.id, amount: amt });
     };
 
-    if (isLoading) return (
-        <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
-            <Loader2 size={40} className="animate-spin text-primary mb-4" />
-            <p className="text-muted font-medium">Loading your Goal Wallets...</p>
-        </div>
-    );
+    // Derived Statistics
+    const wallets = Array.isArray(responseData) ? responseData : [];
+    const activeWallets = wallets.filter(w => w.status !== 'completed').length;
+    const totalAllocated = wallets.reduce((sum, w) => sum + parseFloat(w.current_amount || 0), 0);
+    const totalTarget = wallets.reduce((sum, w) => sum + parseFloat(w.target_amount || 0), 0);
+    const globalProgress = totalTarget > 0 ? Math.round((totalAllocated / totalTarget) * 100) : 0;
+
+    const filteredWallets = wallets.filter(wallet => {
+        if (!searchTerm.trim()) return true;
+        const term = searchTerm.toLowerCase();
+        return (
+            (wallet.name || '').toLowerCase().includes(term) ||
+            (wallet.description || '').toLowerCase().includes(term)
+        );
+    });
 
     return (
-        <div className="premium-container">
-            <PageHeader 
-                title={<>Goal <span className="text-highlight">Wallets</span></>}
-                subtitle="Save for specific purposes, track progress, and claim when ready."
-                breadcrumb="WALLETS"
-                primaryAction={{
-                    label: "Create Wallet",
-                    onClick: () => setIsCreateModalOpen(true)
-                }}
-            />
+        <div style={{ padding: '1.25rem 2.5rem', background: '#F0F9F4', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}>
+            {/* Main Title Bar */}
+            <div style={{ display: 'flex', flexShrink: 0, justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                        <div style={{ 
+                            width: '44px', 
+                            height: '44px', 
+                            borderRadius: '14px', 
+                            background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            color: 'white', 
+                            boxShadow: '0 8px 16px rgba(27, 107, 58, 0.2)' 
+                        }}>
+                            <Target size={24} />
+                        </div>
+                        <h1 style={{ fontSize: '2rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em', margin: 0 }}>Segregation Wallets</h1>
+                        
+                        <button 
+                            onClick={() => {
+                                setShowSearch(!showSearch);
+                                if (showSearch) setSearchTerm('');
+                            }}
+                            style={{
+                                background: showSearch ? '#DCF2E4' : 'transparent',
+                                border: 'none',
+                                color: '#064E3B',
+                                cursor: 'pointer',
+                                padding: '8px',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'all 0.2s ease',
+                                marginLeft: '0.5rem'
+                            }}
+                            title="Search Wallets"
+                        >
+                            <Search size={22} style={{ opacity: showSearch ? 1 : 0.6 }} />
+                        </button>
 
-            {/* Top Stats Overview */}
-            <div className="stats-grid" style={{ marginTop: '2.5rem' }}>
-                <div className="premium-card glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#F0FDF4', color: '#1B6B3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Wallet size={28} />
+                        {showSearch && (
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '1rem', animation: 'fadeIn 0.2s ease' }}>
+                                <Search size={16} style={{ position: 'absolute', left: '12px', color: '#64748B' }} />
+                                <input 
+                                    type="text"
+                                    placeholder="Search wallets by name..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    autoFocus
+                                    style={{
+                                        padding: '0.6rem 1.25rem 0.6rem 2.25rem',
+                                        borderRadius: '12px',
+                                        border: '1px solid #BBF7D0',
+                                        outline: 'none',
+                                        fontSize: '0.9rem',
+                                        fontWeight: '600',
+                                        color: '#1E293B',
+                                        width: '260px',
+                                        background: 'white',
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.02)'
+                                    }}
+                                />
+                                {searchTerm && (
+                                    <button 
+                                        onClick={() => setSearchTerm('')}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: '#94A3B8',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            padding: '2px'
+                                        }}
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
-                    <div>
-                        <div className="label-caps">Total Saved</div>
-                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A' }}>₹{totalSaved.toLocaleString('en-IN')}</div>
-                    </div>
+                    <p style={{ color: '#475569', fontSize: '1.05rem', fontWeight: '500', margin: 0 }}>Create target-based wallets to isolate and secure funds for specific goals.</p>
                 </div>
-                <div className="premium-card glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#F0F9FF', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Target size={28} />
-                    </div>
-                    <div>
-                        <div className="label-caps">Active Targets</div>
-                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A' }}>₹{totalTarget.toLocaleString('en-IN')}</div>
-                    </div>
-                </div>
-                <div className="premium-card glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#F8FAFC', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <History size={28} />
-                    </div>
-                    <div>
-                        <div className="label-caps">Completed Goals</div>
-                        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A' }}>{completedWallets.length}</div>
-                    </div>
-                </div>
+                <button 
+                    onClick={() => setIsCreateModalOpen(true)}
+                    style={{ 
+                        display: 'flex', alignItems: 'center', gap: '0.6rem', 
+                        padding: '0.9rem 1.75rem', borderRadius: '14px', 
+                        background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', 
+                        fontWeight: '800', fontSize: '1rem', cursor: 'pointer',
+                        boxShadow: '0 10px 20px rgba(27, 107, 58, 0.25)',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                    <Plus size={20} strokeWidth={3} />
+                    Setup Purpose Wallet
+                </button>
             </div>
 
-            {/* Active Wallets Grid */}
-            <section style={{ marginTop: '3rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0 }}>Active Goals</h3>
-                    <div style={{ flex: 1, height: '1px', background: '#F0FDF4' }}></div>
+            {/* Scrollable Main Content Wrapper */}
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: '2rem' }}>
+
+            {/* Statistics Overhead Panel */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
+                {[
+                    { label: 'Target Wallets Active', value: activeWallets, icon: Target, color: '#059669', bg: '#ECFDF5' },
+                    { label: 'Total Isolated Funds', value: `₹${totalAllocated.toLocaleString('en-IN')}`, icon: IndianRupee, color: '#10B981', bg: '#DCF2E4' },
+                    { label: 'Goal Completion Target', value: `₹${totalTarget.toLocaleString('en-IN')}`, icon: TrendingUp, color: '#2563EB', bg: '#E0F2FE' },
+                    { label: 'Target Accomplishment', value: `${globalProgress}%`, icon: Sparkles, color: '#D97706', bg: '#FEF3C7' }
+                ].map((stat, idx) => (
+                    <div key={idx} style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        background: 'white', 
+                        padding: '1.5rem', 
+                        borderRadius: '20px', 
+                        border: '1px solid #E2E8F0', 
+                        boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02)' 
+                    }}>
+                        <div>
+                            <p style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748B', margin: '0 0 0.25rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '950', color: '#0F172A', letterSpacing: '-0.02em', margin: 0 }}>{stat.value}</h3>
+                        </div>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, flexShrink: 0 }}>
+                            <stat.icon size={22} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Dynamic Grid of Purpose Wallets */}
+            {isLoading ? (
+                <div style={{ padding: '8rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#059669' }}>
+                    <Loader2 className="animate-spin" size={48} strokeWidth={2.5} />
+                    <p style={{ fontWeight: '700', fontSize: '1.1rem' }}>Polishing wallet interfaces...</p>
                 </div>
-                
-                {activeWallets.length === 0 ? (
-                    <EmptyState 
-                        title="No Active Wallets" 
-                        description="Start saving for a goal by creating your first wallet." 
-                    />
-                ) : (
-                    <div className="dashboard-grid">
-                        {activeWallets.map(wallet => (
-                            <WalletCard 
-                                key={wallet.id} 
-                                wallet={wallet} 
-                                onAddMoney={() => {
-                                    setSelectedWallet(wallet);
-                                    setIsAddMoneyModalOpen(true);
-                                }}
-                                onClaim={() => claimMutation.mutate(wallet.id)}
-                                onDelete={() => deleteMutation.mutate(wallet.id)}
-                                onViewHistory={() => {
-                                    setSelectedId(wallet.id);
-                                    setIsHistoryModalOpen(true);
-                                }}
-                            />
-                        ))}
+            ) : wallets.length === 0 ? (
+                <div style={{ 
+                    background: 'white', 
+                    borderRadius: '24px', 
+                    border: '1px solid #E2E8F0', 
+                    padding: '6rem 2rem', 
+                    textAlign: 'center',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.02)'
+                }}>
+                    <div style={{ 
+                        width: '80px', 
+                        height: '80px', 
+                        borderRadius: '24px', 
+                        background: '#F0FDF4', 
+                        color: '#059669', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        margin: '0 auto 1.5rem auto' 
+                    }}>
+                        <Wallet size={36} />
                     </div>
-                )}
-            </section>
-
-            {/* History Section */}
-            {completedWallets.length > 0 && (
-                <section style={{ marginTop: '4rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0 }}>History (Completed)</h3>
-                        <div style={{ flex: 1, height: '1px', background: '#F0FDF4' }}></div>
-                    </div>
-                    
-                    <div className="dashboard-grid">
-                        {completedWallets.map(wallet => (
-                            <WalletCard 
-                                key={wallet.id} 
-                                wallet={wallet} 
-                                isHistory 
-                                onDelete={() => deleteMutation.mutate(wallet.id)}
-                                onViewHistory={() => {
-                                    setSelectedId(wallet.id);
-                                    setIsHistoryModalOpen(true);
-                                }}
-                            />
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {/* Modals */}
-            <AnimatePresence>
-                {isCreateModalOpen && (
-                    <Modal 
-                        title="Create New Goal Wallet" 
-                        onClose={() => setIsCreateModalOpen(false)}
-                    >
-                        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div className="form-group">
-                                <label className="label-caps">Wallet Name</label>
-                                <input 
-                                    className="premium-input"
-                                    type="text" value={formData.name} 
-                                    onChange={e => setFormData({...formData, name: e.target.value})}
-                                    placeholder="e.g. Buy New Phone"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="label-caps">Target Amount (₹)</label>
-                                <input 
-                                    className="premium-input"
-                                    type="number" value={formData.target_amount} 
-                                    onChange={e => setFormData({...formData, target_amount: e.target.value})}
-                                    placeholder="10000"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="label-caps">Description (Optional)</label>
-                                <textarea 
-                                    className="premium-input"
-                                    style={{ minHeight: '100px', resize: 'vertical' }}
-                                    value={formData.description} 
-                                    onChange={e => setFormData({...formData, description: e.target.value})}
-                                    placeholder="Why are you saving for this?"
-                                />
-                            </div>
-                            {formError && <p className="error-msg" style={{ color: '#EF4444', fontSize: '0.85rem', fontWeight: 600, textAlign: 'center' }}>{formError}</p>}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="button" className="btn-premium secondary" style={{ justifyContent: 'center' }} onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
-                                <button type="submit" className="btn-premium primary" style={{ justifyContent: 'center' }} disabled={createMutation.isPending}>
-                                    {createMutation.isPending ? 'Creating...' : 'Create Wallet'}
-                                </button>
-                            </div>
-                        </form>
-                    </Modal>
-                )}
-
-                {isAddMoneyModalOpen && (
-                    <Modal 
-                        title={`Add Money to ${selectedWallet?.name}`} 
-                        onClose={() => setIsAddMoneyModalOpen(false)}
-                    >
-                        <form onSubmit={handleAddMoneySubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div className="form-group">
-                                <label className="label-caps">Amount to Add (₹)</label>
-                                <input 
-                                    className="premium-input"
-                                    style={{ fontSize: '1.75rem', fontWeight: 900, textAlign: 'center' }}
-                                    type="number" value={addAmount} 
-                                    onChange={e => setAddAmount(e.target.value)}
-                                    placeholder="500"
-                                    autoFocus
-                                />
-                            </div>
-                            {formError && <p className="error-msg" style={{ color: '#EF4444', fontSize: '0.85rem', fontWeight: 600, textAlign: 'center' }}>{formError}</p>}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="button" className="btn-premium secondary" style={{ justifyContent: 'center' }} onClick={() => setIsAddMoneyModalOpen(false)}>Cancel</button>
-                                <button type="submit" className="btn-premium primary" style={{ justifyContent: 'center' }} disabled={addMoneyMutation.isPending}>
-                                    {addMoneyMutation.isPending ? 'Adding...' : 'Add Money'}
-                                </button>
-                            </div>
-                        </form>
-                    </Modal>
-                )}
-
-                {isHistoryModalOpen && (
-                    <Modal 
-                        title={`History: ${walletDetails?.name || 'Loading...'}`} 
-                        onClose={() => {
-                            setIsHistoryModalOpen(false);
-                            setSelectedId(null);
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1F2937', marginBottom: '0.5rem' }}>No Segregated Wallets</h3>
+                    <p style={{ color: '#6B7280', maxWidth: '460px', margin: '0 auto 2rem auto', fontWeight: '500', lineHeight: 1.5 }}>
+                        Setup isolated purpose-driven buckets! For example, reserve money sequentially to buy future equipment, specialized stationery, or tax deposits.
+                    </p>
+                    <button 
+                        onClick={() => setIsCreateModalOpen(true)}
+                        style={{ 
+                            padding: '0.85rem 1.75rem', borderRadius: '12px', border: 'none', 
+                            background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', 
+                            fontWeight: '800', cursor: 'pointer', boxShadow: '0 8px 16px rgba(27,107,58,0.2)' 
                         }}
                     >
-                        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                            {isLoadingDetails ? (
-                                <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>
-                            ) : walletDetails?.transactions?.length > 0 ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    {walletDetails.transactions.map(t => (
-                                        <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #F0FDF4' }}>
-                                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <ArrowUpRight size={14} />
-                                                </div>
-                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                    <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Money Added</span>
-                                                    <span style={{ fontSize: '0.75rem', color: '#64748B' }}>{new Date(t.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                                </div>
-                                            </div>
-                                            <div style={{ fontWeight: 800, color: '#16A34A' }}>+₹{Number(t.amount).toLocaleString('en-IN')}</div>
+                        Create First Segregated Wallet
+                    </button>
+                </div>
+            ) : filteredWallets.length === 0 ? (
+                <div style={{ 
+                    background: 'white', 
+                    borderRadius: '24px', 
+                    border: '1px solid #E2E8F0', 
+                    padding: '5rem 2rem', 
+                    textAlign: 'center',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.02)'
+                }}>
+                    <div style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        borderRadius: '20px', 
+                        background: '#F1F5F9', 
+                        color: '#94A3B8', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        margin: '0 auto 1.25rem auto' 
+                    }}>
+                        <Search size={24} />
+                    </div>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: '#1F2937', marginBottom: '0.5rem' }}>No Matching Wallets</h3>
+                    <p style={{ color: '#6B7280', maxWidth: '380px', margin: '0 auto', fontWeight: '500', fontSize: '0.9rem' }}>
+                        We couldn't find any segregated wallets matching "{searchTerm}". Check the spelling or clear the filter.
+                    </p>
+                </div>
+            ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1.75rem' }}>
+                    {filteredWallets.map((wallet) => {
+                        const isCompleted = wallet.status === 'completed';
+                        const current = parseFloat(wallet.current_amount || 0);
+                        const target = parseFloat(wallet.target_amount || 1);
+                        const pct = Math.min(Math.round((current / target) * 100), 100);
+                        const canClaim = current >= target && !isCompleted;
+
+                        return (
+                            <div key={wallet.id} style={{ 
+                                background: 'white', 
+                                borderRadius: '24px', 
+                                border: '1px solid #E2E8F0', 
+                                boxShadow: isCompleted ? 'none' : '0 10px 25px -5px rgba(0,0,0,0.04)', 
+                                opacity: isCompleted ? 0.85 : 1,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                {/* Top Border accent */}
+                                <div style={{ 
+                                    height: '6px', 
+                                    background: isCompleted ? '#64748B' : `linear-gradient(90deg, #1B6B3A ${pct}%, #E2E8F0 ${pct}%)` 
+                                }} />
+
+                                <div style={{ padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                    {/* Header Row */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                                        <div>
+                                            <h4 style={{ fontSize: '1.2rem', fontWeight: '850', color: '#1E293B', margin: '0 0 0.25rem 0' }}>{wallet.name}</h4>
+                                            <span style={{ 
+                                                fontSize: '0.7rem', 
+                                                fontWeight: '800', 
+                                                textTransform: 'uppercase', 
+                                                letterSpacing: '0.05em', 
+                                                padding: '0.35rem 0.6rem', 
+                                                borderRadius: '8px',
+                                                background: isCompleted ? '#F1F5F9' : '#ECFDF5',
+                                                color: isCompleted ? '#475569' : '#047857',
+                                                display: 'inline-block'
+                                            }}>
+                                                {isCompleted ? '🎉 FULLY CLAIMED' : pct >= 100 ? '🎯 TARGET MET' : '🌱 GROWING'}
+                                            </span>
                                         </div>
-                                    ))}
+                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                            <button 
+                                                onClick={() => { setHistoryWalletId(wallet.id); setIsHistoryModalOpen(true); }}
+                                                style={{ border: 'none', background: 'transparent', color: '#059669', opacity: 0.6, cursor: 'pointer', padding: '4px', transition: 'opacity 0.2s' }}
+                                                onMouseOver={(e) => e.currentTarget.style.opacity = 1}
+                                                onMouseOut={(e) => e.currentTarget.style.opacity = 0.6}
+                                                title="View Allocation Log"
+                                            >
+                                                <History size={17} />
+                                            </button>
+                                            <button 
+                                                onClick={async () => { if(await customConfirm("Erase this segregation container forever? Accumulated funds tracking will resolve.")) deleteMutation.mutate(wallet.id); }}
+                                                style={{ border: 'none', background: 'transparent', color: '#EF4444', opacity: 0.4, cursor: 'pointer', padding: '4px', transition: 'opacity 0.2s' }}
+                                                onMouseOver={(e) => e.currentTarget.style.opacity = 1}
+                                                onMouseOut={(e) => e.currentTarget.style.opacity = 0.4}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Description */}
+                                    <p style={{ color: '#64748B', fontSize: '0.88rem', lineHeight: 1.5, margin: '0 0 1.5rem 0', flex: 1 }}>
+                                        {wallet.description || 'No additional descriptions defined.'}
+                                    </p>
+
+                                    {/* Metrics breakdown */}
+                                    <div style={{ background: '#F8FAFC', padding: '1rem 1.25rem', borderRadius: '16px', border: '1px solid #F1F5F9', marginBottom: '1.5rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                                            <span style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: '700' }}>Saved Allocated</span>
+                                            <span style={{ color: '#1E293B', fontSize: '0.85rem', fontWeight: '900' }}>₹{current.toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: '700' }}>Target Ceiling</span>
+                                            <span style={{ color: '#1E293B', fontSize: '0.85rem', fontWeight: '900' }}>₹{target.toLocaleString('en-IN')}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Visual Progression */}
+                                    <div style={{ marginBottom: '2rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                            <span style={{ color: '#334155', fontSize: '0.82rem', fontWeight: '800' }}>Goal Status</span>
+                                            <span style={{ color: '#059669', fontSize: '0.88rem', fontWeight: '950' }}>{pct}%</span>
+                                        </div>
+                                        <div style={{ height: '8px', borderRadius: '10px', background: '#E2E8F0', overflow: 'hidden' }}>
+                                            <div style={{ 
+                                                height: '100%', 
+                                                width: `${pct}%`, 
+                                                background: isCompleted ? '#94A3B8' : 'linear-gradient(90deg, #10B981 0%, #059669 100%)',
+                                                borderRadius: '10px',
+                                                transition: 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                                            }} />
+                                        </div>
+                                    </div>
+
+                                    {/* Interactive Controls */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <button
+                                            disabled={isCompleted}
+                                            onClick={() => openAddMoneyModal(wallet)}
+                                            style={{ 
+                                                padding: '0.85rem', 
+                                                borderRadius: '12px', 
+                                                border: '1px solid #D1FAE5', 
+                                                background: isCompleted ? '#F1F5F9' : '#ECFDF5', 
+                                                color: isCompleted ? '#94A3B8' : '#065F46', 
+                                                fontWeight: '800', 
+                                                fontSize: '0.88rem',
+                                                cursor: isCompleted ? 'not-allowed' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '0.4rem'
+                                            }}
+                                        >
+                                            <Plus size={16} strokeWidth={3} /> Add Cash
+                                        </button>
+
+                                        <button
+                                            disabled={!canClaim}
+                                            onClick={async () => { if(await customConfirm(`Extract ₹${current} accumulated for "${wallet.name}" into main reserves?`)) claimMutation.mutate(wallet.id); }}
+                                            style={{ 
+                                                padding: '0.85rem', 
+                                                borderRadius: '12px', 
+                                                background: canClaim 
+                                                    ? 'linear-gradient(135deg, #D97706 0%, #B45309 100%)' 
+                                                    : (isCompleted ? '#F1F5F9' : '#F8FAFC'), 
+                                                color: canClaim ? 'white' : '#94A3B8', 
+                                                fontWeight: '850', 
+                                                fontSize: '0.88rem',
+                                                cursor: canClaim ? 'pointer' : 'not-allowed',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '0.4rem',
+                                                boxShadow: canClaim ? '0 4px 12px rgba(217, 119, 6, 0.25)' : 'none',
+                                                border: isCompleted ? 'none' : (canClaim ? 'none' : '1px solid #E2E8F0')
+                                            }}
+                                        >
+                                            {isCompleted ? (
+                                                <>
+                                                    <CheckCircle2 size={16} color="#059669" /> Claimed
+                                                </>
+                                            ) : pct < 100 ? (
+                                                <>
+                                                    <Lock size={14} /> Locked
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Claim Goal!
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
-                            ) : (
-                                <p style={{ textAlign: 'center', color: '#64748B', padding: '2rem' }}>No transactions found for this goal.</p>
-                            )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+            </div>
+
+            {/* SETUP NEW WALLET MODAL */}
+            {isCreateModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: 'white', width: '100%', maxWidth: '460px', borderRadius: '28px', padding: '2.5rem', border: '1px solid #E2E8F0', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#064E3B', margin: 0 }}>Setup Target Wallet</h3>
+                            <button onClick={closeCreateModal} style={{ border: 'none', background: '#F1F5F9', color: '#64748B', padding: '0.5rem', borderRadius: '10px', cursor: 'pointer' }}><X size={20} /></button>
                         </div>
-                    </Modal>
-                )}
-            </AnimatePresence>
+
+                        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Purpose / Item Name</label>
+                                <input 
+                                    required 
+                                    placeholder="e.g. Office Printer, Future Stock" 
+                                    value={formData.name} 
+                                    onChange={e => setFormData({...formData, name: e.target.value})}
+                                    style={{ width: '100%', padding: '0.9rem 1.1rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '600', color: '#1E293B' }}
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Target Cap Amount (INR)</label>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: '#0F172A' }}>₹</span>
+                                    <input 
+                                        required 
+                                        type="number" 
+                                        placeholder="5000" 
+                                        value={formData.target_amount} 
+                                        onChange={e => setFormData({...formData, target_amount: e.target.value})}
+                                        style={{ width: '100%', padding: '0.9rem 1.1rem 0.9rem 2.25rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '800', fontSize: '1.1rem', color: '#0F172A' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Descriptive Notes</label>
+                                <textarea 
+                                    rows="3"
+                                    placeholder="Brief rationale for this segregation..." 
+                                    value={formData.description} 
+                                    onChange={e => setFormData({...formData, description: e.target.value})}
+                                    style={{ width: '100%', padding: '0.9rem 1.1rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', resize: 'none', fontFamily: 'inherit', color: '#475569' }}
+                                />
+                            </div>
+
+                            <button 
+                                type="submit"
+                                disabled={createMutation.isLoading}
+                                style={{ 
+                                    padding: '1.1rem', 
+                                    borderRadius: '14px', 
+                                    border: 'none', 
+                                    background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', 
+                                    color: 'white', 
+                                    fontWeight: '850', 
+                                    fontSize: '1rem', 
+                                    marginTop: '0.5rem', 
+                                    cursor: 'pointer',
+                                    boxShadow: '0 8px 20px rgba(27, 107, 58, 0.2)'
+                                }}
+                            >
+                                {createMutation.isLoading ? <Loader2 className="animate-spin" style={{ margin: '0 auto' }} /> : 'Activate Isolated Container'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ALLOCATE CASH MODAL */}
+            {isAddMoneyModalOpen && selectedWallet && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: 'white', width: '100%', maxWidth: '400px', borderRadius: '28px', padding: '2.5rem', border: '1px solid #E2E8F0', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: '#064E3B', margin: 0 }}>Fund Segregation</h3>
+                            <button onClick={closeAddMoneyModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.5rem', borderRadius: '10px', cursor: 'pointer' }}><X size={18} /></button>
+                        </div>
+
+                        <div style={{ padding: '0.85rem 1rem', background: '#F8FAFC', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                            <div style={{ background: '#DCF2E4', color: '#059669', padding: '8px', borderRadius: '8px' }}>
+                                <Target size={18} />
+                            </div>
+                            <div>
+                                <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>Targeting Wallet</span>
+                                <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: '#1F2937' }}>{selectedWallet.name}</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Allocation Value (INR)</label>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: '#0F172A' }}>₹</span>
+                                    <input 
+                                        required 
+                                        autoFocus
+                                        type="number" 
+                                        placeholder="100" 
+                                        value={addAmount} 
+                                        onChange={e => setAddAmount(e.target.value)}
+                                        style={{ width: '100%', padding: '0.9rem 1.1rem 0.9rem 2.25rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '850', fontSize: '1.2rem', color: '#0F172A' }}
+                                    />
+                                </div>
+                                <p style={{ color: '#64748B', fontSize: '0.75rem', margin: '0.5rem 0 0 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    <AlertCircle size={12} /> Money is transferred from standard balances.
+                                </p>
+                            </div>
+
+                            <button 
+                                type="submit"
+                                disabled={addMoneyMutation.isLoading}
+                                style={{ 
+                                    padding: '1.1rem', 
+                                    borderRadius: '14px', 
+                                    border: 'none', 
+                                    background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', 
+                                    color: 'white', 
+                                    fontWeight: '850', 
+                                    fontSize: '1rem', 
+                                    cursor: 'pointer',
+                                    boxShadow: '0 8px 20px rgba(27, 107, 58, 0.2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem',
+                                    width: '100%'
+                                }}
+                            >
+                                {addMoneyMutation.isLoading ? <Loader2 className="animate-spin" /> : (
+                                    <>
+                                        Execute Push <ArrowRight size={18} />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ALLOCATION HISTORY MODAL */}
+            {isHistoryModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: 'white', width: '100%', maxWidth: '460px', borderRadius: '28px', padding: '2.5rem', border: '1px solid #E2E8F0', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#064E3B' }}>
+                                <History size={20} />
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: '850', margin: 0 }}>Allocation Ledger</h3>
+                            </div>
+                            <button onClick={() => { setIsHistoryModalOpen(false); setHistoryWalletId(null); }} style={{ border: 'none', background: '#F1F5F9', color: '#64748B', padding: '0.5rem', borderRadius: '10px', cursor: 'pointer' }}>
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        {isHistoryLoading ? (
+                            <div style={{ padding: '3rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#059669' }}>
+                                <Loader2 className="animate-spin" size={32} strokeWidth={2.5} />
+                                <p style={{ fontSize: '0.85rem', fontWeight: '700' }}>Compiling transfer logs...</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <div style={{ padding: '1rem 1.25rem', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #F1F5F9', marginBottom: '1.75rem' }}>
+                                    <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.25rem' }}>Selected Wallet</div>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: '850', color: '#1E293B', marginBottom: '0.5rem' }}>{historyWallet.name}</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+                                        <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '700' }}>Total Isolated</span>
+                                        <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#059669' }}>₹{parseFloat(historyWallet.current_amount || 0).toLocaleString('en-IN')}</span>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <h4 style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.25rem 0' }}>Allocation History</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '280px', overflowY: 'auto', paddingRight: '4px' }}>
+                                        {!historyWallet.transactions || historyWallet.transactions.length === 0 ? (
+                                            <div style={{ textAlign: 'center', padding: '2rem', color: '#94A3B8', border: '2px dashed #F1F5F9', borderRadius: '14px' }}>
+                                                <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '600' }}>No money transfers recorded yet.</p>
+                                            </div>
+                                        ) : (
+                                            historyWallet.transactions.map((tx, idx) => (
+                                                <div key={tx.id || idx} style={{ 
+                                                    display: 'flex', 
+                                                    justifyContent: 'space-between', 
+                                                    alignItems: 'center', 
+                                                    padding: '0.85rem 1rem', 
+                                                    background: 'white', 
+                                                    border: '1px solid #E2E8F0', 
+                                                    borderRadius: '12px'
+                                                }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                                        <div style={{ fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.03em', color: tx.type === 'debit' ? '#DC2626' : '#059669' }}>
+                                                            {tx.type === 'debit' ? '🔻 OUT / DEBIT' : '🔹 IN / CREDIT'}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '600' }}>
+                                                            {tx.created_at ? new Date(tx.created_at).toLocaleString('en-IN', {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                                hour12: true
+                                                            }) : 'Record Date missing'}
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ fontSize: '0.95rem', fontWeight: '900', color: tx.type === 'debit' ? '#DC2626' : '#0F172A' }}>
+                                                        {tx.type === 'debit' ? '-' : '+'} ₹{parseFloat(tx.amount || 0).toLocaleString('en-IN')}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
-
-const WalletCard = ({ wallet, onAddMoney, onClaim, onDelete, onViewHistory, isHistory }) => {
-    const progress = Math.min((Number(wallet.current_amount || 0) / Number(wallet.target_amount || 1)) * 100, 100);
-    const isTargetReached = Number(wallet.current_amount || 0) >= Number(wallet.target_amount || 0);
-    const remaining = Math.max(Number(wallet.target_amount || 0) - Number(wallet.current_amount || 0), 0);
-
-    return (
-        <Motion.div 
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`premium-card glass ${isHistory ? 'completed' : ''}`}
-            style={{ 
-                padding: '2rem', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '1.5rem',
-                opacity: isHistory ? 0.8 : 1,
-                borderStyle: isHistory ? 'dashed' : 'solid',
-                borderColor: isTargetReached && !isHistory ? '#22C55E' : '#F0FDF4'
-            }}
-        >
-            <div className="card-header" style={{ padding: 0, border: 'none' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: isTargetReached && !isHistory ? '#DCFCE7' : '#F0FDF4', color: isTargetReached && !isHistory ? '#16A34A' : '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {isHistory ? <CheckCircle2 size={24} /> : <Coins size={24} />}
-                    </div>
-                    <div>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: 900, margin: 0 }}>{wallet.name}</h4>
-                        {isHistory && <span className="label-caps" style={{ background: '#E2E8F0', padding: '2px 8px', borderRadius: '99px' }}>Completed</span>}
-                    </div>
-                </div>
-                <button 
-                    className="icon-btn"
-                    style={{ color: '#94A3B8' }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm('Are you sure you want to delete this goal?')) onDelete();
-                    }}
-                >
-                    <Trash2 size={18} />
-                </button>
-            </div>
-
-            <div>
-                <p style={{ fontSize: '0.9rem', color: '#64748B', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{wallet.description || 'No description'}</p>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 900 }}>₹{Number(wallet.current_amount || 0).toLocaleString('en-IN')}</span>
-                    <span className="label-caps">Target: ₹{Number(wallet.target_amount || 0).toLocaleString('en-IN')}</span>
-                </div>
-                <div style={{ height: '8px', background: '#F0FDF4', borderRadius: '4px', overflow: 'hidden' }}>
-                    <Motion.div 
-                        style={{ height: '100%', background: isTargetReached && !isHistory ? '#22C55E' : '#1B6B3A' }} 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progress}%` }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                    />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700 }}>
-                    <span style={{ color: '#64748B' }}>{progress.toFixed(0)}% reached</span>
-                    {!isHistory && !isTargetReached && (
-                        <span style={{ color: '#1B6B3A' }}>₹{remaining.toLocaleString('en-IN')} more to go</span>
-                    )}
-                    {isTargetReached && !isHistory && (
-                        <span style={{ color: '#16A34A' }}>Goal achieved! 🎉</span>
-                    )}
-                </div>
-            </div>
-
-            {!isHistory && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: 'auto' }}>
-                    <button className="btn-premium secondary" style={{ justifyContent: 'center', padding: '10px' }} onClick={onAddMoney}>
-                        <Plus size={16} /> Add Money
-                    </button>
-                    <button 
-                        className="btn-premium primary"
-                        style={{ justifyContent: 'center', padding: '10px', background: isTargetReached ? '#22C55E' : '#F0FDF4', color: isTargetReached ? 'white' : '#94A3B8' }}
-                        disabled={!isTargetReached}
-                        onClick={onClaim}
-                    >
-                        {isTargetReached ? <CheckCircle2 size={16} /> : <Lock size={16} />}
-                        Claim
-                    </button>
-                </div>
-            )}
-
-            {!isHistory && (
-                <button 
-                    className="btn-premium secondary" 
-                    style={{ width: '100%', justifyContent: 'center', background: 'transparent', border: '1px solid #F0FDF4' }} 
-                    onClick={onViewHistory}
-                >
-                    <History size={16} /> View History
-                </button>
-            )}
-        </Motion.div>
-    );
-};
-
-const Modal = ({ title, onClose, children }) => (
-    <div className="modal-overlay" onClick={onClose}>
-        <Motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="premium-card" 
-            style={{ width: '100%', maxWidth: '500px', padding: '2.5rem', background: 'white' }}
-            onClick={e => e.stopPropagation()}
-        >
-            <div className="card-header" style={{ border: 'none', padding: '0 0 2rem 0' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0 }}>{title}</h3>
-                <button className="icon-btn" onClick={onClose}><X size={24} /></button>
-            </div>
-            {children}
-        </Motion.div>
-    </div>
-);
 
 export default Segregation;

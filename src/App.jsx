@@ -39,7 +39,7 @@ const PeopleReminders = React.lazy(() => import('./pages/people/PeopleReminders'
 const PeopleRecords = React.lazy(() => import('./pages/people/PeopleRecords'));
 const PersonProfile = React.lazy(() => import('./pages/people/PersonProfile'));
 const SplitExpense = React.lazy(() => import('./pages/SplitExpense'));
-const GoalWallets = React.lazy(() => import('./pages/GoalWallets'));
+const Segregation = React.lazy(() => import('./pages/Segregation'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const FAQ = React.lazy(() => import('./pages/FAQ'));
@@ -104,7 +104,7 @@ function AppContent() {
                     {/* Payments Routes shifted from Books */}
                     <Route path="/finance/plan" element={<FinancialPlan />} />
 
-                    <Route path="/finance/goal-wallets" element={<GoalWallets />} />
+                    <Route path="/finance/segregation" element={<Segregation />} />
                     <Route path="/finance/split-expense" element={<SplitExpense />} />
 
                     {/* Books Section */}

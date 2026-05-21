@@ -63,7 +63,7 @@ const Sidebar = ({ isOpen }) => {
     // Determine active item based on path
     const getActiveItemFromPath = (path) => {
         if (path === '/finance/plan' || path.includes('/finance/plan/')) return 'Plan';
-        if (path.includes('/finance/goal-wallets')) return 'Goal Wallets';
+        if (path.includes('/finance/segregation')) return 'Segregation';
         if (path.includes('/finance/split-expense')) return 'Split Expense';
 
         // Keep old ones in case they are visited
@@ -146,14 +146,14 @@ const Sidebar = ({ isOpen }) => {
                             </div>
                         </button>
 
-                        {/* Goal Wallets */}
+                        {/* Segregation */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Goal Wallets' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Goal Wallets', '/finance/goal-wallets')}
+                            className={`sidebar-item ${activeItem === 'Segregation' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Segregation', '/finance/segregation')}
                         >
                             <div className="flex items-center gap-3">
                                 <Target size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Goal Wallet</span>
+                                <span className="sidebar-label">Segregation</span>
                             </div>
                         </button>
 
