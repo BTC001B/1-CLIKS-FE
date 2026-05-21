@@ -39,7 +39,6 @@ const Breadcrumbs = ({ items }) => {
         'reminders': 'Reminders',
         'records': 'Records',
         'contacts': 'Contacts',
-        'segregation': 'Segregation',
         'split-expense': 'Split Expense',
         'calendar': 'Calendar',
         'goals': 'Goals',

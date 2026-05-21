@@ -18,7 +18,6 @@ export * from './homeService';
 export * from './financialPlanService';
 export * from './peopleService';
 export * from './contactsService';
-export * from './segregationService';
 export * from './splitExpenseService';
 export * from './publicService';
 export * from './profileService';

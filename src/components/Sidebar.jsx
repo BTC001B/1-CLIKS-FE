@@ -63,7 +63,7 @@ const Sidebar = ({ isOpen }) => {
     // Determine active item based on path
     const getActiveItemFromPath = (path) => {
         if (path === '/finance/plan' || path.includes('/finance/plan/')) return 'Plan';
-        if (path.includes('/finance/goal-wallets') || path.includes('/finance/segregation')) return 'Goal Wallets';
+        if (path.includes('/finance/goal-wallets')) return 'Goal Wallets';
         if (path.includes('/finance/split-expense')) return 'Split Expense';
 
         // Keep old ones in case they are visited
