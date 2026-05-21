@@ -31,13 +31,7 @@ const Auditor = React.lazy(() => import('./pages/Auditor'));
 const Public = React.lazy(() => import('./pages/Public'));
 const Stock = React.lazy(() => import('./pages/Stock'));
 const FinancialPlan = React.lazy(() => import('./pages/financial-plan/FinancialPlan'));
-const PlanBudget = React.lazy(() => import('./pages/financial-plan/PlanBudget'));
-const PlanIncome = React.lazy(() => import('./pages/financial-plan/PlanIncome'));
-const PlanExpense = React.lazy(() => import('./pages/financial-plan/PlanExpense'));
-const FinancialCalendar = React.lazy(() => import('./pages/financial-plan/FinancialCalendar'));
-const PlanGoals = React.lazy(() => import('./pages/financial-plan/PlanGoals'));
-const PlanReminders = React.lazy(() => import('./pages/financial-plan/PlanReminders'));
-const PlanAnalysis = React.lazy(() => import('./pages/financial-plan/PlanAnalysis'));
+
 const People = React.lazy(() => import('./pages/People'));
 const PeopleOverview = React.lazy(() => import('./pages/people/PeopleOverview'));
 const PeopleTransactions = React.lazy(() => import('./pages/people/PeopleTransactions'));
@@ -110,13 +104,7 @@ function AppContent() {
 
                     {/* Payments Routes shifted from Books */}
                     <Route path="/finance/plan" element={<FinancialPlan />} />
-                    <Route path="/finance/plan/budget" element={<PlanBudget />} />
-                    <Route path="/finance/plan/income" element={<PlanIncome />} />
-                    <Route path="/finance/plan/expense" element={<PlanExpense />} />
-                    <Route path="/finance/plan/calendar" element={<FinancialCalendar />} />
-                    <Route path="/finance/plan/goals" element={<PlanGoals />} />
-                    <Route path="/finance/plan/reminders" element={<PlanReminders />} />
-                    <Route path="/finance/plan/analysis" element={<PlanAnalysis />} />
+
                     <Route path="/finance/segregation" element={<Segregation />} />
                     <Route path="/finance/goal-wallets" element={<GoalWallets />} />
                     <Route path="/finance/split-expense" element={<SplitExpense />} />
