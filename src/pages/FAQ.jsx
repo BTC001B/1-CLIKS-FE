@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Breadcrumbs from '../components/Breadcrumbs';
 import {
     AccordionRoot,
     AccordionItem,
@@ -120,7 +119,6 @@ const FAQ = () => {
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem', minHeight: '100vh', paddingBottom: '5rem' }}>
             <div style={{ marginBottom: '2.5rem' }}>
-                <Breadcrumbs />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', marginTop: '0.5rem' }}>
                     <span style={{ background: 'linear-gradient(135deg, #059669, #064E3B)', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '0.65rem', fontWeight: 900, letterSpacing: '1px' }}>HELP CENTER</span>
                 </div>

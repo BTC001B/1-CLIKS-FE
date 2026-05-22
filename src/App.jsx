@@ -45,6 +45,7 @@ const Segregation = React.lazy(() => import('./pages/Segregation'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const FAQ = React.lazy(() => import('./pages/FAQ'));
+const Subscription = React.lazy(() => import('./pages/Subscription'));
 
 
 import './App.css';
@@ -129,6 +130,9 @@ function AppContent() {
 
                     {/* FIN-PRO CA Section */}
                     <Route path="/ca" element={<BusinessCA />} />
+                    
+                    {/* Subscription Section */}
+                    <Route path="/subscription" element={<Subscription />} />
 
 
                   </Routes>
