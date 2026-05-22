@@ -68,6 +68,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
         if (path === '/finance/planner' || path.includes('/finance/planner/')) return 'Planner';
         if (path.includes('/finance/segregation')) return 'Segregation';
         if (path.includes('/finance/split-expense')) return 'Split Expense';
+        if (path.includes('/finance/rewards')) return 'Rewards & Offers';
 
         // Keep old ones in case they are visited
         if (path === '/' || path === '/finance') return 'Wallet';
@@ -200,6 +201,17 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             <div className="flex items-center gap-3">
                                 <Split size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">Split Expense</span>
+                            </div>
+                        </button>
+
+                        {/* Rewards & Offers */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Rewards & Offers' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Rewards & Offers', '/finance/rewards')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Gift size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Rewards & Offers</span>
                             </div>
                         </button>
                     </>

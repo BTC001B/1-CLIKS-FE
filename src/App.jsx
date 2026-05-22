@@ -108,6 +108,7 @@ function AppContent() {
 
                     <Route path="/finance/segregation" element={<Segregation />} />
                     <Route path="/finance/split-expense" element={<SplitExpense />} />
+                    <Route path="/finance/rewards" element={<Rewards />} />
 
                     {/* Books Section */}
                     <Route path="/books" element={<Books />} />

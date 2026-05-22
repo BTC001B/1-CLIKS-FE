@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { meetupsService } from '../services';
 import {
@@ -46,6 +46,7 @@ import TradingDocs from './public/TradingDocs.jsx';
 
 export default function Public() {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const page = searchParams.get('page') || 'news-feed';
 
     // News Feed Component -- redesigned Social Feed
@@ -257,7 +258,9 @@ export default function Public() {
                         }}>
                             Daily Challenge
                         </button>
-                        <button style={{
+                        <button
+                            onClick={() => navigate('/finance/rewards')}
+                            style={{
                             background: 'rgba(255,255,255,0.1)',
                             color: 'white',
                             border: '1px solid rgba(255,255,255,0.3)',
