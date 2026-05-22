@@ -89,6 +89,11 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
             const page = params.get('page');
             if (page === 'investors') return 'Beta Club';
             if (page === 'meetup') return 'Meetup';
+            if (page === 'trading-sip') return 'SIP';
+            if (page === 'trading-mutual-funds') return 'Mutual Funds';
+            if (page === 'trading-crypto') return 'Crypto';
+            if (page === 'trading-bitcoin') return 'Bitcoin';
+            if (page === 'trading-overall') return 'Overall Trading';
         }
 
         return 'Books Dashboard';
@@ -155,6 +160,17 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             <div className="flex items-center gap-3">
                                 <Wallet size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">Wallet</span>
+                            </div>
+                        </button>
+
+                        {/* Transactions */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Transactions' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Transactions', '/finance/transactions')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <ArrowLeftRight size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Transactions</span>
                             </div>
                         </button>
 
