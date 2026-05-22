@@ -89,11 +89,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
             const page = params.get('page');
             if (page === 'investors') return 'Beta Club';
             if (page === 'meetup') return 'Meetup';
-            if (page === 'trading-sip') return 'SIP';
-            if (page === 'trading-mutual-funds') return 'Mutual Funds';
-            if (page === 'trading-crypto') return 'Crypto';
-            if (page === 'trading-bitcoin') return 'Bitcoin';
-            if (page === 'trading-overall') return 'Overall Trading';
+            if (page === 'trading') return 'Trading docs';
         }
 
         return 'Books Dashboard';
@@ -316,6 +312,17 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             <div className="flex items-center gap-3">
                                 <Rocket size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">Beta Club</span>
+                            </div>
+                        </button>
+
+                        {/* Trading docs */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Trading docs' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Trading docs', '/public?page=trading')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <LineChart size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Trading docs</span>
                             </div>
                         </button>
 

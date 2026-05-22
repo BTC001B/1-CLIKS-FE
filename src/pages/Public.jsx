@@ -41,6 +41,8 @@ import OverallTradingView from './investments/OverallTradingView.jsx';
 import SocialFeed from './public/SocialFeed.jsx';
 import BetaClub from './public/BetaClub.jsx';
 import Meetup from './public/Meetup.jsx';
+import TradingDocs from './public/TradingDocs.jsx';
+
 
 export default function Public() {
     const [searchParams] = useSearchParams();
@@ -1073,6 +1075,7 @@ export default function Public() {
         if (page === 'investors') return <BetaClub />;
         if (page === 'games') return <GamesPage />;
         if (page === 'meetup') return <Meetup />;
+        if (page === 'trading') return <TradingDocs />;
         return <NewsFeed />;
     };
 
