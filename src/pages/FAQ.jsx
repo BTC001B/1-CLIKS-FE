@@ -1,5 +1,4 @@
 import React from 'react';
-import Breadcrumbs from '../components/Breadcrumbs';
 import {
     AccordionRoot,
     AccordionItem,
@@ -34,7 +33,6 @@ const FAQ = () => {
     return (
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '1.5rem 1rem' }}>
             <div style={{ marginBottom: '2rem' }}>
-                <Breadcrumbs />
                 <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1E293B', marginBottom: '0.5rem' }}>Help & Support</h1>
                 <p style={{ color: '#64748B' }}>Find answers to common questions.</p>
             </div>

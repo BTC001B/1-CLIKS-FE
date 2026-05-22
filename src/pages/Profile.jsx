@@ -15,7 +15,6 @@ import {
     Upload
 } from 'lucide-react';
 import '../App.css';
-import Breadcrumbs from '../components/Breadcrumbs';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -199,10 +198,6 @@ const Profile = () => {
             <Topbar onToggleSidebar={toggleSidebar} />
             <div className="app-body" style={{ height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
                 <div className="main-content-area" style={{ background: '#F8FAFC', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', padding: '0' }}>
-                    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '1.5rem 2rem 0 2rem', width: '100%', flexShrink: 0 }}>
-                        <Breadcrumbs />
-                    </div>
-
                     <div className="content-scrollable" style={{ overflowY: 'auto' }}>
                         <div className="content-wrapper" style={{ maxWidth: '1000px', margin: '0 auto', padding: '1.5rem 2rem', height: '100%' }}>
                             <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
