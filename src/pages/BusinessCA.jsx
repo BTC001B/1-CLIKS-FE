@@ -8,10 +8,10 @@ import {
     User, Wallet, Percent, PiggyBank, FileUp, Home, Users, Folder, BarChart, Play, Square, Trash2, PlusCircle, CheckSquare, FileSpreadsheet
 } from 'lucide-react';
 import { accountingService, gstService, contactsService, caService, profileService } from '../services';
-import { useCurrency } from '../context';
+import { formatCurrency } from '../lib/formatCurrency';
 
 export default function BusinessCA() {
-    const { currency, formatCurrency } = useCurrency();
+    const currency = { symbol: '₹' };
     const [activeTab, setActiveTab] = useState('auditor'); // auditor | ca_cpa | cs_vault | consultant
 
     // Top-level workspace mode switcher
