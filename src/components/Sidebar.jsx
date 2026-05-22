@@ -30,6 +30,7 @@ import {
     Layers,
     Split,
     HelpCircle,
+    Crown,
     // Finance icons
     Building2,
     Gift,
@@ -420,6 +421,57 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                 flexShrink: 0,
                 background: '#FFFFFF'
             }}>
+                {/* Unified Subscription Conversion Card */}
+                {showBooksSidebar && (
+                    <button
+                        onClick={() => handleItemClick('Subscription', '/subscription')}
+                        style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '0.5rem 0.6rem 0.5rem 0.85rem',
+                            background: 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontWeight: '750',
+                            fontSize: '0.85rem',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 12px rgba(30, 58, 138, 0.25)',
+                            transition: 'all 0.2s ease',
+                            minHeight: '52px'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                        onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ background: 'rgba(251, 191, 36, 0.15)', color: '#FBBF24', padding: '6px', borderRadius: '8px', display: 'flex' }}>
+                                <Crown size={18} strokeWidth={2.5} />
+                            </div>
+                            <span style={{ textShadow: '0 1px 2px rgba(0,0,0,0.1)', color: '#FBBF24' }}>Get Subscription</span>
+                        </div>
+
+                        <div style={{
+                            position: 'relative',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                        }}>
+                            <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)', position: 'absolute', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>
+                                <circle cx="20" cy="20" r="18" fill="#FFFFFF" stroke="rgba(255,255,255,0.25)" strokeWidth="3" />
+                                <circle cx="20" cy="20" r="18" fill="none" stroke="#FBBF24" strokeWidth="3" strokeDasharray="113" strokeDashoffset={113 * (1 - 20 / 30)} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.5s ease-out' }} />
+                            </svg>
+                            <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, marginTop: '1px' }}>
+                                <span style={{ color: '#1E3A8A', fontSize: '0.72rem', fontWeight: '900', lineHeight: 1 }}>20</span>
+                                <span style={{ color: '#1E3A8A', fontSize: '0.45rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.9 }}>Days</span>
+                            </div>
+                        </div>
+                    </button>
+                )}
                 {/* Bottom Settings Block */}
                 <button
                     onClick={() => handleItemClick('Settings', '/books/settings')}
