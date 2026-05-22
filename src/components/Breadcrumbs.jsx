@@ -20,6 +20,7 @@ const Breadcrumbs = ({ items }) => {
         'public': 'Social',
         'financial-plan': 'Plan',
         'plan': 'Plan',
+        'planner': 'Planner',
         'income': 'Income',
         'expenses': 'Expenses',
         'budget': 'Budget',

@@ -65,6 +65,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
     // Determine active item based on path
     const getActiveItemFromPath = (path, search) => {
         if (path === '/finance/plan' || path.includes('/finance/plan/')) return 'Wallet';
+        if (path === '/finance/planner' || path.includes('/finance/planner/')) return 'Planner';
         if (path.includes('/finance/segregation')) return 'Segregation';
         if (path.includes('/finance/split-expense')) return 'Split Expense';
 
@@ -154,6 +155,17 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             <div className="flex items-center gap-3">
                                 <Wallet size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">Wallet</span>
+                            </div>
+                        </button>
+
+                        {/* Planner */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Planner' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Planner', '/finance/planner')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <CalendarClock size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Planner</span>
                             </div>
                         </button>
 
