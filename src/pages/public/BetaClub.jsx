@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pitchesService } from '../../services';
+import { formatCurrency } from '../../lib/formatCurrency';
 import { 
     TrendingUp, 
     ShieldCheck, 
@@ -19,14 +20,66 @@ import {
     Mail,
     Phone,
     MessageSquare,
-    ArrowUpRight
+    ArrowUpRight,
+    MapPin,
+    Search
 } from 'lucide-react';
 
 export default function BetaClub() {
+    const currency = { symbol: '₹' };
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState('directory'); // 'directory' | 'studio'
+    const [searchTerm, setSearchTerm] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedConnectPitch, setSelectedConnectPitch] = useState(null);
+
+    // Location State
+    const [isLocationMenuOpen, setIsLocationMenuOpen] = useState(false);
+    const [gpsState, setGpsState] = useState(null);
+    const [cityName, setCityName] = useState(null);
+    const [pincode, setPincode] = useState(null);
+    const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
+
+    const requestLocation = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocationPermissionDenied(false);
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const state = data.principalSubdivision;
+                            const city = data.city || data.locality || data.village;
+                            if (state) {
+                                setGpsState(state);
+                            }
+                            if (city) {
+                                setCityName(city);
+                            }
+                            if (data.postcode) {
+                                setPincode(data.postcode);
+                            }
+                        })
+                        .catch(err => {
+                            console.warn('Geolocation reverse geocoding request interrupted:', err);
+                        });
+                },
+                (error) => {
+                    console.warn('Geolocation access restricted by user:', error.message);
+                    setLocationPermissionDenied(true);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        } else {
+            setLocationPermissionDenied(true);
+        }
+    };
+
+    React.useEffect(() => {
+        requestLocation();
+    }, []);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -38,7 +91,8 @@ export default function BetaClub() {
         use_of_funds: '',
         pitch_deck_url: '',
         founder_phone: '',
-        founder_email: ''
+        founder_email: '',
+        location: ''
     });
 
     // API Actions
@@ -62,7 +116,8 @@ export default function BetaClub() {
                 use_of_funds: '',
                 pitch_deck_url: '',
                 founder_phone: '',
-                founder_email: ''
+                founder_email: '',
+                location: ''
             });
             alert("Venture entry successfully published to the active marketplace!");
         },
@@ -88,7 +143,11 @@ export default function BetaClub() {
             alert("Please supply active founder contact details so investors can reach you.");
             return;
         }
-        createMutation.mutate(formData);
+        const payload = {
+            ...formData,
+            location: formData.location || (cityName ? `${cityName}, ${gpsState}` : 'Chennai, Tamil Nadu')
+        };
+        createMutation.mutate(payload);
     };
 
     const handleConnectTrigger = (pitch) => {
@@ -105,6 +164,33 @@ export default function BetaClub() {
         'Manufacturing', 'Food & Beverage', 'Real Estate', 'Other'
     ];
 
+    // ── Personalization & Location Recommendation Engine ──
+    const getRecommendationScore = (pitch) => {
+        let score = 0;
+        
+        // Proximity/Location Based Match Boost
+        const profileState = gpsState || 'Tamil Nadu';
+        const profileCity = cityName || '';
+        
+        if (pitch.location && profileState) {
+            const pitchLoc = pitch.location.toLowerCase();
+            const uState = profileState.toLowerCase();
+            const uCity = profileCity.toLowerCase();
+            
+            if (uCity && pitchLoc.includes(uCity)) {
+                score += 150; // City match booster
+            } else if (pitchLoc.includes(uState)) {
+                score += 100; // State match booster
+            }
+        }
+        
+        if (pitch.is_verified) {
+            score += 50;
+        }
+
+        return score;
+    };
+
     return (
         <div style={{
             height: '100%',
@@ -117,7 +203,7 @@ export default function BetaClub() {
             fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif'
         }}>
             
-            {/* Slim, Beautiful Modern Header - Green Themed */}
+            {/* Slim, Beautiful Modern Header */}
             <div style={{
                 flexShrink: 0,
                 background: 'linear-gradient(135deg, #064E3B 0%, #022C22 100%)',
@@ -155,8 +241,130 @@ export default function BetaClub() {
                         BETA Club Deal Marketplace
                     </h1>
                     <p style={{ fontSize: '0.9rem', color: '#A7F3D0', maxWidth: '500px', margin: 0, opacity: 0.85 }}>
-                        Connect directly with verified personal ventures, review pitches, and contact owners instantly.
+                        Connect directly with verified founders, review pitches, and contact owners instantly.
                     </p>
+                    
+                    <div style={{ position: 'relative', marginTop: '0.55rem', display: 'inline-block' }}>
+                        <button 
+                            onClick={() => setIsLocationMenuOpen(!isLocationMenuOpen)}
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.12)',
+                                border: '1px solid rgba(255, 255, 255, 0.22)',
+                                padding: '0.35rem 0.75rem',
+                                borderRadius: '8px',
+                                fontSize: '0.72rem',
+                                fontWeight: '800',
+                                color: 'white',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                            }}
+                            onMouseOver={e => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.22)';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                            }}
+                            onMouseOut={e => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            <MapPin size={13} color="#34D399" />
+                            <span>
+                                {gpsState ? (
+                                    `${cityName ? `${cityName}, ` : ''}${gpsState}${pincode ? `, Pincode: ${pincode}` : ''}`
+                                ) : (
+                                    'Select Region / Lock GPS'
+                                )}
+                            </span>
+                            <span style={{ fontSize: '0.55rem', opacity: 0.8, marginLeft: '2px' }}>▼</span>
+                        </button>
+
+                        {isLocationMenuOpen && (
+                            <>
+                                <div 
+                                    onClick={() => setIsLocationMenuOpen(false)}
+                                    style={{ position: 'fixed', inset: 0, zIndex: 998, background: 'transparent' }} 
+                                />
+                                
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '110%',
+                                    left: 0,
+                                    background: 'white',
+                                    borderRadius: '12px',
+                                    boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                                    border: '1px solid #E2E8F0',
+                                    padding: '0.4rem',
+                                    minWidth: '220px',
+                                    zIndex: 999,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '2px'
+                                }}>
+                                    <div style={{ fontSize: '0.62rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', padding: '0.3rem 0.5rem', borderBottom: '1px solid #F1F5F9', marginBottom: '0.2rem' }}>
+                                        Select Matching Region
+                                    </div>
+                                    
+                                    {[
+                                        { label: '⚡ Detect GPS Location', city: null, state: 'GPS', plusCode: 'Auto', pincode: null },
+                                        { label: '📍 Chennai, Tamil Nadu', city: 'Chennai', state: 'Tamil Nadu', plusCode: '7J5X4W66+F9', pincode: '600001' },
+                                        { label: '📍 Trichy, Tamil Nadu', city: 'Trichy', state: 'Tamil Nadu', plusCode: '7J4VQ456+7W', pincode: '620001' },
+                                        { label: '📍 Mumbai, Maharashtra', city: 'Mumbai', state: 'Maharashtra', plusCode: '8FVC9G8F+6W', pincode: '400001' },
+                                        { label: '📍 Bengaluru, Karnataka', city: 'Bengaluru', state: 'Karnataka', plusCode: '7J4VXH8R+5P', pincode: '560001' },
+                                        { label: '📍 Delhi NCR', city: 'Delhi NCR', state: 'Delhi', plusCode: '8F3C4R2V+8Q', pincode: '110001' }
+                                    ].map((opt) => (
+                                        <button
+                                            key={opt.label}
+                                            type="button"
+                                            onClick={() => {
+                                                if (opt.state === 'GPS') {
+                                                    requestLocation();
+                                                } else {
+                                                    setCityName(opt.city);
+                                                    setGpsState(opt.state);
+                                                    setPincode(opt.pincode);
+                                                    setLocationPermissionDenied(false);
+                                                }
+                                                setIsLocationMenuOpen(false);
+                                            }}
+                                            style={{
+                                                background: 'transparent',
+                                                border: 'none',
+                                                textAlign: 'left',
+                                                padding: '0.5rem 0.6rem',
+                                                fontSize: '0.78rem',
+                                                fontWeight: '750',
+                                                color: '#334155',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '1px',
+                                                transition: 'all 0.15s ease',
+                                                width: '100%'
+                                            }}
+                                            onMouseOver={e => {
+                                                e.currentTarget.style.background = '#F1F5F9';
+                                                e.currentTarget.style.color = '#064E3B';
+                                            }}
+                                            onMouseOut={e => {
+                                                e.currentTarget.style.background = 'transparent';
+                                                e.currentTarget.style.color = '#334155';
+                                            }}
+                                        >
+                                            <span style={{ fontSize: '0.75rem' }}>{opt.label}</span>
+                                            <span style={{ fontSize: '0.58rem', color: '#94A3B8', fontWeight: '500' }}>
+                                                {opt.pincode ? `Pincode: ${opt.pincode}` : `Plus Code: ${opt.plusCode}`}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 <button 
@@ -166,7 +374,7 @@ export default function BetaClub() {
                         zIndex: 2,
                         padding: '0.75rem 1.25rem',
                         borderRadius: '12px',
-                        background: '#10B981',
+                        background: '#10b981',
                         color: 'white',
                         fontWeight: '700',
                         fontSize: '0.875rem',
@@ -184,7 +392,7 @@ export default function BetaClub() {
                         e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseOut={(e) => {
-                        e.currentTarget.style.background = '#10B981';
+                        e.currentTarget.style.background = '#10b981';
                         e.currentTarget.style.transform = 'translateY(0)';
                     }}
                 >
@@ -209,7 +417,10 @@ export default function BetaClub() {
                     borderRadius: '12px'
                 }}>
                     <button 
-                        onClick={() => setActiveTab('directory')}
+                        onClick={() => {
+                            setActiveTab('directory');
+                            setSearchTerm('');
+                        }}
                         style={{
                             padding: '0.5rem 1.25rem',
                             borderRadius: '9px',
@@ -226,7 +437,10 @@ export default function BetaClub() {
                         Active Deals
                     </button>
                     <button 
-                        onClick={() => setActiveTab('studio')}
+                        onClick={() => {
+                            setActiveTab('studio');
+                            setSearchTerm('');
+                        }}
                         style={{
                             padding: '0.5rem 1.25rem',
                             borderRadius: '9px',
@@ -243,10 +457,76 @@ export default function BetaClub() {
                         My Studio
                     </button>
                 </div>
+
+                {activeTab === 'directory' && (
+                    <div style={{ position: 'relative', flex: 1, maxWidth: '300px' }}>
+                        <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                        <input 
+                            type="text"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            placeholder="Search deals..."
+                            style={{
+                                width: '100%',
+                                padding: '0.55rem 1rem 0.55rem 2.3rem',
+                                borderRadius: '10px',
+                                border: '1px solid #E2E8F0',
+                                outline: 'none',
+                                fontSize: '0.82rem',
+                                fontWeight: '600',
+                                color: '#1E293B',
+                                boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
+                            }}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Scrollable Main Content Wrapper */}
             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: '2rem' }}>
+
+            {locationPermissionDenied && (
+                <div style={{
+                    background: '#FEF2F2',
+                    border: '1px solid #FCA5A5',
+                    color: '#991B1B',
+                    padding: '0.85rem 1.25rem',
+                    borderRadius: '12px',
+                    marginBottom: '1.25rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: '0.82rem',
+                    fontWeight: '750',
+                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.03)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <MapPin size={16} color="#DC2626" />
+                        <span>Location services are disabled or blocked. Enable location permissions in your browser to unlock real-time location-based matchmaking.</span>
+                    </div>
+                    <button 
+                        onClick={() => {
+                            setLocationPermissionDenied(false);
+                            requestLocation();
+                        }}
+                        style={{
+                            background: '#DC2626',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.4rem 0.85rem',
+                            borderRadius: '8px',
+                            fontWeight: '800',
+                            fontSize: '0.78rem',
+                            cursor: 'pointer',
+                            transition: 'background 0.2s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = '#B91C1C'}
+                        onMouseOut={e => e.currentTarget.style.background = '#DC2626'}
+                    >
+                        Enable Location
+                    </button>
+                </div>
+            )}
 
             {/* Main Content Switcher */}
             {isLoading ? (
@@ -255,153 +535,228 @@ export default function BetaClub() {
                 </div>
             ) : activeTab === 'directory' ? (
                 /* PITICHES DIRECTORY */
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                    gap: '1rem'
-                }}>
-                    {pitches.filter(p => p.listing_status === 'ACTIVE' || p.is_verified).length === 0 ? (
+                (() => {
+                    const activePitches = pitches.filter(p => p.listing_status === 'ACTIVE' || p.is_verified);
+                    const filteredPitches = activePitches.filter(pitch => {
+                        if (!searchTerm.trim()) return true;
+                        const term = searchTerm.toLowerCase();
+                        return (
+                            pitch.business_name?.toLowerCase().includes(term) ||
+                            pitch.headline?.toLowerCase().includes(term) ||
+                            pitch.industry?.toLowerCase().includes(term) ||
+                            pitch.use_of_funds?.toLowerCase().includes(term) ||
+                            pitch.location?.toLowerCase().includes(term)
+                        );
+                    });
+                    const sortedPitches = [...filteredPitches].sort((a, b) => {
+                        const scoreA = getRecommendationScore(a);
+                        const scoreB = getRecommendationScore(b);
+                        return scoreB - scoreA;
+                    });
+
+                    return (
                         <div style={{
-                            gridColumn: '1/-1',
-                            textAlign: 'center',
-                            padding: '3rem',
-                            background: 'white',
-                            borderRadius: '16px',
-                            border: '1px dashed #cbd5e1'
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                            gap: '1rem'
                         }}>
-                            <Building size={40} style={{ margin: '0 auto 0.75rem', color: '#94a3b8' }} />
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#334155' }}>No active deal listings</h3>
-                            <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Submit your roadmap on My Studio to see it here instantly!</p>
-                        </div>
-                    ) : (
-                        pitches.map(pitch => (
-                            <div 
-                                key={pitch.id}
-                                style={{
+                            {sortedPitches.length === 0 ? (
+                                <div style={{
+                                    gridColumn: '1/-1',
+                                    textAlign: 'center',
+                                    padding: '3rem',
                                     background: 'white',
                                     borderRadius: '16px',
-                                    padding: '1.25rem',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02)',
-                                    border: '1px solid #e2e8f0',
-                                    position: 'relative',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    transition: 'all 0.2s'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.04)';
-                                    e.currentTarget.style.borderColor = '#cbd5e1';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02)';
-                                    e.currentTarget.style.borderColor = '#e2e8f0';
-                                }}
-                            >
-                                {/* Top Info Badging */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                                    <span style={{
-                                        padding: '0.25rem 0.6rem',
-                                        borderRadius: '6px',
-                                        background: '#ecfdf5',
-                                        color: '#065f46',
-                                        fontSize: '0.7rem',
-                                        fontWeight: '800',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.02em'
-                                    }}>
-                                        {pitch.industry}
-                                    </span>
-                                    
-                                    {pitch.is_verified && (
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.25rem',
-                                            color: '#10b981',
-                                            fontSize: '0.7rem',
-                                            fontWeight: '800'
-                                        }}>
-                                            <ShieldCheck size={12} />
-                                            <span>VERIFIED</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#0f172a', marginBottom: '0.35rem', letterSpacing: '-0.01em' }}>
-                                    {pitch.business_name}
-                                </h3>
-                                <p style={{ 
-                                    color: '#64748b', 
-                                    fontSize: '0.85rem', 
-                                    lineHeight: 1.4, 
-                                    flexGrow: 1, 
-                                    marginBottom: '1rem',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: 'vertical',
-                                    overflow: 'hidden'
+                                    border: '1px dashed #cbd5e1'
                                 }}>
-                                    {pitch.headline}
-                                </p>
-
-                                {/* Capital Data Banner - Sleek Row */}
-                                <div style={{
-                                    background: '#f8fafc',
-                                    borderRadius: '10px',
-                                    padding: '0.75rem 1rem',
-                                    marginBottom: '1rem',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    border: '1px solid #f1f5f9'
-                                }}>
-                                    <div>
-                                        <div style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.02em', marginBottom: '0.1rem' }}>
-                                            Goal
-                                        </div>
-                                        <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#0f172a' }}>
-                                            ₹{(pitch.funding_target || 0).toLocaleString('en-IN')}
-                                        </div>
-                                    </div>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <div style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.02em', marginBottom: '0.1rem' }}>
-                                            Equity
-                                        </div>
-                                        <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#059669' }}>
-                                            {pitch.equity_offered}%
-                                        </div>
-                                    </div>
+                                    <Building size={40} style={{ margin: '0 auto 0.75rem', color: '#94a3b8' }} />
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#334155' }}>
+                                        {searchTerm ? "No matching deals found" : "No active deal listings"}
+                                    </h3>
+                                    <p style={{ color: '#64748b', fontSize: '0.875rem' }}>
+                                        {searchTerm ? "Try adjusting your search terms or filters." : "Submit your roadmap on My Studio to see it here instantly!"}
+                                    </p>
                                 </div>
+                            ) : (
+                                sortedPitches.map(pitch => {
+                                    const profileState = gpsState || 'Tamil Nadu';
+                                    const profileCity = cityName || '';
+                                    const isCityMatch = profileCity && pitch.location && pitch.location.toLowerCase().includes(profileCity.toLowerCase());
+                                    const isStateMatch = profileState && pitch.location && pitch.location.toLowerCase().includes(profileState.toLowerCase());
 
-                                <button 
-                                    onClick={() => handleConnectTrigger(pitch)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.65rem',
-                                        background: '#064e3b',
-                                        color: 'white',
-                                        borderRadius: '10px',
-                                        fontWeight: '700',
-                                        fontSize: '0.85rem',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '0.4rem',
-                                        transition: 'background 0.2s'
-                                    }}
-                                    onMouseOver={(e) => e.currentTarget.style.background = '#043427'}
-                                    onMouseOut={(e) => e.currentTarget.style.background = '#064e3b'}
-                                >
-                                    <span>Connect</span>
-                                    <ArrowRight size={14} />
-                                </button>
-                            </div>
-                        ))
-                    )}
-                </div>
+                                    return (
+                                        <div 
+                                            key={pitch.id}
+                                            style={{
+                                                background: 'white',
+                                                borderRadius: '16px',
+                                                padding: '1.25rem',
+                                                boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02)',
+                                                border: '1px solid #e2e8f0',
+                                                position: 'relative',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onMouseOver={(e) => {
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.04)';
+                                                e.currentTarget.style.borderColor = '#cbd5e1';
+                                            }}
+                                            onMouseOut={(e) => {
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02)';
+                                                e.currentTarget.style.borderColor = '#e2e8f0';
+                                            }}
+                                        >
+                                            {/* Top Info Badging */}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                                <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.6rem',
+                                                        borderRadius: '6px',
+                                                        background: '#ecfdf5',
+                                                        color: '#065f46',
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: '800',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.02em'
+                                                    }}>
+                                                        {pitch.industry}
+                                                    </span>
+                                                    
+                                                    {isCityMatch && (
+                                                        <span style={{
+                                                            padding: '0.25rem 0.6rem',
+                                                            borderRadius: '6px',
+                                                            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                                                            color: 'white',
+                                                            fontSize: '0.7rem',
+                                                            fontWeight: '800',
+                                                            letterSpacing: '0.02em',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '3px'
+                                                        }}>
+                                                            🔥 PERFECT MATCH
+                                                        </span>
+                                                    )}
+                                                    {!isCityMatch && isStateMatch && (
+                                                        <span style={{
+                                                            padding: '0.25rem 0.6rem',
+                                                            borderRadius: '6px',
+                                                            background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                                                            color: 'white',
+                                                            fontSize: '0.7rem',
+                                                            fontWeight: '800',
+                                                            letterSpacing: '0.02em',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '3px'
+                                                        }}>
+                                                            📍 NEAR YOU
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                
+                                                {pitch.is_verified && (
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.25rem',
+                                                        color: '#10b981',
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: '800'
+                                                    }}>
+                                                        <ShieldCheck size={12} />
+                                                        <span>VERIFIED</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#0f172a', marginBottom: '0.35rem', letterSpacing: '-0.01em' }}>
+                                                {pitch.business_name}
+                                            </h3>
+                                            
+                                            <p style={{ 
+                                                color: '#64748b', 
+                                                fontSize: '0.85rem', 
+                                                lineHeight: 1.4, 
+                                                flexGrow: 1, 
+                                                marginBottom: '0.75rem',
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: 'vertical',
+                                                overflow: 'hidden'
+                                            }}>
+                                                {pitch.headline}
+                                            </p>
+
+                                            {/* Location Label */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748b', fontSize: '0.78rem', fontWeight: '600', marginBottom: '1rem' }}>
+                                                <MapPin size={13} style={{ color: '#94a3b8' }} />
+                                                <span>{pitch.location || 'Chennai, Tamil Nadu'}</span>
+                                            </div>
+
+                                            {/* Capital Data Banner - Sleek Row */}
+                                            <div style={{
+                                                background: '#f8fafc',
+                                                borderRadius: '10px',
+                                                padding: '0.75rem 1rem',
+                                                marginBottom: '1rem',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                border: '1px solid #f1f5f9'
+                                            }}>
+                                                <div>
+                                                    <div style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.02em', marginBottom: '0.1rem' }}>
+                                                        Goal
+                                                    </div>
+                                                    <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#0f172a' }}>
+                                                        {formatCurrency(pitch.funding_target || 0)}
+                                                    </div>
+                                                </div>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <div style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.02em', marginBottom: '0.1rem' }}>
+                                                        Equity
+                                                    </div>
+                                                    <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#059669' }}>
+                                                        {pitch.equity_offered}%
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button 
+                                                onClick={() => handleConnectTrigger(pitch)}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.65rem',
+                                                    background: '#0f172a',
+                                                    color: 'white',
+                                                    borderRadius: '10px',
+                                                    fontWeight: '700',
+                                                    fontSize: '0.85rem',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '0.4rem',
+                                                    transition: 'background 0.2s'
+                                                }}
+                                                onMouseOver={(e) => e.currentTarget.style.background = '#1e293b'}
+                                                onMouseOut={(e) => e.currentTarget.style.background = '#0f172a'}
+                                            >
+                                                <span>Connect</span>
+                                                <ArrowRight size={14} />
+                                            </button>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    );
+                })()
             ) : (
                 /* MY CANVAS (Listing & Verification Hub) */
                 <div style={{
@@ -411,10 +766,10 @@ export default function BetaClub() {
                     boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                     border: '1px solid #e2e8f0'
                 }}>
-                    <div style={{ display: 'flex', justifycontent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem', alignItems: 'center' }}>
                         <div>
-                            <h2 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#0f172a', margin: 0 }}>Studio Setup</h2>
-                            <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '0.1rem', margin: 0 }}>Track your fundraising registrations</p>
+                            <h2 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#0f172a' }}>Studio Setup</h2>
+                            <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '0.1rem' }}>Track your fundraising registrations</p>
                         </div>
                         <button 
                             onClick={() => setShowCreateModal(true)}
@@ -454,7 +809,7 @@ export default function BetaClub() {
                                 }}>
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <h4 style={{ fontWeight: '800', color: '#0f172a', fontSize: '0.95rem', margin: 0 }}>{pitch.business_name}</h4>
+                                            <h4 style={{ fontWeight: '800', color: '#0f172a', fontSize: '0.95rem' }}>{pitch.business_name}</h4>
                                             <span style={{
                                                 fontSize: '0.65rem',
                                                 padding: '0.2rem 0.4rem',
@@ -466,8 +821,8 @@ export default function BetaClub() {
                                                 {pitch.listing_status === 'ACTIVE' ? 'ACTIVE' : 'DRAFT'}
                                             </span>
                                         </div>
-                                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.15rem', margin: 0 }}>
-                                            ₹{(pitch.funding_target || 0).toLocaleString('en-IN')} for {pitch.equity_offered}% Equity Share
+                                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.15rem' }}>
+                                            {formatCurrency(pitch.funding_target || 0)} for {pitch.equity_offered}% Equity Share
                                         </p>
                                     </div>
 
@@ -528,7 +883,8 @@ export default function BetaClub() {
                         width: '100%',
                         maxWidth: '650px',
                         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        animation: 'modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                     }}>
                         {/* Modal Header */}
                         <div style={{
@@ -540,8 +896,8 @@ export default function BetaClub() {
                             background: '#f8fafc'
                         }}>
                             <div>
-                                <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0f172a', margin: 0 }}>Publish Venture Profile</h3>
-                                <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Broadcast your capital expansion targets immediately</p>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0f172a' }}>Publish Venture Profile</h3>
+                                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Broadcast your capital expansion targets immediately</p>
                             </div>
                             <button 
                                 onClick={() => setShowCreateModal(false)}
@@ -552,7 +908,7 @@ export default function BetaClub() {
                         </div>
 
                         {/* Modal Content */}
-                        <form onSubmit={handleSubmit} style={{ padding: '2rem', maxHeight: '70vh', overflowY: 'auto', margin: 0 }}>
+                        <form onSubmit={handleSubmit} style={{ padding: '2rem', maxHeight: '70vh', overflowY: 'auto' }}>
                             
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                                 <div>
@@ -565,7 +921,7 @@ export default function BetaClub() {
                                         value={formData.business_name}
                                         onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
                                         placeholder="e.g., Beta Tech Solutions"
-                                        style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', boxSizing: 'border-box' }}
+                                        style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
                                     />
                                 </div>
                                 <div>
@@ -575,7 +931,7 @@ export default function BetaClub() {
                                     <select
                                         value={formData.industry}
                                         onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                                        style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', background: 'white', boxSizing: 'border-box' }}
+                                        style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', background: 'white' }}
                                     >
                                         {industryOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                                     </select>
@@ -592,14 +948,14 @@ export default function BetaClub() {
                                     value={formData.headline}
                                     onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
                                     placeholder="e.g., Disrupting regional supply chain with micro-automated routing"
-                                    style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
                                 />
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#475569', marginBottom: '0.5rem' }}>
-                                        Funding Request Amount (₹) *
+                                        Funding Request Amount ({currency.symbol}) *
                                     </label>
                                     <div style={{ position: 'relative' }}>
                                         <Coins size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -609,7 +965,7 @@ export default function BetaClub() {
                                             value={formData.funding_target}
                                             onChange={(e) => setFormData({ ...formData, funding_target: e.target.value })}
                                             placeholder="e.g. 5000000"
-                                            style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', boxSizing: 'border-box' }}
+                                            style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
                                         />
                                     </div>
                                 </div>
@@ -624,7 +980,7 @@ export default function BetaClub() {
                                             value={formData.equity_offered}
                                             onChange={(e) => setFormData({ ...formData, equity_offered: e.target.value })}
                                             placeholder="e.g. 10"
-                                            style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', boxSizing: 'border-box' }}
+                                            style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
                                         />
                                     </div>
                                 </div>
@@ -639,7 +995,7 @@ export default function BetaClub() {
                                     value={formData.use_of_funds}
                                     onChange={(e) => setFormData({ ...formData, use_of_funds: e.target.value })}
                                     placeholder="Briefly detail operational growth goals or capital allocation..."
-                                    style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', resize: 'vertical', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', resize: 'vertical' }}
                                 />
                             </div>
 
@@ -656,7 +1012,7 @@ export default function BetaClub() {
                                             value={formData.founder_email}
                                             onChange={(e) => setFormData({ ...formData, founder_email: e.target.value })}
                                             placeholder="founder@yourbiz.com"
-                                            style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', boxSizing: 'border-box' }}
+                                            style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
                                         />
                                     </div>
                                 </div>
@@ -672,9 +1028,25 @@ export default function BetaClub() {
                                             value={formData.founder_phone}
                                             onChange={(e) => setFormData({ ...formData, founder_phone: e.target.value })}
                                             placeholder="+91 99999 99999"
-                                            style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', boxSizing: 'border-box' }}
+                                            style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#475569', marginBottom: '0.5rem' }}>
+                                    Business Location (Optional - defaults to detected GPS)
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                    <MapPin size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                    <input 
+                                        type="text"
+                                        value={formData.location}
+                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                        placeholder={cityName ? `${cityName}, ${gpsState}` : 'e.g. Chennai, Tamil Nadu'}
+                                        style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
+                                    />
                                 </div>
                             </div>
 
@@ -689,7 +1061,7 @@ export default function BetaClub() {
                                         value={formData.pitch_deck_url}
                                         onChange={(e) => setFormData({ ...formData, pitch_deck_url: e.target.value })}
                                         placeholder="https://drive.google.com/executive-deck.pdf"
-                                        style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', boxSizing: 'border-box' }}
+                                        style={{ width: '100%', padding: '0.85rem 0.85rem 0.85rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
                                     />
                                 </div>
                             </div>
@@ -760,12 +1132,13 @@ export default function BetaClub() {
                         width: '100%',
                         maxWidth: '500px',
                         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        animation: 'modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                     }}>
                         {/* Glassmorphic Header Cover */}
                         <div style={{
                             padding: '2.5rem 2rem',
-                            background: 'linear-gradient(135deg, #064e3b 0%, #022c22 100%)',
+                            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
                             color: 'white',
                             position: 'relative',
                             display: 'flex',
@@ -782,20 +1155,20 @@ export default function BetaClub() {
                                 <ShieldCheck size={15} />
                                 <span>Verified Registrant Info</span>
                             </div>
-                            <h3 style={{ fontSize: '1.5rem', fontWeight: '900', marginTop: '0.25rem', margin: 0 }}>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '900', marginTop: '0.25rem' }}>
                                 {selectedConnectPitch.business_name}
                             </h3>
-                            <p style={{ opacity: 0.8, fontSize: '0.9rem', lineHeight: 1.4, margin: 0 }}>
+                            <p style={{ opacity: 0.8, fontSize: '0.9rem', lineHeight: 1.4 }}>
                                 {selectedConnectPitch.headline}
                             </p>
                         </div>
 
                         <div style={{ padding: '2rem' }}>
-                            <h4 style={{ fontSize: '0.9rem', color: '#64748b', textTransform: 'uppercase', fontWeight: '800', letterSpacing: '0.03em', marginBottom: '1rem', margin: 0 }}>
+                            <h4 style={{ fontSize: '0.9rem', color: '#64748b', textTransform: 'uppercase', fontWeight: '800', letterSpacing: '0.03em', marginBottom: '1rem' }}>
                                 Direct Founders Connect
                             </h4>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem', marginTop: '1rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
                                 {/* Registered Owner */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#f8fafc', padding: '1rem', borderRadius: '12px' }}>
                                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
