@@ -762,19 +762,16 @@
 /* Topbar Styles */
 .topbar {
     height: 64px;
-    background: rgba(27, 107, 58, 0.85);
-    /* Semi-transparent Primary */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: #135029 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 1.5rem;
     z-index: 20;
     position: relative;
-    color: white;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
 
 .topbar-left {
@@ -885,7 +882,7 @@
 
 .nav-link {
     font-weight: 500;
-    color: #F0FDF4;
+    color: rgba(255, 255, 255, 0.8) !important;
     font-size: 0.95rem;
     padding: 0.5rem 1.25rem;
     border-radius: 9999px;
@@ -897,13 +894,13 @@
 }
 
 .nav-link:hover {
-    color: white;
+    color: white !important;
     background: rgba(255, 255, 255, 0.1);
 }
 
 .nav-link.active {
-    background-color: #F0FDF4;
-    color: #1B6B3A;
+    background-color: #F0FDF4 !important;
+    color: #135029 !important;
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -916,27 +913,27 @@
 
 .topbar-profile {
     margin-left: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #FFFFFF !important;
     padding: 4px 12px 4px 4px;
     border-radius: 99px;
 }
 
 .topbar-profile:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.18) !important;
 }
 
 .topbar input {
-    color: white;
+    color: #1E293B;
 }
 
 .topbar .icon-btn {
-    color: #F0FDF4;
+    color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .topbar .icon-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #FFFFFF !important;
 }
 
 /* Sidebar Adjustments for new layout */
@@ -1099,15 +1096,15 @@
 /* Update Active State to match user request */
 /* Update Active State to match user request - Soft Tint */
 .sidebar-item.active {
-    background-color: #F0FDF4;
-    color: var(--primary) !important;
-    font-weight: 600;
-    box-shadow: inset 2px 0 0 0 var(--primary);
-    /* Left border accent */
+    background-color: #DCF2E4 !important;
+    color: #064E3B !important;
+    font-weight: 800 !important;
+    border-radius: 8px;
+    box-shadow: none !important;
 }
 
 .sidebar-item.active svg {
-    color: var(--primary) !important;
+    color: #064E3B !important;
 }
 
 
