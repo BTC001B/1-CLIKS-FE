@@ -83,6 +83,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
         if (path.includes('/books/people')) return 'People';
         if (path.includes('/books/settings')) return 'Settings';
         if (path.includes('/books/faq')) return 'Help & Support';
+        if (path.includes('/ca')) return 'FIN-PRO';
         if (path === '/auditor') return 'Audit';
 
         if (path.includes('/public')) {
@@ -133,7 +134,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
 
     // Show Finance sidebar for root, home (redirect), and finance paths
     const showFinanceSidebar = location.pathname === '/' || location.pathname.startsWith('/home') || location.pathname.startsWith('/finance');
-    const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor';
+    const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor' || location.pathname.startsWith('/ca');
     const showPublicSidebar = location.pathname.startsWith('/public');
 
 
@@ -249,6 +250,17 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             <div className="flex items-center gap-3">
                                 <Users size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">People</span>
+                            </div>
+                        </button>
+
+                        {/* FIN-PRO */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('FIN-PRO', '/ca')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Briefcase size={20} style={{ color: activeItem === 'FIN-PRO' ? '#064E3B' : '#D4AF37' }} />
+                                <span className="sidebar-label">FIN-PRO</span>
                             </div>
                         </button>
                     </>

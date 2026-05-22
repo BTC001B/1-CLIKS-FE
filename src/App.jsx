@@ -32,6 +32,7 @@ const Public = React.lazy(() => import('./pages/Public'));
 const Stock = React.lazy(() => import('./pages/Stock'));
 const Wallet = React.lazy(() => import('./pages/finance/Wallet'));
 const FinancialPlan = React.lazy(() => import('./pages/financial-plan/FinancialPlan'));
+const BusinessCA = React.lazy(() => import('./pages/BusinessCA'));
 
 const People = React.lazy(() => import('./pages/People'));
 const PeopleOverview = React.lazy(() => import('./pages/people/PeopleOverview'));
@@ -125,6 +126,9 @@ function AppContent() {
 
                     {/* Public Section */}
                     <Route path="/public" element={<Public />} />
+
+                    {/* FIN-PRO CA Section */}
+                    <Route path="/ca" element={<BusinessCA />} />
 
 
                   </Routes>

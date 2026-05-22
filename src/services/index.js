@@ -27,3 +27,6 @@ export * from './stockService';
 export * from './goalWalletService';
 export * from './calculatorService';
 export * from './pitchesService';
+export * from './caService';
+export * from './accountingService';
+export * from './gstService';
