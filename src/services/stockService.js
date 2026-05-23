@@ -10,3 +10,12 @@ export const stockService = {
   deleteStock: (id) => apiClient.delete(`/stock/${id}`).then(res => res.data.data || res.data),
   getStockHistory: (id) => apiClient.get(`/stock/${id}/history`).then(res => res.data.data || res.data)
 };
+
+export const fetchStockItems = stockService.getStocks;
+export const fetchStockStats = stockService.getStockStats;
+export const fetchStock = stockService.getStock;
+export const addStockItem = stockService.createStock;
+export const updateStockItem = stockService.updateStock;
+export const adjustStockQuantity = stockService.adjustQuantity;
+export const deleteStockItem = stockService.deleteStock;
+export const fetchStockHistory = stockService.getStockHistory;

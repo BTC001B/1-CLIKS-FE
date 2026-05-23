@@ -233,6 +233,17 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             </div>
                         </button>
 
+                        {/* Reports */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Reports' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Reports', '/books/reports')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <BarChart3 size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Reports</span>
+                            </div>
+                        </button>
+
                         {/* Stock */}
                         <button
                             className={`sidebar-item ${activeItem === 'Stock' ? 'active' : ''}`}
@@ -252,17 +263,6 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             <div className="flex items-center gap-3">
                                 <Users size={20} style={{ color: '#1B6B3A' }} />
                                 <span className="sidebar-label">People</span>
-                            </div>
-                        </button>
-
-                        {/* Reports */}
-                        <button
-                            className={`sidebar-item ${activeItem === 'Reports' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Reports', '/books/reports')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <BarChart3 size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Reports</span>
                             </div>
                         </button>
 
