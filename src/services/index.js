@@ -31,3 +31,7 @@ export * from './caService';
 export * from './accountingService';
 export * from './gstService';
 export * from './supportService';
+export * from './purchasesService';
+export * from './reportsService';
+export * from './paymentService';
+export * from './warehouseService';
