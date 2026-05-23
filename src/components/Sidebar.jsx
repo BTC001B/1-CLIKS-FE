@@ -266,6 +266,8 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             </div>
                         </button>
 
+                        <div style={{ height: '1px', background: '#E2E8F0', margin: '0.5rem 1rem' }} />
+
                         {/* FIN-PRO */}
                         <button
                             className={`sidebar-item ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
