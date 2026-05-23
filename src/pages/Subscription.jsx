@@ -284,7 +284,7 @@ const Subscription = () => {
     const renewal = getRenewalDetails();
 
     return (
-        <div style={{ padding: '1.25rem 2.5rem', background: '#F0F9F4', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ padding: '1.25rem 2.5rem', background: '#F8FAFC', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}>
             <style>{`
                 .sub-tab-btn {
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

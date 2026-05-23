@@ -1,641 +1,625 @@
-import React, { useState, useEffect } from 'react';
-import { applyTableFilters } from '../utils/filterUtils';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { stockService, warehouseService } from '../services';
-import { apiClient } from '../api/client';
-import FilterableTableHead from '../components/FilterableTableHead';
 import { 
-    Layers, 
+    Package, 
     Plus, 
     Search, 
-    ArrowRightLeft, 
-    TrendingDown, 
-    TrendingUp, 
-    AlertTriangle, 
-    Warehouse, 
-    Calendar, 
-    Activity, 
-    DollarSign, 
-    MapPin, 
-    CheckCircle2, 
-    Info, 
-    X, 
-    FileText, 
-    ChevronRight, 
-    RefreshCw, 
-    Sliders,
-    Zap
+    Filter, 
+    Edit2, 
+    Trash2, 
+    AlertTriangle,
+    CheckCircle2,
+    Clock,
+    X,
+    Loader2,
+    ArrowUpRight,
+    ArrowDownRight,
+    Box,
+    Layers,
+    TrendingUp,
+    Download,
+    History
 } from 'lucide-react';
+import { 
+    fetchStockItems, 
+    fetchStockStats, 
+    addStockItem, 
+    updateStockItem,
+    adjustStockQuantity, 
+    deleteStockItem, 
+    fetchStockHistory 
+} from '../services/stockService';
+import { formatCurrency } from '../lib/formatCurrency';
+import * as XLSX from 'xlsx';
 import '../App.css';
-import { useCurrency } from '../context';
 
-const BusinessStock = () => {
-    const { currency, formatCurrency } = useCurrency();
+const Stock = () => {
     const queryClient = useQueryClient();
-    const [activeTab, setActiveTab] = useState('registry');
-    const [colFilters, setColFilters] = React.useState({}); // 'registry', 'movement', 'warehouse', 'batch'
     const [searchTerm, setSearchTerm] = useState('');
-    const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState(false);
-    const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-    const [selectedHistoryProductId, setSelectedHistoryProductId] = useState('');
-
-    // Fetch Live Stocks
-    const { data: dbStocks = [] } = useQuery({
-        queryKey: ['stocks'],
-        queryFn: () => stockService.getStocks()
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+    const [adjustType, setAdjustType] = useState('in'); // 'in' or 'out'
+    const [adjustAmount, setAdjustAmount] = useState(1);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [editingItem, setEditingItem] = useState(null);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [historyItem, setHistoryItem] = useState(null);
+    const [formData, setFormData] = useState({
+        name: '',
+        sub_name: '',
+        category: '',
+        quantity: 1,
+        unit: 'pcs',
+        unit_price: '',
+        status: 'In Stock',
+        low_stock_threshold: 5
     });
 
-    // Fetch Live Warehouses
-    const { data: dbWarehouses = [] } = useQuery({
-        queryKey: ['warehouses'],
-        queryFn: () => warehouseService.getWarehouses()
+    // Queries
+    const { data: items = [], isLoading } = useQuery({
+        queryKey: ['stock', searchTerm],
+        queryFn: () => fetchStockItems({ search: searchTerm })
     });
 
-    // Fetch Warehouse Transfers Reports
-    const { data: reportsData } = useQuery({
-        queryKey: ['warehouseReports'],
-        queryFn: () => apiClient.get('/warehouses/reports').then(res => res.data.data || res.data)
+    const { data: stats } = useQuery({
+        queryKey: ['stock-stats'],
+        queryFn: fetchStockStats
     });
 
-    // Safe mapping of DB stock items to UI representation
-    const stocks = dbStocks.map(s => {
-        let warehouseName = 'Main Godown';
-        let rackNumber = 'Rack A-1';
+    const { data: historyData = [], isLoading: isHistoryLoading } = useQuery({
+        queryKey: ['stock-history', historyItem?.id],
+        queryFn: () => fetchStockHistory(historyItem.id),
+        enabled: !!historyItem
+    });
 
-        if (s.location) {
-            if (s.location.includes('(')) {
-                const parts = s.location.split('(');
-                warehouseName = parts[0].trim();
-                rackNumber = parts[1].replace(')', '').trim();
-            } else {
-                warehouseName = s.location;
-            }
+    // Mutations
+    const addMutation = useMutation({
+        mutationFn: addStockItem,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['stock'] });
+            queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
+            closeModal();
         }
-
-        return {
-            stock_id: `STK-${s.id}`,
-            id: s.id,
-            product_id: s.sku || `PROD-${s.id}`,
-            product_name: s.name || 'Unnamed Stock Item',
-            opening_stock: s.opening_stock || 10,
-            current_stock: s.quantity || 0,
-            available_stock: s.quantity || 0,
-            reserved_stock: 0,
-            damaged_stock: 0,
-            expired_stock: 0,
-            in_transit_stock: 0,
-            minimum_stock: s.low_stock_threshold || 5,
-            reorder_level: s.low_stock_threshold || 5,
-            reorder_quantity: 50,
-            purchase_cost: s.unit_price || 0,
-            average_cost: s.unit_price || 0,
-            selling_value: (s.unit_price || 0) * 1.2,
-            rack_number: rackNumber,
-            warehouse_name: warehouseName
-        };
     });
 
-    // Set default product for history when stock loads
-    useEffect(() => {
-        if (!selectedHistoryProductId && stocks.length > 0) {
-            const timer = setTimeout(() => {
-                setSelectedHistoryProductId(stocks[0].id.toString());
-            }, 0);
-            return () => clearTimeout(timer);
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }) => updateStockItem(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['stock'] });
+            queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
+            closeModal();
         }
-    }, [stocks, selectedHistoryProductId]);
-
-    // Fetch stock transaction history for the selected product
-    const { data: dbHistory = [] } = useQuery({
-        queryKey: ['stockHistory', selectedHistoryProductId],
-        queryFn: () => stockService.getStockHistory(selectedHistoryProductId),
-        enabled: !!selectedHistoryProductId
     });
 
-    const movements = dbHistory.map(h => {
-        const product = stocks.find(s => s.id === h.stock_id);
-        return {
-            movement_id: `MOV-${h.id}`,
-            movement_type: h.type || 'in',
-            movement_quantity: h.quantity || 0,
-            movement_reason: h.type === 'in' ? 'Stock Inward / Reconciliation' : 'Stock Outward / Dispatch',
-            reference_id: `REF-STK-${h.id}`,
-            performed_by: 'Inventory Operator',
-            movement_date: h.created_at ? h.created_at.split('T')[0] : '2026-05-08',
-            product_name: product?.product_name || 'Stock Item'
-        };
-    });
-
-    // Map DB Transfers
-    const dbTransfers = reportsData?.transfers || [];
-    const transfers = dbTransfers.map(t => {
-        const product = stocks.find(s => s.id === t.stock_id);
-        const fromWh = dbWarehouses.find(w => w.id === t.from_warehouse_id);
-        const toWh = dbWarehouses.find(w => w.id === t.to_warehouse_id);
-        return {
-            transfer_id: `TRF-${t.id}`,
-            product_name: product?.product_name || `Stock Item #${t.stock_id}`,
-            qty: t.quantity || 0,
-            from_warehouse: fromWh?.name || 'Main Godown',
-            to_warehouse: toWh?.name || 'Shop Front',
-            status: 'Completed',
-            transfer_date: t.created_at ? t.created_at.split('T')[0] : '2026-05-08',
-            reference: `REF-TRF-${t.id}`
-        };
-    });
-
-    // Dynamic batches based on live stocks
-    const batches = stocks.map((s) => ({
-        batch_number: s.product_id.replace('PROD-', 'BAT-'),
-        product_name: s.product_name,
-        manufacturing_date: '2026-01-10',
-        expiry_date: '2029-01-10',
-        batch_quantity: s.current_stock
-    }));
-
-    // Form inputs for Stock Adjustments
-    const [adjustmentForm, setAdjustmentForm] = useState({
-        product_id: '',
-        adjustment_type: 'add', // 'add' or 'reduce'
-        qty: 10,
-        reason: 'Physical stock reconciliation audit',
-        warehouse_name: 'Main Godown'
-    });
-
-    // Form inputs for Warehouse Transfers
-    const [transferForm, setTransferForm] = useState({
-        product_id: '',
-        qty: 15,
-        from_warehouse_id: '',
-        to_warehouse_id: '',
-        reference: 'MIG-TRF-12'
-    });
-
-    // Initialize forms when stock items and warehouses are available
-    useEffect(() => {
-        if (stocks.length > 0) {
-            const timer = setTimeout(() => {
-                setAdjustmentForm(prev => prev.product_id ? prev : { ...prev, product_id: stocks[0].id.toString() });
-                setTransferForm(prev => prev.product_id ? prev : { ...prev, product_id: stocks[0].id.toString() });
-            }, 0);
-            return () => clearTimeout(timer);
+    const deleteMutation = useMutation({
+        mutationFn: deleteStockItem,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['stock'] });
+            queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
         }
-    }, [stocks]);
-
-    useEffect(() => {
-        if (dbWarehouses.length > 1) {
-            const timer = setTimeout(() => {
-                setTransferForm(prev => prev.from_warehouse_id ? prev : {
-                    ...prev,
-                    from_warehouse_id: dbWarehouses[0].id.toString(),
-                    to_warehouse_id: dbWarehouses[1].id.toString()
-                });
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, [dbWarehouses]);
+    });
 
     const adjustMutation = useMutation({
-        mutationFn: ({ id, delta }) => stockService.adjustQuantity(id, delta),
+        mutationFn: ({ id, delta }) => adjustStockQuantity(id, delta),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['stocks'] });
-            queryClient.invalidateQueries({ queryKey: ['stockStats'] });
-            queryClient.invalidateQueries({ queryKey: ['stockHistory'] });
-            alert('Stock Adjustment audited & running ledger counts revalued successfully!');
-            setIsAdjustmentModalOpen(false);
+            queryClient.invalidateQueries({ queryKey: ['stock'] });
+            queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
+            closeAdjustModal();
         }
     });
 
-    const transferMutation = useMutation({
-        mutationFn: ({ from_warehouse_id, to_warehouse_id, stock_id, qty }) => 
-            warehouseService.transferStock(from_warehouse_id, {
-                from_warehouse_id,
-                to_warehouse_id,
-                stock_id,
-                quantity: qty
-            }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['warehouseReports'] });
-            queryClient.invalidateQueries({ queryKey: ['stocks'] });
-            alert('Stock successfully moved between warehouse logs!');
-            setIsTransferModalOpen(false);
-        }
-    });
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setEditingItem(null);
+        setFormData({
+            name: '',
+            sub_name: '',
+            category: '',
+            quantity: 1,
+            unit: 'pcs',
+            unit_price: '',
+            status: 'In Stock',
+            low_stock_threshold: 5
+        });
+    };
 
-    const handleSaveAdjustment = (e) => {
+    const handleEdit = (item) => {
+        setEditingItem(item);
+        setFormData({
+            name: item.name,
+            sub_name: item.sub_name || '',
+            category: item.category || '',
+            quantity: item.quantity,
+            unit: item.unit || 'pcs',
+            unit_price: item.unit_price || '',
+            status: item.status || 'In Stock',
+            low_stock_threshold: item.low_stock_threshold ?? item.lowstockthreshold ?? item.lowStockThreshold ?? item.low_stock_threshold ?? 5
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleAdjustClick = (item, type) => {
+        setSelectedItem(item);
+        setAdjustType(type);
+        setAdjustAmount(1);
+        setIsAdjustModalOpen(true);
+    };
+
+    const closeAdjustModal = () => {
+        setIsAdjustModalOpen(false);
+        setSelectedItem(null);
+    };
+
+    const handleSubmit = (e) => {
         e.preventDefault();
-        const stockId = parseInt(adjustmentForm.product_id);
-        const adjustQty = parseInt(adjustmentForm.qty) || 0;
-        const delta = adjustmentForm.adjustment_type === 'add' ? adjustQty : -adjustQty;
-
-        if (stockId) {
-            adjustMutation.mutate({ id: stockId, delta });
+        const payload = {
+            ...formData,
+            quantity: Number(formData.quantity || 0),
+            unit_price: Number(formData.unit_price || 0),
+            low_stock_threshold: Number(formData.low_stock_threshold || 5)
+        };
+        if (editingItem) {
+            updateMutation.mutate({ id: editingItem.id, data: payload });
+        } else {
+            addMutation.mutate(payload);
         }
     };
 
-    const handleSaveTransfer = (e) => {
-        e.preventDefault();
-        const stockId = parseInt(transferForm.product_id);
-        const transQty = parseInt(transferForm.qty) || 0;
-        const fromWhId = parseInt(transferForm.from_warehouse_id);
-        const toWhId = parseInt(transferForm.to_warehouse_id);
+    const [filterStatus, setFilterStatus] = useState('all'); // 'all' or 'low'
 
-        const selectedProd = stocks.find(s => s.id === stockId);
+    const filteredItems = items.filter(item => {
+        const matchesFilter = filterStatus === 'all' || item.quantity < (item.low_stock_threshold || 5);
+        return matchesFilter;
+    });
 
-        if (transQty > (selectedProd?.available_stock || 0)) {
-            alert('Cannot transfer quantity higher than current available stock!');
+    const handleExportReport = () => {
+        if (!filteredItems || filteredItems.length === 0) {
+            alert('No data to export.');
             return;
         }
 
-        if (fromWhId && toWhId && stockId) {
-            transferMutation.mutate({
-                from_warehouse_id: fromWhId,
-                to_warehouse_id: toWhId,
-                stock_id: stockId,
-                qty: transQty
-            });
+        const worksheetData = filteredItems.map(item => ({
+            'Product Name': item.name || '',
+            'Sub Name': item.sub_name || '',
+            'Category': item.category || '',
+            'Quantity': item.quantity || 0,
+            'Unit': item.unit || '',
+            'Unit Price (₹)': item.unit_price || 0,
+            'Total Value (₹)': (item.quantity || 0) * (item.unit_price || 0),
+            'Low Stock Level': item.low_stock_threshold || 0
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Stock Report');
+
+        const fileName = `stock_report_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    };
+
+    const totalValue = stats?.totalValue || 0;
+    const lowStockCount = stats?.lowStockCount || 0;
+    const totalUnits = items.reduce((acc, i) => acc + parseInt(i.quantity || 0), 0);
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            deleteMutation.mutate(id);
         }
     };
 
-    const filteredStocks = stocks.filter(st => 
-        st.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        st.warehouse_name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    // Compute live inventory valuations
-    const totalInventoryValue = stocks.reduce((sum, s) => sum + (s.current_stock * s.average_cost), 0);
-    const lowStockAlertsCount = stocks.filter(s => s.current_stock <= s.reorder_level).length;
-
     return (
-        <div style={{ padding: '1.25rem 2rem', background: '#F8FAFC', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}>
-            {/* Header */}
+        <div style={{ padding: '1.5rem 2rem', background: '#F8FAFC', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
+            {/* Top Navigation / Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
                 <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
-                        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 8px 16px rgba(236, 72, 153, 0.2)' }}>
-                            <Layers size={20} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                        <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 8px 16px rgba(27, 107, 58, 0.2)' }}>
+                            <Box size={22} />
                         </div>
-                        <h1 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#0F172A', margin: 0, letterSpacing: '-0.02em' }}>Stock & Inventory Valuation</h1>
+                        <h1 style={{ fontSize: '2rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em' }}>Inventory Suite</h1>
                     </div>
-                    <p style={{ color: '#64748B', fontSize: '0.85rem', fontWeight: '500', margin: 0 }}>Real-time inventory engine, multi-warehouse branch transfers, batch expiries, FIFO valuation, and reorder levels.</p>
+                    <p style={{ color: '#475569', fontSize: '1.05rem', fontWeight: '500' }}>Precision stock management for enterprise growth.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button 
-                        onClick={() => setIsAdjustmentModalOpen(true)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1rem', borderRadius: '10px', background: 'white', color: '#EC4899', border: '1px solid #FCE7F3', fontWeight: '750', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
-                    >
-                        <Sliders size={15} /> Adjust Stock Counts
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button onClick={handleExportReport} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.85rem 1.25rem', borderRadius: '14px', background: 'white', color: '#1B6B3A', border: '1px solid #DCF2E4', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}>
+                        <Download size={18} />
+                        Export Report
                     </button>
                     <button 
-                        onClick={() => setIsTransferModalOpen(true)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1rem', borderRadius: '10px', background: 'white', color: '#3B82F6', border: '1px solid #DBEAFE', fontWeight: '750', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
+                        onClick={() => setIsModalOpen(true)}
+                        style={{ 
+                            display: 'flex', alignItems: 'center', gap: '0.6rem', 
+                            padding: '0.85rem 1.75rem', borderRadius: '14px', 
+                            background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', 
+                            fontWeight: '700', cursor: 'pointer',
+                            boxShadow: '0 10px 20px rgba(27, 107, 58, 0.25)',
+                            transition: 'transform 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                     >
-                        <ArrowRightLeft size={15} /> Warehouse Transfer
+                        <Plus size={20} />
+                        Add New Product
                     </button>
                 </div>
             </div>
 
-            {/* Live Metrics Grid */}
-            {/* Modern Stock Accent Stats Grid */}
+            {/* Premium Stats Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem', marginBottom: '1.5rem' }}>
                 {[
-                    { label: 'Total Inventory Valuation (Cost basis)', value: formatCurrency(totalInventoryValue), icon: DollarSign, color: '#EC4899', bg: '#FDF2F8' },
-                    { label: 'Low Stock Alerts (Reorder Level)', value: `${lowStockAlertsCount} Items`, icon: AlertTriangle, color: '#EF4444', bg: '#FEF2F2' },
-                    { label: 'Total Warehouses Registered', value: `${dbWarehouses.length} Registered`, icon: Warehouse, color: '#3B82F6', bg: '#EFF6FF' },
-                    { label: 'Dynamic In-Transit Stock', value: `${transfers.length} Transfers`, icon: Activity, color: '#8B5CF6', bg: '#F5F3FF' }
+                    { label: 'Total Inventory Value', value: formatCurrency(totalValue), icon: TrendingUp, color: '#1B6B3A', bg: '#F0FDF4' },
+                    { label: 'Low Stock Alerts', value: lowStockCount, icon: AlertTriangle, color: '#EF4444', bg: '#FEF2F2' },
+                    { label: 'Active Items', value: items.length, icon: Layers, color: '#064E3B', bg: '#ECFDF5' },
+                    { label: 'Total Units', value: totalUnits, icon: Package, color: '#0D9488', bg: '#F0FDFA' }
                 ].map((stat, idx) => (
-                    <div key={idx} className="stat-card" style={{ background: 'white', padding: '1.5rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.01)', cursor: 'default', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        {/* Decorative background watermark */}
-                        <div style={{ position: 'absolute', right: '-10px', bottom: '-10px', opacity: 0.06, color: stat.color, transform: 'rotate(-15deg)' }}>
-                            <stat.icon size={70} />
+                    <div key={idx} style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
+                                <stat.icon size={24} />
+                            </div>
+                            <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
                         </div>
-                        
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, marginBottom: '1rem', position: 'relative', zIndex: 1 }}>
-                            <stat.icon size={20} />
-                        </div>
-                        
-                        <h3 style={{ fontSize: '1.65rem', fontWeight: '900', color: '#0F172A', letterSpacing: '-0.03em', margin: '0 0 0.25rem 0', position: 'relative', zIndex: 1 }}>{stat.value}</h3>
-                        <p style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748B', margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em', position: 'relative', zIndex: 1 }}>{stat.label}</p>
-                        
-                        {/* Colored bottom border accent */}
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px', background: stat.color, opacity: 0.7 }} />
+                        <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>{stat.label}</p>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{stat.value}</h3>
                     </div>
                 ))}
             </div>
 
-            {/* Tab Swappers */}
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                {[
-                    { id: 'registry', label: 'Stock Registry & Valuation', icon: Layers, gradient: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)', shadowColor: 'rgba(236, 72, 153, 0.15)' },
-                    { id: 'movement', label: 'Inward & Outward Logs', icon: Activity, gradient: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', shadowColor: 'rgba(59, 130, 246, 0.15)' },
-                    { id: 'warehouse', label: 'Warehouse Transfers', icon: Warehouse, gradient: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', shadowColor: 'rgba(139, 92, 246, 0.15)' },
-                    { id: 'batch', label: 'Batches & Expiries', icon: Calendar, gradient: 'linear-gradient(135deg, #10B981 0%, #047857 100%)', shadowColor: 'rgba(16, 185, 129, 0.15)' }
-                ].map(tab => (
-                    <button 
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        style={{ 
-                            padding: '0.5rem 1rem', borderRadius: '8px', 
-                            background: activeTab === tab.id ? tab.gradient : 'white', 
-                            color: activeTab === tab.id ? 'white' : '#64748B',
-                            border: '1px solid #E2E8F0', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '0.4rem',
-                            boxShadow: activeTab === tab.id ? `0 4px 10px ${tab.shadowColor}` : 'none'
-                        }}
-                    >
-                        <tab.icon size={16} /> {tab.label}
-                    </button>
-                ))}
-            </div>
-            
-            {/* Central Auto-Scrolling Frame */}
-            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-
-            {/* Tab 1: Stock Registry */}
-            {activeTab === 'registry' && (
-                <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #E2E8F0', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-                    <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
-                        <div style={{ position: 'relative', width: '400px' }}>
-                            <Search size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-                            <input 
-                                type="text" 
-                                placeholder="Search products or locations..." 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ width: '100%', padding: '0.85rem 1rem 0.85rem 3.25rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none' }}
-                            />
-                        </div>
+            {/* Main Content Area */}
+            <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #E2E8F0', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+                {/* Custom Toolbar */}
+                <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
+                    <div style={{ position: 'relative', width: '400px' }}>
+                        <Search size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                        <input 
+                            type="text" 
+                            placeholder="Search by product name or category..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{ 
+                                width: '100%', padding: '0.85rem 1rem 0.85rem 3.25rem', borderRadius: '16px', 
+                                border: '1px solid #E2E8F0', outline: 'none', background: 'white',
+                                fontSize: '0.95rem', fontWeight: '500', transition: 'all 0.2s'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#1B6B3A';
+                                e.target.style.boxShadow = '0 0 0 4px rgba(27, 107, 58, 0.05)';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = '#E2E8F0';
+                                e.target.style.boxShadow = 'none';
+                            }}
+                        />
                     </div>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', background: '#F1F5F9', padding: '4px', borderRadius: '14px' }}>
+                            <button 
+                                onClick={() => setFilterStatus('all')}
+                                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'all' ? 'white' : 'transparent', color: filterStatus === 'all' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'all' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' }}
+                            >All Stock</button>
+                            <button 
+                                onClick={() => setFilterStatus('low')}
+                                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'low' ? 'white' : 'transparent', color: filterStatus === 'low' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'low' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' }}
+                            >Low Stock</button>
+                        </div>
+                        <button style={{ width: '44px', height: '44px', borderRadius: '14px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <Filter size={20} />
+                        </button>
+                    </div>
+                </div>
 
-                    <div style={{ overflowX: 'auto', padding: '1rem' }}>
+                {/* Table Container */}
+                <div style={{ overflowX: 'auto' }}>
+                    {isLoading ? (
+                        <div style={{ padding: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+                            <Loader2 className="animate-spin" size={40} color="#1B6B3A" />
+                            <p style={{ color: '#64748B', fontWeight: '600' }}>Synchronizing inventory data...</p>
+                        </div>
+                    ) : (
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                            <FilterableTableHead columns={[
-        { key: 'product_name', label: 'Product Description', placeholder: 'Name' },
-        { key: 'warehouse', label: 'Warehouse Location', placeholder: 'Location' },
-        { key: 'current_stock', label: 'Current Stock', placeholder: 'e.g. 100' },
-        { key: 'available_stock', label: 'Available Stock', placeholder: 'e.g. 80' },
-        { key: 'damaged', label: 'Damaged / Expired', placeholder: 'e.g. 5' },
-        { key: 'avg_cost', label: 'Avg Cost', placeholder: 'e.g. 500' },
-        { key: 'valuation', label: 'Total Valuation', placeholder: 'e.g. 50000' },
-        { key: 'alert_status', label: 'Alert Status', placeholder: 'e.g. Low' }
-    ]} onFilterChange={setColFilters} />
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid #F1F5F9', background: '#F8FAFC' }}>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Details</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock Level</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Price</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                                </tr>
+                            </thead>
                             <tbody>
-                                {filteredStocks.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {})).map((st) => {
-                                    const isLow = st.current_stock <= st.reorder_level;
-                                    const valuation = st.current_stock * st.average_cost;
+                                {filteredItems.map((item) => {
+                                    const thresh = item.low_stock_threshold ?? item.lowstockthreshold ?? item.lowStockThreshold ?? item.low_stock_threshold ?? 5;
+                                    const isLowStock = Number(item.quantity) < thresh;
+                                    const isOutOfStock = Number(item.quantity) === 0;
+
                                     return (
-                                        <tr key={st.stock_id} style={{ borderBottom: '1px solid #F8FAFC' }}>
-                                            <td style={{ padding: '1.5rem 2rem' }}>
-                                                <p style={{ fontWeight: '800', color: '#1E293B', fontSize: '0.95rem' }}>{st.product_name}</p>
-                                                <span style={{ fontSize: '0.8rem', color: '#64748B' }}>Product ID: {st.product_id}</span>
-                                            </td>
-                                            <td style={{ padding: '1.5rem 2rem' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                    <MapPin size={14} style={{ color: '#64748B' }} />
-                                                    <span style={{ fontWeight: '600', color: '#475569' }}>{st.warehouse_name} ({st.rack_number})</span>
+                                        <tr key={item.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'all 0.2s' }} className="inventory-row">
+                                            <td style={{ padding: '1rem 1.5rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#F0FDF4', border: '1px solid #DCF2E4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A' }}>
+                                                        <Package size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <p style={{ fontWeight: '750', color: '#1E293B', fontSize: '0.95rem', marginBottom: '0.1rem' }}>{item.name}</p>
+                                                        {item.sub_name && <p style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748B' }}>{item.sub_name}</p>}
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '1.5rem 2rem', fontWeight: '750', color: '#1E293B' }}>{st.current_stock} pcs</td>
-                                            <td style={{ padding: '1.5rem 2rem', fontWeight: '700', color: '#10B981' }}>{st.available_stock} pcs</td>
-                                            <td style={{ padding: '1.5rem 2rem' }}>
-                                                <span style={{ color: '#EF4444', fontWeight: '700' }}>{st.damaged_stock} Dmg</span> / <span style={{ color: '#B45309', fontWeight: '700' }}>{st.expired_stock} Exp</span>
+                                            <td style={{ padding: '1rem 1.5rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#1B6B3A' }}></div>
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#475569' }}>{item.category}</span>
+                                                </div>
                                             </td>
-                                            <td style={{ padding: '1.5rem 2rem', fontWeight: '600', color: '#475569' }}>{formatCurrency(st.average_cost)}</td>
-                                            <td style={{ padding: '1.5rem 2rem', fontWeight: '850', color: '#064E3B' }}>{formatCurrency(valuation)}</td>
-                                            <td style={{ padding: '1.5rem 2rem' }}>
-                                                <span style={{ 
-                                                    display: 'inline-flex', padding: '0.3rem 0.6rem', borderRadius: '8px',
-                                                    background: isLow ? '#FEF2F2' : '#F0FDF4',
-                                                    color: isLow ? '#EF4444' : '#10B981',
-                                                    fontSize: '0.75rem', fontWeight: '800'
-                                                }}>{isLow ? 'REORDER LOW' : 'OPTIMAL'}</span>
+                                            <td style={{ padding: '1rem 1.5rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.4rem' }}>
+                                                    <span style={{ fontSize: '1.1rem', fontWeight: '850', color: isLowStock ? '#EF4444' : '#1E293B' }}>{item.quantity}</span>
+                                                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#94A3B8', marginBottom: '2px' }}>{item.unit || 'pcs'}</span>
+                                                </div>
+                                                {isLowStock && (
+                                                    <div style={{ marginTop: '0.4rem', fontSize: '0.7rem', fontWeight: '800', color: '#EF4444', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                        <AlertTriangle size={12} /> CRITICAL LEVEL
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '1rem 1.5rem' }}>
+                                                <span style={{ fontSize: '1rem', fontWeight: '800', color: '#064E3B' }}>{formatCurrency(item.unit_price || 0)}</span>
+                                            </td>
+                                            <td style={{ padding: '1rem 1.5rem' }}>
+                                                <div style={{ 
+                                                    display: 'inline-flex', alignItems: 'center', gap: '0.5rem', 
+                                                    padding: '0.5rem 1rem', borderRadius: '12px',
+                                                    background: isOutOfStock ? '#FEF2F2' : (isLowStock ? '#FFFBEB' : '#F0FDF4'),
+                                                    color: isOutOfStock ? '#B91C1C' : (isLowStock ? '#B45309' : '#15803D'),
+                                                    fontSize: '0.85rem', fontWeight: '800'
+                                                }}>
+                                                    {isOutOfStock ? <Clock size={14} /> : <CheckCircle2 size={14} />}
+                                                    {isOutOfStock ? 'OUT OF STOCK' : (isLowStock ? 'LOW STOCK' : 'IN STOCK')}
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <div style={{ display: 'flex', background: '#F8FAFC', padding: '4px', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
+                                                        <button 
+                                                            onClick={() => handleAdjustClick(item, 'in')}
+                                                            style={{ width: '32px', height: '32px', borderRadius: '8px', border: 'none', background: '#1B6B3A', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            title="Stock In"
+                                                        >
+                                                            <ArrowUpRight size={18} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleAdjustClick(item, 'out')}
+                                                            style={{ width: '32px', height: '32px', borderRadius: '8px', border: 'none', background: '#EF4444', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '4px' }}
+                                                            title="Stock Out"
+                                                            disabled={isOutOfStock}
+                                                        >
+                                                            <ArrowDownRight size={18} />
+                                                        </button>
+                                                    </div>
+                                                    <div style={{ width: '1px', height: '20px', background: '#E2E8F0', margin: '0 0.25rem' }}></div>
+                                                    <button onClick={() => handleEdit(item)} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Edit2 size={14} /></button>
+                                                    <button onClick={() => handleDelete(item.id)} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #FEF2F2', background: 'white', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={14} /></button>
+                                                    <button onClick={() => { setHistoryItem(item); setIsHistoryModalOpen(true); }} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #EFF6FF', background: 'white', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginLeft: '4px' }} title="View History"><History size={14} /></button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
-                    </div>
+                    )}
                 </div>
-            )}
-
-            {/* Tab 2: Stock Movements Logs */}
-            {activeTab === 'movement' && (
-                <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #E2E8F0', padding: '2.5rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: '#064E3B' }}>Stock Inward / Outward running ledger</h3>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <span style={{ fontSize: '0.85rem', fontWeight: '750', color: '#475569' }}>Select Product:</span>
-                            <select 
-                                value={selectedHistoryProductId} 
-                                onChange={(e) => setSelectedHistoryProductId(e.target.value)} 
-                                style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontWeight: '700', color: '#1E293B' }}
-                            >
-                                {stocks.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {})).map(s => <option key={s.id} value={s.id}>{s.product_name}</option>)}
-                            </select>
-                        </div>
-                    </div>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead style={{ background: '#F8FAFC' }}>
-                            <tr>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Movement ID</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Date</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Product Description</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Type</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Qty Moved</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Reason / Doc ref</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Performed By</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {movements.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {})).map((move) => (
-                                <tr key={move.movement_id} style={{ borderBottom: '1px solid #F8FAFC' }}>
-                                    <td style={{ padding: '1rem', fontWeight: '750' }}>{move.movement_id}</td>
-                                    <td style={{ padding: '1rem', color: '#64748B' }}>{move.movement_date}</td>
-                                    <td style={{ padding: '1rem', fontWeight: '700' }}>{move.product_name}</td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <span style={{ 
-                                            display: 'inline-flex', padding: '0.25rem 0.5rem', borderRadius: '6px',
-                                            background: move.movement_type === 'in' ? '#ECFDF5' : (move.movement_type === 'out' ? '#FEF2F2' : '#EFF6FF'),
-                                            color: move.movement_type === 'in' ? '#10B981' : (move.movement_type === 'out' ? '#EF4444' : '#3B82F6'),
-                                            fontSize: '0.75rem', fontWeight: '800'
-                                        }}>{move.movement_type.toUpperCase()}</span>
-                                    </td>
-                                    <td style={{ padding: '1rem', fontWeight: '800' }}>{move.movement_quantity} pcs</td>
-                                    <td style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>{move.movement_reason} ({move.reference_id})</td>
-                                    <td style={{ padding: '1rem', color: '#64748B' }}>{move.performed_by}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            {/* Tab 3: Warehouse transfers */}
-            {activeTab === 'warehouse' && (
-                <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #E2E8F0', padding: '2.5rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: '#064E3B' }}>Warehouse Branch transfers</h3>
-                        <button onClick={() => setIsTransferModalOpen(true)} style={{ padding: '0.5rem 1rem', borderRadius: '10px', background: '#1B6B3A', color: 'white', border: 'none', fontWeight: '700', cursor: 'pointer' }}>+ Transfer Stock</button>
-                    </div>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead style={{ background: '#F8FAFC' }}>
-                            <tr>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Transfer ID</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Product Description</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>From Warehouse</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>To Warehouse</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Qty Transferred</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {transfers.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {})).map((trf) => (
-                                <tr key={trf.transfer_id} style={{ borderBottom: '1px solid #F8FAFC' }}>
-                                    <td style={{ padding: '1rem', fontWeight: '750' }}>{trf.transfer_id}</td>
-                                    <td style={{ padding: '1rem', fontWeight: '700' }}>{trf.product_name}</td>
-                                    <td style={{ padding: '1rem' }}>{trf.from_warehouse}</td>
-                                    <td style={{ padding: '1rem' }}>{trf.to_warehouse}</td>
-                                    <td style={{ padding: '1rem', fontWeight: '800' }}>{trf.qty} pcs</td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <span style={{ padding: '0.25rem 0.5rem', borderRadius: '6px', background: '#ECFDF5', color: '#10B981', fontWeight: '800', fontSize: '0.75rem' }}>{trf.status.toUpperCase()}</span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            {/* Tab 4: Batches & Expiry Dates */}
-            {activeTab === 'batch' && (
-                <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #E2E8F0', padding: '2.5rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: '#064E3B', marginBottom: '1.5rem' }}>Batch-Wise & Expiry Tracking (FIFO Engine)</h3>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead style={{ background: '#F8FAFC' }}>
-                            <tr>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Batch Number</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Product Description</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>MFG Date</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Expiry Date</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Batch Qty</th>
-                                <th style={{ padding: '1rem', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>Days to Expiry</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {batches.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {})).map((bat) => {
-                                const daysLeft = Math.ceil((new Date(bat.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
-                                return (
-                                    <tr key={bat.batch_number} style={{ borderBottom: '1px solid #F8FAFC' }}>
-                                        <td style={{ padding: '1rem', fontWeight: '750', color: '#1E293B' }}>{bat.batch_number}</td>
-                                        <td style={{ padding: '1rem', fontWeight: '700' }}>{bat.product_name}</td>
-                                        <td style={{ padding: '1rem' }}>{bat.manufacturing_date}</td>
-                                        <td style={{ padding: '1rem', color: daysLeft < 120 ? '#EF4444' : '#1E293B', fontWeight: '700' }}>{bat.expiry_date}</td>
-                                        <td style={{ padding: '1rem', fontWeight: '800' }}>{bat.batch_quantity} pcs</td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <span style={{ 
-                                                padding: '0.25rem 0.5rem', borderRadius: '6px',
-                                                background: daysLeft < 120 ? '#FEF2F2' : '#EFF6FF',
-                                                color: daysLeft < 120 ? '#EF4444' : '#1D4ED8',
-                                                fontWeight: '800', fontSize: '0.75rem'
-                                            }}>{daysLeft > 0 ? `${daysLeft} Days` : 'EXPIRED'}</span>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                {filteredItems.length === 0 && !isLoading && (
+                    <div style={{ padding: '3rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>No inventory items found. Click "Add New Product" to initialize your stock.</div>
+                )}
             </div>
-            {/* Adjust Stock Counts Modal */}
-            {isAdjustmentModalOpen && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)', padding: '2rem' }}>
-                    <div style={{ background: 'white', width: '100%', maxWidth: '440px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #E2E8F0' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: '#064E3B' }}>Adjust Stock Counts</h3>
-                            <button onClick={() => setIsAdjustmentModalOpen(false)} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer' }}><X size={20} /></button>
-                        </div>
 
-                        <form onSubmit={handleSaveAdjustment} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Modal - Add/Edit Product */}
+            {isModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)' }}>
+                    <div style={{ background: 'white', width: '560px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.4rem' }}>Select Product</label>
-                                <select value={adjustmentForm.product_id} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, product_id: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontWeight: '600' }}>
-                                    {stocks.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {})).map(s => <option key={s.id} value={s.id}>{s.product_name} (Qty: {s.current_stock})</option>)}
-                                </select>
+                                <h2 style={{ fontSize: '1.75rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em' }}>{editingItem ? 'Edit Product' : 'Register Product'}</h2>
+                                <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: '500' }}>Enter product specifications and initial stock levels.</p>
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.4rem' }}>Adjustment Type</label>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button type="button" onClick={() => setAdjustmentForm({ ...adjustmentForm, adjustment_type: 'add' })} style={{ flex: 1, padding: '0.65rem', borderRadius: '10px', border: 'none', background: adjustmentForm.adjustment_type === 'add' ? '#10B981' : '#F1F5F9', color: adjustmentForm.adjustment_type === 'add' ? 'white' : '#475569', fontWeight: '800', cursor: 'pointer' }}>Add Stock (+)</button>
-                                    <button type="button" onClick={() => setAdjustmentForm({ ...adjustmentForm, adjustment_type: 'reduce' })} style={{ flex: 1, padding: '0.65rem', borderRadius: '10px', border: 'none', background: adjustmentForm.adjustment_type === 'reduce' ? '#EF4444' : '#F1F5F9', color: adjustmentForm.adjustment_type === 'reduce' ? 'white' : '#475569', fontWeight: '800', cursor: 'pointer' }}>Reduce Stock (-)</button>
+                            <button onClick={closeModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer', color: '#64748B' }}><X size={22} /></button>
+                        </div>
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Name</label>
+                                    <input required placeholder="e.g. MacBook Pro M3" type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sub Name</label>
+                                    <input placeholder="Optional subtitle" type="text" value={formData.sub_name} onChange={(e) => setFormData({...formData, sub_name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
                                 </div>
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.4rem' }}>Adjustment Qty</label>
-                                <input required type="number" value={adjustmentForm.qty} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, qty: parseInt(e.target.value) || 0 })} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '600' }} />
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</label>
+                                    <input required placeholder="e.g. Electronics" type="text" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Label</label>
+                                    <input required placeholder="pcs / Units" type="text" value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.4rem' }}>Reason / Comment</label>
-                                <input required type="text" value={adjustmentForm.reason} onChange={(e) => setAdjustmentForm({ ...adjustmentForm, reason: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '600' }} placeholder="e.g. Physical stock audit reconciliation" />
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Initial Quantity</label>
+                                    <input required type="number" value={formData.quantity === 0 ? '' : formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value === '' ? '' : parseInt(e.target.value) || 0})} disabled={!!editingItem} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Valuation (₹)</label>
+                                    <input required type="number" step="0.01" value={formData.unit_price} onChange={(e) => setFormData({...formData, unit_price: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
                             </div>
-
-                            <button type="submit" style={{ width: '100%', padding: '1rem', borderRadius: '16px', background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)', color: 'white', border: 'none', fontWeight: '800', fontSize: '1.1rem', cursor: 'pointer', boxShadow: '0 10px 20px rgba(124, 58, 237, 0.2)' }}>
-                                Finalize Stock Audit Change
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Low Stock Level</label>
+                                    <input required type="number" value={formData.low_stock_threshold === 0 ? '' : formData.low_stock_threshold} onChange={(e) => setFormData({...formData, low_stock_threshold: e.target.value === '' ? '' : parseInt(e.target.value) || 0})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                </div>
+                            </div>
+                            <button type="submit" disabled={addMutation.isPending || addMutation.isLoading || updateMutation.isPending || updateMutation.isLoading} style={{ 
+                                width: '100%', padding: '1.25rem', borderRadius: '18px', 
+                                background: (addMutation.isPending || addMutation.isLoading || updateMutation.isPending || updateMutation.isLoading) ? '#CBD5E1' : 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', 
+                                fontWeight: '750', fontSize: '1.1rem', marginTop: '1rem', cursor: (addMutation.isPending || addMutation.isLoading || updateMutation.isPending || updateMutation.isLoading) ? 'not-allowed' : 'pointer',
+                                boxShadow: '0 10px 20px rgba(27, 107, 58, 0.2)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                            }}>
+                                {(addMutation.isPending || addMutation.isLoading || updateMutation.isPending || updateMutation.isLoading) ? (
+                                    <>
+                                        <Loader2 size={20} className="animate-spin" /> {editingItem ? 'Updating...' : 'Initializing...'}
+                                    </>
+                                ) : (
+                                    editingItem ? 'Update Product Catalog' : 'Initialize Product'
+                                )}
                             </button>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* Warehouse Transfer Modal */}
-            {isTransferModalOpen && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)', padding: '2rem' }}>
-                    <div style={{ background: 'white', width: '100%', maxWidth: '440px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #E2E8F0' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: '#064E3B' }}>Warehouse Stock Transfer</h3>
-                            <button onClick={() => setIsTransferModalOpen(false)} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer' }}><X size={20} /></button>
+            {/* History Modal */}
+            {isHistoryModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)' }}>
+                    <div style={{ background: 'white', width: '560px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <div>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em' }}>Stock History</h2>
+                                <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: '500' }}>{historyItem?.name}</p>
+                            </div>
+                            <button onClick={() => { setIsHistoryModalOpen(false); setHistoryItem(null); }} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer', color: '#64748B' }}><X size={22} /></button>
                         </div>
-
-                        <form onSubmit={handleSaveTransfer} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.4rem' }}>Select Product</label>
-                                <select value={transferForm.product_id} onChange={(e) => setTransferForm({ ...transferForm, product_id: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontWeight: '600' }}>
-                                    {stocks.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {})).map(s => <option key={s.id} value={s.id}>{s.product_name} (Avail: {s.available_stock} pcs)</option>)}
-                                </select>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.4rem' }}>From Warehouse</label>
-                                    <select value={transferForm.from_warehouse_id} onChange={(e) => setTransferForm({ ...transferForm, from_warehouse_id: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontWeight: '600' }}>
-                                        {dbWarehouses.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {})).map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-                                    </select>
+                        
+                        <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.5rem' }}>
+                            {isHistoryLoading ? (
+                                <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}><Loader2 className="animate-spin" size={32} color="#1B6B3A" /></div>
+                            ) : historyData.length === 0 ? (
+                                <div style={{ textAlign: 'center', color: '#94A3B8', padding: '2rem', fontWeight: '600' }}>No history available for this item.</div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {historyData.map((record, idx) => (
+                                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #F1F5F9' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: record.type === 'in' ? '#DCFCE7' : '#FEE2E2', color: record.type === 'in' ? '#16A34A' : '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {record.type === 'in' ? <ArrowDownRight size={20} /> : <ArrowUpRight size={20} />}
+                                                </div>
+                                                <div>
+                                                    <p style={{ fontWeight: '700', color: '#1E293B', fontSize: '0.95rem', textTransform: 'capitalize' }}>Stock {record.type}</p>
+                                                    <p style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '500' }}>{new Date(record.created_at || record.date).toLocaleString()}</p>
+                                                </div>
+                                            </div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: '800', color: record.type === 'in' ? '#16A34A' : '#EF4444' }}>
+                                                {record.type === 'in' ? '+' : '-'}{record.quantity}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.4rem' }}>To Warehouse</label>
-                                    <select value={transferForm.to_warehouse_id} onChange={(e) => setTransferForm({ ...transferForm, to_warehouse_id: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontWeight: '600' }}>
-                                        {dbWarehouses.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {})).map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.4rem' }}>Quantity to Move</label>
-                                <input required type="number" value={transferForm.qty} onChange={(e) => setTransferForm({ ...transferForm, qty: parseInt(e.target.value) || 0 })} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '600' }} />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.4rem' }}>Transfer Ref / ID</label>
-                                <input required type="text" value={transferForm.reference} onChange={(e) => setTransferForm({ ...transferForm, reference: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '600' }} />
-                            </div>
-
-                            <button type="submit" style={{ width: '100%', padding: '1rem', borderRadius: '16px', background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)', color: 'white', border: 'none', fontWeight: '800', fontSize: '1.1rem', cursor: 'pointer', boxShadow: '0 10px 20px rgba(124, 58, 237, 0.2)' }}>
-                                Initiate Transfer Release
-                            </button>
-                        </form>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
+
+            {/* Stock Adjust Modal */}
+            {isAdjustModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(10px)' }}>
+                    <div style={{ background: 'white', width: '440px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <div>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em' }}>
+                                    {adjustType === 'in' ? 'Stock Induction' : 'Stock Depletion'}
+                                </h2>
+                                <p style={{ color: '#64748B', fontSize: '0.85rem', fontWeight: '600' }}>Adjust real-time inventory levels.</p>
+                            </div>
+                            <button onClick={closeAdjustModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer' }}><X size={22} /></button>
+                        </div>
+                        
+                        <div style={{ background: '#F8FAFC', padding: '1.25rem', borderRadius: '20px', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1.25rem', border: '1px solid #F1F5F9' }}>
+                            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+                                <Package size={28} />
+                            </div>
+                            <div>
+                                <p style={{ fontWeight: '800', color: '#1E293B', fontSize: '1.1rem' }}>{selectedItem?.name}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B' }}>Available Base:</span>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: '850', color: '#064E3B' }}>{selectedItem?.quantity}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Adjustment Volume</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                                <button 
+                                    onClick={() => setAdjustAmount(Math.max(1, adjustAmount - 1))}
+                                    style={{ width: '52px', height: '52px', borderRadius: '16px', border: '2px solid #E2E8F0', background: 'white', fontSize: '1.5rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s', color: '#475569' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1B6B3A'}
+                                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#E2E8F0'}
+                                >-</button>
+                                <input 
+                                    type="number" 
+                                    value={adjustAmount} 
+                                    onChange={(e) => setAdjustAmount(Math.max(1, parseInt(e.target.value) || 0))}
+                                    style={{ flex: 1, padding: '1rem', borderRadius: '16px', border: '2px solid #1B6B3A', textAlign: 'center', fontSize: '1.5rem', fontWeight: '900', outline: 'none', color: '#1E293B', background: '#F0FDF4' }}
+                                />
+                                <button 
+                                    onClick={() => setAdjustAmount(adjustAmount + 1)}
+                                    style={{ width: '52px', height: '52px', borderRadius: '16px', border: '2px solid #E2E8F0', background: 'white', fontSize: '1.5rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s', color: '#475569' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1B6B3A'}
+                                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#E2E8F0'}
+                                >+</button>
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => adjustMutation.mutate({ 
+                                id: selectedItem.id, 
+                                delta: adjustType === 'in' ? adjustAmount : -adjustAmount 
+                            })}
+                            disabled={adjustMutation.isLoading}
+                            style={{ 
+                                width: '100%', padding: '1.25rem', borderRadius: '20px', 
+                                background: adjustType === 'in' ? 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)' : 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)', 
+                                color: 'white', border: 'none', fontWeight: '800', fontSize: '1.1rem', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
+                                boxShadow: adjustType === 'in' ? '0 10px 20px rgba(27, 107, 58, 0.25)' : '0 10px 20px rgba(239, 68, 68, 0.25)'
+                            }}
+                        >
+                            {adjustMutation.isLoading ? <Loader2 size={24} className="animate-spin" /> : (
+                                <>
+                                    {adjustType === 'in' ? <TrendingUp size={22} /> : <ArrowDownRight size={22} />}
+                                    Commit {adjustType === 'in' ? 'Induction' : 'Depletion'}
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            <style>{`
+                .stat-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025) !important;
+                }
+                .inventory-row:hover {
+                    background-color: #F8FAFC !important;
+                }
+                .inventory-row:hover td {
+                    color: #1B6B3A;
+                }
+                input::-webkit-outer-spin-button,
+                input::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+            `}</style>
         </div>
     );
 };
 
-export default BusinessStock;
+export default Stock;
