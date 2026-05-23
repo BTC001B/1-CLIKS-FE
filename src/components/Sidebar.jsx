@@ -82,6 +82,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
         if (path.includes('/books/dashboard')) return 'Books Dashboard';
         if (path.includes('/books/stock')) return 'Stock';
         if (path.includes('/books/people')) return 'People';
+        if (path.includes('/books/reports')) return 'Reports';
         if (path.includes('/books/settings')) return 'Settings';
         if (path.includes('/books/faq')) return 'Help & Support';
         if (path.includes('/ca')) return 'FIN-PRO';
@@ -254,6 +255,17 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             </div>
                         </button>
 
+                        {/* Reports */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Reports' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Reports', '/books/reports')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <BarChart3 size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Reports</span>
+                            </div>
+                        </button>
+
                         {/* FIN-PRO */}
                         <button
                             className={`sidebar-item ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
@@ -278,65 +290,14 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
 
                 {showPublicSidebar && (
                     <>
-                        {/* Trading Dropdown (Commented Out)
-                        <div className="mb-1">
-                            <div
-                                role="button"
-                                tabIndex={0}
-                                aria-expanded={openDropdown === 'trading'}
-                                onClick={() => toggleDropdown('trading')}
-                                onKeyDown={(e) => handleKeyDown(e, () => toggleDropdown('trading'))}
-                                className="sidebar-item"
-                                style={{ cursor: 'pointer', backgroundColor: openDropdown === 'trading' ? '#F8FAFC' : 'transparent' }}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <Bitcoin size={20} style={{ color: '#F59E0B' }} />
-                                    <span className="sidebar-label">Trading</span>
-                                </div>
-                                {openDropdown === 'trading' ? (
-                                    <ChevronUp size={16} className="text-gray-500" />
-                                ) : (
-                                    <ChevronDown size={16} className="text-gray-500" />
-                                )}
-                            </div>
-
-                            <div
-                                style={{
-                                    overflow: 'hidden',
-                                    transition: 'max-height 0.3s ease-in-out, opacity 0.3s ease-in-out',
-                                    maxHeight: openDropdown === 'trading' ? '250px' : '0',
-                                    opacity: openDropdown === 'trading' ? 1 : 0
-                                }}
-                            >
-                                <div className="ml-4 mt-1 space-y-1">
-                                    <button className={`sidebar-item ${activeItem === 'SIP' ? 'active' : ''}`} onClick={() => handleItemClick('SIP', '/public?page=trading-sip')}>
-                                        <div className="flex items-center gap-3"><TrendingUp size={16} style={{ color: '#F59E0B' }} /><span className="sidebar-label">SIP</span></div>
-                                    </button>
-                                    <button className={`sidebar-item ${activeItem === 'Mutual Funds' ? 'active' : ''}`} onClick={() => handleItemClick('Mutual Funds', '/public?page=trading-mutual-funds')}>
-                                        <div className="flex items-center gap-3"><PiggyBank size={16} style={{ color: '#F59E0B' }} /><span className="sidebar-label">Mutual Funds</span></div>
-                                    </button>
-                                    <button className={`sidebar-item ${activeItem === 'Crypto' ? 'active' : ''}`} onClick={() => handleItemClick('Crypto', '/public?page=trading-crypto')}>
-                                        <div className="flex items-center gap-3"><Bitcoin size={16} style={{ color: '#F59E0B' }} /><span className="sidebar-label">Crypto</span></div>
-                                    </button>
-                                    <button className={`sidebar-item ${activeItem === 'Bitcoin' ? 'active' : ''}`} onClick={() => handleItemClick('Bitcoin', '/public?page=trading-bitcoin')}>
-                                        <div className="flex items-center gap-3"><Bitcoin size={16} style={{ color: '#F59E0B' }} /><span className="sidebar-label">Bitcoin</span></div>
-                                    </button>
-                                    <button className={`sidebar-item ${activeItem === 'Overall Trading' ? 'active' : ''}`} onClick={() => handleItemClick('Overall Trading', '/public?page=trading-overall')}>
-                                        <div className="flex items-center gap-3"><LineChart size={16} style={{ color: '#F59E0B' }} /><span className="sidebar-label">Overall Trading</span></div>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        */}
-
-                        {/* Beta Club */}
+                        {/* Meetup */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Beta Club', '/public?page=investors')}
+                            className={`sidebar-item ${activeItem === 'Meetup' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Meetup', '/public?page=meetup')}
                         >
                             <div className="flex items-center gap-3">
-                                <Rocket size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Beta Club</span>
+                                <Handshake size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Meetup</span>
                             </div>
                         </button>
 
@@ -351,14 +312,14 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             </div>
                         </button>
 
-                        {/* Meetup */}
+                        {/* Beta Club */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Meetup' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Meetup', '/public?page=meetup')}
+                            className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Beta Club', '/public?page=investors')}
                         >
                             <div className="flex items-center gap-3">
-                                <Handshake size={20} style={{ color: '#1B6B3A' }} />
-                                <span className="sidebar-label">Meetup</span>
+                                <Rocket size={20} style={{ color: '#1B6B3A' }} />
+                                <span className="sidebar-label">Beta Club</span>
                             </div>
                         </button>
                     </>
