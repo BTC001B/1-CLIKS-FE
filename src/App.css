@@ -6,9 +6,7 @@
     border-right: 1px solid #DCF2E4 !important;
     display: flex;
     flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100vh;
+    height: 100%;
     flex-shrink: 0;
 }
 
@@ -32,12 +30,22 @@
 }
 
 .sidebar-nav {
-    padding: 1.5rem 1rem;
+    padding: 0.75rem;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 1px;
     overflow-y: auto;
     flex: 1;
+}
+
+.sidebar-nav-header {
+    color: #64748B !important;
+    font-weight: 800 !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0.5rem 0 0.1rem 0 !important;
+    padding: 0.3rem 0.75rem !important;
 }
 
 /* Sidebar Item Base */
@@ -89,6 +97,8 @@
 .sidebar-item.active svg {
     color: #FFFFFF !important;
 }
+
+
 
 /* Tree View Subgroup */
 .sidebar-subgroup {
@@ -836,7 +846,7 @@
 .hamburger span {
     width: 100%;
     height: 3px;
-    background: white;
+    background: #FFFFFF !important;
     border-radius: 10px;
     transition: all 0.3s linear;
     position: relative;
@@ -863,39 +873,46 @@
 
     .top-nav-links {
         position: fixed;
-        top: 64px;
-        /* Height of topbar */
-        left: -100%;
-        height: calc(100vh - 64px);
-        width: 100%;
-        background-color: #1B6B3A;
-        flex-direction: column;
-        justify-content: flex-start;
-        padding-top: 2rem;
-        transform: translateX(0);
-        /* Reset centering transform */
-        z-index: 40;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 4px 0 8px rgba(0, 0, 0, 0.05);
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        height: auto;
+        background: transparent;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        z-index: 99;
+        box-shadow: none;
+        padding-top: 0;
     }
 
     .top-nav-links.active {
-        left: 0;
+        left: 50%;
     }
 
-    .nav-link {
-        font-size: 1.25rem;
-        padding: 1rem 0;
-        border-bottom: none;
-        width: 100%;
-        text-align: center;
-        color: rgba(255, 255, 255, 0.8) !important;
+    .hidden {
+        display: none !important;
     }
 
-    .nav-link.active {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-bottom: none;
-        color: white !important;
+    .md\:inline {
+        display: none !important;
+    }
+
+    .md\:hidden {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@media (min-width: 769px) {
+    .md\:inline {
+        display: inline !important;
+    }
+
+    .md\:hidden {
+        display: none !important;
     }
 }
 
@@ -2140,19 +2157,317 @@ th {
     color: #0284c7;
     font-weight: 700;
 }
+/* Print-Specific Styles */
+@media print {
+    body {
+        background: white !important;
+        color: #0f172a !important;
+    }
+    body * {
+        visibility: hidden;
+    }
+    #invoice-print-area, #invoice-print-area * {
+        visibility: visible;
+    }
+    #invoice-print-area .no-print, #invoice-print-area .no-print * {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    #invoice-print-area {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: white !important;
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+    .ledger-modal-scrollbar {
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
+        overflow-y: visible !important;
+        border: none !important;
+        border-radius: 0 !important;
+    }
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+    th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+        font-weight: 800 !important;
+    }
+    td {
+        border-bottom: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
+    }
+    tr {
+        page-break-inside: avoid !important;
+    }
+    @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+}
 
-/* Custom Scrollbar Styles for premium interactive panels (e.g. calculator popover) */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* Global Switch: Change light green backgrounds of pages to white */
+div[style*="background: '#F0F9F4'"],
+div[style*="background: #F0F9F4"],
+div[style*="background: rgb(240, 249, 244)"],
+div[style*="background-color: rgb(240, 249, 244)"],
+div[style*="background-color: #F0F9F4"],
+div[style*="background-color: '#F0F9F4'"] {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+
+/* ============================================================
+   Production Responsive Dashboard Styles
+   ============================================================ */
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
+
+.dashboard-header-title h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #064E3B;
+    margin-bottom: 0.25rem;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+
+.dashboard-header-title p {
+    color: #64748B;
 }
+
+.dashboard-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dashboard-search-wrapper {
+    position: relative;
+}
+
+.dashboard-search-input {
+    padding: 0.65rem 1rem 0.65rem 2.5rem;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    outline: none;
+    width: 260px;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.dashboard-search-input:focus {
+    border-color: #1B6B3A;
+    box-shadow: 0 0 0 3px rgba(27, 107, 58, 0.1);
+}
+
+.dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.dashboard-stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #F1F5F9;
+    box-shadow: 0 4px 12px rgba(6, 78, 59, 0.04);
+    transition: all 0.2s ease;
+}
+
+.dashboard-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(6, 78, 59, 0.08);
+    border-color: #1B6B3A40;
+}
+
+.dashboard-main-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.dashboard-chart-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 32px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 12px rgba(6, 78, 59, 0.02);
+}
+
+.dashboard-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.dashboard-chart-bars-container {
+    height: 240px;
+    display: flex;
+    align-items: flex-end;
+    gap: 1.25rem;
+    padding: 0 1rem;
+    overflow-x: auto;
+}
+
+.inventory-health-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.dashboard-goal-card {
+    background: linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%);
+    padding: 2rem;
+    border-radius: 32px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(27, 107, 58, 0.2);
+    transition: all 0.3s ease;
+}
+
+.dashboard-goal-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 35px -5px rgba(27, 107, 58, 0.3);
+}
+
+.dashboard-ops-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 32px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 12px rgba(6, 78, 59, 0.02);
+}
+
+.breadcrumbs-container {
+    padding: 0 2rem;
+    padding-top: 1.5rem;
+    flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .dashboard-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .dashboard-search-wrapper {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .dashboard-search-input {
+        width: 100%;
+    }
+    
+    .inventory-health-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .dashboard-stat-card {
+        padding: 1.25rem;
+    }
+    
+    .dashboard-chart-card {
+        padding: 1.25rem;
+    }
+    
+    .dashboard-chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .dashboard-chart-bars-container {
+        gap: 0.5rem;
+        padding: 0;
+    }
+    
+    .dashboard-goal-card {
+        padding: 1.5rem;
+    }
+    
+    .dashboard-ops-card {
+        padding: 1.5rem;
+    }
+    
+    .breadcrumbs-container {
+        padding: 0 1rem;
+        padding-top: 1rem;
+    }
+}
+
+/* Sidebar Backdrop for Mobile */
+.sidebar-backdrop {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(6, 78, 59, 0.4); /* soft emerald translucent shade to match cliks branding! */
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 25; /* sits behind sidebar (30) but in front of content */
+        animation: fadeInBackdrop 0.2s ease-out;
+    }
+}
+
+@keyframes fadeInBackdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
