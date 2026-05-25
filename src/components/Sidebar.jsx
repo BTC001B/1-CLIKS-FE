@@ -88,12 +88,17 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
         if (path.includes('/ca')) return 'FIN-PRO';
         if (path === '/auditor') return 'Audit';
 
-        if (path.includes('/public')) {
+        if (path.startsWith('/public') || path.startsWith('/social')) {
             const params = new URLSearchParams(search);
-            const page = params.get('page');
-            if (page === 'investors') return 'Beta Club';
-            if (page === 'meetup') return 'Meetup';
-            if (page === 'trading') return 'Trading docs';
+            const qpage = params.get('page');
+            // Support /social/:page path-based routing
+            if (path === '/social/investors') return 'Beta Club';
+            if (path === '/social/meetup') return 'Meetup';
+            if (path === '/social/trading') return 'Trading docs';
+            // Legacy ?page= query param support
+            if (qpage === 'investors') return 'Beta Club';
+            if (qpage === 'meetup') return 'Meetup';
+            if (qpage === 'trading') return 'Trading docs';
         }
 
         return 'Books Dashboard';
@@ -137,7 +142,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
     // Show Finance sidebar for root, home (redirect), and finance paths
     const showFinanceSidebar = location.pathname === '/' || location.pathname.startsWith('/home') || location.pathname.startsWith('/finance') || location.pathname.startsWith('/payments');
     const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor' || location.pathname.startsWith('/ca');
-    const showPublicSidebar = location.pathname.startsWith('/public');
+    const showPublicSidebar = location.pathname.startsWith('/public') || location.pathname.startsWith('/social');
 
 
     return (
@@ -295,7 +300,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Meetup */}
                         <button
                             className={`sidebar-item ${activeItem === 'Meetup' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Meetup', '/public?page=meetup')}
+                            onClick={() => handleItemClick('Meetup', '/social/meetup')}
                         >
                             <div className="flex items-center gap-3">
                                 <Handshake size={20} style={{ color: '#1B6B3A' }} />
@@ -306,7 +311,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Trading docs */}
                         <button
                             className={`sidebar-item ${activeItem === 'Trading docs' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Trading docs', '/public?page=trading')}
+                            onClick={() => handleItemClick('Trading docs', '/social/trading')}
                         >
                             <div className="flex items-center gap-3">
                                 <LineChart size={20} style={{ color: '#1B6B3A' }} />
@@ -317,7 +322,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Beta Club */}
                         <button
                             className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Beta Club', '/public?page=investors')}
+                            onClick={() => handleItemClick('Beta Club', '/social/investors')}
                         >
                             <div className="flex items-center gap-3">
                                 <Rocket size={20} style={{ color: '#1B6B3A' }} />

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { meetupsService } from '../services';
 import {
@@ -47,7 +47,11 @@ import TradingDocs from './public/TradingDocs.jsx';
 export default function Public() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const page = searchParams.get('page') || 'news-feed';
+    const location = useLocation();
+
+    // Support clean /social/:page paths as well as legacy ?page= query param
+    const socialPathMatch = location.pathname.match(/^\/social\/(.+)/);
+    const page = socialPathMatch ? socialPathMatch[1] : (searchParams.get('page') || 'news-feed');
 
     // News Feed Component -- redesigned Social Feed
     const NewsFeed = () => <SocialFeed />;
@@ -1067,7 +1071,6 @@ export default function Public() {
         );
     };
 
-    // Render the appropriate page based on page URL param
     const renderPage = () => {
         if (page === 'news-feed') return <NewsFeed />;
         if (page === 'trading-sip') return <TradingSIP />;

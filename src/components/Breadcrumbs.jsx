@@ -117,7 +117,11 @@ const Breadcrumbs = ({ items }) => {
             }}>
                 {/* Always specific Home Home Icon at start if following design exactly */}
                 <li style={{ display: 'flex', alignItems: 'center' }}>
-                    <Link to={location.pathname.startsWith('/finance') || location.pathname.startsWith('/payments') ? '/payments/wallet' : '/books/dashboard'} style={{
+                    <Link to={
+                        (location.pathname.startsWith('/finance') || location.pathname.startsWith('/payments')) ? '/payments/wallet' 
+                        : (location.pathname.startsWith('/public') || location.pathname.startsWith('/social')) ? '/social/meetup'
+                        : '/books/dashboard'
+                    } style={{
                         width: '32px',
                         height: '32px',
                         borderRadius: '50%',

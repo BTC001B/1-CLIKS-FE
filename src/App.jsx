@@ -125,8 +125,11 @@ function AppContent() {
                     <Route path="/books/settings" element={<Settings />} />
                     <Route path="/books/faq" element={<FAQ />} />
 
-                    {/* Public Section */}
+                    {/* Public / Social Section */}
                     <Route path="/public" element={<Public />} />
+                    <Route path="/social/meetup" element={<Public />} />
+                    <Route path="/social/trading" element={<Public />} />
+                    <Route path="/social/investors" element={<Public />} />
 
                     {/* FIN-PRO CA Section */}
                     <Route path="/ca" element={<BusinessCA />} />
