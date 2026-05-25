@@ -1078,7 +1078,7 @@ export default function Public() {
         if (page === 'trading-crypto') return <TradingCrypto />;
         if (page === 'trading-bitcoin') return <TradingBitcoin />;
         if (page === 'trading-overall') return <TradingOverall />;
-        if (page === 'investors') return <BetaClub />;
+        if (page === 'investors' || page === 'beta-club') return <BetaClub />;
         if (page === 'games') return <GamesPage />;
         if (page === 'meetup') return <Meetup />;
         if (page === 'trading') return <TradingDocs />;

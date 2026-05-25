@@ -129,7 +129,7 @@ function AppContent() {
                     <Route path="/public" element={<Public />} />
                     <Route path="/social/meetup" element={<Public />} />
                     <Route path="/social/trading" element={<Public />} />
-                    <Route path="/social/investors" element={<Public />} />
+                    <Route path="/social/beta-club" element={<Public />} />
 
                     {/* FIN-PRO CA Section */}
                     <Route path="/ca" element={<BusinessCA />} />

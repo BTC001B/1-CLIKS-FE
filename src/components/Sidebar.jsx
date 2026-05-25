@@ -92,7 +92,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
             const params = new URLSearchParams(search);
             const qpage = params.get('page');
             // Support /social/:page path-based routing
-            if (path === '/social/investors') return 'Beta Club';
+            if (path === '/social/beta-club') return 'Beta Club';
             if (path === '/social/meetup') return 'Meetup';
             if (path === '/social/trading') return 'Trading docs';
             // Legacy ?page= query param support
@@ -322,7 +322,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Beta Club */}
                         <button
                             className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Beta Club', '/social/investors')}
+                            onClick={() => handleItemClick('Beta Club', '/social/beta-club')}
                         >
                             <div className="flex items-center gap-3">
                                 <Rocket size={20} style={{ color: '#1B6B3A' }} />
