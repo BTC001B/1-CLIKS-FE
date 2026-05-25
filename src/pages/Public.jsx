@@ -259,7 +259,7 @@ export default function Public() {
                             Daily Challenge
                         </button>
                         <button
-                            onClick={() => navigate('/finance/rewards')}
+                            onClick={() => navigate('/payments/rewards-offers')}
                             style={{
                             background: 'rgba(255,255,255,0.1)',
                             color: 'white',

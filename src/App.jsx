@@ -92,25 +92,25 @@ function AppContent() {
                     <Route path="/" element={<Navigate to="/books/dashboard" replace />} />
                     
                     {/* Finance (formerly Home) Section */}
-                    <Route path="/finance" element={<Navigate to="/finance/plan" replace />} />
+                    <Route path="/finance" element={<Navigate to="/payments/wallet" replace />} />
                     <Route path="/finance/dashboard" element={<Finance />} />
                     <Route path="/finance/income" element={<Income />} />
                     <Route path="/finance/expenses" element={<Expenses />} />
                     <Route path="/finance/budgets" element={<Budgets />} />
                     <Route path="/finance/accounts" element={<Accounts />} />
-                    <Route path="/finance/transactions" element={<Transactions />} />
+                    <Route path="/payments/transactions" element={<Transactions />} />
                     <Route path="/finance/planned-payments" element={<PlannedPayments />} />
                     <Route path="/finance/savings" element={<Savings />} />
                     <Route path="/finance/investments" element={<Investments />} />
                     <Route path="/finance/debts" element={<Debts />} />
 
                     {/* Payments Routes shifted from Books */}
-                    <Route path="/finance/plan" element={<Wallet />} />
-                    <Route path="/finance/planner" element={<FinancialPlan />} />
+                    <Route path="/payments/wallet" element={<Wallet />} />
+                    <Route path="/payments/planner" element={<FinancialPlan />} />
 
-                    <Route path="/finance/segregation" element={<Segregation />} />
-                    <Route path="/finance/split-expense" element={<SplitExpense />} />
-                    <Route path="/finance/rewards" element={<Rewards />} />
+                    <Route path="/payments/segregation" element={<Segregation />} />
+                    <Route path="/payments/split-expense" element={<SplitExpense />} />
+                    <Route path="/payments/rewards-offers" element={<Rewards />} />
 
                     {/* Books Section */}
                     <Route path="/books" element={<Books />} />

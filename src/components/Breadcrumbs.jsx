@@ -6,7 +6,7 @@ const Breadcrumbs = ({ items }) => {
     const location = useLocation();
 
     // List of paths where breadcrumbs should be hidden
-    const hiddenPaths = ['/books/dashboard', '/finance', '/finance/plan', '/'];
+    const hiddenPaths = ['/books/dashboard', '/finance', '/payments/wallet', '/'];
 
     if (hiddenPaths.includes(location.pathname)) {
         return null;
@@ -117,7 +117,7 @@ const Breadcrumbs = ({ items }) => {
             }}>
                 {/* Always specific Home Home Icon at start if following design exactly */}
                 <li style={{ display: 'flex', alignItems: 'center' }}>
-                    <Link to={location.pathname.startsWith('/finance') ? '/finance/plan' : '/books/dashboard'} style={{
+                    <Link to={location.pathname.startsWith('/finance') || location.pathname.startsWith('/payments') ? '/payments/wallet' : '/books/dashboard'} style={{
                         width: '32px',
                         height: '32px',
                         borderRadius: '50%',

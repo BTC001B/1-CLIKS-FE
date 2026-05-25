@@ -28,7 +28,7 @@ const Rewards = () => {
             accentColor: '#10B981',
             textColor: '#065F46',
             actionLabel: 'Load Wallet Now',
-            link: '/finance/plan?addMoney=true'
+            link: '/payments/wallet?addMoney=true'
         },
         {
             id: 'offer_2',
@@ -41,7 +41,7 @@ const Rewards = () => {
             accentColor: '#3B82F6',
             textColor: '#1E40AF',
             actionLabel: 'Load Wallet Now',
-            link: '/finance/plan?addMoney=true'
+            link: '/payments/wallet?addMoney=true'
         },
         {
             id: 'offer_3',
@@ -54,7 +54,7 @@ const Rewards = () => {
             accentColor: '#F59E0B',
             textColor: '#78350F',
             actionLabel: 'Load Wallet Now',
-            link: '/finance/plan?addMoney=true'
+            link: '/payments/wallet?addMoney=true'
         },
         {
             id: 'offer_4',
@@ -67,7 +67,7 @@ const Rewards = () => {
             accentColor: '#EC4899',
             textColor: '#9D174D',
             actionLabel: 'Load Wallet Now',
-            link: '/finance/plan?addMoney=true'
+            link: '/payments/wallet?addMoney=true'
         }
     ];
 

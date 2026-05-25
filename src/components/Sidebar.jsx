@@ -65,16 +65,16 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
 
     // Determine active item based on path
     const getActiveItemFromPath = (path, search) => {
-        if (path === '/finance/plan' || path.includes('/finance/plan/')) return 'Wallet';
-        if (path === '/finance/planner' || path.includes('/finance/planner/')) return 'Planner';
-        if (path.includes('/finance/segregation')) return 'Segregation';
-        if (path.includes('/finance/split-expense')) return 'Split Expense';
-        if (path.includes('/finance/rewards')) return 'Rewards & Offers';
+        if (path === '/payments/wallet' || path.includes('/payments/wallet/')) return 'Wallet';
+        if (path === '/payments/planner' || path.includes('/payments/planner/')) return 'Planner';
+        if (path.includes('/payments/segregation')) return 'Segregation';
+        if (path.includes('/payments/split-expense')) return 'Split Expense';
+        if (path.includes('/payments/rewards-offers')) return 'Rewards & Offers';
 
         // Keep old ones in case they are visited
-        if (path === '/' || path === '/finance') return 'Wallet';
+        if (path === '/' || path === '/finance' || path === '/payments/wallet') return 'Wallet';
         if (path === '/finance/dashboard') return 'Dashboard';
-        if (path === '/finance/transactions') return 'Transactions';
+        if (path === '/payments/transactions') return 'Transactions';
         if (path === '/finance/budgets') return 'Budgets';
         if (path === '/finance/accounts') return 'Accounts';
         if (path === '/finance/planned-payments') return 'Planned payments';
@@ -135,7 +135,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
     };
 
     // Show Finance sidebar for root, home (redirect), and finance paths
-    const showFinanceSidebar = location.pathname === '/' || location.pathname.startsWith('/home') || location.pathname.startsWith('/finance');
+    const showFinanceSidebar = location.pathname === '/' || location.pathname.startsWith('/home') || location.pathname.startsWith('/finance') || location.pathname.startsWith('/payments');
     const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor' || location.pathname.startsWith('/ca');
     const showPublicSidebar = location.pathname.startsWith('/public');
 
@@ -155,7 +155,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Wallet */}
                         <button
                             className={`sidebar-item ${activeItem === 'Wallet' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Wallet', '/finance/plan')}
+                            onClick={() => handleItemClick('Wallet', '/payments/wallet')}
                         >
                             <div className="flex items-center gap-3">
                                 <Wallet size={20} style={{ color: '#1B6B3A' }} />
@@ -166,7 +166,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Transactions */}
                         <button
                             className={`sidebar-item ${activeItem === 'Transactions' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Transactions', '/finance/transactions')}
+                            onClick={() => handleItemClick('Transactions', '/payments/transactions')}
                         >
                             <div className="flex items-center gap-3">
                                 <ArrowLeftRight size={20} style={{ color: '#1B6B3A' }} />
@@ -177,7 +177,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Planner */}
                         <button
                             className={`sidebar-item ${activeItem === 'Planner' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Planner', '/finance/planner')}
+                            onClick={() => handleItemClick('Planner', '/payments/planner')}
                         >
                             <div className="flex items-center gap-3">
                                 <CalendarClock size={20} style={{ color: '#1B6B3A' }} />
@@ -188,7 +188,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Segregation */}
                         <button
                             className={`sidebar-item ${activeItem === 'Segregation' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Segregation', '/finance/segregation')}
+                            onClick={() => handleItemClick('Segregation', '/payments/segregation')}
                         >
                             <div className="flex items-center gap-3">
                                 <Target size={20} style={{ color: '#1B6B3A' }} />
@@ -199,7 +199,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Split Expense */}
                         <button
                             className={`sidebar-item ${activeItem === 'Split Expense' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Split Expense', '/finance/split-expense')}
+                            onClick={() => handleItemClick('Split Expense', '/payments/split-expense')}
                         >
                             <div className="flex items-center gap-3">
                                 <Split size={20} style={{ color: '#1B6B3A' }} />
@@ -210,7 +210,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         {/* Rewards & Offers */}
                         <button
                             className={`sidebar-item ${activeItem === 'Rewards & Offers' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Rewards & Offers', '/finance/rewards')}
+                            onClick={() => handleItemClick('Rewards & Offers', '/payments/rewards-offers')}
                         >
                             <div className="flex items-center gap-3">
                                 <Gift size={20} style={{ color: '#1B6B3A' }} />
