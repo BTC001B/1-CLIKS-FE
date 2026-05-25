@@ -51,7 +51,7 @@ const Topbar = ({ onToggleSidebar }) => {
     const navItems = [
         { name: 'Books', url: '/books/dashboard', icon: BookOpen, activeBase: '/books' },
         { name: 'Payments', url: '/finance', icon: Wallet, activeBase: '/finance' },
-        { name: 'Social', url: '/public?page=investors', icon: Users, activeBase: '/public' },
+        { name: 'Social', url: '/social/meetup', icon: Users, activeBase: '/social' },
     ];
 
     const getBetaTrustScore = () => {
@@ -127,7 +127,7 @@ const Topbar = ({ onToggleSidebar }) => {
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = item.activeBase
-                            ? location.pathname.startsWith(item.activeBase)
+                            ? (location.pathname.startsWith(item.activeBase) || (item.name === 'Social' && location.pathname.startsWith('/public')))
                             : (item.url ? (location.pathname === item.url || (item.url !== '/home' && location.pathname.startsWith(item.url))) : false);
 
                         return (
