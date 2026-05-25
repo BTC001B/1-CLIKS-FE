@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { User, Wallet, Home, BookOpen, Calculator, Users } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { User, Wallet, Home, BookOpen, Calculator, Users, ShieldCheck } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
@@ -14,6 +14,25 @@ const Topbar = ({ onToggleSidebar }) => {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [isTrustOpen, setIsTrustOpen] = useState(false);
+    const trustRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (trustRef.current && !trustRef.current.contains(event.target)) {
+                setIsTrustOpen(false);
+            }
+        };
+
+        if (isTrustOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isTrustOpen]);
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
@@ -150,7 +169,7 @@ const Topbar = ({ onToggleSidebar }) => {
 
             {/* Right Group (Audit + Profile) */}
             <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingRight: '1rem' }}>
-                <div style={{ position: 'relative' }}>
+                <div ref={trustRef} style={{ position: 'relative' }}>
                     <div 
                         onClick={() => setIsTrustOpen(!isTrustOpen)}
                         style={{
@@ -174,6 +193,7 @@ const Topbar = ({ onToggleSidebar }) => {
                             e.currentTarget.style.boxShadow = '0 2px 6px rgba(22, 163, 74, 0.15)';
                         }}
                     >
+                        <ShieldCheck size={16} color="#15803D" style={{ flexShrink: 0 }} />
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1px' }}>
                             <span style={{ fontWeight: '900', fontSize: '13px', color: '#14532D', letterSpacing: '-0.01em', lineHeight: '1' }}>
                                 {trustData.total}%
