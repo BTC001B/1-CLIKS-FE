@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
     Gift, 
     Coins, 
@@ -10,11 +10,23 @@ import {
     Flame
 } from 'lucide-react';
 
+import { useNavigate } from 'react-router-dom';
+
 const Rewards = () => {
-    const rewardPoints = (() => {
+    
+    const navigate = useNavigate();
+    
+    const [rewardPoints] = useState(() => {
         const saved = localStorage.getItem('cliks_reward_points');
         return saved ? parseInt(saved, 10) : 1450;
-    })();
+    });
+
+    const handleConvertPoints = () => {
+        if (rewardPoints <= 0) return;
+        
+        // Navigate to the Wallet page with the Add Money modal opened on the Points tab
+        navigate('/payments/wallet?addMoney=true&tab=points');
+    };
 
     const premiumOffers = [
         {
@@ -134,9 +146,9 @@ const Rewards = () => {
                             <Sparkles size={14} color="#FCD34D" />
                             <span style={{ fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#A7F3D0' }}>Active Rewards Plan</span>
                         </div>
-                        <h2 style={{ fontSize: '1.75rem', fontWeight: '850', margin: '0 0 0.5rem 0', letterSpacing: '-0.02em' }}>Grow Your Finances, Collect Premium Perks</h2>
+                        <h2 style={{ fontSize: '1.75rem', fontWeight: '850', margin: '0 0 0.5rem 0', letterSpacing: '-0.02em' }}>Grow Your Business, Collect Premium Perks</h2>
                         <p style={{ opacity: 0.85, fontSize: '0.9rem', lineHeight: 1.4, margin: 0, color: '#ECFDF5' }}>
-                            Complete milestones, manage your personal ledger, and transact consistently to stack loyalty points and unlock deep discounts across your workspace subscriptions.
+                            Complete milestones, scale your active ledger, and transact consistently to stack loyalty points and unlock deep discounts across your workspace subscriptions.
                         </p>
                     </div>
 
@@ -168,6 +180,9 @@ const Rewards = () => {
                         </div>
                         <span style={{ display: 'block', fontSize: '0.65rem', fontWeight: '800', color: '#A7F3D0', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.15rem' }}>Total Wallet Points</span>
                         <h3 style={{ fontSize: '2.25rem', fontWeight: '900', margin: 0, color: '#FFFFFF', lineHeight: 1 }}>{rewardPoints.toLocaleString()}</h3>
+                        <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#A7F3D0', marginTop: '0.25rem', marginBottom: '0.5rem' }}>
+                            ≈ ₹{(rewardPoints / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Value
+                        </span>
                         <div style={{ 
                             marginTop: '0.65rem', 
                             padding: '0.25rem 0.5rem', 
@@ -180,6 +195,38 @@ const Rewards = () => {
                         }}>
                             Gold Elite 👑
                         </div>
+                        
+                        <button
+                            onClick={handleConvertPoints}
+                            disabled={rewardPoints <= 0}
+                            style={{
+                                marginTop: '1rem',
+                                padding: '0.6rem 1rem',
+                                borderRadius: '10px',
+                                border: 'none',
+                                background: rewardPoints > 0 ? 'linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%)' : 'rgba(255, 255, 255, 0.1)',
+                                color: rewardPoints > 0 ? '#78350F' : '#94A3B8',
+                                fontWeight: '850',
+                                fontSize: '0.75rem',
+                                cursor: rewardPoints > 0 ? 'pointer' : 'not-allowed',
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.4rem',
+                                transition: 'all 0.2s',
+                                boxShadow: rewardPoints > 0 ? '0 4px 12px rgba(245, 158, 11, 0.3)' : 'none'
+                            }}
+                            onMouseOver={(e) => {
+                                if (rewardPoints > 0) e.currentTarget.style.transform = 'translateY(-1px)';
+                            }}
+                            onMouseOut={(e) => {
+                                if (rewardPoints > 0) e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            <Wallet size={14} />
+                            Convert to Wallet
+                        </button>
                     </div>
                 </div>
 
