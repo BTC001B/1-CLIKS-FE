@@ -1,390 +1,866 @@
 import React, { useState } from 'react';
-import { applyTableFilters } from '../utils/filterUtils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-    Split, 
+    Wallet, 
     Plus, 
     Trash2, 
-    PieChart, 
-    ArrowUpRight, 
-    Info, 
+    Target, 
     CheckCircle2, 
     X, 
     Loader2,
-    DollarSign,
-    Zap,
-    ShieldCheck,
-    Target,
+    IndianRupee,
+    TrendingUp,
+    AlertCircle,
+    ArrowRight,
+    Sparkles,
+    Lock,
+    History,
     Search,
-    Filter,
-    Calendar,
-    Edit2,
-    Pin,
-    MoreVertical
+    MoreVertical,
+    Edit2
 } from 'lucide-react';
-import { businessSegregationService } from '../services';
+import { goalWalletService } from '../services';
 import '../App.css';
 import { customConfirm } from '../utils/customConfirm';
-import FilterableTableHead from '../components/FilterableTableHead';
+import { useCurrency } from '../context';
 
 const Segregation = () => {
+    const { currency, formatCurrency } = useCurrency();
+    const CurrencyIcon = () => (
+        <span style={{ fontSize: '1.25rem', fontWeight: '950', fontFamily: 'inherit' }}>
+            {currency.symbol}
+        </span>
+    );
     const queryClient = useQueryClient();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [colFilters, setColFilters] = React.useState({});
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isAddMoneyModalOpen, setIsAddMoneyModalOpen] = useState(false);
+    const [selectedWallet, setSelectedWallet] = useState(null);
+    const [addAmount, setAddAmount] = useState('');
     const [formData, setFormData] = useState({
         name: '',
-        description: '',
-        allocations: [{ label: '', percentage: '', notes: '' }]
+        target_amount: '',
+        description: ''
     });
 
-    const [pinnedSegregations, setPinnedSegregations] = useState(() => {
-        const saved = localStorage.getItem('cliks_pinned_segregations');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [historyWalletId, setHistoryWalletId] = useState(null);
     const [activeMenuId, setActiveMenuId] = useState(null);
+    const [editingWalletId, setEditingWalletId] = useState(null);
 
     React.useEffect(() => {
         const handleGlobalClick = () => setActiveMenuId(null);
         window.addEventListener('click', handleGlobalClick);
         return () => window.removeEventListener('click', handleGlobalClick);
     }, []);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showSearch, setShowSearch] = useState(false);
 
-    // Fetch Segregations
-    const { data: segregations = [], isLoading } = useQuery({
-        queryKey: ['business-segregations'],
+    // Fetch Singular Wallet Details & History
+    const { data: historyWalletRes, isLoading: isHistoryLoading } = useQuery({
+        queryKey: ['purpose-wallet-detail', historyWalletId],
+        queryFn: () => goalWalletService.getWallet(historyWalletId),
+        enabled: !!historyWalletId
+    });
+    const historyWallet = historyWalletRes?.data || historyWalletRes || {};
+
+    // Fetch all Purpose Wallets
+    const { data: responseData = [], isLoading } = useQuery({
+        queryKey: ['purpose-wallets'],
         queryFn: async () => {
-            const res = await businessSegregationService.getSegregations();
-            return res.data || [];
+            const res = await goalWalletService.getWallets();
+            // Depending on pagination structure in goalWalletController: result.rows or res directly
+            return Array.isArray(res) ? res : (res.rows || []);
         }
     });
 
     // Mutations
     const createMutation = useMutation({
-        mutationFn: businessSegregationService.createSegregation,
+        mutationFn: goalWalletService.createWallet,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['business-segregations'] });
-            closeModal();
+            queryClient.invalidateQueries({ queryKey: ['purpose-wallets'] });
+            closeCreateModal();
+            alert("✨ New Purpose Wallet established successfully!");
+        },
+        onError: (err) => {
+            alert(err?.response?.data?.message || "Failed to create new purpose wallet.");
+        }
+    });
+
+    const addMoneyMutation = useMutation({
+        mutationFn: ({ id, amount }) => goalWalletService.addMoney(id, parseFloat(amount)),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['purpose-wallets'] });
+            closeAddMoneyModal();
+            alert("💰 Funds allocated successfully!");
+        },
+        onError: (err) => {
+            alert(err?.response?.data?.message || "Allocation failed.");
+        }
+    });
+
+    const claimMutation = useMutation({
+        mutationFn: goalWalletService.claimWallet,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['purpose-wallets'] });
+            alert("🎉 Congratulations! Wallet target achieved and claimed successfully!");
+        },
+        onError: (err) => {
+            alert(err?.response?.data?.message || "Could not claim. Ensure target threshold is reached.");
         }
     });
 
     const deleteMutation = useMutation({
-        mutationFn: businessSegregationService.deleteSegregation,
-        onSuccess: (_, deletedId) => {
-            queryClient.setQueryData(['business-segregations'], (old = []) => 
-                Array.isArray(old) ? old.filter(seg => String(seg.id) !== String(deletedId)) : []
-            );
-            queryClient.invalidateQueries({ queryKey: ['business-segregations'] });
+        mutationFn: goalWalletService.deleteWallet,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['purpose-wallets'] });
         }
     });
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setFormData({ name: '', description: '', allocations: [{ label: '', percentage: '', notes: '' }] });
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }) => goalWalletService.updateWallet(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['purpose-wallets'] });
+            closeCreateModal();
+            alert("✨ Purpose Wallet updated successfully!");
+        },
+        onError: (err) => {
+            alert(err?.response?.data?.message || "Failed to update purpose wallet.");
+        }
+    });
+
+    const closeCreateModal = () => {
+        setIsCreateModalOpen(false);
+        setEditingWalletId(null);
+        setFormData({ name: '', target_amount: '', description: '' });
     };
 
-    const addAllocationRow = () => {
-        setFormData({ ...formData, allocations: [...formData.allocations, { label: '', percentage: '', notes: '' }] });
+    const openEditModal = (wallet) => {
+        setEditingWalletId(wallet.id);
+        setFormData({
+            name: wallet.name,
+            target_amount: wallet.target_amount.toString(),
+            description: wallet.description || ''
+        });
+        setIsCreateModalOpen(true);
     };
 
-    const removeAllocationRow = (index) => {
-        const newAllocations = formData.allocations.filter((_, i) => i !== index);
-        setFormData({ ...formData, allocations: newAllocations });
+    const openAddMoneyModal = (wallet) => {
+        setSelectedWallet(wallet);
+        setIsAddMoneyModalOpen(true);
     };
 
-    const handleAllocationChange = (index, field, value) => {
-        const newAllocations = [...formData.allocations];
-        newAllocations[index][field] = value;
-        setFormData({ ...formData, allocations: newAllocations });
+    const closeAddMoneyModal = () => {
+        setIsAddMoneyModalOpen(false);
+        setSelectedWallet(null);
+        setAddAmount('');
     };
 
-    const calculateTotalPercentage = () => {
-        return formData.allocations.reduce((sum, a) => sum + (parseFloat(a.percentage) || 0), 0);
+    const handleCreateSubmit = (e) => {
+        e.preventDefault();
+        const amt = parseFloat(formData.target_amount);
+        if (isNaN(amt) || amt <= 0) return alert("Please provide a valid target amount.");
+        if (editingWalletId) {
+            updateMutation.mutate({ id: editingWalletId, data: { ...formData, target_amount: amt } });
+        } else {
+            createMutation.mutate({ ...formData, target_amount: amt });
+        }
     };
 
-    const filteredSegregations = segregations.filter(seg => 
-        seg.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleAddSubmit = (e) => {
+        e.preventDefault();
+        const amt = parseFloat(addAmount);
+        if (isNaN(amt) || amt <= 0) return alert("Enter a valid allocation amount.");
+        addMoneyMutation.mutate({ id: selectedWallet.id, amount: amt });
+    };
+
+    // Derived Statistics
+    const wallets = Array.isArray(responseData) ? responseData : [];
+    const activeWallets = wallets.filter(w => w.status !== 'completed').length;
+    const totalAllocated = wallets.reduce((sum, w) => sum + parseFloat(w.current_amount || 0), 0);
+    const totalTarget = wallets.reduce((sum, w) => sum + parseFloat(w.target_amount || 0), 0);
+    const globalProgress = totalTarget > 0 ? Math.round((totalAllocated / totalTarget) * 100) : 0;
+
+    const filteredWallets = wallets.filter(wallet => {
+        if (!searchTerm.trim()) return true;
+        const term = searchTerm.toLowerCase();
+        return (
+            (wallet.name || '').toLowerCase().includes(term) ||
+            (wallet.description || '').toLowerCase().includes(term)
+        );
+    });
 
     return (
-        <div style={{ padding: '1.25rem 2rem', background: '#F0F9F4', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}>
-            {/* Header */}
+        <div style={{ padding: '1.25rem 2.5rem', background: '#F0F9F4', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}>
+            {/* Main Title Bar */}
             <div style={{ display: 'flex', flexShrink: 0, justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                        <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 8px 16px rgba(27, 107, 58, 0.2)' }}>
-                            <Split size={22} />
+                        <div style={{ 
+                            width: '44px', 
+                            height: '44px', 
+                            borderRadius: '14px', 
+                            background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            color: 'white', 
+                            boxShadow: '0 8px 16px rgba(27, 107, 58, 0.2)' 
+                        }}>
+                            <Target size={24} />
                         </div>
-                        <h1 style={{ fontSize: '2rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em' }}>Fund Segregation</h1>
+                        <h1 style={{ fontSize: '2rem', fontWeight: '850', color: '#064E3B', letterSpacing: '-0.02em', margin: 0 }}>Segregation Wallets</h1>
+                        
+                        <button 
+                            onClick={() => {
+                                setShowSearch(!showSearch);
+                                if (showSearch) setSearchTerm('');
+                            }}
+                            style={{
+                                background: showSearch ? '#DCF2E4' : 'transparent',
+                                border: 'none',
+                                color: '#064E3B',
+                                cursor: 'pointer',
+                                padding: '8px',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'all 0.2s ease',
+                                marginLeft: '0.5rem'
+                            }}
+                            title="Search Wallets"
+                        >
+                            <Search size={22} style={{ opacity: showSearch ? 1 : 0.6 }} />
+                        </button>
+
+                        {showSearch && (
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '1rem', animation: 'fadeIn 0.2s ease' }}>
+                                <Search size={16} style={{ position: 'absolute', left: '12px', color: '#64748B' }} />
+                                <input 
+                                    type="text"
+                                    placeholder="Search wallets by name or rationale..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    autoFocus
+                                    style={{
+                                        padding: '0.6rem 1.25rem 0.6rem 2.25rem',
+                                        borderRadius: '12px',
+                                        border: '1px solid #BBF7D0',
+                                        outline: 'none',
+                                        fontSize: '0.9rem',
+                                        fontWeight: '600',
+                                        color: '#1E293B',
+                                        width: '260px',
+                                        background: 'white',
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.02)'
+                                    }}
+                                />
+                                {searchTerm && (
+                                    <button 
+                                        onClick={() => setSearchTerm('')}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: '#94A3B8',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            padding: '2px'
+                                        }}
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
-                    <p style={{ color: '#475569', fontSize: '1.05rem', fontWeight: '500' }}>Manage automated revenue split strategies for your business.</p>
+                    <p style={{ color: '#475569', fontSize: '1.05rem', fontWeight: '500', margin: 0 }}>Create target-based wallets to isolate and secure funds for specific business needs.</p>
                 </div>
                 <button 
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsCreateModalOpen(true)}
                     style={{ 
                         display: 'flex', alignItems: 'center', gap: '0.6rem', 
-                        padding: '0.85rem 1.75rem', borderRadius: '14px', 
+                        padding: '0.9rem 1.75rem', borderRadius: '14px', 
                         background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', 
-                        fontWeight: '700', cursor: 'pointer',
+                        fontWeight: '800', fontSize: '1rem', cursor: 'pointer',
                         boxShadow: '0 10px 20px rgba(27, 107, 58, 0.25)',
-                        transition: 'transform 0.2s'
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                    <Plus size={20} />
-                    Create Strategy
+                    <Plus size={20} strokeWidth={3} />
+                    Setup Purpose Wallet
                 </button>
             </div>
 
             {/* Scrollable Main Content Wrapper */}
             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: '2rem' }}>
 
-            {/* Stats Grid - Matching Gold Standard */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem', marginBottom: '2rem' }}>
+            {/* Statistics Overhead Panel */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
                 {[
-                    { label: 'Active Strategies', value: segregations.length, icon: Zap, color: '#1B6B3A', bg: '#DCF2E4' },
-                    { label: 'Avg. Split Pct', value: '100%', icon: PieChart, color: '#0D9488', bg: '#CCFBF1' },
-                    { label: 'Verified Rules', value: segregations.length, icon: ShieldCheck, color: '#3B82F6', bg: '#DBEAFE' },
-                    { label: 'Active Reserves', value: segregations.reduce((acc, s) => acc + (s.allocations?.length || 0), 0), icon: Target, color: '#8B5CF6', bg: '#EDE9FE' }
+                    { label: 'Target Wallets Active', value: activeWallets, icon: Target, color: '#059669', bg: '#ECFDF5' },
+                    { label: 'Total Isolated Funds', value: formatCurrency(totalAllocated), icon: CurrencyIcon, color: '#10B981', bg: '#DCF2E4' },
+                    { label: 'Goal Completion Target', value: formatCurrency(totalTarget), icon: TrendingUp, color: '#2563EB', bg: '#E0F2FE' },
+                    { label: 'Target Accomplishment', value: `${globalProgress}%`, icon: Sparkles, color: '#D97706', bg: '#FEF3C7' }
                 ].map((stat, idx) => (
-                    <div key={idx} className="stat-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '1rem 1.25rem', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.01)', cursor: 'default' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                            <p style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748B', margin: 0, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{stat.label}</p>
-                            <h3 style={{ fontSize: '1.35rem', fontWeight: '900', color: '#0F172A', letterSpacing: '-0.02em', margin: 0 }}>{stat.value}</h3>
+                    <div key={idx} style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        background: 'white', 
+                        padding: '1.5rem', 
+                        borderRadius: '20px', 
+                        border: '1px solid #E2E8F0', 
+                        boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02)' 
+                    }}>
+                        <div>
+                            <p style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748B', margin: '0 0 0.25rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '950', color: '#0F172A', letterSpacing: '-0.02em', margin: 0 }}>{stat.value}</h3>
                         </div>
-                        <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, flexShrink: 0 }}>
-                            <stat.icon size={20} />
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, flexShrink: 0 }}>
+                            <stat.icon size={22} />
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* List View - Matching Billing UI */}
-            <div style={{ background: 'white', borderRadius: '32px', border: '1px solid #E2E8F0', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-                <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
-                    <div style={{ position: 'relative', width: '400px' }}>
-                        <Search size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-                        <input 
-                            type="text" 
-                            placeholder="Search strategies..." 
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{ width: '100%', padding: '0.85rem 1rem 0.85rem 3.25rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', background: 'white' }}
-                        />
-                    </div>
+            {/* Dynamic Masonry/Grid of Purpose Wallets */}
+            {isLoading ? (
+                <div style={{ padding: '8rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#059669' }}>
+                    <Loader2 className="animate-spin" size={48} strokeWidth={2.5} />
+                    <p style={{ fontWeight: '700', fontSize: '1.1rem' }}>Polishing wallet interfaces...</p>
                 </div>
+            ) : wallets.length === 0 ? (
+                <div style={{ 
+                    background: 'white', 
+                    borderRadius: '24px', 
+                    border: '1px solid #E2E8F0', 
+                    padding: '6rem 2rem', 
+                    textAlign: 'center',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.02)'
+                }}>
+                    <div style={{ 
+                        width: '80px', 
+                        height: '80px', 
+                        borderRadius: '24px', 
+                        background: '#F0FDF4', 
+                        color: '#059669', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        margin: '0 auto 1.5rem auto' 
+                    }}>
+                        <Wallet size={36} />
+                    </div>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1F2937', marginBottom: '0.5rem' }}>No Segregated Wallets</h3>
+                    <p style={{ color: '#6B7280', maxWidth: '460px', margin: '0 auto 2rem auto', fontWeight: '500', lineHeight: 1.5 }}>
+                        Setup isolated purpose-driven buckets! For example, reserve money sequentially to buy future equipment, specialized stationery, or tax deposits.
+                    </p>
+                    <button 
+                        onClick={() => setIsCreateModalOpen(true)}
+                        style={{ 
+                            padding: '0.85rem 1.75rem', borderRadius: '12px', border: 'none', 
+                            background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', 
+                            fontWeight: '800', cursor: 'pointer', boxShadow: '0 8px 16px rgba(27,107,58,0.2)' 
+                        }}
+                    >
+                        Create First Segregated Wallet
+                    </button>
+                </div>
+            ) : filteredWallets.length === 0 ? (
+                <div style={{ 
+                    background: 'white', 
+                    borderRadius: '24px', 
+                    border: '1px solid #E2E8F0', 
+                    padding: '5rem 2rem', 
+                    textAlign: 'center',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.02)'
+                }}>
+                    <div style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        borderRadius: '20px', 
+                        background: '#F1F5F9', 
+                        color: '#94A3B8', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        margin: '0 auto 1.25rem auto' 
+                    }}>
+                        <Search size={24} />
+                    </div>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: '#1F2937', marginBottom: '0.5rem' }}>No Matching Wallets</h3>
+                    <p style={{ color: '#6B7280', maxWidth: '380px', margin: '0 auto', fontWeight: '500', fontSize: '0.9rem' }}>
+                        We couldn't find any segregated wallets matching "{searchTerm}". Check the spelling or clear the filter.
+                    </p>
+                </div>
+            ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1.75rem' }}>
+                    {filteredWallets.map((wallet) => {
+                        const isCompleted = wallet.status === 'completed';
+                        const current = parseFloat(wallet.current_amount || 0);
+                        const target = parseFloat(wallet.target_amount || 1);
+                        const pct = Math.min(Math.round((current / target) * 100), 100);
+                        const canClaim = current >= target && !isCompleted;
 
-                <div style={{ overflowX: 'auto' }}>
-                    {isLoading ? (
-                        <div style={{ padding: '6rem', display: 'flex', justifyContent: 'center' }}><Loader2 className="animate-spin" size={40} color="#1B6B3A" /></div>
-                    ) : filteredSegregations.length === 0 ? (
-                        <div style={{ padding: '5rem', textAlign: 'center', color: '#64748B' }}>No strategies found.</div>
-                    ) : (
-                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                            <FilterableTableHead columns={[
-                                { key: 'strategy_name', label: 'Strategy Name', placeholder: 'Name' },
-                                { key: 'description', label: 'Description', placeholder: 'Desc' },
-                                { key: 'allocation', label: 'Allocation Split', placeholder: 'e.g. 60/40' },
-                                { key: 'status', label: 'Status', placeholder: 'e.g. Active' },
-                                { key: '_actions', label: 'Actions', noFilter: true }
-                            ]} onFilterChange={setColFilters} />
-                            <tbody>
-                                {filteredSegregations.filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {}))
-                                    .sort((a, b) => {
-                                        const aPinned = pinnedSegregations.includes(a.id);
-                                        const bPinned = pinnedSegregations.includes(b.id);
-                                        if (aPinned && !bPinned) return -1;
-                                        if (!aPinned && bPinned) return 1;
-                                        return 0;
-                                    })
-                                    .map((seg) => {
-                                        const isPinned = pinnedSegregations.includes(seg.id);
-                                        return (
-                                            <tr key={seg.id} style={{ borderBottom: '1px solid #F8FAFC' }}>
-                                                <td style={{ padding: '1.5rem 2rem' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                        <div style={{ position: 'relative' }}>
-                                                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A' }}>
-                                                                <Zap size={20} />
-                                                            </div>
-                                                            {isPinned && (
-                                                                <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#004aad', color: 'white', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                                                                    <Pin size={10} style={{ transform: 'rotate(45deg)' }} />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <span style={{ fontWeight: '750', color: '#1E293B' }}>{seg.name}</span>
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '1.5rem 2rem' }}>
-                                                    <span style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: '500' }}>{seg.description || 'N/A'}</span>
-                                                </td>
-                                                <td style={{ padding: '1.5rem 2rem' }}>
-                                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                                        {seg.allocations?.map((a, i) => (
-                                                            <span key={i} style={{ fontSize: '0.75rem', fontWeight: '800', background: '#F0FDF4', color: '#1B6B3A', padding: '0.25rem 0.6rem', borderRadius: '8px', border: '1px solid #DCF2E4' }}>
-                                                                {a.label}: {a.percentage}%
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '1.5rem 2rem' }}>
-                                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.8rem', borderRadius: '10px', background: '#F0FDF4', color: '#15803D', fontSize: '0.8rem', fontWeight: '800' }}>
-                                                        <CheckCircle2 size={12} /> ACTIVE
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '1.5rem 2rem', textAlign: 'right', position: 'relative' }}>
-                                                    <div style={{ display: 'inline-block', position: 'relative' }}>
-                                                        <button 
+                        return (
+                            <div key={wallet.id} style={{ 
+                                background: 'white', 
+                                borderRadius: '24px', 
+                                border: '1px solid #E2E8F0', 
+                                boxShadow: isCompleted ? 'none' : '0 10px 25px -5px rgba(0,0,0,0.04)', 
+                                opacity: isCompleted ? 0.85 : 1,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                {/* Top Border accent */}
+                                <div style={{ 
+                                    height: '6px', 
+                                    background: isCompleted ? '#64748B' : `linear-gradient(90deg, #1B6B3A ${pct}%, #E2E8F0 ${pct}%)` 
+                                }} />
+
+                                <div style={{ padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                    {/* Header Row */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                                        <div>
+                                            <h4 style={{ fontSize: '1.2rem', fontWeight: '850', color: '#1E293B', margin: '0 0 0.25rem 0' }}>{wallet.name}</h4>
+                                            <span style={{ 
+                                                fontSize: '0.7rem', 
+                                                fontWeight: '800', 
+                                                textTransform: 'uppercase', 
+                                                letterSpacing: '0.05em', 
+                                                padding: '0.35rem 0.6rem', 
+                                                borderRadius: '8px',
+                                                background: isCompleted ? '#F1F5F9' : '#ECFDF5',
+                                                color: isCompleted ? '#475569' : '#047857',
+                                                display: 'inline-block'
+                                            }}>
+                                                {isCompleted ? '🎉 FULLY CLAIMED' : pct >= 100 ? '🎯 TARGET MET' : '🌱 GROWING'}
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                            <button 
+                                                onClick={() => { setHistoryWalletId(wallet.id); setIsHistoryModalOpen(true); }}
+                                                style={{ border: 'none', background: 'transparent', color: '#059669', opacity: 0.6, cursor: 'pointer', padding: '4px', transition: 'opacity 0.2s' }}
+                                                onMouseOver={(e) => e.currentTarget.style.opacity = 1}
+                                                onMouseOut={(e) => e.currentTarget.style.opacity = 0.6}
+                                                title="View Allocation Log"
+                                            >
+                                                <History size={17} />
+                                            </button>
+                                            
+                                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveMenuId(activeMenuId === wallet.id ? null : wallet.id);
+                                                    }}
+                                                    style={{ border: 'none', background: 'transparent', color: '#64748B', opacity: 0.6, cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                                                    onMouseOver={(e) => e.currentTarget.style.opacity = 1}
+                                                    onMouseOut={(e) => e.currentTarget.style.opacity = 0.6}
+                                                    title="More actions"
+                                                >
+                                                    <MoreVertical size={18} />
+                                                </button>
+                                                
+                                                {activeMenuId === wallet.id && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        right: 0,
+                                                        top: '100%',
+                                                        background: 'white',
+                                                        borderRadius: '12px',
+                                                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05)',
+                                                        border: '1px solid #E2E8F0',
+                                                        padding: '6px',
+                                                        zIndex: 100,
+                                                        minWidth: '130px',
+                                                        textAlign: 'left',
+                                                        marginTop: '4px'
+                                                    }}>
+                                                        <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                setActiveMenuId(activeMenuId === seg.id ? null : seg.id);
+                                                                openEditModal(wallet);
+                                                                setActiveMenuId(null);
                                                             }}
-                                                            style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', transition: 'color 0.2s', padding: '6px 12px', borderRadius: '8px' }}
-                                                            onMouseOver={(e) => e.currentTarget.style.color = '#004aad'}
-                                                            onMouseOut={(e) => e.currentTarget.style.color = '#94A3B8'}
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '8px',
+                                                                width: '100%',
+                                                                padding: '8px 12px',
+                                                                border: 'none',
+                                                                background: 'none',
+                                                                color: '#334155',
+                                                                fontSize: '0.82rem',
+                                                                fontWeight: '700',
+                                                                cursor: 'pointer',
+                                                                borderRadius: '8px',
+                                                                transition: 'background 0.2s'
+                                                            }}
+                                                            onMouseOver={(e) => e.currentTarget.style.background = '#F1F5F9'}
+                                                            onMouseOut={(e) => e.currentTarget.style.background = 'none'}
                                                         >
-                                                            <MoreVertical size={18} />
+                                                            <Edit2 size={13} style={{ color: '#059669' }} />
+                                                            Edit Wallet
                                                         </button>
                                                         
-                                                        {activeMenuId === seg.id && (
-                                                            <div style={{
-                                                                position: 'absolute',
-                                                                right: 0,
-                                                                top: '100%',
-                                                                background: 'white',
-                                                                borderRadius: '12px',
-                                                                boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05)',
-                                                                border: '1px solid #E2E8F0',
-                                                                padding: '6px',
-                                                                zIndex: 100,
-                                                                minWidth: '160px',
-                                                                textAlign: 'left'
-                                                            }}>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        const next = pinnedSegregations.includes(seg.id)
-                                                                            ? pinnedSegregations.filter(id => id !== seg.id)
-                                                                            : [...pinnedSegregations, seg.id];
-                                                                        setPinnedSegregations(next);
-                                                                        localStorage.setItem('cliks_pinned_segregations', JSON.stringify(next));
-                                                                        setActiveMenuId(null);
-                                                                    }}
-                                                                    style={{
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        gap: '8px',
-                                                                        width: '100%',
-                                                                        padding: '8px 12px',
-                                                                        border: 'none',
-                                                                        background: 'none',
-                                                                        color: '#334155',
-                                                                        fontSize: '0.85rem',
-                                                                        fontWeight: '600',
-                                                                        cursor: 'pointer',
-                                                                        borderRadius: '8px',
-                                                                        transition: 'background 0.2s'
-                                                                    }}
-                                                                    onMouseOver={(e) => e.currentTarget.style.background = '#F1F5F9'}
-                                                                    onMouseOut={(e) => e.currentTarget.style.background = 'none'}
-                                                                >
-                                                                    <Pin size={14} style={{ color: '#004aad', transform: isPinned ? 'rotate(45deg)' : 'none' }} />
-                                                                    {isPinned ? 'Unpin Strategy' : 'Pin to top'}
-                                                                </button>
-                                                                <button
-                                                                    onClick={async (e) => {
-                                                                        e.stopPropagation();
-                                                                        if(await customConfirm('Delete this strategy?')) {
-                                                                            deleteMutation.mutate(seg.id);
-                                                                        }
-                                                                        setActiveMenuId(null);
-                                                                    }}
-                                                                    style={{
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        gap: '8px',
-                                                                        width: '100%',
-                                                                        padding: '8px 12px',
-                                                                        border: 'none',
-                                                                        background: 'none',
-                                                                        color: '#EF4444',
-                                                                        fontSize: '0.85rem',
-                                                                        fontWeight: '600',
-                                                                        cursor: 'pointer',
-                                                                        borderRadius: '8px',
-                                                                        transition: 'background 0.2s'
-                                                                    }}
-                                                                    onMouseOver={(e) => e.currentTarget.style.background = '#FEF2F2'}
-                                                                    onMouseOut={(e) => e.currentTarget.style.background = 'none'}
-                                                                >
-                                                                    <Trash2 size={14} style={{ color: '#EF4444' }} />
-                                                                    Delete Strategy
-                                                                </button>
-                                                            </div>
-                                                        )}
+                                                        <button
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                setActiveMenuId(null);
+                                                                if(await customConfirm("Erase this segregation container forever? Accumulated funds tracking will resolve.")) {
+                                                                    deleteMutation.mutate(wallet.id);
+                                                                }
+                                                            }}
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '8px',
+                                                                width: '100%',
+                                                                padding: '8px 12px',
+                                                                border: 'none',
+                                                                background: 'none',
+                                                                color: '#EF4444',
+                                                                fontSize: '0.82rem',
+                                                                fontWeight: '700',
+                                                                cursor: 'pointer',
+                                                                borderRadius: '8px',
+                                                                transition: 'background 0.2s'
+                                                            }}
+                                                            onMouseOver={(e) => e.currentTarget.style.background = '#FEF2F2'}
+                                                            onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                                                        >
+                                                            <Trash2 size={13} style={{ color: '#EF4444' }} />
+                                                            Delete
+                                                        </button>
                                                     </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-            </div>
-            </div>
-
-            {/* Modal - Matching Billing UI */}
-            {isModalOpen && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)' }}>
-                    <div style={{ background: 'white', width: '600px', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-                            <h2 style={{ fontSize: '1.75rem', fontWeight: '850', color: '#064E3B' }}>Create Strategy</h2>
-                            <button onClick={closeModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer' }}><X size={22} /></button>
-                        </div>
-                        <form 
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                if (calculateTotalPercentage() !== 100) return alert('Total allocation must be exactly 100%');
-                                createMutation.mutate(formData);
-                            }}
-                            style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
-                        >
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase' }}>Strategy Name</label>
-                                <input required placeholder="e.g. Standard Revenue Split" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase' }}>Description</label>
-                                <input placeholder="Brief purpose..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none' }} />
-                            </div>
-
-                            <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                    <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' }}>Allocation Breakdown</label>
-                                    <button type="button" onClick={addAllocationRow} style={{ background: '#F0FDF4', border: '1px solid #DCF2E4', color: '#1B6B3A', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}>+ Add Row</button>
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    {formData.allocations.map((alloc, idx) => (
-                                        <div key={idx} style={{ display: 'flex', gap: '1rem' }}>
-                                            <input required placeholder="Label" value={alloc.label} onChange={e => handleAllocationChange(idx, 'label', e.target.value)} style={{ flex: 1, padding: '0.85rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none' }} />
-                                            <input required type="number" placeholder="%" value={alloc.percentage} onChange={e => handleAllocationChange(idx, 'percentage', e.target.value)} style={{ width: '80px', padding: '0.85rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none' }} />
-                                            {formData.allocations.length > 1 && (
-                                                <button type="button" onClick={() => removeAllocationRow(idx)} style={{ padding: '0.85rem', borderRadius: '14px', border: 'none', background: '#FEF2F2', color: '#EF4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
-                                            )}
+                                                )}
+                                            </div>
                                         </div>
-                                    ))}
+                                    </div>
+
+                                    {/* Description */}
+                                    <p style={{ color: '#64748B', fontSize: '0.88rem', lineHeight: 1.5, margin: '0 0 1.5rem 0', flex: 1 }}>
+                                        {wallet.description || 'No additional descriptions defined.'}
+                                    </p>
+
+                                    {/* Metrics breakdown */}
+                                    <div style={{ background: '#F8FAFC', padding: '1rem 1.25rem', borderRadius: '16px', border: '1px solid #F1F5F9', marginBottom: '1.5rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                                            <span style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: '700' }}>Saved Allocated</span>
+                                            <span style={{ color: '#1E293B', fontSize: '0.85rem', fontWeight: '900' }}>{formatCurrency(current)}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: '700' }}>Target Ceiling</span>
+                                            <span style={{ color: '#1E293B', fontSize: '0.85rem', fontWeight: '900' }}>{formatCurrency(target)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Visual Progression */}
+                                    <div style={{ marginBottom: '2rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                            <span style={{ color: '#334155', fontSize: '0.82rem', fontWeight: '800' }}>Goal Status</span>
+                                            <span style={{ color: '#059669', fontSize: '0.88rem', fontWeight: '950' }}>{pct}%</span>
+                                        </div>
+                                        <div style={{ height: '8px', borderRadius: '10px', background: '#E2E8F0', overflow: 'hidden' }}>
+                                            <div style={{ 
+                                                height: '100%', 
+                                                width: `${pct}%`, 
+                                                background: isCompleted ? '#94A3B8' : 'linear-gradient(90deg, #10B981 0%, #059669 100%)',
+                                                borderRadius: '10px',
+                                                transition: 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                                            }} />
+                                        </div>
+                                    </div>
+
+                                    {/* Interactive Controls */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <button
+                                            disabled={isCompleted}
+                                            onClick={() => openAddMoneyModal(wallet)}
+                                            style={{ 
+                                                padding: '0.85rem', 
+                                                borderRadius: '12px', 
+                                                border: '1px solid #D1FAE5', 
+                                                background: isCompleted ? '#F1F5F9' : '#ECFDF5', 
+                                                color: isCompleted ? '#94A3B8' : '#065F46', 
+                                                fontWeight: '800', 
+                                                fontSize: '0.88rem',
+                                                cursor: isCompleted ? 'not-allowed' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '0.4rem'
+                                            }}
+                                        >
+                                            <Plus size={16} strokeWidth={3} /> Add Cash
+                                        </button>
+
+                                        <button
+                                            disabled={!canClaim}
+                                            onClick={async () => { if(await customConfirm(`Extract ${formatCurrency(current)} accumulated for "${wallet.name}" into main reserves?`)) claimMutation.mutate(wallet.id); }}
+                                            style={{ 
+                                                padding: '0.85rem', 
+                                                borderRadius: '12px', 
+                                                background: canClaim 
+                                                    ? 'linear-gradient(135deg, #D97706 0%, #B45309 100%)' 
+                                                    : (isCompleted ? '#F1F5F9' : '#F8FAFC'), 
+                                                color: canClaim ? 'white' : '#94A3B8', 
+                                                fontWeight: '850', 
+                                                fontSize: '0.88rem',
+                                                cursor: canClaim ? 'pointer' : 'not-allowed',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '0.4rem',
+                                                boxShadow: canClaim ? '0 4px 12px rgba(217, 119, 6, 0.25)' : 'none',
+                                                border: isCompleted ? 'none' : (canClaim ? 'none' : '1px solid #E2E8F0')
+                                            }}
+
+                                        >
+                                            {isCompleted ? (
+                                                <>
+                                                    <CheckCircle2 size={16} color="#059669" /> Claimed
+                                                </>
+                                            ) : pct < 100 ? (
+                                                <>
+                                                    <Lock size={14} /> Locked
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Claim Goal!
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+            </div>
+
+            {/* SETUP NEW WALLET MODAL */}
+            {isCreateModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: 'white', width: '100%', maxWidth: '460px', borderRadius: '28px', padding: '2.5rem', border: '1px solid #E2E8F0', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#064E3B', margin: 0 }}>{editingWalletId ? 'Edit Target Wallet' : 'Setup Target Wallet'}</h3>
+                            <button onClick={closeCreateModal} style={{ border: 'none', background: '#F1F5F9', color: '#64748B', padding: '0.5rem', borderRadius: '10px', cursor: 'pointer' }}><X size={20} /></button>
+                        </div>
+
+                        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Purpose / Item Name</label>
+                                <input 
+                                    required 
+                                    placeholder="e.g. Office Printer, Future Stock, Buy a Pen" 
+                                    value={formData.name} 
+                                    onChange={e => setFormData({...formData, name: e.target.value})}
+                                    style={{ width: '100%', padding: '0.9rem 1.1rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '600', color: '#1E293B' }}
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Target Cap Amount ({currency.code})</label>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: '#0F172A' }}>{currency.symbol}</span>
+                                    <input 
+                                        required 
+                                        type="number" 
+                                        placeholder="5000" 
+                                        value={formData.target_amount} 
+                                        onChange={e => setFormData({...formData, target_amount: e.target.value})}
+                                        style={{ width: '100%', padding: '0.9rem 1.1rem 0.9rem 2.25rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '800', fontSize: '1.1rem', color: '#0F172A' }}
+                                    />
                                 </div>
                             </div>
 
-                            <div style={{ padding: '1rem', borderRadius: '16px', background: calculateTotalPercentage() === 100 ? '#F0FDF4' : '#FEF2F2', color: calculateTotalPercentage() === 100 ? '#15803D' : '#B91C1C', fontWeight: '700', fontSize: '0.9rem', textAlign: 'center' }}>
-                                Total Allocation: {calculateTotalPercentage()}% (Must be 100%)
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Descriptive Notes</label>
+                                <textarea 
+                                    rows="3"
+                                    placeholder="Brief rationale for this segregation..." 
+                                    value={formData.description} 
+                                    onChange={e => setFormData({...formData, description: e.target.value})}
+                                    style={{ width: '100%', padding: '0.9rem 1.1rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', resize: 'none', fontFamily: 'inherit', color: '#475569' }}
+                                />
                             </div>
 
-                            <button type="submit" disabled={createMutation.isLoading || calculateTotalPercentage() !== 100} style={{ width: '100%', padding: '1.25rem', borderRadius: '18px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', fontWeight: '750', fontSize: '1.1rem', marginTop: '1rem', cursor: 'pointer', opacity: calculateTotalPercentage() === 100 ? 1 : 0.5 }}>
-                                {createMutation.isLoading ? <Loader2 className="animate-spin" /> : 'Finalize Strategy'}
+                            <button 
+                                type="submit"
+                                disabled={createMutation.isPending || updateMutation.isPending}
+                                style={{ 
+                                    padding: '1.1rem', 
+                                    borderRadius: '14px', 
+                                    border: 'none', 
+                                    background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', 
+                                    color: 'white', 
+                                    fontWeight: '850', 
+                                    fontSize: '1rem', 
+                                    marginTop: '0.5rem', 
+                                    cursor: 'pointer',
+                                    boxShadow: '0 8px 20px rgba(27, 107, 58, 0.2)'
+                                }}
+                            >
+                                {createMutation.isPending || updateMutation.isPending ? <Loader2 className="animate-spin" style={{ margin: '0 auto' }} /> : (editingWalletId ? 'Save Changes' : 'Activate Isolated Container')}
                             </button>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ALLOCATE CASH MODAL */}
+            {isAddMoneyModalOpen && selectedWallet && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: 'white', width: '100%', maxWidth: '400px', borderRadius: '28px', padding: '2.5rem', border: '1px solid #E2E8F0', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: '#064E3B', margin: 0 }}>Fund Segregation</h3>
+                            <button onClick={closeAddMoneyModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.5rem', borderRadius: '10px', cursor: 'pointer' }}><X size={18} /></button>
+                        </div>
+
+                        <div style={{ padding: '0.85rem 1rem', background: '#F8FAFC', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                            <div style={{ background: '#DCF2E4', color: '#059669', padding: '8px', borderRadius: '8px' }}>
+                                <Target size={18} />
+                            </div>
+                            <div>
+                                <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>Targeting Wallet</span>
+                                <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: '#1F2937' }}>{selectedWallet.name}</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Allocation Value ({currency.code})</label>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: '#0F172A' }}>{currency.symbol}</span>
+                                    <input 
+                                        required 
+                                        autoFocus
+                                        type="number" 
+                                        placeholder="100" 
+                                        value={addAmount} 
+                                        onChange={e => setAddAmount(e.target.value)}
+                                        style={{ width: '100%', padding: '0.9rem 1.1rem 0.9rem 2.25rem', borderRadius: '14px', border: '1px solid #E2E8F0', outline: 'none', fontWeight: '850', fontSize: '1.2rem', color: '#0F172A' }}
+                                    />
+                                </div>
+                                <p style={{ color: '#64748B', fontSize: '0.75rem', margin: '0.5rem 0 0 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    <AlertCircle size={12} /> Money is transferred from standard balances.
+                                </p>
+                            </div>
+
+                            <button 
+                                type="submit"
+                                disabled={addMoneyMutation.isLoading}
+                                style={{ 
+                                    padding: '1.1rem', 
+                                    borderRadius: '14px', 
+                                    border: 'none', 
+                                    background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', 
+                                    color: 'white', 
+                                    fontWeight: '850', 
+                                    fontSize: '1rem', 
+                                    cursor: 'pointer',
+                                    boxShadow: '0 8px 20px rgba(27, 107, 58, 0.2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                {addMoneyMutation.isLoading ? <Loader2 className="animate-spin" /> : (
+                                    <>
+                                        Execute Push <ArrowRight size={18} />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ALLOCATION HISTORY MODAL */}
+            {isHistoryModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(6, 78, 59, 0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: 'white', width: '100%', maxWidth: '460px', borderRadius: '28px', padding: '2.5rem', border: '1px solid #E2E8F0', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', animation: 'modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#064E3B' }}>
+                                <History size={20} />
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: '850', margin: 0 }}>Allocation Ledger</h3>
+                            </div>
+                            <button onClick={() => { setIsHistoryModalOpen(false); setHistoryWalletId(null); }} style={{ border: 'none', background: '#F1F5F9', color: '#64748B', padding: '0.5rem', borderRadius: '10px', cursor: 'pointer' }}>
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        {isHistoryLoading ? (
+                            <div style={{ padding: '3rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#059669' }}>
+                                <Loader2 className="animate-spin" size={32} strokeWidth={2.5} />
+                                <p style={{ fontSize: '0.85rem', fontWeight: '700' }}>Compiling transfer logs...</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <div style={{ padding: '1rem 1.25rem', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #F1F5F9', marginBottom: '1.75rem' }}>
+                                    <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: '0.25rem' }}>Selected Wallet</div>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: '850', color: '#1E293B', marginBottom: '0.5rem' }}>{historyWallet.name}</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+                                        <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '700' }}>Total Isolated</span>
+                                        <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#059669' }}>{formatCurrency(parseFloat(historyWallet.current_amount || 0))}</span>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <h4 style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.25rem 0' }}>Allocation History</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '280px', overflowY: 'auto', paddingRight: '4px' }}>
+                                        {!historyWallet.transactions || historyWallet.transactions.length === 0 ? (
+                                            <div style={{ textAlign: 'center', padding: '2rem', color: '#94A3B8', border: '2px dashed #F1F5F9', borderRadius: '14px' }}>
+                                                <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '600' }}>No money transfers recorded yet.</p>
+                                            </div>
+                                        ) : (
+                                            historyWallet.transactions.map((tx, idx) => (
+                                                <div key={tx.id || idx} style={{ 
+                                                    display: 'flex', 
+                                                    justifyContent: 'space-between', 
+                                                    alignItems: 'center', 
+                                                    padding: '0.85rem 1rem', 
+                                                    background: 'white', 
+                                                    border: '1px solid #E2E8F0', 
+                                                    borderRadius: '12px'
+                                                }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                                        <div style={{ fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.03em', color: tx.type === 'debit' ? '#DC2626' : '#059669' }}>
+                                                            {tx.type === 'debit' ? '🔻 OUT / DEBIT' : '🔹 IN / CREDIT'}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '600' }}>
+                                                            {tx.created_at ? new Date(tx.created_at).toLocaleString(undefined, {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                                hour12: true
+                                                            }) : 'Record Date missing'}
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ fontSize: '0.95rem', fontWeight: '900', color: tx.type === 'debit' ? '#DC2626' : '#0F172A' }}>
+                                                        {tx.type === 'debit' ? '-' : '+'} {formatCurrency(parseFloat(tx.amount || 0))}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
