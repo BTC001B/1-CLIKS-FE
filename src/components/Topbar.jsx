@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Wallet, Home, BookOpen, Calculator, Users, ShieldCheck } from 'lucide-react';
+import { User, Wallet, Home, BookOpen, Calculator, Users, ShieldCheck, Coins } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
@@ -15,6 +15,25 @@ const Topbar = ({ onToggleSidebar }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isTrustOpen, setIsTrustOpen] = useState(false);
     const trustRef = useRef(null);
+
+    // Reward points state synced with localStorage
+    const [rewardPoints, setRewardPoints] = useState(() => {
+        const saved = localStorage.getItem('cliks_reward_points');
+        return saved ? parseInt(saved, 10) : 1000; // default 1000 Pts
+    });
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const saved = localStorage.getItem('cliks_reward_points');
+            setRewardPoints(saved ? parseInt(saved, 10) : 1000);
+        };
+        window.addEventListener('storage', handleStorageChange);
+        const interval = setInterval(handleStorageChange, 1000);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            clearInterval(interval);
+        };
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -50,7 +69,7 @@ const Topbar = ({ onToggleSidebar }) => {
 
     const navItems = [
         { name: 'Books', url: '/books/dashboard', icon: BookOpen, activeBase: '/books' },
-        { name: 'Payments', url: '/finance', icon: Wallet, activeBase: '/finance' },
+        { name: 'Payments', url: '/payments/wallet', icon: Wallet, activeBase: '/payments' },
         { name: 'Social', url: '/social/meetup', icon: Users, activeBase: '/social' },
     ];
 
@@ -126,9 +145,11 @@ const Topbar = ({ onToggleSidebar }) => {
                 }}>
                     {navItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = item.activeBase
-                            ? (location.pathname.startsWith(item.activeBase) || (item.name === 'Social' && location.pathname.startsWith('/public')))
-                            : (item.url ? (location.pathname === item.url || (item.url !== '/home' && location.pathname.startsWith(item.url))) : false);
+                        const isActive = item.name === 'Payments'
+                            ? (location.pathname.startsWith('/finance') || location.pathname.startsWith('/payments') || location.pathname === '/')
+                            : (item.activeBase
+                                ? (location.pathname.startsWith(item.activeBase) || (item.name === 'Social' && location.pathname.startsWith('/public')))
+                                : (item.url ? (location.pathname === item.url || (item.url !== '/home' && location.pathname.startsWith(item.url))) : false));
 
                         return (
                             <button
@@ -252,6 +273,91 @@ const Topbar = ({ onToggleSidebar }) => {
                         </div>
                     )}
                 </div>
+
+                {/* Premium Glassmorphic & Dual-tone Golden Points Widget */}
+                {(() => {
+                    const maxPts = 10000;
+                    const pct = Math.min(rewardPoints / maxPts, 1);
+                    const r = 17;
+                    const circ = 2 * Math.PI * r;
+                    const dash = circ * pct;
+                    return (
+                        <div 
+                            style={{ 
+                                position: 'relative', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                cursor: 'pointer',
+                                width: '40px',
+                                height: '40px',
+                                flexShrink: 0
+                            }} 
+                            onClick={() => navigate('/payments/rewards-offers')} 
+                            title="Loyalty Rewards"
+                        >
+                            <svg width="40" height="40" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)', pointerEvents: 'none', zIndex: 1 }}>
+                                <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
+                                <circle
+                                    cx="20" cy="20" r={r}
+                                    fill="none"
+                                    stroke="#F59E0B"
+                                    strokeWidth="2"
+                                    strokeDasharray={`${dash} ${circ}`}
+                                    strokeLinecap="round"
+                                    style={{ 
+                                        transition: 'stroke-dasharray 0.5s ease',
+                                        filter: 'drop-shadow(0 0 3px rgba(245, 158, 11, 0.4))'
+                                    }}
+                                />
+                            </svg>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); navigate('/payments/rewards-offers'); }}
+                                title="Loyalty Points - View Rewards & Offers"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexDirection: 'column',
+                                    width: '30px',
+                                    height: '30px',
+                                    borderRadius: '50%',
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    backdropFilter: 'blur(4px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    boxShadow: '0 4px 10px rgba(245, 158, 11, 0.1)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    outline: 'none',
+                                    padding: 0,
+                                    margin: 0,
+                                    lineHeight: 1.0,
+                                    gap: '0px',
+                                    zIndex: 2
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.08)';
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                    e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+                                    e.currentTarget.style.boxShadow = '0 6px 15px rgba(245, 158, 11, 0.2)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'none';
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(245, 158, 11, 0.1)';
+                                }}
+                            >
+                                <span style={{ fontSize: '11px', fontWeight: '900', color: '#FFFFFF', letterSpacing: '-0.01em', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+                                    {rewardPoints >= 1000 ? `${(rewardPoints/1000).toFixed(1)}K` : rewardPoints}
+                                </span>
+                                <span style={{ fontSize: '6.5px', fontWeight: '900', color: '#F59E0B', letterSpacing: '0.04em', marginTop: '0.5px' }}>
+                                    PTS
+                                </span>
+                            </button>
+                        </div>
+                    );
+                })()}
 
                 <CalcPopover />
 
