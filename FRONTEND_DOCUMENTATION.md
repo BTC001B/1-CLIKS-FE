@@ -16,7 +16,7 @@
 7. [Components](#-components)
 8. [Pages](#-pages)
 9. [Styling](#-styling)
-10. [Design System](#-design-system)
+10. [Design System](#-design-system)ss
 11. [Icons](#-icons)
 12. [Animations](#-animations)
 13. [Utilities](#️-utilities)
@@ -27,6 +27,7 @@
 ## 🎯 Project Overview
 
 **Books & Finance** is a comprehensive personal finance management application designed for:
+
 - Tracking accounts, budgets, debts, and investments
 - Managing financial contacts and people-related transactions
 - Planning financial goals and reminders
@@ -34,6 +35,7 @@
 - Providing a social/public view for financial updates
 
 ### Key Features Overview
+
 - **Dashboard Home**: Overview of accounts, income, expenses, and quick transfers
 - **Books Module**: Stock management, financial planning, people tracking
 - **Finance Module**: Detailed financial analysis
@@ -45,8 +47,10 @@
 ## 📊 Detailed Modules & Features Breakdown
 
 ### 1. Finance Module (`/finance`)
+
 The core personal finance tracking and management system.
 **Key Features:**
+
 - **Income Tracking (`/finance/income`)**: Log and analyze incoming revenue streams with visual charts.
 - **Expense Tracking (`/finance/expenses`)**: Categorize and monitor outgoing payments to control spending.
 - **Budgets (`/finance/budgets`)**: Create budgeting goals per category and track adherence to these limits.
@@ -58,35 +62,43 @@ The core personal finance tracking and management system.
 - **Debts (`/finance/debts`)**: Track money owed to others or by others, managing loan lifecycles.
 
 ### 2. Books Module (`/books`)
+
 A structured environment for detailed planning, inventory, and shared financial responsibilities.
 **Key Features:**
+
 - **Books Dashboard (`/books/dashboard`)**: A dedicated hub providing high-level metrics across all books-related resources.
 - **Stock Management (`/books/stock`)**: Inventory control and tracking for businesses or personal assets.
 - **Financial Planning (`/books/financial-plan`)**: A comprehensive toolset for drafting financial futures:
-  - *Plan Budget, Income, & Expense*: Granular forecasting for different revenue and cost buckets.
-  - *Financial Calendar*: Timeline-based view of forecasted transactions.
-  - *Goals & Reminders*: Setting milestones and alerts to stay on track.
-  - *Plan Analysis*: Analytical breakdown validating the feasibility of the financial plan.
+  - _Plan Budget, Income, & Expense_: Granular forecasting for different revenue and cost buckets.
+  - _Financial Calendar_: Timeline-based view of forecasted transactions.
+  - _Goals & Reminders_: Setting milestones and alerts to stay on track.
+  - _Plan Analysis_: Analytical breakdown validating the feasibility of the financial plan.
 - **People Management (`/books/people`)**: Tracking financial relationships.
-  - *Transactions & Records*: Log every exchange associated with a specific person.
-  - *Reminders*: Alerts connected to specific individuals (e.g., follow-ups for split bills).
+  - _Transactions & Records_: Log every exchange associated with a specific person.
+  - _Reminders_: Alerts connected to specific individuals (e.g., follow-ups for split bills).
 - **Financial Contacts (`/books/contacts`)**: Specialized directory storing payment handlers and bank details of relevant counterparties.
 - **Segregation (`/books/segregation`)**: Advanced tagging and separation of funds for specialized accounting logic.
 - **Split Expenses (`/books/split-expense`)**: A utility to evenly or proportionally divide group bills, calculating balances and settlements.
 
 ### 3. Public/Social Module (`/public`)
+
 Community interactions and public milestones.
 **Key Features:**
+
 - **Public Feed**: A social-media-style page for financial updates, sharing progress, and viewing leaderboards or community events.
 
 ### 4. Auditor Module (`/auditor`)
+
 Oversight and compliance features.
 **Key Features:**
+
 - **Auditor Dashboard**: Dedicated layout and tools (`AuditPanel`, `AuditorSidebar`) for reviewing financial anomalies, auditing transaction logs, and ensuring records' integrity.
 
 ### 5. Core Platform Features
+
 Underlying capabilities applied universally across the application.
 **Key Features:**
+
 - **Authentication & Profiles (`/auth`, `/books/profile`)**: Secure user onboarding, session persistence, and account settings orchestration.
 - **Theme & Settings (`/books/settings`)**: Personalization of the app experience and notification preferences.
 
@@ -94,19 +106,20 @@ Underlying capabilities applied universally across the application.
 
 ## ⚙️ Technology Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 19.2.0 | UI Framework |
-| **Vite** | 7.2.4 | Build Tool & Dev Server |
-| **React Router DOM** | 7.12.0 | Client-side Routing |
-| **TanStack Query** | 5.90.20 | Server State Management |
-| **Framer Motion** | 12.29.0 | Animations & Transitions |
-| **Lucide React** | 0.562.0 | Icon Library |
-| **clsx** | 2.1.1 | Conditional CSS Classes |
-| **tailwind-merge** | 3.4.0 | Tailwind Class Merging |
-| **ESLint** | 9.39.1 | Code Linting |
+| Technology           | Version | Purpose                  |
+| -------------------- | ------- | ------------------------ |
+| **React**            | 19.2.0  | UI Framework             |
+| **Vite**             | 7.2.4   | Build Tool & Dev Server  |
+| **React Router DOM** | 7.12.0  | Client-side Routing      |
+| **TanStack Query**   | 5.90.20 | Server State Management  |
+| **Framer Motion**    | 12.29.0 | Animations & Transitions |
+| **Lucide React**     | 0.562.0 | Icon Library             |
+| **clsx**             | 2.1.1   | Conditional CSS Classes  |
+| **tailwind-merge**   | 3.4.0   | Tailwind Class Merging   |
+| **ESLint**           | 9.39.1  | Code Linting             |
 
 ### Development Dependencies
+
 - `@vitejs/plugin-react` - React plugin for Vite
 - `eslint-plugin-react-hooks` - ESLint rules for React Hooks
 - `eslint-plugin-react-refresh` - ESLint rules for React Refresh
@@ -223,6 +236,7 @@ Underlying capabilities applied universally across the application.
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v18+ recommended)
 - npm or yarn
 
@@ -250,12 +264,12 @@ npm run lint
 
 ### Available Scripts
 
-| Script | Command | Description |
-|--------|---------|-------------|
-| `dev` | `vite` | Start development server with HMR |
-| `build` | `vite build` | Create production build |
-| `preview` | `vite preview` | Preview production build locally |
-| `lint` | `eslint .` | Run ESLint on the codebase |
+| Script    | Command        | Description                       |
+| --------- | -------------- | --------------------------------- |
+| `dev`     | `vite`         | Start development server with HMR |
+| `build`   | `vite build`   | Create production build           |
+| `preview` | `vite preview` | Preview production build locally  |
+| `lint`    | `eslint .`     | Run ESLint on the codebase        |
 
 ### Environment Variables
 
@@ -320,57 +334,57 @@ The application uses **React Router v7** with the following route structure:
 
 #### Top-Level Routes
 
-| Path | Component | Layout | Description |
-|------|-----------|--------|-------------|
-| `/` | `Landing` | None | Login/Landing page |
-| `/books/profile` | `Profile` | None | User profile (standalone) |
-| `/*` | `MainLayout` | Full | All other routes |
+| Path             | Component    | Layout | Description               |
+| ---------------- | ------------ | ------ | ------------------------- |
+| `/`              | `Landing`    | None   | Login/Landing page        |
+| `/books/profile` | `Profile`    | None   | User profile (standalone) |
+| `/*`             | `MainLayout` | Full   | All other routes          |
 
 #### Home Routes (MainLayout)
 
-| Path | Component | Description |
-|------|-----------|-------------|
-| `/home` | `Home` | Dashboard overview |
-| `/home/income` | `Income` | Income tracking |
-| `/home/expenses` | `Expenses` | Expense tracking |
-| `/home/budgets` | `Budgets` | Budget management |
-| `/home/accounts` | `Accounts` | Account management |
-| `/home/transactions` | `Transactions` | Transaction history |
-| `/home/planned-payments` | `PlannedPayments` | Scheduled payments |
-| `/home/savings` | `Savings` | Savings tracking |
-| `/home/investments` | `Investments` | Investment portfolio |
-| `/home/debts` | `Debts` | Debt management |
+| Path                     | Component         | Description          |
+| ------------------------ | ----------------- | -------------------- |
+| `/home`                  | `Home`            | Dashboard overview   |
+| `/home/income`           | `Income`          | Income tracking      |
+| `/home/expenses`         | `Expenses`        | Expense tracking     |
+| `/home/budgets`          | `Budgets`         | Budget management    |
+| `/home/accounts`         | `Accounts`        | Account management   |
+| `/home/transactions`     | `Transactions`    | Transaction history  |
+| `/home/planned-payments` | `PlannedPayments` | Scheduled payments   |
+| `/home/savings`          | `Savings`         | Savings tracking     |
+| `/home/investments`      | `Investments`     | Investment portfolio |
+| `/home/debts`            | `Debts`           | Debt management      |
 
 #### Books Routes (MainLayout)
 
-| Path | Component | Description |
-|------|-----------|-------------|
-| `/books` | `Books` | Books overview |
-| `/books/stock` | `Stock` | Stock/inventory management |
-| `/books/financial-plan` | `FinancialPlan` | Financial planning overview |
-| `/books/plan/budget` | `PlanBudget` | Budget planning |
-| `/books/plan/income` | `PlanIncome` | Income planning |
-| `/books/plan/expense` | `PlanExpense` | Expense planning |
-| `/books/plan/calendar` | `FinancialCalendar` | Financial calendar |
-| `/books/plan/goals` | `PlanGoals` | Goal tracking |
-| `/books/plan/reminders` | `PlanReminders` | Payment reminders |
-| `/books/plan/analysis` | `PlanAnalysis` | Financial analysis |
-| `/books/people/overview` | `PeopleOverview` | People overview |
-| `/books/people/transactions` | `PeopleTransactions` | People transactions |
-| `/books/people/reminders` | `PeopleReminders` | People reminders |
-| `/books/people/records` | `PeopleRecords` | People records |
-| `/books/contacts` | `FinancialContacts` | Financial contacts |
-| `/books/segregation` | `Segregation` | Category segregation |
-| `/books/split-expense` | `SplitExpense` | Expense splitting |
-| `/books/settings` | `Settings` | App settings |
-| `/books/faq` | `FAQ` | FAQ page |
+| Path                         | Component            | Description                 |
+| ---------------------------- | -------------------- | --------------------------- |
+| `/books`                     | `Books`              | Books overview              |
+| `/books/stock`               | `Stock`              | Stock/inventory management  |
+| `/books/financial-plan`      | `FinancialPlan`      | Financial planning overview |
+| `/books/plan/budget`         | `PlanBudget`         | Budget planning             |
+| `/books/plan/income`         | `PlanIncome`         | Income planning             |
+| `/books/plan/expense`        | `PlanExpense`        | Expense planning            |
+| `/books/plan/calendar`       | `FinancialCalendar`  | Financial calendar          |
+| `/books/plan/goals`          | `PlanGoals`          | Goal tracking               |
+| `/books/plan/reminders`      | `PlanReminders`      | Payment reminders           |
+| `/books/plan/analysis`       | `PlanAnalysis`       | Financial analysis          |
+| `/books/people/overview`     | `PeopleOverview`     | People overview             |
+| `/books/people/transactions` | `PeopleTransactions` | People transactions         |
+| `/books/people/reminders`    | `PeopleReminders`    | People reminders            |
+| `/books/people/records`      | `PeopleRecords`      | People records              |
+| `/books/contacts`            | `FinancialContacts`  | Financial contacts          |
+| `/books/segregation`         | `Segregation`        | Category segregation        |
+| `/books/split-expense`       | `SplitExpense`       | Expense splitting           |
+| `/books/settings`            | `Settings`           | App settings                |
+| `/books/faq`                 | `FAQ`                | FAQ page                    |
 
 #### Other Routes
 
-| Path | Component | Description |
-|------|-----------|-------------|
-| `/finance` | `Finance` | Finance module |
-| `/public` | `Public` | Social/Public feed |
+| Path       | Component | Description        |
+| ---------- | --------- | ------------------ |
+| `/finance` | `Finance` | Finance module     |
+| `/public`  | `Public`  | Social/Public feed |
 
 ---
 
@@ -379,6 +393,7 @@ The application uses **React Router v7** with the following route structure:
 ### Core Components
 
 #### 1. **MainLayout** (`src/layouts/MainLayout.jsx`)
+
 The primary layout wrapper that provides consistent structure.
 
 ```jsx
@@ -392,6 +407,7 @@ MainLayout({ children }) // Wraps page content
 ```
 
 #### 2. **Topbar** (`src/components/Topbar.jsx`)
+
 The top navigation bar with branding and primary navigation.
 
 ```jsx
@@ -416,6 +432,7 @@ Topbar({ onToggleSidebar })
 | Social | `/public` | `Users` |
 
 #### 3. **Sidebar** (`src/components/Sidebar.jsx`)
+
 The contextual sidebar navigation with tree-view structure.
 
 ```jsx
@@ -431,6 +448,7 @@ Sidebar({ isOpen })
 ```
 
 **Sidebar Sections:**
+
 - **Stock** - Direct link
 - **Financial Plan** (Dropdown)
   - Budget, Income, Expense, Calendar, Goals, Reminders, Analysis
@@ -443,6 +461,7 @@ Sidebar({ isOpen })
 - **FAQ** - Footer item
 
 #### 4. **Breadcrumbs** (`src/components/Breadcrumbs.jsx`)
+
 Dynamic breadcrumb navigation based on current path.
 
 ```jsx
@@ -457,6 +476,7 @@ Breadcrumbs({ items, dividerType = 'slash' })
 ```
 
 #### 5. **ProfileDropdown** (`src/components/ProfileDropdown.jsx`)
+
 Animated dropdown for user profile actions.
 
 ```jsx
@@ -473,6 +493,7 @@ ProfileDropdown({ onAccount, onSettings, onFAQ, onLogout })
 ### UI Primitives (`src/components/ui/`)
 
 #### **Accordion** (`accordion.jsx`)
+
 Collapsible content sections with animation.
 
 ```jsx
@@ -489,6 +510,7 @@ Collapsible content sections with animation.
 ```
 
 #### **Toggle** (`toggle.jsx`)
+
 Animated switch/toggle component.
 
 ```jsx
@@ -507,6 +529,7 @@ Toggle({ checked, onChange, size = 'md', label, disabled = false })
 ```
 
 #### **Spotlight** (`spotlight.tsx`)
+
 Decorative background spotlight effect for landing page.
 
 ```jsx
@@ -524,9 +547,11 @@ Spotlight({ className, fill = '#3b82f6' })
 ## 📄 Pages
 
 ### Landing Page (`Landing.jsx`)
+
 The entry point with login functionality.
 
 **Features:**
+
 - Split layout: Hero + Auth form
 - Animated background blobs
 - Spotlight effect
@@ -535,15 +560,18 @@ The entry point with login functionality.
 - Feature highlights
 
 ### Home Page (`Home.jsx`)
+
 Dashboard with financial overview.
 
 **Sub-components:**
+
 - `AccountCard` - Displays account with balance
 - `DonutChart` - Circular progress chart
 - `DashboardTile` - Tile container with header/footer
 - `ActivityItem` - Transaction list item
 
 **Sections:**
+
 - Accounts grid
 - Month selector
 - Gauges (Goals, Savings, Debts)
@@ -551,31 +579,34 @@ Dashboard with financial overview.
 - Quick Transfer
 
 ### Books Page (`Books.jsx`)
+
 Overview of all Books module features.
 
 **Sub-component:**
+
 - `OverviewCard` - Clickable card with stats
 
 **Cards displayed:**
+
 - Stock, Financial Plan, People
 - Financial Contacts, Segregation, Split Expenses
 
 ### Other Notable Pages
 
-| Page | Description |
-|------|-------------|
-| `Income.jsx` | Income tracking with charts |
-| `Expenses.jsx` | Expense categorization |
-| `Accounts.jsx` | Account management |
-| `Budgets.jsx` | Budget creation and tracking |
-| `Investments.jsx` | Investment portfolio |
-| `Debts.jsx` | Debt tracking |
-| `Savings.jsx` | Savings goals |
-| `Stock.jsx` | Inventory/stock management |
-| `Profile.jsx` | User profile with settings |
-| `Settings.jsx` | App configuration |
-| `FAQ.jsx` | Frequently asked questions |
-| `Public.jsx` | Social feed (84KB - largest page) |
+| Page              | Description                       |
+| ----------------- | --------------------------------- |
+| `Income.jsx`      | Income tracking with charts       |
+| `Expenses.jsx`    | Expense categorization            |
+| `Accounts.jsx`    | Account management                |
+| `Budgets.jsx`     | Budget creation and tracking      |
+| `Investments.jsx` | Investment portfolio              |
+| `Debts.jsx`       | Debt tracking                     |
+| `Savings.jsx`     | Savings goals                     |
+| `Stock.jsx`       | Inventory/stock management        |
+| `Profile.jsx`     | User profile with settings        |
+| `Settings.jsx`    | App configuration                 |
+| `FAQ.jsx`         | Frequently asked questions        |
+| `Public.jsx`      | Social feed (84KB - largest page) |
 
 ---
 
@@ -587,43 +618,47 @@ The application uses **vanilla CSS** with CSS custom properties (variables) for 
 
 #### Global Stylesheets
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `index.css` | 547 | Base styles, landing page |
-| `App.css` | 1220 | App layout, components |
-| `Transactions.css` | ~450 | Transactions page specific |
+| File               | Lines | Purpose                    |
+| ------------------ | ----- | -------------------------- |
+| `index.css`        | 547   | Base styles, landing page  |
+| `App.css`          | 1220  | App layout, components     |
+| `Transactions.css` | ~450  | Transactions page specific |
 
 ### CSS Custom Properties (`index.css`)
 
 ```css
 :root {
   /* Primary Colors */
-  --primary: #195BAC;
+  --primary: #195bac;
   --primary-hover: #144a8f;
-  --secondary: #2563EB;
-  
+  --secondary: #2563eb;
+
   /* Background */
-  --bg-color: #E9F4FF;
-  
+  --bg-color: #e9f4ff;
+
   /* Text Colors */
-  --text-main: #1E293B;
-  --text-muted: #64748B;
-  
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+
   /* Surface Colors */
-  --card-bg: #FFFFFF;
-  --border-color: #DAE4F0;
-  
+  --card-bg: #ffffff;
+  --border-color: #dae4f0;
+
   /* Card Accents */
-  --card-blue: #0EA5E9;
-  --card-dark-blue: #1E3A8A;
-  
+  --card-blue: #0ea5e9;
+  --card-dark-blue: #1e3a8a;
+
   /* Gauge Colors */
-  --gauge-red: #EF4444;
-  --gauge-yellow: #EAB308;
-  --gauge-green: #22C55E;
-  
+  --gauge-red: #ef4444;
+  --gauge-yellow: #eab308;
+  --gauge-green: #22c55e;
+
   /* Typography */
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
   line-height: 1.5;
   font-weight: 400;
 }
@@ -632,6 +667,7 @@ The application uses **vanilla CSS** with CSS custom properties (variables) for 
 ### Key CSS Classes
 
 #### Layout Classes
+
 ```css
 .app-root          /* Root container */
 .app-body          /* Sidebar + content wrapper */
@@ -641,6 +677,7 @@ The application uses **vanilla CSS** with CSS custom properties (variables) for 
 ```
 
 #### Component Classes
+
 ```css
 .topbar           /* Top navigation bar */
 .sidebar          /* Left sidebar */
@@ -650,6 +687,7 @@ The application uses **vanilla CSS** with CSS custom properties (variables) for 
 ```
 
 #### UI Classes
+
 ```css
 .card              /* Basic card styling */
 .dashboard-tile    /* Glass-morphic tile */
@@ -660,6 +698,7 @@ The application uses **vanilla CSS** with CSS custom properties (variables) for 
 ```
 
 #### Utility Classes
+
 ```css
 .flex, .items-center, .justify-between
 .gap-2, .gap-3, .gap-4
@@ -676,36 +715,36 @@ The application uses **vanilla CSS** with CSS custom properties (variables) for 
 
 ### Color Palette
 
-| Color | Hex | Usage |
-|-------|-----|-------|
-| **Primary Blue** | `#195BAC` | Actions, active states, buttons |
-| **Primary Hover** | `#144a8f` | Button hover states |
-| **Secondary Blue** | `#2563EB` | Accents |
-| **Background** | `#E9F4FF` | App background |
-| **Card Background** | `#FFFFFF` | Cards and surfaces |
-| **Text Main** | `#1E293B` | Primary text |
-| **Text Muted** | `#64748B` | Secondary text |
-| **Border** | `#DAE4F0` | Borders and dividers |
+| Color               | Hex       | Usage                           |
+| ------------------- | --------- | ------------------------------- |
+| **Primary Blue**    | `#195BAC` | Actions, active states, buttons |
+| **Primary Hover**   | `#144a8f` | Button hover states             |
+| **Secondary Blue**  | `#2563EB` | Accents                         |
+| **Background**      | `#E9F4FF` | App background                  |
+| **Card Background** | `#FFFFFF` | Cards and surfaces              |
+| **Text Main**       | `#1E293B` | Primary text                    |
+| **Text Muted**      | `#64748B` | Secondary text                  |
+| **Border**          | `#DAE4F0` | Borders and dividers            |
 
 ### Status Colors
 
-| Status | Hex | Usage |
-|--------|-----|-------|
-| **Success/Green** | `#22C55E` | Positive values, income |
-| **Warning/Yellow** | `#EAB308` | Warnings |
-| **Danger/Red** | `#EF4444` | Errors, negative values |
-| **Info/Teal** | `#0EA5E9` | Info, highlights |
+| Status             | Hex       | Usage                   |
+| ------------------ | --------- | ----------------------- |
+| **Success/Green**  | `#22C55E` | Positive values, income |
+| **Warning/Yellow** | `#EAB308` | Warnings                |
+| **Danger/Red**     | `#EF4444` | Errors, negative values |
+| **Info/Teal**      | `#0EA5E9` | Info, highlights        |
 
 ### Accent Colors (Cards)
 
-| Usage | Hex |
-|-------|-----|
-| Stock | `#0EA5E9` |
+| Usage          | Hex       |
+| -------------- | --------- |
+| Stock          | `#0EA5E9` |
 | Financial Plan | `#8B5CF6` |
-| People | `#F59E0B` |
-| Contacts | `#10B981` |
-| Segregation | `#EC4899` |
-| Split Expense | `#6366F1` |
+| People         | `#F59E0B` |
+| Contacts       | `#10B981` |
+| Segregation    | `#EC4899` |
+| Split Expense  | `#6366F1` |
 
 ### Typography
 
@@ -731,6 +770,7 @@ xl: 1.25rem (20px)
 ### Spacing
 
 Based on rem units:
+
 - `0.25rem` (4px)
 - `0.5rem` (8px)
 - `0.75rem` (12px)
@@ -741,13 +781,13 @@ Based on rem units:
 
 ### Border Radius
 
-| Name | Value | Usage |
-|------|-------|-------|
-| Small | `4px` | Icon buttons |
-| Medium | `8px` | Buttons, inputs |
-| Large | `12px` | Cards, tiles |
-| XL | `16px` | Dashboard tiles |
-| Full | `999px` | Pills, toggles |
+| Name   | Value   | Usage           |
+| ------ | ------- | --------------- |
+| Small  | `4px`   | Icon buttons    |
+| Medium | `8px`   | Buttons, inputs |
+| Large  | `12px`  | Cards, tiles    |
+| XL     | `16px`  | Dashboard tiles |
+| Full   | `999px` | Pills, toggles  |
 
 ### Shadows
 
@@ -779,26 +819,26 @@ The application uses **Lucide React** for all icons.
 
 ### Commonly Used Icons
 
-| Icon | Usage |
-|------|-------|
-| `Home` | Home navigation |
-| `BookOpen` | Books navigation |
-| `Calculator` | Finance navigation |
-| `Users` | Social navigation |
-| `Wallet` | Logo, accounts |
-| `TrendingUp` | Stock, growth |
-| `TrendingDown` | Expenses, decline |
-| `ChevronLeft/Right` | Navigation arrows |
-| `ChevronDown` | Dropdown indicators |
-| `Plus` | Add actions |
-| `User` | Profile, people |
-| `Settings` | Settings |
-| `QrCode` | QR scanning |
-| `Calendar` | Calendar features |
-| `Target` | Goals |
-| `PiggyBank` | Savings |
-| `CreditCard` | Cards, accounts |
-| `Banknote` | Money, transactions |
+| Icon                | Usage               |
+| ------------------- | ------------------- |
+| `Home`              | Home navigation     |
+| `BookOpen`          | Books navigation    |
+| `Calculator`        | Finance navigation  |
+| `Users`             | Social navigation   |
+| `Wallet`            | Logo, accounts      |
+| `TrendingUp`        | Stock, growth       |
+| `TrendingDown`      | Expenses, decline   |
+| `ChevronLeft/Right` | Navigation arrows   |
+| `ChevronDown`       | Dropdown indicators |
+| `Plus`              | Add actions         |
+| `User`              | Profile, people     |
+| `Settings`          | Settings            |
+| `QrCode`            | QR scanning         |
+| `Calendar`          | Calendar features   |
+| `Target`            | Goals               |
+| `PiggyBank`         | Savings             |
+| `CreditCard`        | Cards, accounts     |
+| `Banknote`          | Money, transactions |
 
 ### Icon Usage Example
 
@@ -869,9 +909,18 @@ transition={{ type: "spring", stiffness: 500, damping: 30 }}
 
 ```css
 @keyframes spotlight-pulse {
-  0% { opacity: 0.6; transform: translate3d(-20px, 10px, 0) scale(1); }
-  50% { opacity: 0.9; transform: translate3d(10px, -10px, 0) scale(1.04); }
-  100% { opacity: 0.7; transform: translate3d(0, 0, 0) scale(1.02); }
+  0% {
+    opacity: 0.6;
+    transform: translate3d(-20px, 10px, 0) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate3d(10px, -10px, 0) scale(1.04);
+  }
+  100% {
+    opacity: 0.7;
+    transform: translate3d(0, 0, 0) scale(1.02);
+  }
 }
 ```
 
@@ -879,10 +928,18 @@ transition={{ type: "spring", stiffness: 500, damping: 30 }}
 
 ```css
 @keyframes landing-blob {
-  0% { transform: translate3d(0, 0, 0) scale(1); }
-  30% { transform: translate3d(24px, -40px, 0) scale(1.05); }
-  60% { transform: translate3d(-30px, 30px, 0) scale(0.96); }
-  100% { transform: translate3d(10px, -8px, 0) scale(1.02); }
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  30% {
+    transform: translate3d(24px, -40px, 0) scale(1.05);
+  }
+  60% {
+    transform: translate3d(-30px, 30px, 0) scale(0.96);
+  }
+  100% {
+    transform: translate3d(10px, -8px, 0) scale(1.02);
+  }
 }
 ```
 
@@ -890,8 +947,12 @@ transition={{ type: "spring", stiffness: 500, damping: 30 }}
 
 ```css
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-spin {
@@ -915,6 +976,7 @@ export function cn(...inputs) {
 ```
 
 **Usage:**
+
 ```jsx
 import { cn } from "@/lib/utils";
 
@@ -930,7 +992,7 @@ import { cn } from "@/lib/utils";
 Centralized configuration management using `import.meta.env`.
 
 ```javascript
-import { config } from '@/lib/config';
+import { config } from "@/lib/config";
 
 const apiUrl = config.api.baseUrl; // Access validated env var
 ```
@@ -938,7 +1000,8 @@ const apiUrl = config.api.baseUrl; // Access validated env var
 ### `src/lib/queryClient.js`
 
 Exports the configured `QueryClient` instance and the `queryKeys` factory for consistent cache key management.
-```
+
+````
 
 ### Path Alias
 
@@ -950,12 +1013,13 @@ resolve: {
     '@': path.resolve(__dirname, 'src'),
   },
 }
-```
+````
 
 **Usage:**
+
 ```jsx
-import { Spotlight } from '@/components/ui/spotlight';
-import { cn } from '@/lib/utils';
+import { Spotlight } from "@/components/ui/spotlight";
+import { cn } from "@/lib/utils";
 ```
 
 ---
@@ -966,20 +1030,20 @@ The application uses environment variables for configuration across different de
 
 ### Environment Files
 
-| File | Purpose |
-|------|---------|
-| `.env.example` | Template file with documented variables. Should be copied to create local configurations. |
-| `.env.development` | Configuration for local development (`npm run dev`). |
-| `.env.production` | Configuration for production builds (`npm run build`). |
+| File               | Purpose                                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| `.env.example`     | Template file with documented variables. Should be copied to create local configurations. |
+| `.env.development` | Configuration for local development (`npm run dev`).                                      |
+| `.env.production`  | Configuration for production builds (`npm run build`).                                    |
 
 ### Key Variables
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_API_BASE_URL` | Base URL for backend API requests. |
+| Variable                | Description                                               |
+| ----------------------- | --------------------------------------------------------- |
+| `VITE_API_BASE_URL`     | Base URL for backend API requests.                        |
 | `VITE_ENABLE_DEV_TOOLS` | Boolean feature flag to enable/disable development tools. |
 
-*Note: Never commit `.env.local` or environment files containing real secrets to version control.*
+_Note: Never commit `.env.local` or environment files containing real secrets to version control._
 
 ---
 
@@ -988,18 +1052,18 @@ The application uses environment variables for configuration across different de
 ### Vite Configuration (`vite.config.js`)
 
 ```javascript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'node:path'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      "@": path.resolve(__dirname, "src"),
     },
   },
-})
+});
 ```
 
 ### Production Build
@@ -1028,12 +1092,12 @@ npm run preview
 
 ### Breakpoints
 
-| Breakpoint | Width | Usage |
-|------------|-------|-------|
-| Mobile | < 768px | Single column, hamburger menu |
-| Tablet | 768px - 1024px | 2-column grid |
-| Desktop | > 1024px | Full layout, 3-column grid |
-| Large Desktop | > 1400px | Extended content width |
+| Breakpoint    | Width          | Usage                         |
+| ------------- | -------------- | ----------------------------- |
+| Mobile        | < 768px        | Single column, hamburger menu |
+| Tablet        | 768px - 1024px | 2-column grid                 |
+| Desktop       | > 1024px       | Full layout, 3-column grid    |
+| Large Desktop | > 1400px       | Extended content width        |
 
 ### Key Responsive Behaviors
 
@@ -1068,6 +1132,7 @@ npm run preview
 The application uses a hybrid approach for state management:
 
 ### 1. Server State (TanStack Query)
+
 Managed via `@tanstack/react-query` (v5). This handles data fetching, caching, synchronization, and server state updates.
 
 - **Configuration**: `src/lib/queryClient.js`
@@ -1078,11 +1143,12 @@ Managed via `@tanstack/react-query` (v5). This handles data fetching, caching, s
   - Optimistic updates for mutations
 
 **Example Usage:**
+
 ```jsx
 // Fetching data
 const { data, isLoading } = useQuery({
   queryKey: queryKeys.stock.list(filters),
-  queryFn: () => fetchStockItems(filters)
+  queryFn: () => fetchStockItems(filters),
 });
 
 // Mutating data
@@ -1090,16 +1156,18 @@ const mutation = useMutation({
   mutationFn: updateStockItem,
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.stock.all });
-  }
+  },
 });
 ```
 
 ### 2. Client State
+
 - **Local State**: `useState` / `useReducer` for component-level UI state (modals, form inputs).
 - **URL State**: `react-router-dom` for shareable state (filters, pagination, tabs).
 - **Context API**: Used for global app configuration (e.g., AuthContext, ThemeContext).
 
 ### Future Considerations
+
 - **Zustand**: If complex client-side global state (non-server) is needed in the future.
 
 ---
@@ -1107,11 +1175,13 @@ const mutation = useMutation({
 ## 📝 Coding Conventions
 
 ### File Naming
+
 - Components: `PascalCase.jsx`
 - CSS: `kebab-case.css` or matches component name
 - Utilities: `camelCase.js`
 
 ### Component Structure
+
 ```jsx
 // 1. Imports
 import React from 'react';
@@ -1124,10 +1194,10 @@ const SubComponent = () => { ... };
 const MainComponent = ({ prop1, prop2 }) => {
   // State
   const [state, setState] = useState();
-  
+
   // Handlers
   const handleAction = () => { ... };
-  
+
   // Render
   return (
     <div>...</div>
@@ -1139,6 +1209,7 @@ export default MainComponent;
 ```
 
 ### Style Patterns
+
 - CSS classes for reusable styles
 - Inline styles for dynamic/one-off styles
 - CSS custom properties for theming
@@ -1158,11 +1229,12 @@ export default MainComponent;
 ## 📞 Support
 
 For questions or issues with the frontend codebase, refer to:
+
 - This documentation
 - Component comments and JSDoc
 - Existing component patterns
 
 ---
 
-*Documentation generated: March 7, 2026*
-*Version: 0.0.0 (as per package.json)*
+_Documentation generated: March 7, 2026_
+_Version: 0.0.0 (as per package.json)_
