@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -58,4 +59,3 @@ jobs:
           script: |
             chown -R www-data:www-data /var/www/cliks-FE/dist
             systemctl restart nginx
-
