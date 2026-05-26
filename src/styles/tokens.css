@@ -2,7 +2,7 @@
     --primary: #1B6B3A;
     --primary-hover: #14522d;
     --secondary: #228B4C;
-    --bg-color: #F8FAFC;
+    --bg-color: #F0FDF4;
     /* User requested brand green bg */
     --text-main: #064E3B;
     --text-muted: #4B635A;
@@ -20,6 +20,16 @@
     font-family: var(--font-main, 'Inter', system-ui, -apple-system, sans-serif);
     line-height: 1.5;
     font-weight: 400;
+}
+
+[data-theme='dark'] {
+    --bg-color: #020804;
+    --text-main: #ECFDF5;
+    --text-muted: #A7F3D0;
+    --card-bg: #06150B;
+    --border-color: #064E3B;
+    --primary: #10B981;
+    --primary-hover: #34D399;
 }
 
 html {
