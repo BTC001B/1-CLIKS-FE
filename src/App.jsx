@@ -92,7 +92,7 @@ function AppContent() {
                     <Route path="/" element={<Navigate to="/books/dashboard" replace />} />
                     
                     {/* Finance (formerly Home) Section */}
-                    <Route path="/finance" element={<Navigate to="/payments/wallet" replace />} />
+                    <Route path="/finance" element={<Navigate to="/payments/planner" replace />} />
                     <Route path="/finance/dashboard" element={<Finance />} />
                     <Route path="/finance/income" element={<Income />} />
                     <Route path="/finance/expenses" element={<Expenses />} />

@@ -49,7 +49,7 @@ const Topbar = ({ onToggleSidebar }) => {
 
     const navItems = [
         { name: 'Books', url: '/books/dashboard', icon: BookOpen, activeBase: '/books' },
-        { name: 'Payments', url: '/payments/wallet', icon: Wallet, activeBase: '/payments' },
+        { name: 'Payments', url: '/payments/planner', icon: Wallet, activeBase: '/payments' },
         { name: 'Social', url: '/social/meetup', icon: Users, activeBase: '/social' },
     ];
 

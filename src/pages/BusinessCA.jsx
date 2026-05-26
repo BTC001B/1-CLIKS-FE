@@ -8,18 +8,117 @@ import {
     User, Wallet, Percent, PiggyBank, FileUp, Home, Users, Folder, BarChart, Play, Square, Trash2, PlusCircle, CheckSquare, FileSpreadsheet
 } from 'lucide-react';
 import { accountingService, gstService, contactsService, caService, profileService } from '../services';
-import { formatCurrency } from '../lib/formatCurrency';
+import { useCurrency } from '../context';
+import FilterableTableHead from '../components/FilterableTableHead';
+import { applyTableFilters } from '../utils/filterUtils';
 
 export default function BusinessCA() {
-    const currency = { symbol: '₹' };
-    const [activeTab, setActiveTab] = useState('auditor'); // auditor | ca_cpa | cs_vault | consultant
+    const { currency, formatCurrency } = useCurrency();
+    const [activeTab] = useState('auditor'); // auditor | ca_cpa | cs_vault | consultant
 
     // Top-level workspace mode switcher
     const [caMode, setCaMode] = useState('business'); // business | personal
     const [personalTab, setPersonalTab] = useState('home'); // home | clients | requests | insights | tasks | timetracking | workpaper | documents | reports
 
+    // --- Teams & Team Requests Queries & States ---
+    const { data: teamMembers = [], refetch: refetchTeamMembers } = useQuery({
+        queryKey: ['teamMembers'],
+        queryFn: () => caService.getTeamMembers(),
+        retry: false
+    });
+
+    const { data: teamRequests = [], refetch: refetchTeamRequests } = useQuery({
+        queryKey: ['teamRequests'],
+        queryFn: () => caService.getTeamRequests(),
+        retry: false
+    });
+
+    const [showAddTeamMemberModal, setShowAddTeamMemberModal] = useState(false);
+    const [newTeamEmail, setNewTeamEmail] = useState('');
+    const [newTeamRole, setNewTeamRole] = useState('Senior Tax Consultant');
+    const [customTeamRole, setCustomTeamRole] = useState('');
+    const [colFiltersChecklist, setColFiltersChecklist] = useState({});
+    const [colFiltersClients, setColFiltersClients] = useState({});
+    const [colFiltersTasks, setColFiltersTasks] = useState({});
+    const [colFiltersTeam, setColFiltersTeam] = useState({});
+    const [colFiltersTeamReq, setColFiltersTeamReq] = useState({});
+    const [colFiltersReports, setColFiltersReports] = useState({});
+    const [colFiltersDocuments, setColFiltersDocuments] = useState({});
+    const [colFiltersTimesheet, setColFiltersTimesheet] = useState({});
+    // Workpaper per-client state
+    const [selectedWorkpaperClientId, setSelectedWorkpaperClientId] = useState(null);
+    const [clientWorkpaperChecks, setClientWorkpaperChecks] = useState({});
+
+    const removeTeamMemberMutation = useMutation({
+        mutationFn: (id) => caService.removeTeamMember(id),
+        onSuccess: () => {
+            refetchTeamMembers();
+        },
+        onError: (err) => alert(err.response?.data?.message || err.message || 'Failed to remove team member')
+    });
+
+    const addTeamRequestMutation = useMutation({
+        mutationFn: ({ email, role }) => caService.addTeamRequest(email, role),
+        onSuccess: (data) => {
+            refetchTeamRequests();
+            setNewTeamEmail('');
+            setCustomTeamRole('');
+            setShowAddTeamMemberModal(false);
+            alert(`✉️ Team invitation sent successfully to ${data.email || 'the user'}! The request will show in the Team Requests tab.`);
+        },
+        onError: (err) => alert(err.response?.data?.message || err.message || 'Failed to send team invitation')
+    });
+
+    const acceptTeamRequestMutation = useMutation({
+        mutationFn: (id) => caService.acceptTeamRequest(id),
+        onSuccess: (data) => {
+            refetchTeamMembers();
+            refetchTeamRequests();
+            alert(`🎉 Joined! ${data.newMember?.name || 'The candidate'} has been successfully added to your team.`);
+        },
+        onError: (err) => alert(err.response?.data?.message || err.message || 'Failed to accept team request')
+    });
+
+    const rejectTeamRequestMutation = useMutation({
+        mutationFn: (id) => caService.rejectTeamRequest(id),
+        onSuccess: () => {
+            refetchTeamRequests();
+        },
+        onError: (err) => alert(err.response?.data?.message || err.message || 'Failed to decline team request')
+    });
+
+    const cancelTeamRequestMutation = useMutation({
+        mutationFn: (id) => caService.cancelTeamRequest(id),
+        onSuccess: () => {
+            refetchTeamRequests();
+        },
+        onError: (err) => alert(err.response?.data?.message || err.message || 'Failed to cancel team request')
+    });
+
+    const handleSendTeamInvitation = (e) => {
+        e.preventDefault();
+        if (!newTeamEmail.trim() || !newTeamEmail.includes('@')) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+        const emailLower = newTeamEmail.trim().toLowerCase();
+        
+        if (teamMembers.some(m => m.email.toLowerCase() === emailLower)) {
+            alert('This user is already a member of your team.');
+            return;
+        }
+        if (teamRequests.some(r => r.email.toLowerCase() === emailLower)) {
+            alert('An invitation has already been sent or is pending for this user.');
+            return;
+        }
+
+        const finalRole = newTeamRole === 'Others' ? (customTeamRole.trim() || 'Custom Role') : newTeamRole;
+        addTeamRequestMutation.mutate({ email: emailLower, role: finalRole });
+    };
+
     // --- Business to Personal CA Connection States ---
     const [inviteEmailInput, setInviteEmailInput] = useState('');
+    const [showRevokeId, setShowRevokeId] = useState(null);
 
     // --- Personal CA Zoho Practice Queries & States ---
     const { data: practiceClients = [], refetch: refetchClients } = useQuery({
@@ -93,6 +192,7 @@ export default function BusinessCA() {
     const [activeDocFolder, setActiveDocFolder] = useState('All');
     const [uploadProgress, setUploadProgress] = useState(null);
     const [uploadedFileName, setUploadedFileName] = useState('');
+    const [uploadedFileSize, setUploadedFileSize] = useState('1.4 MB');
     const [uploadTargetFolder, setUploadTargetFolder] = useState('ITR Filings FY2025-26');
 
     const [workpaperChecks, setWorkpaperChecks] = useState({
@@ -109,8 +209,9 @@ export default function BusinessCA() {
         { id: 'home', label: 'Home', icon: Home },
         { id: 'clients', label: 'Clients', icon: User, badge: null },
         { id: 'requests', label: 'Client Requests', icon: HelpCircle, badge: null },
-        { id: 'insights', label: 'Insights', icon: TrendingUp },
         { id: 'tasks', label: 'Tasks', icon: CheckCircle2, badge: null },
+        { id: 'teams', label: 'Teams', icon: Users, badge: null },
+        { id: 'team_requests', label: 'Team Requests', icon: UserCheck, badge: null },
         { id: 'timetracking', label: 'Time Tracking', icon: Clock, badge: null },
         { id: 'workpaper', label: 'Workpaper', icon: FileText },
         { id: 'documents', label: 'Documents', icon: Folder },
@@ -168,6 +269,7 @@ export default function BusinessCA() {
             clientName: newRequestClient,
             title: newRequestTitle.trim(),
             description: newRequestDesc.trim(),
+            // eslint-disable-next-line react-hooks/purity
             dueDate: newRequestDueDate || new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split('T')[0],
             priority: newRequestPriority,
             docType: newRequestDocType
@@ -181,6 +283,7 @@ export default function BusinessCA() {
             clientName: newTaskClient,
             title: newTaskTitle.trim(),
             priority: newTaskPriority,
+            // eslint-disable-next-line react-hooks/purity
             dueDate: newTaskDueDate || new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString().split('T')[0],
             askForDocument: newTaskAskForDocument
         });
@@ -210,6 +313,16 @@ export default function BusinessCA() {
         });
     };
 
+    const handleLaptopFileSelected = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploadedFileName(file.name);
+        const formattedSize = file.size > 1024 * 1024 
+            ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
+            : `${(file.size / 1024).toFixed(0)} KB`;
+        setUploadedFileSize(formattedSize);
+    };
+
     const handleSimulateDocumentUpload = (e) => {
         e.preventDefault();
         if (!uploadedFileName.trim()) return;
@@ -221,7 +334,7 @@ export default function BusinessCA() {
                     setTimeout(() => {
                         addFileMutation.mutate({
                             name: uploadedFileName.trim(),
-                            size: '1.4 MB',
+                            size: uploadedFileSize || '1.4 MB',
                             folderName: uploadTargetFolder,
                             date: new Date().toISOString().split('T')[0]
                         });
@@ -237,6 +350,7 @@ export default function BusinessCA() {
     const [_accountingStandard, setAccountingStandard] = useState('IFRS'); // IFRS | GAAP
     const [isScanning, setIsScanning] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
+    // eslint-disable-next-line no-unused-vars
     const [scanResults, setScanResults] = useState(null);
 
     // Module 2: CA / CPA Module States
@@ -520,6 +634,7 @@ export default function BusinessCA() {
     };
 
     // Dynamic compliance scan trigger
+    // eslint-disable-next-line no-unused-vars
     const triggerComplianceScan = () => {
         setIsScanning(true);
         setScanProgress(0);
@@ -642,7 +757,7 @@ export default function BusinessCA() {
                     }}
                 >
                     <Building size={18} />
-                    Business FIN-PRO Command Centre
+                    FIN-PRO Command Centre (Business)
                 </button>
                 <button 
                     onClick={() => setCaMode('personal')} 
@@ -664,7 +779,7 @@ export default function BusinessCA() {
                     }}
                 >
                     <User size={18} />
-                    Personal FIN-PRO Advisory Workspace
+                    FIN-PRO Advisory Workspace (Firm)
                 </button>
             </div>
 
@@ -712,7 +827,8 @@ export default function BusinessCA() {
                                 const clientNameLower = task.clientName.toLowerCase();
                                 const isMyEmail = myEmail && clientNameLower === myEmail.toLowerCase();
                                 const isConnectedCA = connectedCaEmail && clientNameLower === connectedCaEmail.toLowerCase();
-                                return isMyEmail || isConnectedCA;
+                                const isMockClient = ['rohan sharma', 'priya patel (sme)', 'vikram malhotra', 'aditya birla group (individual)', 'ananya roy', 'general client'].includes(clientNameLower);
+                                return isMyEmail || isConnectedCA || isMockClient;
                             });
                             const pendingCount = myClientTasks.filter(t => t.status !== 'Completed').length;
 
@@ -752,16 +868,14 @@ export default function BusinessCA() {
                                         ) : (
                                             <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '12px' }}>
                                                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                                    <thead>
-                                                        <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#64748B', fontSize: '12px', fontWeight: '800' }}>
-                                                            <th style={{ padding: '14px 20px' }}>Task Details</th>
-                                                            <th style={{ padding: '14px 20px' }}>Due Date</th>
-                                                            <th style={{ padding: '14px 20px' }}>Priority</th>
-                                                            <th style={{ padding: '14px 20px' }}>Filing Status / Action</th>
-                                                        </tr>
-                                                    </thead>
+                                                    <FilterableTableHead columns={[
+                                                        { key: 'title', label: 'Task Details', placeholder: 'Search task...' },
+                                                        { key: 'dueDate', label: 'Due Date', placeholder: 'Due date...' },
+                                                        { key: 'priority', label: 'Priority', placeholder: 'Priority...' },
+                                                        { key: 'status', label: 'Filing Status / Action', placeholder: 'Status...' }
+                                                    ]} onFilterChange={setColFiltersChecklist} />
                                                     <tbody>
-                                                        {myClientTasks.map(task => (
+                                                        {myClientTasks.filter(item => applyTableFilters(item, colFiltersChecklist)).map(task => (
                                                             <tr key={task.id} style={{ borderBottom: '1px solid #F1F5F9', fontSize: '13px' }}>
                                                                 <td style={{ padding: '16px 20px', fontWeight: '800', color: task.status === 'Completed' ? '#94A3B8' : '#0F172A', textDecoration: task.status === 'Completed' ? 'line-through' : 'none' }}>
                                                                     {task.title}
@@ -806,22 +920,31 @@ export default function BusinessCA() {
                                                                                     <CheckCircle2 size={14} /> Uploaded
                                                                                 </span>
                                                                             ) : (
-                                                                                <button 
-                                                                                    type="button"
-                                                                                    onClick={() => uploadTaskDocMutation.mutate(task.id)}
-                                                                                    style={{
-                                                                                        padding: '6px 12px',
-                                                                                        borderRadius: '8px',
-                                                                                        background: '#0F172A',
-                                                                                        color: '#FFFFFF',
-                                                                                        border: 'none',
-                                                                                        fontWeight: '800',
-                                                                                        fontSize: '12px',
-                                                                                        cursor: 'pointer'
-                                                                                    }}
-                                                                                >
-                                                                                    Upload Document
-                                                                                </button>
+                                                                                <label style={{ cursor: 'pointer', display: 'inline-block' }}>
+                                                                                    <input 
+                                                                                        type="file" 
+                                                                                        style={{ display: 'none' }} 
+                                                                                        onChange={(e) => {
+                                                                                            if (e.target.files && e.target.files.length > 0) {
+                                                                                                uploadTaskDocMutation.mutate(task.id);
+                                                                                            }
+                                                                                        }}
+                                                                                    />
+                                                                                    <span 
+                                                                                        style={{
+                                                                                            padding: '6px 12px',
+                                                                                            borderRadius: '8px',
+                                                                                            background: '#0F172A',
+                                                                                            color: '#FFFFFF',
+                                                                                            border: 'none',
+                                                                                            fontWeight: '800',
+                                                                                            fontSize: '12px',
+                                                                                            display: 'inline-block'
+                                                                                        }}
+                                                                                    >
+                                                                                        Upload Document
+                                                                                    </span>
+                                                                                </label>
                                                                             )
                                                                         )}
                                                                     </div>
@@ -1258,7 +1381,10 @@ export default function BusinessCA() {
                             // 3. CONNECTED STATE
                             outgoingInvitations.filter(inv => inv.status === 'Accepted').map(inv => (
                                 <div key={inv.id} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                    <div style={{ padding: '16px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div 
+                                        onClick={() => setShowRevokeId(showRevokeId === inv.id ? null : inv.id)}
+                                        style={{ padding: '16px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                                    >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
                                                 <UserCheck size={20} />
@@ -1268,12 +1394,14 @@ export default function BusinessCA() {
                                                 <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: '600', marginTop: '2px' }}>Authorized Accountant Partner • Connected since {inv.created_at ? new Date(inv.created_at).toLocaleDateString() : 'Just now'}</div>
                                             </div>
                                         </div>
-                                        <button 
-                                            onClick={() => handleRevokeCA(inv.id)} 
-                                            style={{ padding: '8px 14px', background: '#FFF1F2', color: '#E11D48', border: '1px solid #FECDD3', borderRadius: '8px', fontSize: '12px', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
-                                        >
-                                            Revoke Access
-                                        </button>
+                                        {showRevokeId === inv.id && (
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handleRevokeCA(inv.id); }} 
+                                                style={{ padding: '8px 14px', background: '#FFF1F2', color: '#E11D48', border: '1px solid #FECDD3', borderRadius: '8px', fontSize: '12px', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s' }}
+                                            >
+                                                Revoke Access
+                                            </button>
+                                        )}
                                     </div>
 
                                     {/* Privileges/What CA can do */}
@@ -1377,6 +1505,11 @@ export default function BusinessCA() {
                                     {tab.id === 'tasks' && practiceTasks.filter(t => t.status !== 'Completed').length > 0 && (
                                         <span style={{ fontSize: '10px', fontWeight: '900', background: '#FFFBEB', color: '#D97706', border: '1px solid #FEF3C7', padding: '1px 6px', borderRadius: '8px', marginLeft: '2px' }}>
                                             {practiceTasks.filter(t => t.status !== 'Completed').length}
+                                        </span>
+                                    )}
+                                    {tab.id === 'team_requests' && teamRequests.filter(r => r.status === 'Pending').length > 0 && (
+                                        <span style={{ fontSize: '10px', fontWeight: '900', background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE', padding: '1px 6px', borderRadius: '8px', marginLeft: '2px' }}>
+                                            {teamRequests.filter(r => r.status === 'Pending').length}
                                         </span>
                                     )}
                                 </button>
@@ -1539,18 +1672,19 @@ export default function BusinessCA() {
 
                                     <div style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
                                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                            <thead>
-                                                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#64748B', fontSize: '12.5px', fontWeight: '800' }}>
-                                                    <th style={{ padding: '14px 20px' }}>Taxpayer Name</th>
-                                                    <th style={{ padding: '14px 20px' }}>Email Address</th>
-                                                    <th style={{ padding: '14px 20px' }}>Regime</th>
-                                                    <th style={{ padding: '14px 20px' }}>Est. Gross Income</th>
-                                                    <th style={{ padding: '14px 20px' }}>Pending Filings</th>
-                                                    <th style={{ padding: '14px 20px' }}>Status</th>
-                                                </tr>
-                                            </thead>
+                                            <FilterableTableHead columns={[
+                                                { key: 'name', label: 'Taxpayer Name', placeholder: 'Name...' },
+                                                { key: 'email', label: 'Email Address', placeholder: 'Email...' },
+                                                { key: 'regime', label: 'Regime', placeholder: 'Regime...' },
+                                                { key: 'income', label: 'Est. Gross Income', placeholder: 'Income...' },
+                                                { key: 'pendingFilings', label: 'Pending Filings', placeholder: 'Pending...' },
+                                                { key: 'status', label: 'Status', placeholder: 'Status...' }
+                                            ]} onFilterChange={setColFiltersClients} />
                                             <tbody>
-                                                {allPracticeClients.filter(c => c.name.toLowerCase().includes(activeClientSearch.toLowerCase()) || c.email.toLowerCase().includes(activeClientSearch.toLowerCase())).map(client => (
+                                                {allPracticeClients
+                                                    .filter(c => c.name.toLowerCase().includes(activeClientSearch.toLowerCase()) || c.email.toLowerCase().includes(activeClientSearch.toLowerCase()))
+                                                    .filter(item => applyTableFilters(item, colFiltersClients))
+                                                    .map(client => (
                                                     <tr key={client.id} style={{ borderBottom: '1px solid #F1F5F9', fontSize: '13.5px' }}>
                                                         <td style={{ padding: '16px 20px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                             <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#F0FDF4', color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900' }}>{client.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
@@ -1759,57 +1893,6 @@ export default function BusinessCA() {
                                 </Motion.div>
                             )}
 
-                            {/* 4. INSIGHTS TAB */}
-                            {personalTab === 'insights' && (
-                                <Motion.div key="insights" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-                                        <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '750' }}>Client Filing Completion</span>
-                                            <div style={{ fontSize: '28px', fontWeight: '950', color: '#15803d' }}>84.5%</div>
-                                            <span style={{ fontSize: '11px', color: '#15803d', fontWeight: '600' }}>+4.2% since last week</span>
-                                        </div>
-                                        <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '750' }}>Average Turnaround Time</span>
-                                            <div style={{ fontSize: '28px', fontWeight: '950', color: '#0F172A' }}>4.2 Days</div>
-                                            <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>Document request to audit</span>
-                                        </div>
-                                        <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '750' }}>Compliance Success Rate</span>
-                                            <div style={{ fontSize: '28px', fontWeight: '950', color: '#15803d' }}>98.2%</div>
-                                            <span style={{ fontSize: '11px', color: '#15803d', fontWeight: '600' }}>Filing season accuracy</span>
-                                        </div>
-                                    </div>
-
-                                    {/* CSS filings visual bar chart */}
-                                    <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                                        <h3 style={{ fontSize: '15px', fontWeight: '850', color: '#0F172A', margin: '0 0 20px 0' }}>📈 Monthly Filing Lodgement Load (FY 2025-26)</h3>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                            {[
-                                                { month: 'April', count: 12, max: 60, pct: '20%' },
-                                                { month: 'May', count: 28, max: 60, pct: '46%' },
-                                                { month: 'June', count: 45, max: 60, pct: '75%' },
-                                                { month: 'July (Projected Peak)', count: 58, max: 60, pct: '96%' }
-                                            ].map((bar, idx) => (
-                                                <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', fontWeight: '750', color: '#334155' }}>
-                                                        <span>{bar.month}</span>
-                                                        <span>{bar.count} Invoices &amp; Returns Filed</span>
-                                                    </div>
-                                                    <div style={{ width: '100%', height: '18px', background: '#F1F5F9', borderRadius: '9px', overflow: 'hidden' }}>
-                                                        <Motion.div 
-                                                            initial={{ width: 0 }} 
-                                                            animate={{ width: bar.pct }} 
-                                                            transition={{ duration: 0.8, delay: idx * 0.15 }}
-                                                            style={{ height: '100%', background: 'linear-gradient(90deg, #15803d 0%, #166534 100%)', borderRadius: '9px' }} 
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </Motion.div>
-                            )}
-
                             {/* 5. TASKS TAB */}
                             {personalTab === 'tasks' && (
                                 <Motion.div key="tasks" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1822,17 +1905,15 @@ export default function BusinessCA() {
 
                                     <div style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
                                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                            <thead>
-                                                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#64748B', fontSize: '12.5px', fontWeight: '800' }}>
-                                                    <th style={{ padding: '14px 20px' }}>Task Description</th>
-                                                    <th style={{ padding: '14px 20px' }}>Taxpayer Client</th>
-                                                    <th style={{ padding: '14px 20px' }}>Due Date</th>
-                                                    <th style={{ padding: '14px 20px' }}>Priority</th>
-                                                    <th style={{ padding: '14px 20px' }}> Filing Lifecycle Status</th>
-                                                </tr>
-                                            </thead>
+                                            <FilterableTableHead columns={[
+                                                { key: 'title', label: 'Task Description', placeholder: 'Search...' },
+                                                { key: 'clientName', label: 'Taxpayer Client', placeholder: 'Client...' },
+                                                { key: 'dueDate', label: 'Due Date', placeholder: 'Date...' },
+                                                { key: 'priority', label: 'Priority', placeholder: 'Priority...' },
+                                                { key: 'status', label: 'Filing Lifecycle Status', placeholder: 'Status...' }
+                                            ]} onFilterChange={setColFiltersTasks} />
                                             <tbody>
-                                                {practiceTasks.map(task => (
+                                                {practiceTasks.filter(item => applyTableFilters(item, colFiltersTasks)).map(task => (
                                                     <tr key={task.id} style={{ borderBottom: '1px solid #F1F5F9', fontSize: '13.5px' }}>
                                                         <td style={{ padding: '16px 20px', fontWeight: '800', color: task.status === 'Completed' ? '#94A3B8' : '#0F172A', textDecoration: task.status === 'Completed' ? 'line-through' : 'none' }}>
                                                             {task.title}
@@ -1876,6 +1957,256 @@ export default function BusinessCA() {
                                                 ))}
                                             </tbody>
                                         </table>
+                                    </div>
+                                </Motion.div>
+                            )}
+
+                            {/* TEAMS TAB */}
+                            {personalTab === 'teams' && (
+                                <Motion.div key="teams" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <h2 style={{ fontSize: '16px', fontWeight: '850', color: '#0F172A', margin: 0 }}>👥 Practice Team Members</h2>
+                                            <p style={{ fontSize: '12px', color: '#64748B', margin: '4px 0 0 0' }}>Manage roles, access control, and staff associations inside your advisory firm.</p>
+                                        </div>
+                                        <button onClick={() => setShowAddTeamMemberModal(true)} style={{ padding: '8px 16px', background: '#15803d', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Plus size={16} /> Add Team Member
+                                        </button>
+                                    </div>
+
+                                    <div style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+                                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                            <FilterableTableHead columns={[
+                                                { key: 'name', label: 'Team Member', placeholder: 'Search member...' },
+                                                { key: 'email', label: 'Email Address', placeholder: 'Search email...' },
+                                                { key: 'role', label: 'Designation / Role', placeholder: 'Search role...' },
+                                                { key: 'status', label: 'Status', placeholder: 'Search status...' },
+                                                { key: '_actions', label: 'Actions', noFilter: true }
+                                            ]} onFilterChange={setColFiltersTeam} />
+                                            <tbody>
+                                                {teamMembers.filter(member => applyTableFilters(member, colFiltersTeam)).map(member => {
+                                                    const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                                                    return (
+                                                        <tr key={member.id} style={{ borderBottom: '1px solid #F1F5F9', fontSize: '13.5px' }}>
+                                                            <td style={{ padding: '16px 20px' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                    <div style={{
+                                                                        width: '32px',
+                                                                        height: '32px',
+                                                                        borderRadius: '50%',
+                                                                        background: '#E2F0D9',
+                                                                        color: '#15803d',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        fontWeight: '900',
+                                                                        fontSize: '12px'
+                                                                    }}>
+                                                                        {initials}
+                                                                    </div>
+                                                                    <span style={{ fontWeight: '800', color: '#0F172A' }}>{member.name}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td style={{ padding: '16px 20px', color: '#475569', fontWeight: '500', fontFamily: 'monospace' }}>{member.email}</td>
+                                                            <td style={{ padding: '16px 20px' }}>
+                                                                <span style={{
+                                                                    fontSize: '11px',
+                                                                    fontWeight: '800',
+                                                                    padding: '4px 10px',
+                                                                    borderRadius: '12px',
+                                                                    backgroundColor: '#EFF6FF',
+                                                                    color: '#1D4ED8'
+                                                                }}>{member.role}</span>
+                                                            </td>
+                                                            <td style={{ padding: '16px 20px' }}>
+                                                                <span style={{
+                                                                    fontSize: '11px',
+                                                                    fontWeight: '800',
+                                                                    padding: '4px 10px',
+                                                                    borderRadius: '12px',
+                                                                    backgroundColor: member.status === 'Active' ? '#ECFDF5' : '#FFFBEB',
+                                                                    color: member.status === 'Active' ? '#059669' : '#D97706'
+                                                                }}>{member.status}</span>
+                                                            </td>
+                                                            <td style={{ padding: '16px 20px', textAlign: 'right' }}>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (confirm(`Are you sure you want to remove ${member.name} from the practice team?`)) {
+                                                                            removeTeamMemberMutation.mutate(member.id);
+                                                                        }
+                                                                    }}
+                                                                    style={{
+                                                                        padding: '6px 12px',
+                                                                        background: 'transparent',
+                                                                        border: '1.5px solid #FEE2E2',
+                                                                        borderRadius: '8px',
+                                                                        color: '#EF4444',
+                                                                        fontWeight: '700',
+                                                                        fontSize: '12px',
+                                                                        cursor: 'pointer',
+                                                                        transition: 'all 0.2s'
+                                                                    }}
+                                                                    onMouseEnter={e => {
+                                                                        e.currentTarget.style.background = '#FEF2F2';
+                                                                    }}
+                                                                    onMouseLeave={e => {
+                                                                        e.currentTarget.style.background = 'transparent';
+                                                                    }}
+                                                                >
+                                                                    Remove
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </Motion.div>
+                            )}
+
+                            {/* TEAM REQUESTS TAB */}
+                            {personalTab === 'team_requests' && (
+                                <Motion.div key="team_requests" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    <div>
+                                        <h2 style={{ fontSize: '16px', fontWeight: '850', color: '#0F172A', margin: 0 }}>✉️ Team Invitations & Requests</h2>
+                                        <p style={{ fontSize: '12px', color: '#64748B', margin: '4px 0 0 0' }}>Approve incoming join requests or track pending outgoing invitations sent to other advisors.</p>
+                                    </div>
+
+                                    <div style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+                                        {teamRequests.length === 0 ? (
+                                            <div style={{ padding: '48px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                                                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
+                                                    <UserCheck size={24} />
+                                                </div>
+                                                <div>
+                                                    <h4 style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', margin: '0 0 4px 0' }}>No Pending Requests</h4>
+                                                    <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>All team invitations and member requests have been fully processed.</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                                <FilterableTableHead columns={[
+                                                    { key: 'name', label: 'Target Candidate', placeholder: 'Name...' },
+                                                    { key: 'email', label: 'Email Address', placeholder: 'Email...' },
+                                                    { key: 'role', label: 'Proposed Role', placeholder: 'Role...' },
+                                                    { key: 'type', label: 'Direction', placeholder: 'Type...' },
+                                                    { key: 'status', label: 'Status', placeholder: 'Status...' }
+                                                ]} onFilterChange={setColFiltersChecklist} />
+                                                <tbody>
+                                                    {teamRequests.filter(item => applyTableFilters(item, colFiltersChecklist)).map(req => {
+                                                        const initials = req.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                                                        return (
+                                                            <tr key={req.id} style={{ borderBottom: '1px solid #F1F5F9', fontSize: '13.5px' }}>
+                                                                <td style={{ padding: '16px 20px', fontWeight: '800', color: '#0F172A' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                        <div style={{
+                                                                            width: '28px',
+                                                                            height: '28px',
+                                                                            borderRadius: '50%',
+                                                                            background: req.type === 'Incoming' ? '#EFF6FF' : '#FFF7ED',
+                                                                            color: req.type === 'Incoming' ? '#1D4ED8' : '#EA580C',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            fontWeight: '900',
+                                                                            fontSize: '11px'
+                                                                        }}>
+                                                                            {initials}
+                                                                        </div>
+                                                                        <span>{req.name}</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td style={{ padding: '16px 20px', color: '#475569', fontWeight: '500', fontFamily: 'monospace' }}>{req.email}</td>
+                                                                <td style={{ padding: '16px 20px', color: '#475569', fontWeight: '600' }}>{req.role}</td>
+                                                                <td style={{ padding: '16px 20px' }}>
+                                                                    <span style={{
+                                                                        fontSize: '11px',
+                                                                        fontWeight: '800',
+                                                                        padding: '3px 8px',
+                                                                        borderRadius: '12px',
+                                                                        backgroundColor: req.type === 'Incoming' ? '#E0F2FE' : '#FEE2E2',
+                                                                        color: req.type === 'Incoming' ? '#0369A1' : '#B91C1C'
+                                                                    }}>{req.type}</span>
+                                                                </td>
+                                                                <td style={{ padding: '16px 20px' }}>
+                                                                    <span style={{
+                                                                        fontSize: '11px',
+                                                                        fontWeight: '800',
+                                                                        padding: '3px 8px',
+                                                                        borderRadius: '12px',
+                                                                        backgroundColor: '#FEF3C7',
+                                                                        color: '#D97706'
+                                                                    }}>{req.status}</span>
+                                                                </td>
+                                                                <td style={{ padding: '16px 20px', textAlign: 'right' }}>
+                                                                    {req.type === 'Incoming' ? (
+                                                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    acceptTeamRequestMutation.mutate(req.id);
+                                                                                }}
+                                                                                style={{
+                                                                                    padding: '6px 12px',
+                                                                                    background: '#15803d',
+                                                                                    border: 'none',
+                                                                                    borderRadius: '8px',
+                                                                                    color: 'white',
+                                                                                    fontWeight: '800',
+                                                                                    fontSize: '12px',
+                                                                                    cursor: 'pointer'
+                                                                                }}
+                                                                            >
+                                                                                Accept
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    if (confirm(`Reject request from ${req.name}?`)) {
+                                                                                        rejectTeamRequestMutation.mutate(req.id);
+                                                                                    }
+                                                                                }}
+                                                                                style={{
+                                                                                    padding: '6px 12px',
+                                                                                    background: 'transparent',
+                                                                                    border: '1.5px solid #E2E8F0',
+                                                                                    borderRadius: '8px',
+                                                                                    color: '#64748B',
+                                                                                    fontWeight: '700',
+                                                                                    fontSize: '12px',
+                                                                                    cursor: 'pointer'
+                                                                                }}
+                                                                            >
+                                                                                Decline
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                if (confirm(`Cancel invitation to ${req.name}?`)) {
+                                                                                    cancelTeamRequestMutation.mutate(req.id);
+                                                                                }
+                                                                            }}
+                                                                            style={{
+                                                                                padding: '6px 12px',
+                                                                                background: 'transparent',
+                                                                                border: '1.5px solid #E2E8F0',
+                                                                                borderRadius: '8px',
+                                                                                color: '#64748B',
+                                                                                fontWeight: '700',
+                                                                                fontSize: '12px',
+                                                                                cursor: 'pointer'
+                                                                            }}
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        )}
                                     </div>
                                 </Motion.div>
                             )}
@@ -1966,17 +2297,15 @@ export default function BusinessCA() {
                                             <h3 style={{ fontSize: '15px', fontWeight: '850', color: '#0F172A', margin: '0 0 16px 0' }}>📅 Practice Timesheet Sessions History</h3>
                                             <div style={{ overflowX: 'auto' }}>
                                                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-                                                    <thead>
-                                                        <tr style={{ borderBottom: '2px solid #F1F5F9', color: '#64748B', fontWeight: '800' }}>
-                                                            <th style={{ padding: '10px 8px' }}>Client</th>
-                                                            <th style={{ padding: '10px 8px' }}>Task description</th>
-                                                            <th style={{ padding: '10px 8px' }}>Date</th>
-                                                            <th style={{ padding: '10px 8px' }}>Duration</th>
-                                                            <th style={{ padding: '10px 8px', textAlign: 'right' }}>Billable</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {practiceTimesheets.map(session => (
+                                                     <FilterableTableHead columns={[
+                                                            { key: 'clientName', label: 'Client', placeholder: 'Client...' },
+                                                            { key: 'taskName', label: 'Task Description', placeholder: 'Task...' },
+                                                            { key: 'date', label: 'Date', placeholder: 'Date...' },
+                                                            { key: 'duration', label: 'Duration', placeholder: 'Duration...' },
+                                                            { key: 'billable', label: 'Billable', placeholder: 'Yes/No...' }
+                                                        ]} onFilterChange={setColFiltersTimesheet} />
+                                                     <tbody>
+                                                        {practiceTimesheets.filter(item => applyTableFilters(item, colFiltersTimesheet)).map(session => (
                                                             <tr key={session.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                                 <td style={{ padding: '12px 8px', fontWeight: '800', color: '#0F172A' }}>{session.clientName}</td>
                                                                 <td style={{ padding: '12px 8px', fontWeight: '600', color: '#334155' }}>{session.taskName}</td>
@@ -1989,7 +2318,7 @@ export default function BusinessCA() {
                                                                 </td>
                                                             </tr>
                                                         ))}
-                                                    </tbody>
+                                                     </tbody>
                                                 </table>
                                             </div>
                                         </div>
@@ -2000,80 +2329,256 @@ export default function BusinessCA() {
                             {/* 7. WORKPAPER TAB */}
                             {personalTab === 'workpaper' && (
                                 <Motion.div key="workpaper" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '24px' }}>
-                                        {/* Checklist item list */}
-                                        <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                            <div>
-                                                <h3 style={{ fontSize: '15px', fontWeight: '850', color: '#0F172A', margin: 0 }}>📝 Statutory Audit &amp; Verification checklists</h3>
-                                                <p style={{ fontSize: '12.5px', color: '#64748B', marginTop: '4px', fontWeight: '500', lineHeight: '1.4' }}>Operational checklist steps to verify compliance feeds before government tax portal synchronisation.</p>
+                                    {!selectedWorkpaperClientId ? (
+                                        /* ── Client List View ── */
+                                        <div style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+                                            <div style={{ padding: '20px 24px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div>
+                                                    <h3 style={{ fontSize: '15px', fontWeight: '850', color: '#0F172A', margin: 0 }}>📝 Workpaper — Select a Client</h3>
+                                                    <p style={{ fontSize: '12.5px', color: '#64748B', margin: '4px 0 0 0' }}>Click on a client to view and manage their audit checklist.</p>
+                                                </div>
                                             </div>
-
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
-                                                {[
-                                                    { id: 'aisTds', label: '1. Reconciliation of Form 26AS & AIS/TIS TDS matching with client ledgers' },
-                                                    { id: 'gstItc', label: '2. GST Input Tax Credit (ITC) matching and inward invoice sync' },
-                                                    { id: 'invest80c', label: '3. Verification of Section 80C, 80D receipts & insurance tax exclusions' },
-                                                    { id: 'capGains', label: '4. Capital Gains Statement valuation matching (Mutual funds & equity logs)' },
-                                                    { id: 'presumptive44ad', label: '5. Presumptive Business verification under Sec 44AD turnover checks' }
-                                                ].map(item => (
-                                                    <label 
-                                                        key={item.id} 
-                                                        style={{ 
-                                                            display: 'flex', 
-                                                            alignItems: 'center', 
-                                                            gap: '12px', 
-                                                            padding: '16px', 
-                                                            borderRadius: '12px', 
-                                                            border: '1.5px solid', 
-                                                            borderColor: workpaperChecks[item.id] ? '#15803d' : '#E2E8F0',
-                                                            background: workpaperChecks[item.id] ? '#F0FDF4' : 'transparent',
-                                                            fontSize: '13px', 
-                                                            fontWeight: '750', 
-                                                            color: workpaperChecks[item.id] ? '#166534' : '#334155', 
-                                                            cursor: 'pointer',
-                                                            transition: 'all 0.15s ease' 
-                                                        }}
-                                                    >
-                                                        <input 
-                                                            type="checkbox" 
-                                                            checked={workpaperChecks[item.id]} 
-                                                            onChange={() => setWorkpaperChecks({
-                                                                ...workpaperChecks,
-                                                                [item.id]: !workpaperChecks[item.id]
-                                                            })}
-                                                            style={{ accentColor: '#15803d', width: '16px', height: '16px' }}
-                                                        />
-                                                        <span>{item.label}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
+                                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                                <thead>
+                                                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#64748B', fontSize: '12.5px', fontWeight: '800' }}>
+                                                        <th style={{ padding: '14px 20px' }}>Client Name</th>
+                                                        <th style={{ padding: '14px 20px' }}>Email</th>
+                                                        <th style={{ padding: '14px 20px' }}>Status</th>
+                                                        <th style={{ padding: '14px 20px' }}>Checklist Progress</th>
+                                                        <th style={{ padding: '14px 20px', textAlign: 'right' }}>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {allPracticeClients.length === 0 && (
+                                                        <tr>
+                                                            <td colSpan={5} style={{ padding: '32px', textAlign: 'center', color: '#94A3B8', fontStyle: 'italic', fontSize: '13px' }}>
+                                                                No clients found. Add clients first in the Clients tab.
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                    {allPracticeClients.map(client => {
+                                                        const checks = clientWorkpaperChecks[client.id] || {};
+                                                        const totalItems = 5;
+                                                        const doneItems = Object.values(checks).filter(Boolean).length;
+                                                        const pct = Math.round((doneItems / totalItems) * 100);
+                                                        return (
+                                                            <tr key={client.id} style={{ borderBottom: '1px solid #F1F5F9', fontSize: '13.5px' }}>
+                                                                <td style={{ padding: '16px 20px', fontWeight: '800', color: '#0F172A' }}>{client.name}</td>
+                                                                <td style={{ padding: '16px 20px', color: '#475569', fontFamily: 'monospace', fontSize: '12.5px' }}>{client.email}</td>
+                                                                <td style={{ padding: '16px 20px' }}>
+                                                                    <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '20px', background: client.status === 'Active' ? '#DCFCE7' : '#FEF9C3', color: client.status === 'Active' ? '#15803d' : '#A16207' }}>
+                                                                        {client.status || 'Active'}
+                                                                    </span>
+                                                                </td>
+                                                                <td style={{ padding: '16px 20px' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                        <div style={{ flex: 1, height: '6px', background: '#F1F5F9', borderRadius: '3px', overflow: 'hidden' }}>
+                                                                            <div style={{ width: `${pct}%`, height: '100%', background: pct === 100 ? '#15803d' : '#D97706', transition: 'width 0.3s ease', borderRadius: '3px' }} />
+                                                                        </div>
+                                                                        <span style={{ fontSize: '12px', fontWeight: '800', color: pct === 100 ? '#15803d' : '#475569', minWidth: '36px' }}>{pct}%</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td style={{ padding: '16px 20px', textAlign: 'right' }}>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setSelectedWorkpaperClientId(client.id)}
+                                                                        style={{ padding: '8px 14px', background: '#15803d', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '12.5px', fontWeight: '800', cursor: 'pointer' }}
+                                                                    >
+                                                                        Open Checklist →
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
                                         </div>
-
-                                        {/* Dynamic Completion Widget */}
-                                        <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', height: 'fit-content', display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'center', alignItems: 'center' }}>
-                                            <h3 style={{ fontSize: '15px', fontWeight: '850', color: '#0F172A', margin: 0, width: '100%' }}>📊 Audit Completion Progress</h3>
-                                            
-                                            {(() => {
-                                                const total = Object.keys(workpaperChecks).length;
-                                                const checked = Object.values(workpaperChecks).filter(Boolean).length;
-                                                const percentage = Math.round((checked / total) * 100);
-                                                return (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center', width: '100%' }}>
-                                                        <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#F0FDF4', border: '6px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                                    ) : (() => {
+                                        /* ── Per-Client Checklist View ── */
+                                        const selClient = allPracticeClients.find(c => c.id === selectedWorkpaperClientId);
+                                        const checks = clientWorkpaperChecks[selectedWorkpaperClientId] || {};
+                                        const defaultCheckItems = [
+                                            { id: 'aisTds', label: '1. Reconciliation of Form 26AS & AIS/TIS TDS matching with client ledgers' },
+                                            { id: 'gstItc', label: '2. GST Input Tax Credit (ITC) matching and inward invoice sync' },
+                                            { id: 'invest80c', label: '3. Verification of Section 80C, 80D receipts & insurance tax exclusions' },
+                                            { id: 'capGains', label: '4. Capital Gains Statement valuation matching (Mutual funds & equity logs)' },
+                                            { id: 'presumptive44ad', label: '5. Presumptive Business verification under Sec 44AD turnover checks' }
+                                        ];
+                                        const checkItems = clientChecklistItems[selectedWorkpaperClientId] || defaultCheckItems;
+                                        const doneCount = checkItems.filter(i => checks[i.id]).length;
+                                        const percentage = checkItems.length > 0 ? Math.round((doneCount / checkItems.length) * 100) : 0;
+                                        return (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                                {/* Back button + title */}
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedWorkpaperClientId(null)}
+                                                        style={{ padding: '8px 14px', border: '1.5px solid #E2E8F0', background: 'transparent', borderRadius: '8px', fontSize: '12.5px', fontWeight: '800', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                                    >
+                                                        ← Back to Clients
+                                                    </button>
+                                                    <div>
+                                                        <h3 style={{ fontSize: '15px', fontWeight: '850', color: '#0F172A', margin: 0 }}>📝 Workpaper: {selClient?.name}</h3>
+                                                        <p style={{ fontSize: '12px', color: '#64748B', margin: '2px 0 0 0' }}>Statutory Audit &amp; Verification Checklist</p>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '24px' }}>
+                                                    {/* Checklist */}
+                                                    <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                            {checkItems.map(item => {
+                                                                const isEditingThis = editingCheckItemId === item.id;
+                                                                return (
+                                                                    <div
+                                                                        key={item.id}
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'space-between',
+                                                                            padding: '12px 16px',
+                                                                            borderRadius: '12px',
+                                                                            border: '1.5px solid',
+                                                                            borderColor: checks[item.id] ? '#15803d' : '#E2E8F0',
+                                                                            background: checks[item.id] ? '#F0FDF4' : 'transparent',
+                                                                            transition: 'all 0.15s ease'
+                                                                        }}
+                                                                    >
+                                                                        {isEditingThis ? (
+                                                                            <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={editingCheckItemText}
+                                                                                    onChange={(e) => setEditingCheckItemText(e.target.value)}
+                                                                                    style={{ flex: 1, padding: '6px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '600', outline: 'none' }}
+                                                                                />
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        if (!editingCheckItemText.trim()) return;
+                                                                                        setClientChecklistItems(prev => ({
+                                                                                            ...prev,
+                                                                                            [selectedWorkpaperClientId]: checkItems.map(ci => ci.id === item.id ? { ...ci, label: editingCheckItemText.trim() } : ci)
+                                                                                        }));
+                                                                                        setEditingCheckItemId(null);
+                                                                                    }}
+                                                                                    style={{ padding: '6px 12px', background: '#15803d', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '800', cursor: 'pointer' }}
+                                                                                >
+                                                                                    Save
+                                                                                </button>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => setEditingCheckItemId(null)}
+                                                                                    style={{ padding: '6px 12px', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '800', cursor: 'pointer' }}
+                                                                                >
+                                                                                    Cancel
+                                                                                </button>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <>
+                                                                                <label
+                                                                                    style={{
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        gap: '12px',
+                                                                                        fontSize: '13px',
+                                                                                        fontWeight: '750',
+                                                                                        color: checks[item.id] ? '#166534' : '#334155',
+                                                                                        cursor: 'pointer',
+                                                                                        flex: 1
+                                                                                    }}
+                                                                                >
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        checked={!!checks[item.id]}
+                                                                                        onChange={() => setClientWorkpaperChecks(prev => ({
+                                                                                            ...prev,
+                                                                                            [selectedWorkpaperClientId]: {
+                                                                                                ...(prev[selectedWorkpaperClientId] || {}),
+                                                                                                [item.id]: !checks[item.id]
+                                                                                            }
+                                                                                        }))}
+                                                                                        style={{ accentColor: '#15803d', width: '16px', height: '16px' }}
+                                                                                    />
+                                                                                    <span>{item.label}</span>
+                                                                                </label>
+                                                                                <div style={{ display: 'flex', gap: '8px', marginLeft: '12px' }}>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        title="Edit Checklist Item"
+                                                                                        onClick={() => {
+                                                                                            setEditingCheckItemId(item.id);
+                                                                                            setEditingCheckItemText(item.label);
+                                                                                        }}
+                                                                                        style={{ border: 'none', background: 'transparent', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
+                                                                                    >
+                                                                                        <Edit2 size={13} />
+                                                                                    </button>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        title="Delete Checklist Item"
+                                                                                        onClick={() => {
+                                                                                            setClientChecklistItems(prev => ({
+                                                                                                ...prev,
+                                                                                                [selectedWorkpaperClientId]: checkItems.filter(ci => ci.id !== item.id)
+                                                                                            }));
+                                                                                        }}
+                                                                                        style={{ border: 'none', background: 'transparent', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
+                                                                                    >
+                                                                                        <Trash2 size={13} />
+                                                                                    </button>
+                                                                                </div>
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        
+                                                        {/* Add Procedure Section */}
+                                                        <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid #F1F5F9', paddingTop: '14px', marginTop: '4px' }}>
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Add dynamic custom checklist procedure..."
+                                                                value={newCheckItemText}
+                                                                onChange={(e) => setNewCheckItemText(e.target.value)}
+                                                                style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '600', outline: 'none' }}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    if (!newCheckItemText.trim()) return;
+                                                                    const newItem = { id: `custom_${Date.now()}`, label: `${checkItems.length + 1}. ${newCheckItemText.trim()}` };
+                                                                    setClientChecklistItems(prev => ({
+                                                                        ...prev,
+                                                                        [selectedWorkpaperClientId]: [...checkItems, newItem]
+                                                                    }));
+                                                                    setNewCheckItemText('');
+                                                                }}
+                                                                style={{ padding: '8px 16px', background: '#15803d', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '12.5px', fontWeight: '800', cursor: 'pointer' }}
+                                                            >
+                                                                + Add Item
+                                                             </button>
+                                                        </div>
+                                                    </div>
+                                                    {/* Progress widget */}
+                                                    <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', height: 'fit-content', display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'center', alignItems: 'center' }}>
+                                                        <h3 style={{ fontSize: '15px', fontWeight: '850', color: '#0F172A', margin: 0, width: '100%' }}>📊 Audit Completion Progress</h3>
+                                                        <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#F0FDF4', border: '6px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                             <span style={{ fontSize: '24px', fontWeight: '950', color: '#15803d' }}>{percentage}%</span>
                                                         </div>
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                                            <div style={{ fontSize: '13.5px', fontWeight: '850', color: '#0F172A' }}>{checked} of {total} Procedures Complete</div>
+                                                            <div style={{ fontSize: '13.5px', fontWeight: '850', color: '#0F172A' }}>{doneCount} of {checkItems.length} Procedures Complete</div>
                                                             <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>All steps must be checked before generating reports.</span>
                                                         </div>
                                                         <div style={{ width: '100%', height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
                                                             <div style={{ width: `${percentage}%`, height: '100%', background: '#15803d', transition: 'width 0.3s ease' }} />
                                                         </div>
                                                     </div>
-                                                );
-                                            })()}
-                                        </div>
-                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </Motion.div>
                             )}
 
@@ -2112,8 +2617,28 @@ export default function BusinessCA() {
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                                             {/* Drop zone simulator */}
                                             <form onSubmit={handleSimulateDocumentUpload} style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                                                <h3 style={{ fontSize: '14px', fontWeight: '850', color: '#0F172A', margin: 0 }}>⚡ Simulate Live Folder File Upload</h3>
+                                                <h3 style={{ fontSize: '14px', fontWeight: '850', color: '#0F172A', margin: 0 }}>📁 Upload Practice Document from Laptop</h3>
                                                 
+                                                <input 
+                                                    type="file" 
+                                                    id="laptop-file-picker" 
+                                                    style={{ display: 'none' }} 
+                                                    onChange={handleLaptopFileSelected} 
+                                                />
+                                                
+                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => document.getElementById('laptop-file-picker').click()}
+                                                        style={{ padding: '9px 16px', background: '#EFF6FF', border: '1.5px solid #3B82F6', color: '#1D4ED8', borderRadius: '8px', fontSize: '12.5px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                                    >
+                                                        <Plus size={14} /> Choose File
+                                                    </button>
+                                                    <span style={{ fontSize: '13px', color: uploadedFileName ? '#1E293B' : '#94A3B8', fontWeight: '650', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                                                        {uploadedFileName ? `${uploadedFileName} (${uploadedFileSize})` : 'No file selected'}
+                                                    </span>
+                                                </div>
+
                                                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px' }}>
                                                     <input
                                                         type="text"
@@ -2136,23 +2661,23 @@ export default function BusinessCA() {
                                                 
                                                 <button
                                                     type="submit"
-                                                    disabled={uploadProgress !== null}
+                                                    disabled={uploadProgress !== null || !uploadedFileName}
                                                     style={{
                                                         padding: '10px 16px',
-                                                        backgroundColor: '#15803d',
+                                                        backgroundColor: uploadedFileName ? '#15803d' : '#94A3B8',
                                                         color: '#FFFFFF',
                                                         border: 'none',
                                                         borderRadius: '8px',
                                                         fontWeight: '850',
                                                         fontSize: '12.5px',
-                                                        cursor: uploadProgress !== null ? 'not-allowed' : 'pointer',
+                                                        cursor: (uploadProgress !== null || !uploadedFileName) ? 'not-allowed' : 'pointer',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
                                                         gap: '8px'
                                                     }}
                                                 >
-                                                    <FileUp size={16} /> Simulate Document Drop &amp; Upload
+                                                    <FileUp size={16} /> Upload to Practice Vault
                                                 </button>
                                                 
                                                 {uploadProgress !== null && (
@@ -2175,17 +2700,15 @@ export default function BusinessCA() {
                                                 </h3>
                                                 <div style={{ overflowX: 'auto' }}>
                                                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                                        <thead>
-                                                            <tr style={{ borderBottom: '2px solid #F1F5F9', color: '#64748B', fontSize: '12.5px', fontWeight: '800' }}>
-                                                                <th style={{ padding: '12px 8px' }}>File name</th>
-                                                                <th style={{ padding: '12px 8px' }}>Size</th>
-                                                                <th style={{ padding: '12px 8px' }}>Folder</th>
-                                                                <th style={{ padding: '12px 8px' }}>Date Added</th>
-                                                                <th style={{ padding: '12px 8px', textAlign: 'right' }}>Actions</th>
-                                                            </tr>
-                                                        </thead>
+                                                        <FilterableTableHead columns={[
+                                                            { key: 'name', label: 'File Name', placeholder: 'Search...' },
+                                                            { key: 'size', label: 'Size', placeholder: 'Size...' },
+                                                            { key: 'folderName', label: 'Folder', placeholder: 'Folder...' },
+                                                            { key: 'date', label: 'Date Added', placeholder: 'Date...' },
+                                                            { key: '_actions', label: 'Actions' }
+                                                        ]} onFilterChange={setColFiltersDocuments} />
                                                         <tbody>
-                                                            {practiceFiles.filter(f => activeDocFolder === 'All' || f.folderName === activeDocFolder).map(file => (
+                                                            {practiceFiles.filter(f => (activeDocFolder === 'All' || f.folderName === activeDocFolder) && applyTableFilters(f, colFiltersDocuments)).map(file => (
                                                                 <tr key={file.id} style={{ borderBottom: '1px solid #F1F5F9', fontSize: '13.5px', color: '#334155' }}>
                                                                     <td style={{ padding: '14px 8px', fontWeight: '750', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                         <span>📄</span> <span>{file.name}</span>
@@ -2262,15 +2785,13 @@ export default function BusinessCA() {
                                         
                                         <div style={{ overflowX: 'auto' }}>
                                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                                <thead>
-                                                    <tr style={{ borderBottom: '2px solid #F1F5F9', color: '#64748B', fontSize: '12.5px', fontWeight: '800' }}>
-                                                        <th style={{ padding: '12px 8px' }}>Client taxpayer</th>
-                                                        <th style={{ padding: '12px 8px' }}>Filing Form Type</th>
-                                                        <th style={{ padding: '12px 8px' }}>Assessment Year</th>
-                                                        <th style={{ padding: '12px 8px' }}>Filing Season Status</th>
-                                                        <th style={{ padding: '12px 8px' }}>Exemption Status</th>
-                                                    </tr>
-                                                </thead>
+                                                <FilterableTableHead columns={[
+                                                    { key: 'name', label: 'Client Taxpayer', placeholder: 'Client...' },
+                                                    { key: 'formType', label: 'Filing Form Type', placeholder: 'Form...' },
+                                                    { key: 'assessmentYear', label: 'Assessment Year', placeholder: 'Year...' },
+                                                    { key: 'seasonStatus', label: 'Filing Season Status', placeholder: 'Status...' },
+                                                    { key: 'exemptionStatus', label: 'Exemption Status', placeholder: 'Exemption...' }
+                                                ]} onFilterChange={setColFiltersReports} />
                                                 <tbody>
                                                     {allPracticeClients.map((client, idx) => {
                                                         // Derive form type dynamically
@@ -2300,6 +2821,9 @@ export default function BusinessCA() {
                                                         if (clientStatus === 'Documents Awaiting' || clientStatus === 'Documents Pending') {
                                                             exemptionStatus = 'Awaiting Requisition';
                                                         }
+
+                                                        const rowData = { name: client.name, formType, assessmentYear: 'AY 2026-27', seasonStatus, exemptionStatus };
+                                                        if (!applyTableFilters(rowData, colFiltersReports)) return null;
 
                                                         return (
                                                             <tr key={client.id || idx} style={{ borderBottom: '1px solid #F1F5F9', fontSize: '13.5px', color: '#334155' }}>
@@ -2467,6 +2991,50 @@ export default function BusinessCA() {
                                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
                                     <button type="button" onClick={() => setShowAddTaskModal(false)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '12.5px', fontWeight: '850', color: '#64748B', cursor: 'pointer' }}>Cancel</button>
                                     <button type="submit" style={{ padding: '10px 18px', background: '#15803d', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '12.5px', fontWeight: '850', cursor: 'pointer' }}>Assign Task</button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    {showAddTeamMemberModal && (
+                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                            <form onSubmit={handleSendTeamInvitation} style={{ background: '#FFFFFF', padding: '28px', borderRadius: '16px', border: '1px solid #E2E8F0', width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+                                <h3 style={{ fontSize: '16px', fontWeight: '900', color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>👥 Invite New Team Member</h3>
+                                
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748B' }}>EMAIL ADDRESS (MAIL ID)</label>
+                                    <input type="email" value={newTeamEmail} onChange={e=>setNewTeamEmail(e.target.value)} required placeholder="e.g. associate@firm.com" style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '600', outline: 'none' }} />
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748B' }}>PROPOSED ROLE / DESIGNATION</label>
+                                    <select value={newTeamRole} onChange={e=>setNewTeamRole(e.target.value)} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '700', color: '#475569', outline: 'none' }}>
+                                        <option value="Senior Tax Consultant">Senior Tax Consultant</option>
+                                        <option value="Associate Consultant">Associate Consultant</option>
+                                        <option value="Audit Associate">Audit Associate</option>
+                                        <option value="CS Specialist">CS Specialist</option>
+                                        <option value="Practice Intern">Practice Intern</option>
+                                        <option value="Others">Others (Custom Role)</option>
+                                    </select>
+                                </div>
+
+                                {newTeamRole === 'Others' && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748B' }}>CUSTOM ROLE / DESIGNATION</label>
+                                        <input 
+                                            type="text" 
+                                            value={customTeamRole} 
+                                            onChange={e=>setCustomTeamRole(e.target.value)} 
+                                            required 
+                                            placeholder="e.g. Lead Financial Analyst" 
+                                            style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '600', outline: 'none' }} 
+                                        />
+                                    </div>
+                                )}
+
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                                    <button type="button" onClick={() => setShowAddTeamMemberModal(false)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '12.5px', fontWeight: '850', color: '#64748B', cursor: 'pointer' }}>Cancel</button>
+                                    <button type="submit" style={{ padding: '10px 18px', background: '#15803d', border: 'none', borderRadius: '8px', color: '#FFFFFF', fontSize: '12.5px', fontWeight: '850', cursor: 'pointer' }}>Send Invitation</button>
                                 </div>
                             </form>
                         </div>
