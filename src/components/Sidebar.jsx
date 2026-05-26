@@ -123,8 +123,8 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
     };
 
     // Show Finance sidebar for root, home (redirect), and finance paths
-    const showFinanceSidebar = location.pathname === '/' || location.pathname.startsWith('/home') || location.pathname.startsWith('/finance') || location.pathname.startsWith('/payments');
-    const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor' || location.pathname.startsWith('/ca');
+    const showFinanceSidebar = (location.pathname === '/' || location.pathname.startsWith('/home') || location.pathname.startsWith('/finance') || location.pathname.startsWith('/payments')) && !location.pathname.startsWith('/payments/split-expense');
+    const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor' || location.pathname.startsWith('/ca') || location.pathname.startsWith('/payments/split-expense');
     const showPublicSidebar = location.pathname.startsWith('/public') || location.pathname.startsWith('/social');
 
 
