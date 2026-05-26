@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { useCurrency } from '../context';
 import {
     Plus,
     Search,
@@ -22,12 +23,18 @@ import {
     Share2,
     Download,
     Pin,
-    MoreVertical
+    MoreVertical,
+    Pencil
 } from 'lucide-react';
 import '../App.css';
-import { splitExpenseService } from '../services/splitExpenseService';
+import splitExpenseService from '../services/splitExpenseService';
+import { config } from '../lib/config';
+
+// Initial Seed Data for Split Groups
+const INITIAL_SPLITS = [];
 
 const SplitExpense = () => {
+    const { currency } = useCurrency();
     // ── State Management ───────────────────────────────────────────────────
     const [splits, setSplits] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -49,12 +56,20 @@ const SplitExpense = () => {
     const [detailSearchQuery, setDetailSearchQuery] = useState('');
     const [showDetailSearch, setShowDetailSearch] = useState(false);
     const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
+    const [editingGroupId, setEditingGroupId] = useState(null);
     const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+    const [editingExpenseId, setEditingExpenseId] = useState(null);
     
     // Group Form State
     const [groupForm, setGroupForm] = useState({
         title: '',
-        currency: 'INR',
+        currency: (() => {
+            try {
+                return JSON.parse(localStorage.getItem('cliks_currency') || '{}')?.code || 'INR';
+            } catch {
+                return 'INR';
+            }
+        })(),
         description: '',
         participants: ['You']
     });
@@ -67,6 +82,7 @@ const SplitExpense = () => {
         paidBy: 'You',
         date: new Date().toISOString().split('T')[0],
         attachmentName: '',
+        attachmentFile: null,
         splitType: 'equal', // equal, custom
         shares: {} // Custom shares per participant
     });
@@ -108,7 +124,8 @@ const SplitExpense = () => {
             case 'USD': return '$';
             case 'EUR': return '€';
             case 'GBP': return '£';
-            default: return '₹';
+            case 'INR': return '₹';
+            default: return code === currency.code ? currency.symbol : '₹';
         }
     };
 
@@ -117,6 +134,29 @@ const SplitExpense = () => {
         e.preventDefault();
         if (!groupForm.title.trim()) return alert('Please enter a group title.');
         if (groupForm.participants.length < 2) return alert('Please add at least one other participant.');
+
+        if (editingGroupId) {
+            const updatedData = {
+                title: groupForm.title,
+                currency: groupForm.currency,
+                currencySymbol: getCurrencySymbol(groupForm.currency),
+                description: groupForm.description,
+                participants: [...groupForm.participants],
+            };
+
+            try {
+                const updated = await splitExpenseService.updateSplit(editingGroupId, updatedData);
+                setSplits(splits.map(s => s.id === editingGroupId ? { ...s, ...updated, expenses: s.expenses } : s));
+            } catch (err) {
+                console.error("Error updating group on backend:", err);
+                setSplits(splits.map(s => s.id === editingGroupId ? { ...s, ...updatedData } : s));
+            }
+
+            setIsCreateGroupModalOpen(false);
+            setEditingGroupId(null);
+            setGroupForm({ title: '', currency: 'INR', description: '', participants: ['You'] });
+            return;
+        }
 
         const tempId = 'split-' + Date.now();
         const newGroup = {
@@ -142,6 +182,7 @@ const SplitExpense = () => {
         }
 
         setIsCreateGroupModalOpen(false);
+        setEditingGroupId(null);
         setGroupForm({ title: '', currency: 'INR', description: '', participants: ['You'] });
     };
 
@@ -181,6 +222,7 @@ const SplitExpense = () => {
     // ── Expense Actions ────────────────────────────────────────────────────
     const openAddExpenseModal = () => {
         if (!activeSplit) return;
+        setEditingExpenseId(null);
         // Initialize shares
         const initialShares = {};
         activeSplit.participants.forEach(p => {
@@ -192,10 +234,65 @@ const SplitExpense = () => {
             paidBy: 'You',
             date: new Date().toISOString().split('T')[0],
             attachmentName: '',
+            attachmentFile: null,
             splitType: 'equal',
             shares: initialShares
         });
         setIsAddExpenseModalOpen(true);
+    };
+
+    const openEditExpenseModal = (expense) => {
+        if (!activeSplit) return;
+        setEditingExpenseId(expense.id);
+        
+        // Initialize shares
+        const initialShares = {};
+        activeSplit.participants.forEach(p => {
+            initialShares[p] = expense.shares && expense.shares[p] !== undefined ? expense.shares[p].toString() : '';
+        });
+
+        setExpenseForm({
+            title: expense.title,
+            amount: expense.amount.toString(),
+            paidBy: expense.paidBy,
+            date: expense.date,
+            attachmentName: expense.attachment || '',
+            attachmentFile: null,
+            splitType: expense.splitType || 'equal',
+            shares: initialShares
+        });
+        setIsAddExpenseModalOpen(true);
+    };
+
+    const closeExpenseModal = () => {
+        setIsAddExpenseModalOpen(false);
+        setEditingExpenseId(null);
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size exceeds the 5MB limit.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            setExpenseForm(prev => ({
+                ...prev,
+                attachmentName: file.name,
+                attachmentFile: {
+                    name: file.name,
+                    content: reader.result.split(',')[1] // Get base64 content
+                }
+            }));
+        };
+        reader.onerror = () => {
+            alert('Failed to read file.');
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleAddExpense = async (e) => {
@@ -225,13 +322,67 @@ const SplitExpense = () => {
             }
         }
 
+        let uploadedFilename = expenseForm.attachmentName || null;
+        if (expenseForm.attachmentFile) {
+            try {
+                const uploadRes = await splitExpenseService.uploadAttachment(expenseForm.attachmentFile);
+                uploadedFilename = uploadRes.filename;
+            } catch (err) {
+                console.error("Failed to upload document:", err);
+                alert("Attachment upload failed: " + (err.response?.data?.message || err.message || "Unknown error"));
+                return;
+            }
+        }
+
+        if (editingExpenseId) {
+            const updatedExpense = {
+                id: editingExpenseId,
+                title: expenseForm.title,
+                amount: amount,
+                paidBy: expenseForm.paidBy,
+                date: expenseForm.date,
+                attachment: uploadedFilename,
+                splitType: expenseForm.splitType,
+                shares: finalShares
+            };
+
+            try {
+                const res = await splitExpenseService.updateExpense(selectedSplitId, editingExpenseId, updatedExpense);
+                const updatedSplits = splits.map(s => {
+                    if (s.id === selectedSplitId) {
+                        return {
+                            ...s,
+                            expenses: s.expenses.map(e => e.id === editingExpenseId ? res : e)
+                        };
+                    }
+                    return s;
+                });
+                setSplits(updatedSplits);
+            } catch (err) {
+                console.error("Error updating expense on backend:", err);
+                // Fallback to local state update
+                const updatedSplits = splits.map(s => {
+                    if (s.id === selectedSplitId) {
+                        return {
+                            ...s,
+                            expenses: s.expenses.map(e => e.id === editingExpenseId ? updatedExpense : e)
+                        };
+                    }
+                    return s;
+                });
+                setSplits(updatedSplits);
+            }
+            closeExpenseModal();
+            return;
+        }
+
         const newExpense = {
             id: 'exp-' + Date.now(),
             title: expenseForm.title,
             amount: amount,
             paidBy: expenseForm.paidBy,
             date: expenseForm.date,
-            attachment: expenseForm.attachmentName || null,
+            attachment: uploadedFilename,
             splitType: expenseForm.splitType,
             shares: finalShares
         };
@@ -263,7 +414,7 @@ const SplitExpense = () => {
             setSplits(updatedSplits);
         }
 
-        setIsAddExpenseModalOpen(false);
+        closeExpenseModal();
     };
 
     const handleDeleteExpense = async (expenseId) => {
@@ -308,7 +459,7 @@ const SplitExpense = () => {
 
         activeSplit.expenses.forEach(exp => {
             const payer = exp.paidBy;
-            const amt = exp.amount;
+            const amt = parseFloat(exp.amount) || 0;
             totalSpent += amt;
 
             // Credit the payer
@@ -317,9 +468,9 @@ const SplitExpense = () => {
             }
 
             // Debit everyone who shared
-            Object.keys(exp.shares).forEach(member => {
+            Object.keys(exp.shares || {}).forEach(member => {
                 if (balances[member] !== undefined) {
-                    balances[member] -= exp.shares[member];
+                    balances[member] -= parseFloat(exp.shares[member]) || 0;
                 }
             });
         });
@@ -427,7 +578,7 @@ const SplitExpense = () => {
 
     const handleShareGroup = () => {
         if (!activeSplit) return;
-        const groupTotal = activeSplit.expenses.reduce((sum, e) => sum + e.amount, 0);
+        const groupTotal = activeSplit.expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
         let summaryText = `📊 SPLITWISE STATEMENT: ${activeSplit.title}\n`;
         summaryText += `Total Spent: ${activeSplit.currencySymbol}${groupTotal.toLocaleString()}\n\n`;
         summaryText += `👥 NET BALANCES:\n`;
@@ -450,7 +601,7 @@ const SplitExpense = () => {
 
     const handleDownloadPDF = () => {
         if (!activeSplit) return;
-        const groupTotal = activeSplit.expenses.reduce((sum, e) => sum + e.amount, 0);
+        const groupTotal = activeSplit.expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
         
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
@@ -465,7 +616,7 @@ const SplitExpense = () => {
             return `
                 <tr>
                     <td><strong>${m}</strong></td>
-                    <td class="${balClass}" style="text-align: right;">${sign}${activeSplit.currencySymbol}${bal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    <td class="${balClass}" style="text-align: right;">${sign}${activeSplit.currencySymbol}${bal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                 </tr>
             `;
         }).join('');
@@ -487,7 +638,7 @@ const SplitExpense = () => {
                     <td><strong>${e.title}</strong></td>
                     <td>${e.paidBy}</td>
                     <td><span class="badge">${e.splitType}</span></td>
-                    <td style="text-align: right; font-weight: 700;">${activeSplit.currencySymbol}${e.amount.toLocaleString()}</td>
+                    <td style="text-align: right; font-weight: 700;">${activeSplit.currencySymbol}${(parseFloat(e.amount) || 0).toLocaleString()}</td>
                 </tr>
             `).join('');
 
@@ -522,7 +673,7 @@ const SplitExpense = () => {
                     <div>
                         <div class="logo-area">
                             <span class="logo" style="font-weight: 900; color: #064E3B;">CliKs</span>
-                            <span class="logo-sub" style="font-weight: 700; color: #16A34A; margin-left: 5px;">Books</span>
+                            <span class="logo-sub" style="font-weight: 700; color: #16A34A; margin-left: 5px;">Business</span>
                         </div>
                         <h1 class="title" style="margin-top: 15px;">${activeSplit.title}</h1>
                         <p class="subtitle">${activeSplit.description || 'Split Ticket Statement'}</p>
@@ -581,7 +732,7 @@ const SplitExpense = () => {
                 </table>
 
                 <div class="footer">
-                    Generated via CLIKS Books Ledger on ${new Date().toLocaleDateString('en-IN', { dateStyle: 'full' })}. All rights reserved.
+                    Generated via CLIKS Business Ledger on ${new Date().toLocaleDateString('en-IN', { dateStyle: 'full' })}. All rights reserved.
                 </div>
             </body>
             </html>
@@ -620,7 +771,11 @@ const SplitExpense = () => {
 
                 {!selectedSplitId && (
                     <button 
-                        onClick={() => setIsCreateGroupModalOpen(true)}
+                        onClick={() => {
+                            setEditingGroupId(null);
+                            setGroupForm({ title: '', currency: 'INR', description: '', participants: ['You'] });
+                            setIsCreateGroupModalOpen(true);
+                        }}
                         style={{ 
                             display: 'flex', alignItems: 'center', gap: '0.4rem', 
                             padding: '0.65rem 1.15rem', borderRadius: '12px', 
@@ -692,7 +847,7 @@ const SplitExpense = () => {
                                             return 0;
                                         })
                                         .map(s => {
-                                            const groupTotal = s.expenses.reduce((sum, e) => sum + e.amount, 0);
+                                            const groupTotal = s.expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
                                             const isPinned = pinnedSplitIds.includes(s.id);
                                             return (
                                                 <div 
@@ -724,10 +879,10 @@ const SplitExpense = () => {
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                                                         <div>
                                                             <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '850', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                 {s.title}
-                                                                 {isPinned && (
-                                                                     <Pin size={12} style={{ color: '#004aad', transform: 'rotate(45deg)' }} />
-                                                                 )}
+                                                                {s.title}
+                                                                {isPinned && (
+                                                                    <Pin size={12} style={{ color: '#004aad', transform: 'rotate(45deg)' }} />
+                                                                )}
                                                             </h3>
                                                             <span style={{ fontSize: '0.65rem', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', background: '#F1F5F9', padding: '2px 8px', borderRadius: '6px', marginTop: '4px', display: 'inline-block' }}>
                                                                 {s.currency}
@@ -790,6 +945,40 @@ const SplitExpense = () => {
                                                                     >
                                                                         <Pin size={14} style={{ color: '#004aad', transform: isPinned ? 'rotate(45deg)' : 'none' }} />
                                                                         {isPinned ? 'Unpin Ticket' : 'Pin to top'}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setEditingGroupId(s.id);
+                                                                            setGroupForm({
+                                                                                title: s.title,
+                                                                                currency: s.currency,
+                                                                                description: s.description || '',
+                                                                                participants: [...s.participants]
+                                                                            });
+                                                                            setIsCreateGroupModalOpen(true);
+                                                                            setActiveMenuId(null);
+                                                                        }}
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: '8px',
+                                                                            width: '100%',
+                                                                            padding: '8px 12px',
+                                                                            border: 'none',
+                                                                            background: 'none',
+                                                                            color: '#334155',
+                                                                            fontSize: '0.85rem',
+                                                                            fontWeight: '600',
+                                                                            cursor: 'pointer',
+                                                                            borderRadius: '8px',
+                                                                            transition: 'background 0.2s'
+                                                                        }}
+                                                                        onMouseOver={(e) => e.currentTarget.style.background = '#F1F5F9'}
+                                                                        onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                                                                    >
+                                                                        <Pencil size={14} style={{ color: '#004aad' }} />
+                                                                        Edit Ticket
                                                                     </button>
                                                                     <button
                                                                         onClick={(e) => {
@@ -1027,17 +1216,27 @@ const SplitExpense = () => {
                                                                     <span style={{ fontSize: '0.65rem', fontWeight: '750', color: '#64748B', display: 'flex', alignItems: 'center', gap: '3px' }}>
                                                                         <Calendar size={12} /> {e.date}
                                                                     </span>
-                                                                    {e.attachment && (
-                                                                        <>
-                                                                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#CBD5E1' }} />
-                                                                            <span 
-                                                                                title={`Attachment: ${e.attachment}`}
-                                                                                style={{ fontSize: '0.65rem', fontWeight: '800', color: '#2563EB', background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '1px 6px', borderRadius: '5px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
-                                                                            >
-                                                                                <FileText size={10} /> {e.attachment}
-                                                                            </span>
-                                                                        </>
-                                                                    )}
+                                                                    {e.attachment && (() => {
+                                                                        const serverBaseUrl = (config.api.baseUrl || '').replace('/api/v1', '');
+                                                                        const fileUrl = `${serverBaseUrl}/uploads/${e.attachment}`;
+                                                                        return (
+                                                                            <>
+                                                                                <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#CBD5E1' }} />
+                                                                                <a 
+                                                                                    href={fileUrl}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    title={`View Document: ${e.attachment}`}
+                                                                                    onClick={(evt) => evt.stopPropagation()}
+                                                                                    style={{ textDecoration: 'none', fontSize: '0.65rem', fontWeight: '850', color: '#2563EB', background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '1px 6px', borderRadius: '5px', display: 'inline-flex', alignItems: 'center', gap: '3px', transition: 'background 0.2s' }}
+                                                                                    onMouseOver={(evt) => evt.currentTarget.style.background = '#DBEAFE'}
+                                                                                    onMouseOut={(evt) => evt.currentTarget.style.background = '#EFF6FF'}
+                                                                                >
+                                                                                    <FileText size={10} /> {e.attachment.length > 20 ? e.attachment.substring(0, 17) + '...' : e.attachment}
+                                                                                </a>
+                                                                            </>
+                                                                        );
+                                                                    })()}
                                                                 </div>
                                                             </div>
 
@@ -1045,15 +1244,27 @@ const SplitExpense = () => {
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                                 <div style={{ textAlign: 'right' }}>
                                                                     <span style={{ fontSize: '1.05rem', fontWeight: '950', color: isSettlement ? '#059669' : '#1E293B' }}>
-                                                                        {activeSplit.currencySymbol}{e.amount.toLocaleString()}
+                                                                        {activeSplit.currencySymbol}{(parseFloat(e.amount) || 0).toLocaleString()}
                                                                     </span>
                                                                     <span style={{ display: 'block', fontSize: '0.6rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase', marginTop: '1px' }}>
                                                                         {e.splitType} Split
                                                                     </span>
                                                                 </div>
+                                                                {!isSettlement && (
+                                                                    <button 
+                                                                        onClick={() => openEditExpenseModal(e)}
+                                                                        title="Edit Expense"
+                                                                        style={{ background: 'transparent', border: 'none', color: '#CBD5E1', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                        onMouseOver={(e) => e.currentTarget.style.color = '#1B6B3A'}
+                                                                        onMouseOut={(e) => e.currentTarget.style.color = '#CBD5E1'}
+                                                                    >
+                                                                        <Pencil size={13} />
+                                                                    </button>
+                                                                )}
                                                                 <button 
                                                                     onClick={() => handleDeleteExpense(e.id)}
-                                                                    style={{ background: 'transparent', border: 'none', color: '#CBD5E1', cursor: 'pointer', padding: '4px' }}
+                                                                    title="Delete Expense"
+                                                                    style={{ background: 'transparent', border: 'none', color: '#CBD5E1', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                                                     onMouseOver={(e) => e.currentTarget.style.color = '#EF4444'}
                                                                     onMouseOut={(e) => e.currentTarget.style.color = '#CBD5E1'}
                                                                 >
@@ -1086,7 +1297,7 @@ const SplitExpense = () => {
                                                             fontSize: '0.88rem', 
                                                             color: bal > 0.01 ? '#059669' : bal < -0.01 ? '#DC2626' : '#64748B' 
                                                         }}>
-                                                            {bal > 0.01 ? '+' : ''}{activeSplit.currencySymbol}{bal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                            {bal > 0.01 ? '+' : ''}{activeSplit.currencySymbol}{bal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                                         </span>
                                                     </div>
                                                 );
@@ -1167,8 +1378,11 @@ const SplitExpense = () => {
                             style={{ background: 'white', width: '100%', maxWidth: '480px', borderRadius: '28px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden' }}
                         >
                             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '900', color: '#064E3B', margin: 0 }}>Create Split Ticket</h3>
-                                <button style={{ background: '#F1F5F9', border: 'none', borderRadius: '10px', padding: '0.4rem', cursor: 'pointer', color: '#475569' }} onClick={() => setIsCreateGroupModalOpen(false)}><X size={18} /></button>
+                                <h3 style={{ fontSize: '1.15rem', fontWeight: '900', color: '#064E3B', margin: 0 }}>{editingGroupId ? 'Edit Split Ticket' : 'Create Split Ticket'}</h3>
+                                <button style={{ background: '#F1F5F9', border: 'none', borderRadius: '10px', padding: '0.4rem', cursor: 'pointer', color: '#475569' }} onClick={() => {
+                                    setIsCreateGroupModalOpen(false);
+                                    setEditingGroupId(null);
+                                }}><X size={18} /></button>
                             </div>
                             
                             <form onSubmit={handleCreateGroup} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
@@ -1192,6 +1406,9 @@ const SplitExpense = () => {
                                             onChange={(e) => setGroupForm({ ...groupForm, currency: e.target.value })}
                                             style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', outline: 'none' }}
                                         >
+                                            {currency.code !== 'INR' && currency.code !== 'USD' && currency.code !== 'EUR' && currency.code !== 'GBP' && (
+                                                <option value={currency.code}>{currency.code} ({currency.symbol})</option>
+                                            )}
                                             <option value="INR">INR (₹)</option>
                                             <option value="USD">USD ($)</option>
                                             <option value="EUR">EUR (€)</option>
@@ -1258,7 +1475,7 @@ const SplitExpense = () => {
                                     type="submit"
                                     style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', fontWeight: '850', fontSize: '0.88rem', cursor: 'pointer', marginTop: '0.5rem' }}
                                 >
-                                    Create Ticket
+                                    {editingGroupId ? 'Save Changes' : 'Create Ticket'}
                                 </button>
                             </form>
                         </Motion.div>
@@ -1277,8 +1494,8 @@ const SplitExpense = () => {
                             style={{ background: 'white', width: '100%', maxWidth: '520px', borderRadius: '28px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
                         >
                             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '900', color: '#064E3B', margin: 0 }}>Record Expense</h3>
-                                <button style={{ background: '#F1F5F9', border: 'none', borderRadius: '10px', padding: '0.4rem', cursor: 'pointer', color: '#475569' }} onClick={() => setIsAddExpenseModalOpen(false)}><X size={18} /></button>
+                                <h3 style={{ fontSize: '1.15rem', fontWeight: '900', color: '#064E3B', margin: 0 }}>{editingExpenseId ? 'Edit Expense Item' : 'Record Expense'}</h3>
+                                <button style={{ background: '#F1F5F9', border: 'none', borderRadius: '10px', padding: '0.4rem', cursor: 'pointer', color: '#475569' }} onClick={closeExpenseModal}><X size={18} /></button>
                             </div>
                             
                             <form onSubmit={handleAddExpense} style={{ padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1, background: '#FAFAFA' }}>
@@ -1330,13 +1547,19 @@ const SplitExpense = () => {
                                             style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontWeight: '600' }}
                                         />
                                     </div>
-                                </div>
+                                </div> {/* End Grid */}
 
                                 {/* Attachment Upload Panel */}
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Expense Attachment</label>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '850', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Expense Attachment</label>
+                                    <input 
+                                        type="file" 
+                                        id="real-expense-file-input" 
+                                        style={{ display: 'none' }} 
+                                        onChange={handleFileChange}
+                                    />
                                     <div 
-                                        onClick={triggerSimulatedUpload}
+                                        onClick={() => document.getElementById('real-expense-file-input').click()}
                                         style={{ border: '2px dashed #CBD5E1', borderRadius: '14px', padding: '0.75rem', background: '#F8FAFC', textAlign: 'center', cursor: 'pointer', color: '#475569', transition: 'border-color 0.2s' }}
                                         onMouseOver={(e) => e.currentTarget.style.borderColor = '#1B6B3A'}
                                         onMouseOut={(e) => e.currentTarget.style.borderColor = '#CBD5E1'}
@@ -1442,7 +1665,7 @@ const SplitExpense = () => {
                                     type="submit"
                                     style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', color: 'white', border: 'none', fontWeight: '850', fontSize: '0.88rem', cursor: 'pointer', marginTop: '0.5rem' }}
                                 >
-                                    Log Expense
+                                    {editingExpenseId ? 'Save Changes' : 'Log Expense'}
                                 </button>
                             </form>
                         </Motion.div>
