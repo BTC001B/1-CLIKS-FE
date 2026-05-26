@@ -72,7 +72,7 @@ const BooksDashboard = () => {
     ];
 
     return (
-        <div className="premium-container" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' }}>
+        <div className="premium-container" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', background: '#ffffff' }}>
             {/* Header */}
             <div className="dashboard-header" style={{ flexShrink: 0 }}>
                 <div className="dashboard-header-title">
