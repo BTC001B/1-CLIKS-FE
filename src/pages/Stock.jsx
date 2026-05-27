@@ -31,11 +31,14 @@ import {
 } from '../services/stockService';
 import { formatCurrency } from '../lib/formatCurrency';
 import * as XLSX from 'xlsx';
+import FilterableTableHead from '../components/FilterableTableHead';
+import { applyTableFilters } from '../utils/filterUtils';
 import '../App.css';
 
 const Stock = () => {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
+    const [colFilters, setColFilters] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
     const [adjustType, setAdjustType] = useState('in'); // 'in' or 'out'
@@ -192,7 +195,16 @@ const Stock = () => {
         const matchesCategory = categoryFilter === 'All' || item.category === categoryFilter;
 
         return matchesStatus && matchesTab && matchesCategory;
-    });
+    }).map(item => {
+        const thresh = item.low_stock_threshold ?? item.lowstockthreshold ?? item.lowStockThreshold ?? item.low_stock_threshold ?? 5;
+        const isLowStock = Number(item.quantity) < thresh;
+        const isOutOfStock = Number(item.quantity) === 0;
+        const computedStatus = isOutOfStock ? 'OUT OF STOCK' : (isLowStock ? 'LOW STOCK' : 'IN STOCK');
+        return {
+            ...item,
+            status: computedStatus
+        };
+    }).filter(item => applyTableFilters(item, typeof colFilters !== "undefined" ? colFilters : {}));
 
     const handleExportReport = () => {
         if (!filteredItems || filteredItems.length === 0) {
@@ -361,16 +373,18 @@ const Stock = () => {
                         </div>
                     ) : (
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '1px solid #F1F5F9', background: '#F8FAFC' }}>
-                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Details</th>
-                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</th>
-                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock Level</th>
-                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Price</th>
-                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
-                                    <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
-                                </tr>
-                            </thead>
+                            <FilterableTableHead 
+                                columns={[
+                                    { key: 'name', label: 'Product Details', placeholder: 'Product...' },
+                                    { key: 'category', label: 'Category', placeholder: 'Category...' },
+                                    { key: 'quantity', label: 'Stock Level', placeholder: 'Stock...' },
+                                    { key: 'unit_price', label: 'Unit Price', placeholder: 'Price...' },
+                                    { key: 'status', label: 'Status', placeholder: 'Status...' },
+                                    { key: '_actions', label: 'Actions', noFilter: true, align: 'right' }
+                                ]} 
+                                onFilterChange={setColFilters} 
+                                thStyle={{ background: '#F8FAFC', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                            />
                             <tbody>
                                 {filteredItems.map((item) => {
                                     const thresh = item.low_stock_threshold ?? item.lowstockthreshold ?? item.lowStockThreshold ?? item.low_stock_threshold ?? 5;
