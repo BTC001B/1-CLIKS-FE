@@ -166,10 +166,32 @@ const Stock = () => {
     };
 
     const [filterStatus, setFilterStatus] = useState('all'); // 'all' or 'low'
+    const [categoryFilter, setCategoryFilter] = useState('All');
+    const [stockStatusFilter, setStockStatusFilter] = useState('All');
+
+    const uniqueCategories = React.useMemo(() => {
+        const cats = new Set();
+        items.forEach(item => {
+            if (item.category) cats.add(item.category);
+        });
+        return Array.from(cats);
+    }, [items]);
 
     const filteredItems = items.filter(item => {
-        const matchesFilter = filterStatus === 'all' || item.quantity < (item.low_stock_threshold || 5);
-        return matchesFilter;
+        const thresh = item.low_stock_threshold ?? item.lowstockthreshold ?? item.lowStockThreshold ?? item.low_stock_threshold ?? 5;
+        const isLow = Number(item.quantity) < thresh && Number(item.quantity) > 0;
+        const isOut = Number(item.quantity) === 0;
+        const isIn = Number(item.quantity) >= thresh;
+        
+        let matchesStatus = true;
+        if (stockStatusFilter === 'In Stock') matchesStatus = isIn;
+        else if (stockStatusFilter === 'Low Stock') matchesStatus = isLow;
+        else if (stockStatusFilter === 'Out of Stock') matchesStatus = isOut;
+
+        const matchesTab = filterStatus === 'all' || Number(item.quantity) < thresh;
+        const matchesCategory = categoryFilter === 'All' || item.category === categoryFilter;
+
+        return matchesStatus && matchesTab && matchesCategory;
     });
 
     const handleExportReport = () => {
@@ -291,18 +313,40 @@ const Stock = () => {
                             }}
                         />
                     </div>
-                    <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <div style={{ display: 'flex', background: '#F1F5F9', padding: '4px', borderRadius: '14px' }}>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                        <select 
+                            value={categoryFilter} 
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                            style={{ padding: '0.5rem 1rem', borderRadius: '14px', border: '1px solid #E2E8F0', background: 'white', fontSize: '0.85rem', fontWeight: '700', color: '#475569', outline: 'none', cursor: 'pointer', height: '44px' }}
+                        >
+                            <option value="All">All Categories</option>
+                            {uniqueCategories.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
+
+                        <select 
+                            value={stockStatusFilter} 
+                            onChange={(e) => setStockStatusFilter(e.target.value)}
+                            style={{ padding: '0.5rem 1rem', borderRadius: '14px', border: '1px solid #E2E8F0', background: 'white', fontSize: '0.85rem', fontWeight: '700', color: '#475569', outline: 'none', cursor: 'pointer', height: '44px' }}
+                        >
+                            <option value="All">All Statuses</option>
+                            <option value="In Stock">In Stock</option>
+                            <option value="Low Stock">Low Stock</option>
+                            <option value="Out of Stock">Out of Stock</option>
+                        </select>
+
+                        <div style={{ display: 'flex', background: '#F1F5F9', padding: '4px', borderRadius: '14px', height: '44px', boxSizing: 'border-box', alignItems: 'center' }}>
                             <button 
                                 onClick={() => setFilterStatus('all')}
-                                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'all' ? 'white' : 'transparent', color: filterStatus === 'all' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'all' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' }}
+                                style={{ padding: '0.5rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'all' ? 'white' : 'transparent', color: filterStatus === 'all' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'all' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', height: '100%' }}
                             >All Stock</button>
                             <button 
                                 onClick={() => setFilterStatus('low')}
-                                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'low' ? 'white' : 'transparent', color: filterStatus === 'low' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'low' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer' }}
+                                style={{ padding: '0.5rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'low' ? 'white' : 'transparent', color: filterStatus === 'low' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'low' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', height: '100%' }}
                             >Low Stock</button>
                         </div>
-                        <button style={{ width: '44px', height: '44px', borderRadius: '14px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <button style={{ width: '44px', height: '44px', borderRadius: '14px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                             <Filter size={20} />
                         </button>
                     </div>
