@@ -41,7 +41,7 @@ export default function BusinessCA() {
     const [colFiltersClients, setColFiltersClients] = useState({});
     const [colFiltersTasks, setColFiltersTasks] = useState({});
     const [colFiltersTeam, setColFiltersTeam] = useState({});
-    const [colFiltersTeamReq, setColFiltersTeamReq] = useState({});
+    const [_colFiltersTeamReq, _setColFiltersTeamReq] = useState({});
     const [colFiltersReports, setColFiltersReports] = useState({});
     const [colFiltersDocuments, setColFiltersDocuments] = useState({});
     const [colFiltersTimesheet, setColFiltersTimesheet] = useState({});
@@ -199,7 +199,7 @@ export default function BusinessCA() {
     const [uploadedFileSize, setUploadedFileSize] = useState('1.4 MB');
     const [uploadTargetFolder, setUploadTargetFolder] = useState('ITR Filings FY2025-26');
 
-    const [workpaperChecks, setWorkpaperChecks] = useState({
+    const [_workpaperChecks, _setWorkpaperChecks] = useState({
         aisTds: true,
         gstItc: false,
         invest80c: false,

@@ -438,7 +438,7 @@ const SplitExpense = () => {
     };
 
     // Simulated Attachment Upload
-    const triggerSimulatedUpload = () => {
+    const _triggerSimulatedUpload = () => {
         const fileNames = ['invoice_rent.pdf', 'dinner_bill_482.jpg', 'uber_receipt.png', 'supplies_list.pdf', 'grocery_slip.jpg'];
         const randomName = fileNames[Math.floor(Math.random() * fileNames.length)];
         setExpenseForm({

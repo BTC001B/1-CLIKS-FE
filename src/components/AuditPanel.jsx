@@ -104,8 +104,8 @@ const AuditPanel = ({ isOpen, onClose }) => {
                         <div className="audit-view">
                             <h2 className="view-title">Recent Audits</h2>
                             <div className="audit-rows">
-                                {[].length > 0 ? [].map((item, i) => (
-                                    <div key={i} className="audit-row-item">
+                                {[].length > 0 ? [].map(() => (
+                                    <div className="audit-row-item">
                                         {/* Intentionally clean */}
                                     </div>
                                 )) : (
@@ -132,7 +132,7 @@ const AuditPanel = ({ isOpen, onClose }) => {
 
                             <h3 className="sub-title">Critical Issues</h3>
                             <div className="issues-stack">
-                                {[].length > 0 ? [].map((issue, i) => (
+                                {[].length > 0 ? [].map(() => (
                                     <div></div>
                                 )) : (
                                     <div style={{ padding: '1rem', background: '#F0FDF4', color: '#166534', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>

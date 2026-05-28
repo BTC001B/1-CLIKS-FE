@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState } from 'react';
 
 const CurrencyContext = createContext();
@@ -9,7 +10,7 @@ export const CurrencyProvider = ({ children }) => {
         if (saved) {
             try {
                 return JSON.parse(saved);
-            } catch (e) {
+            } catch {
                 // Ignore parse errors and fall back to default
             }
         }

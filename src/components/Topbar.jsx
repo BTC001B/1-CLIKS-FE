@@ -9,7 +9,7 @@ import { ProfileDropdown } from './ProfileDropdown';
 import { CalcPopover } from './common/CalcPopover';
 
 const Topbar = ({ onToggleSidebar }) => {
-    const { logout, user } = useAuth();
+    const { logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);

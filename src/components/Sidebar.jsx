@@ -107,14 +107,10 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
     }, [location.pathname, location.search]);
 
     // Books Section State (from snippet)
-    const [openDropdown, setOpenDropdown] = useState(null);
     const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
     if (isOpen !== prevIsOpen) {
         setPrevIsOpen(isOpen);
-        if (!isOpen) {
-            setOpenDropdown(null);
-        }
     }
 
     const handleItemClick = (label, path) => {

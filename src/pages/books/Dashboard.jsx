@@ -21,7 +21,7 @@ import {
     Briefcase,
     X
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { homeService } from '../../services';
 import '../../App.css';
@@ -346,7 +346,7 @@ const BooksDashboard = () => {
             {/* Configure Quick Actions Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <motion.div
+                    <Motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -362,7 +362,7 @@ const BooksDashboard = () => {
                         }}
                         onClick={() => setIsModalOpen(false)}
                     >
-                        <motion.div
+                        <Motion.div
                             initial={{ scale: 0.95, opacity: 0, y: 25 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 25 }}
@@ -474,8 +474,8 @@ const BooksDashboard = () => {
                             >
                                 Save Configuration
                             </button>
-                        </motion.div>
-                    </motion.div>
+                        </Motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
         </div>
