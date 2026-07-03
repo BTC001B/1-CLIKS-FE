@@ -1,17 +1,34 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * AccordionRoot — manages a single openIndex so only one item is
+ * open at a time.  It clones each AccordionItem child with
+ * { index, openIndex, setOpenIndex } props.
+ */
 const AccordionRoot = ({ children, className = '' }) => {
+    const [openIndex, setOpenIndex] = useState(null);
+
     return (
-        <div className={`accordion-root ${className}`} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {children}
+        <div className={`accordion-root ${className}`} style={{ display: 'flex', flexDirection: 'column' }}>
+            {React.Children.map(children, (child, index) => {
+                if (React.isValidElement(child)) {
+                    return React.cloneElement(child, { index, openIndex, setOpenIndex });
+                }
+                return child;
+            })}
         </div>
     );
 };
 
-const AccordionItem = ({ children, className = '' }) => {
-    const [isOpen, setIsOpen] = useState(false);
+/**
+ * AccordionItem — receives index / openIndex / setOpenIndex from
+ * AccordionRoot, then passes isOpen / setIsOpen to its own children.
+ */
+const AccordionItem = ({ children, index, openIndex, setOpenIndex, className = '' }) => {
+    const isOpen = openIndex === index;
+    const setIsOpen = (value) => setOpenIndex(value ? index : null);
 
     return (
         <div
@@ -19,7 +36,6 @@ const AccordionItem = ({ children, className = '' }) => {
             data-state={isOpen ? 'open' : 'closed'}
             style={{
                 borderBottom: '1px solid #E2E8F0',
-                paddingBottom: isOpen ? '1rem' : '0'
             }}
         >
             {React.Children.map(children, child => {
@@ -37,6 +53,7 @@ const AccordionTrigger = ({ children, isOpen, setIsOpen, className = '' }) => {
         <button
             onClick={() => setIsOpen(!isOpen)}
             className={`accordion-trigger ${className}`}
+            aria-expanded={isOpen}
             style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -49,7 +66,7 @@ const AccordionTrigger = ({ children, isOpen, setIsOpen, className = '' }) => {
                 textAlign: 'left',
                 fontSize: '1rem',
                 fontWeight: 600,
-                color: '#1E293B'
+                color: '#1E293B',
             }}
         >
             {children}
@@ -57,9 +74,10 @@ const AccordionTrigger = ({ children, isOpen, setIsOpen, className = '' }) => {
                 size={18}
                 className="accordion-chevron"
                 style={{
+                    flexShrink: 0,
                     transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s ease',
-                    color: '#64748B'
+                    transition: 'transform 0.25s ease',
+                    color: '#64748B',
                 }}
             />
         </button>
@@ -68,16 +86,26 @@ const AccordionTrigger = ({ children, isOpen, setIsOpen, className = '' }) => {
 
 const AccordionContent = ({ children, isOpen, className = '' }) => {
     return (
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
             {isOpen && (
                 <motion.div
+                    key="content"
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
                     style={{ overflow: 'hidden' }}
                 >
-                    <div className={`accordion-content ${className}`} style={{ paddingBottom: '0.5rem', paddingTop: '0', color: '#64748B', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                    <div
+                        className={`accordion-content ${className}`}
+                        style={{
+                            paddingBottom: '1rem',
+                            paddingTop: '0.25rem',
+                            color: '#64748B',
+                            fontSize: '0.9rem',
+                            lineHeight: 1.65,
+                        }}
+                    >
                         {children}
                     </div>
                 </motion.div>

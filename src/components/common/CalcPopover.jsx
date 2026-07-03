@@ -374,7 +374,7 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
         const { steps, finalTotal } = getTapeCalculations();
         if (steps.length === 0) return;
 
-        let text = "🧮 BETA Calc \n";
+        let text = "🧮 CLIKS Calc \n";
         text += "=============================\n";
         
         steps.forEach((s) => {
@@ -590,7 +590,7 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
                         <div style={styles.header}>
                             <div style={styles.title}>
                                 <Hash size={16} color="#10B981" />
-                                <span>BETA CALC</span>
+                                <span>CLIKS CALC</span>
                             </div>
                             <div style={{ display: 'flex', gap: '6px' }}>
                                 <button 

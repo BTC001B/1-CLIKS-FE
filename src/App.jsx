@@ -50,6 +50,14 @@ const Subscription = React.lazy(() => import('./pages/Subscription'));
 
 import './App.css';
 
+// Apply persisted dark mode before first render
+const savedDarkMode = localStorage.getItem('cliks_dark_mode');
+if (savedDarkMode === 'true') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+} else {
+    document.documentElement.setAttribute('data-theme', 'light');
+}
+
 const PageLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '200px', color: '#64748B' }}>
     Loading...
