@@ -33,6 +33,11 @@ const MainLayout = ({ children }) => {
                 onToggleAudit={toggleAudit}
                 onToggleToolbar={toggleToolbar}
                 isToolbarOpen={isToolbarOpen}
+                onOpenCalculator={() => {
+                    // Open the toolbar if closed, then open calc
+                    if (!isToolbarOpen) setIsToolbarOpen(true);
+                    setIsCalcOpen(true);
+                }}
             />
             <div className="app-body">
                 <Sidebar isOpen={isSidebarOpen} onReferralClick={() => setIsReferralOpen(true)} />

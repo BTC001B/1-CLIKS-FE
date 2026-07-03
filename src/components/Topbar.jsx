@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Wallet, BookOpen, Users, Coins, Search, SlidersHorizontal } from 'lucide-react';
+import { Wallet, BookOpen, Users, Coins, SlidersHorizontal } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
 import logoPng from '../assets/cliks.png'; // Final branding
 
 import { ProfileDropdown } from './ProfileDropdown';
+import SearchBox from './SearchBox';
 
-const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen }) => {
+const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalculator }) => {
     const { logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const searchRef = useRef(null);
 
     // Reward points state synced with localStorage
     const [rewardPoints, setRewardPoints] = useState(() => {
@@ -157,46 +156,8 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen }) => {
             {/* Right Group */}
             <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', paddingRight: '1rem' }}>
 
-                {/* Search bar — always visible */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '7px 14px',
-                    borderRadius: '999px',
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid rgba(255, 255, 255, 0.14)',
-                    minWidth: '180px',
-                    transition: 'background 0.2s, border-color 0.2s',
-                }}>
-                    <Search size={15} color="rgba(255,255,255,0.55)" style={{ flexShrink: 0 }} />
-                    <input
-                        ref={searchRef}
-                        type="text"
-                        placeholder="Search..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        aria-label="Search"
-                        style={{
-                            border: 'none',
-                            outline: 'none',
-                            background: 'transparent',
-                            color: '#ffffff',
-                            fontSize: '13px',
-                            fontWeight: 500,
-                            width: '100%',
-                            minWidth: 0,
-                        }}
-                        onFocus={(e) => {
-                            e.currentTarget.parentElement.style.background = 'rgba(255,255,255,0.14)';
-                            e.currentTarget.parentElement.style.borderColor = 'rgba(255,255,255,0.28)';
-                        }}
-                        onBlur={(e) => {
-                            e.currentTarget.parentElement.style.background = 'rgba(255,255,255,0.08)';
-                            e.currentTarget.parentElement.style.borderColor = 'rgba(255,255,255,0.14)';
-                        }}
-                    />
-                </div>
+                {/* Search bar — global search */}
+                <SearchBox onOpenCalculator={onOpenCalculator} />
 
                 {/* Points pill */}
                 <button
