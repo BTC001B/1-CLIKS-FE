@@ -9,6 +9,7 @@
     display: flex;
     flex: 1;
     overflow: hidden;
+    height: calc(100vh - 64px); /* topbar is 64px */
 }
 
 .app-layout-sidebar {
@@ -21,9 +22,10 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-width: 0;
+    min-width: 0;       /* essential for flex shrink to work */
     overflow: hidden;
-    height: 100vh;
+    /* height is driven by app-body flex, not hardcoded */
+    /* margin-right is applied inline from MainLayout for smooth resize */
 }
 
 .content-scrollable {

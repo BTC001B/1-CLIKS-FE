@@ -92,25 +92,24 @@ const CalcPanel = ({ onClose }) => {
 };
 
 /* ─── Right Sidebar ───────────────────────────────────────────────── */
-const RightSidebar = ({ isVisible = false }) => {
+const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onCalcClose }) => {
     const navigate = useNavigate();
-    const [isCalcOpen, setIsCalcOpen]       = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Close panels when toolbar is hidden
     useEffect(() => {
         if (!isVisible) {
-            setIsCalcOpen(false);
+            if (onCalcClose) onCalcClose();
             setIsSettingsOpen(false);
         }
     }, [isVisible]);
 
     // Escape key closes calc panel
     useEffect(() => {
-        const handler = (e) => { if (e.key === 'Escape' && isCalcOpen) setIsCalcOpen(false); };
+        const handler = (e) => { if (e.key === 'Escape' && isCalcOpen && onCalcClose) onCalcClose(); };
         document.addEventListener('keydown', handler);
         return () => document.removeEventListener('keydown', handler);
-    }, [isCalcOpen]);
+    }, [isCalcOpen, onCalcClose]);
 
     const topIcons = [
         {
@@ -118,14 +117,14 @@ const RightSidebar = ({ isVisible = false }) => {
             title: 'Dashboard',
             iconClass: 'icon-calendar',
             icon: <Calendar size={20} />,
-            action: () => { setIsCalcOpen(false); navigate('/books/dashboard'); },
+            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/dashboard'); },
         },
         {
             id: 'calculator',
             title: 'Calculator',
             iconClass: 'icon-calculator',
             icon: <Calculator size={20} />,
-            action: () => setIsCalcOpen(prev => !prev),
+            action: () => { if (onCalcToggle) onCalcToggle(); },
             active: isCalcOpen,
         },
         {
@@ -133,21 +132,21 @@ const RightSidebar = ({ isVisible = false }) => {
             title: 'People',
             iconClass: 'icon-contact',
             icon: <Contact size={20} />,
-            action: () => { setIsCalcOpen(false); navigate('/books/people'); },
+            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/people'); },
         },
         {
             id: 'shield',
             title: 'Business CA',
             iconClass: 'icon-shield',
             icon: <Shield size={20} />,
-            action: () => { setIsCalcOpen(false); navigate('/ca'); },
+            action: () => { if (onCalcClose) onCalcClose(); navigate('/ca'); },
         },
         {
             id: 'add',
             title: 'Add',
             iconClass: 'icon-add',
             icon: <Plus size={20} strokeWidth={2.5} />,
-            action: () => { setIsCalcOpen(false); navigate('/books/dashboard'); },
+            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/dashboard'); },
         },
     ];
 
@@ -157,7 +156,7 @@ const RightSidebar = ({ isVisible = false }) => {
             title: 'Stock',
             iconClass: 'icon-edit',
             icon: <Edit3 size={20} />,
-            action: () => { setIsCalcOpen(false); navigate('/books/stock'); },
+            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/stock'); },
         },
         {
             id: 'settings',
@@ -227,10 +226,10 @@ const RightSidebar = ({ isVisible = false }) => {
                     {/* Dark overlay: covers main content + left sidebar, NOT the header/toolbar */}
                     <div
                         className="calc-overlay"
-                        onClick={() => setIsCalcOpen(false)}
+                        onClick={onCalcClose}
                         aria-hidden="true"
                     />
-                    <CalcPanel onClose={() => setIsCalcOpen(false)} />
+                    <CalcPanel onClose={onCalcClose} />
                 </>
             )}
 
