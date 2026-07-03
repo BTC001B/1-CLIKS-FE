@@ -3,24 +3,27 @@ import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import AuditPanel from '../components/AuditPanel';
 import ReferralModal from '../components/ReferralModal';
+import RightSidebar from '../components/RightSidebar';
 import '../App.css';
 
 const MainLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isAuditOpen, setIsAuditOpen] = useState(false);
     const [isReferralOpen, setIsReferralOpen] = useState(false);
+    const [isToolbarOpen, setIsToolbarOpen] = useState(false); // hidden by default
 
-    const toggleSidebar = () => {
-        setIsSidebarOpen(!isSidebarOpen);
-    };
-
-    const toggleAudit = () => {
-        setIsAuditOpen(!isAuditOpen);
-    };
+    const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
+    const toggleAudit  = () => setIsAuditOpen(prev => !prev);
+    const toggleToolbar = () => setIsToolbarOpen(prev => !prev);
 
     return (
         <div className={`app-root select-none ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-            <Topbar onToggleSidebar={toggleSidebar} onToggleAudit={toggleAudit} />
+            <Topbar
+                onToggleSidebar={toggleSidebar}
+                onToggleAudit={toggleAudit}
+                onToggleToolbar={toggleToolbar}
+                isToolbarOpen={isToolbarOpen}
+            />
             <div className="app-body">
                 <Sidebar isOpen={isSidebarOpen} onReferralClick={() => setIsReferralOpen(true)} />
                 <div className="main-content-area">
@@ -28,11 +31,12 @@ const MainLayout = ({ children }) => {
                         {children}
                     </div>
                 </div>
-                {/* Audit Side Panel */}
                 <AuditPanel isOpen={isAuditOpen} onClose={() => setIsAuditOpen(false)} />
             </div>
 
-            {/* Referral Modal */}
+            {/* Right floating toolbar — only visible when toggled on */}
+            <RightSidebar isVisible={isToolbarOpen} />
+
             <ReferralModal isOpen={isReferralOpen} onClose={() => setIsReferralOpen(false)} />
         </div>
     );

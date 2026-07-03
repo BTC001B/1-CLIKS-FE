@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { User, Wallet, Home, BookOpen, Calculator, Users, Coins } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Wallet, BookOpen, Users, Coins, Search, SlidersHorizontal } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
 import logoPng from '../assets/cliks.png'; // Final branding
 
 import { ProfileDropdown } from './ProfileDropdown';
-import { CalcPopover } from './common/CalcPopover';
 
-const Topbar = ({ onToggleSidebar }) => {
+const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen }) => {
     const { logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const searchRef = useRef(null);
 
     // Reward points state synced with localStorage
     const [rewardPoints, setRewardPoints] = useState(() => {
@@ -153,60 +154,134 @@ const Topbar = ({ onToggleSidebar }) => {
                 </div>
             </div>
 
-            {/* Right Group (Audit + Profile) */}
-            <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingRight: '1rem' }}>
-                {/* Clean Coin Icon & Points Pill Widget */}
-                {(() => {
-                    return (
-                        <button
-                            onClick={() => navigate('/payments/rewards-offers')}
-                            title="Loyalty Points - View Rewards & Offers"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '6px 12px',
-                                borderRadius: '999px',
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                backdropFilter: 'blur(4px)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)',
-                                color: '#FFFFFF',
-                                fontSize: '13px',
-                                fontWeight: '750',
-                                cursor: 'pointer',
-                                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                                outline: 'none'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)';
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                                e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.4)';
-                                e.currentTarget.style.boxShadow = '0 6px 15px rgba(245, 158, 11, 0.15)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'none';
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                                e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.05)';
-                            }}
-                        >
-                            <Coins size={15} color="#F59E0B" style={{ filter: 'drop-shadow(0 0 2px rgba(245, 158, 11, 0.5))' }} />
-                            <span style={{ whiteSpace: 'nowrap' }}>
-                                {rewardPoints.toLocaleString()} Pts
-                            </span>
-                        </button>
-                    );
-                })()}
+            {/* Right Group */}
+            <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', paddingRight: '1rem' }}>
 
-                <CalcPopover />
+                {/* Search bar — always visible */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '7px 14px',
+                    borderRadius: '999px',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.14)',
+                    minWidth: '180px',
+                    transition: 'background 0.2s, border-color 0.2s',
+                }}>
+                    <Search size={15} color="rgba(255,255,255,0.55)" style={{ flexShrink: 0 }} />
+                    <input
+                        ref={searchRef}
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        aria-label="Search"
+                        style={{
+                            border: 'none',
+                            outline: 'none',
+                            background: 'transparent',
+                            color: '#ffffff',
+                            fontSize: '13px',
+                            fontWeight: 500,
+                            width: '100%',
+                            minWidth: 0,
+                        }}
+                        onFocus={(e) => {
+                            e.currentTarget.parentElement.style.background = 'rgba(255,255,255,0.14)';
+                            e.currentTarget.parentElement.style.borderColor = 'rgba(255,255,255,0.28)';
+                        }}
+                        onBlur={(e) => {
+                            e.currentTarget.parentElement.style.background = 'rgba(255,255,255,0.08)';
+                            e.currentTarget.parentElement.style.borderColor = 'rgba(255,255,255,0.14)';
+                        }}
+                    />
+                </div>
 
+                {/* Points pill */}
+                <button
+                    onClick={() => navigate('/payments/rewards-offers')}
+                    title="Loyalty Points - View Rewards & Offers"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '7px 13px',
+                        borderRadius: '999px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: '#FFFFFF',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.2s ease',
+                        outline: 'none',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                        e.currentTarget.style.borderColor = 'rgba(245,158,11,0.35)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                    }}
+                >
+                    <Coins size={15} color="#F59E0B" style={{ filter: 'drop-shadow(0 0 2px rgba(245,158,11,0.5))' }} />
+                    <span>{rewardPoints.toLocaleString()} Pts</span>
+                </button>
+
+                {/* Profile dropdown */}
                 <ProfileDropdown
                     onAccount={() => navigate('/books/profile')}
                     onSettings={() => navigate('/books/settings')}
                     onFAQ={() => navigate('/books/faq')}
                     onLogout={handleLogout}
                 />
+
+                {/* Vertical divider */}
+                <div style={{
+                    width: '1px',
+                    height: '28px',
+                    background: 'rgba(255,255,255,0.18)',
+                    flexShrink: 0,
+                }} />
+
+                {/* Sliders / filter icon — far right, toggles the quick-access toolbar */}
+                <button
+                    onClick={onToggleToolbar}
+                    title={isToolbarOpen ? 'Hide toolbar' : 'Show toolbar'}
+                    aria-pressed={isToolbarOpen}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        background: isToolbarOpen
+                            ? 'rgba(255,255,255,0.22)'
+                            : 'rgba(255,255,255,0.08)',
+                        border: isToolbarOpen
+                            ? '1px solid rgba(255,255,255,0.35)'
+                            : '1px solid rgba(255,255,255,0.12)',
+                        color: '#ffffff',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        transition: 'background 0.2s, border-color 0.2s',
+                        outline: 'none',
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!isToolbarOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.16)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = isToolbarOpen
+                            ? 'rgba(255,255,255,0.22)'
+                            : 'rgba(255,255,255,0.08)';
+                    }}
+                >
+                    <SlidersHorizontal size={17} />
+                </button>
             </div>
         </header>
     );

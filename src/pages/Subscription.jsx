@@ -79,6 +79,22 @@ const Subscription = () => {
     };
 
     const allTiers = {
+        basic: [
+            {
+                name: 'Basic Plan',
+                priceAnnually: 249,
+                originalPrice: 499,
+                desc: 'Simple, ad-free experience to get you started.',
+                icon: ShieldCheck,
+                color: '#0E4F2E',
+                badge: 'Starter',
+                validity: 'Up to 12 Days',
+                features: [
+                    'No Ads',
+                    'Validity: Up to 12 Days',
+                ]
+            }
+        ],
         ca: [
             {
                 name: 'FIN-PRO Standard',
@@ -259,7 +275,10 @@ const Subscription = () => {
         
         let desc = '';
         let gradient = '';
-        if (foundTier.category === 'business') {
+        if (foundTier.category === 'basic') {
+            desc = `Your workspace is running the Basic Plan with no ads, valid for up to 12 days.`;
+            gradient = 'linear-gradient(135deg, #0E4F2E 0%, #064E3B 100%)';
+        } else if (foundTier.category === 'business') {
             desc = `Your workspace is configured with high-performance ERP pipelines under the Business ${foundTier.name} tier.`;
             gradient = 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)';
         } else if (foundTier.category === 'ca') {
@@ -400,6 +419,7 @@ const Subscription = () => {
                     justifyContent: 'center'
                 }}>
                     {[
+                        { id: 'basic', label: 'Basic Plan', icon: ShieldCheck, color: '#0E4F2E' },
                         { id: 'ca', label: 'FIN-PRO (Auditor)', icon: Award, color: '#1E3A8A' },
                         { id: 'betaclub', label: 'Beta Club', icon: Crown, color: '#7C3AED' }
                     ].map((tab) => {
@@ -491,8 +511,10 @@ const Subscription = () => {
             )}
 
             {/* Pricing Tiers Selection Grid */}
-            <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#064E3B', marginBottom: '1.25rem' }}>Upgrade Workspace Tier</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#064E3B', marginBottom: '1.25rem' }}>
+                {activeCategory === 'basic' ? 'Basic Plan Details' : 'Upgrade Workspace Tier'}
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: activeCategory === 'basic' ? 'repeat(1, minmax(0, 360px))' : 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '3rem', justifyContent: activeCategory === 'basic' ? 'center' : 'stretch' }}>
                 {allTiers[activeCategory === 'betaclub' ? (betaSubCategory === 'investor' ? 'betaclub_investor' : 'betaclub_product') : activeCategory].map((tier, idx) => {
                     const price = tier.priceAnnually;
                     const isActive = tier.name === selectedTier;

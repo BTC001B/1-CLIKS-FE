@@ -947,6 +947,11 @@
     gap: 1rem;
 }
 
+/* Search input placeholder color inside topbar */
+.topbar-right input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
 .topbar-profile {
     margin-left: 0.5rem;
     background: rgba(255, 255, 255, 0.1) !important;
@@ -2471,3 +2476,343 @@ div[style*="background-color: '#F0F9F4'"] {
 }
 
 
+
+/* ================================================================
+   RIGHT TOOLBAR — full-height fixed rail on right edge
+   ================================================================ */
+.rightpanel {
+    position: fixed;
+    top: 64px;                   /* directly below the 64px header */
+    right: 0;
+    bottom: 0;
+    width: 72px;
+    height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 200;
+    background: #ffffff;
+    border-left: 1px solid #e5e7eb;
+    padding: 12px 0;
+    user-select: none;
+    /* NO border-radius, NO box-shadow floating-card effect */
+}
+
+/* Hidden state — position NEVER changes, only visibility */
+.rightpanel--hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.rightpanel-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    width: 100%;
+}
+
+.rightpanel-spacer {
+    flex: 1;
+}
+
+/* Each icon button */
+.rightpanel-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 12px;
+    transition: transform 0.15s ease;
+    outline: none;
+}
+
+.rightpanel-btn:hover {
+    transform: scale(1.08);
+}
+
+.rightpanel-btn:active {
+    transform: scale(0.96);
+}
+
+.rightpanel-btn--active .rightpanel-icon {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
+}
+
+/* Colored icon squares */
+.rightpanel-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: box-shadow 0.15s ease;
+}
+
+.rightpanel-icon.icon-calendar {
+    background-color: #FEF3C7;
+    color: #F59E0B;
+}
+
+.rightpanel-icon.icon-calculator {
+    background-color: #ECFDF5;
+    color: #10B981;
+}
+
+.rightpanel-icon.icon-contact {
+    background-color: #EFF6FF;
+    color: #3B82F6;
+}
+
+.rightpanel-icon.icon-shield {
+    background-color: #F0FDFA;
+    color: #14B8A6;
+}
+
+.rightpanel-icon.icon-add {
+    background-color: #F8FAFC;
+    color: #94A3B8;
+    border: 1.5px dashed #CBD5E1;
+}
+
+.rightpanel-icon.icon-edit {
+    background-color: #F8FAFC;
+    color: #64748B;
+    border: 1px solid #E2E8F0;
+}
+
+.rightpanel-icon.icon-filter {
+    background-color: #F8FAFC;
+    color: #64748B;
+    border: 1px solid #E2E8F0;
+}
+
+/* Divider between top and bottom icon groups */
+.rightpanel-divider {
+    width: 36px;
+    height: 1px;
+    background: #E5E7EB;
+    margin: 4px 0;
+}
+
+/* ================================================================
+   CALCULATOR OVERLAY — dims content behind the calc panel
+   Covers: main content + left sidebar
+   Does NOT cover: header (z-index 20), calc panel (199), rightpanel (200)
+   ================================================================ */
+.calc-overlay {
+    position: fixed;
+    top: 64px;         /* below the header */
+    left: 0;
+    right: 72px;       /* stops before the right toolbar */
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 198;      /* above content, below calc-panel (199) and rightpanel (200) */
+    cursor: pointer;
+    animation: calcOverlayIn 0.22s ease;
+}
+
+@keyframes calcOverlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ================================================================
+   CALCULATOR SLIDE-IN PANEL
+   Opens immediately to the left of the 72px toolbar
+   ================================================================ */
+.calc-panel {
+    position: fixed;
+    top: 64px;
+    right: 72px;                 /* left edge of toolbar */
+    bottom: 0;
+    width: 400px;
+    max-width: calc(100vw - 80px);
+    background: #ffffff;
+    border-left: 1px solid #E2E8F0;
+    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.09);
+    z-index: 199;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: calcPanelIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes calcPanelIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* ================================================================
+   SETTINGS DRAWER
+   ================================================================ */
+.rs-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 150;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.rs-drawer-overlay--open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.rs-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 360px;
+    max-width: 100vw;
+    background: #ffffff;
+    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.14);
+    z-index: 151;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rs-drawer--open {
+    transform: translateX(0);
+}
+
+.rs-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #F1F5F9;
+    background: #FAFBFC;
+    flex-shrink: 0;
+}
+
+.rs-drawer-header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #1E293B;
+}
+
+.rs-drawer-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    color: #64748B;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.rs-drawer-close:hover {
+    background: #FEF2F2;
+    color: #EF4444;
+    border-color: #FECACA;
+}
+
+.rs-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.rs-drawer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rs-drawer-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.8rem 0.875rem;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: #F8FAFC;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.rs-drawer-item:hover {
+    background: #F0FDF4;
+    border-color: #BBF7D0;
+    transform: translateX(2px);
+}
+
+.rs-drawer-item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: #ECFDF5;
+    color: #10B981;
+    flex-shrink: 0;
+}
+
+.rs-drawer-item-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.rs-drawer-item-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1E293B;
+    line-height: 1.3;
+}
+
+.rs-drawer-item-desc {
+    font-size: 0.775rem;
+    color: #94A3B8;
+    font-weight: 500;
+}
+
+.rs-drawer-item-arrow {
+    color: #CBD5E1;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+}
+
+.rs-drawer-item:hover .rs-drawer-item-arrow {
+    color: #10B981;
+}
+
+/* Responsive — hide toolbar on very small screens */
+@media (max-width: 640px) {
+    .rightpanel {
+        display: none;
+    }
+    .calc-panel {
+        right: 0;
+        width: 100vw;
+    }
+    .rs-drawer {
+        width: 100vw;
+    }
+}

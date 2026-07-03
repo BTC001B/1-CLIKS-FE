@@ -9,8 +9,13 @@ import {
     Tag, Globe, Plus, Percent, Hash, Check, ArrowUpDown, History
 } from "lucide-react";
 
-export function CalcPopover() {
-    const [open, setOpen] = useState(false);
+export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
+    const [open, setOpen] = useState(autoOpen);
+
+    const closeCalc = () => {
+        setOpen(false);
+        if (autoOpen && onPanelClose) onPanelClose();
+    };
     const popoverRef = useRef(null);
     const tapeEndRef = useRef(null);
     const idCounter = useRef(0);
@@ -197,7 +202,7 @@ export function CalcPopover() {
             } else if (e.key === 'Enter' || e.key === '=') {
                 handleCalculate();
             } else if (e.key === 'Escape') {
-                setOpen(false);
+                closeCalc();
             }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -212,8 +217,9 @@ export function CalcPopover() {
         }
     }, [tape, activeInput, activeOp]);
 
-    // Auto Close Popover outside click
+    // Auto Close Popover outside click — disabled in panel mode
     useEffect(() => {
+        if (autoOpen) return;
         const handleClickOutside = (event) => {
             if (popoverRef.current && !popoverRef.current.contains(event.target)) {
                 setOpen(false);
@@ -223,7 +229,7 @@ export function CalcPopover() {
             document.addEventListener("mousedown", handleClickOutside);
         }
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [open]);
+    }, [open, autoOpen]);
 
     // Grid Actions
     function handleNumber(num) {
@@ -397,12 +403,19 @@ export function CalcPopover() {
 
     // Styles configuration
     const styles = {
-        container: {
+        container: autoOpen ? {
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            minHeight: 0,
+        } : {
             position: 'relative',
             display: 'inline-block',
         },
         triggerButton: {
-            display: 'flex',
+            display: autoOpen ? 'none' : 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             width: '36px',
@@ -416,7 +429,21 @@ export function CalcPopover() {
             outline: 'none',
             boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
         },
-        popover: {
+        popover: autoOpen ? {
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            overflow: 'hidden',
+            width: '100%',
+            maxHeight: 'none',
+            position: 'static',
+            borderRadius: 0,
+            boxShadow: 'none',
+            border: 'none',
+            backgroundColor: '#FFFFFF',
+            fontFamily: "'Inter', sans-serif",
+            minHeight: 0,
+        } : {
             position: 'absolute',
             right: 0,
             top: 'calc(100% + 12px)',
@@ -449,7 +476,17 @@ export function CalcPopover() {
             alignItems: 'center',
             gap: '8px'
         },
-        tapeArea: {
+        tapeArea: autoOpen ? {
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            padding: '16px',
+            backgroundColor: '#FAFAFB',
+            borderBottom: '1px solid #EDF2F7',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+        } : {
             flex: 1,
             maxHeight: '220px',
             minHeight: '140px',
