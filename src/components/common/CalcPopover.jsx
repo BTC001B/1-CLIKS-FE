@@ -615,7 +615,7 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
                                     <Trash2 size={15} />
                                 </button>
                                 <button 
-                                    onClick={() => setOpen(false)} 
+                                    onClick={closeCalc} 
                                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: '6px' }}
                                 >
                                     <X size={16} />
