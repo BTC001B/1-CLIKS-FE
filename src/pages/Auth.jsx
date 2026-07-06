@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context';
+import { referralService } from '../services/referralService';
 import logoPng from '../assets/cliks.png';
 
 const Auth = () => {
@@ -48,8 +49,21 @@ const Auth = () => {
 
             const bnxToken = tokenData.data.access_token;
 
-            // 2. Perform SSO Login with backend
+            // 2. Check if this user arrived via a referral link
+            //    The ref code is stored in sessionStorage when Landing redirects to B2Auth
+            const pendingRefCode = sessionStorage.getItem('cliks_pending_ref');
+
+            // 3. Perform SSO Login with backend
             await ssoLogin(bnxToken);
+
+            // 4. Apply referral code if present — fire-and-forget (don't block navigation)
+            if (pendingRefCode) {
+                sessionStorage.removeItem('cliks_pending_ref');
+                referralService.apply(pendingRefCode).catch((err) => {
+                    // Silently log — referral failure must never block login
+                    console.warn('[Auth] Referral apply failed (non-blocking):', err?.message);
+                });
+            }
 
             navigate('/books/dashboard', { replace: true });
 
