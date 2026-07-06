@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }) => {
         user,
         token,
         loading,
+        isLoading: loading,   // ProtectedRoute reads isLoading — alias for loading
         ssoLogin,
         logout,
         isAuthenticated: !!token

@@ -17,7 +17,12 @@ const Auth = () => {
     const BNX_AUTH_URL = 'https://www.b2auth.com';
     const BNX_API_URL = 'https://api.bnxmail.com';
 
+    const handledRef = React.useRef(false);
+
     const handleOAuthCallback = React.useCallback(async (code) => {
+        if (handledRef.current) return;   // strict-mode / double-invoke guard
+        handledRef.current = true;
+
         setIsLoading(true);
         setError('');
 
@@ -52,26 +57,33 @@ const Auth = () => {
         } catch (err) {
             console.error('[Auth] SSO error:', err);
             setError('Authentication failed. Please try again.');
+            handledRef.current = false;  // allow retry
         } finally {
             setIsLoading(false);
         }
     }, [ssoLogin, navigate]);
 
-    useEffect(() => {
-        const urlParams = new URLSearchParams(location.search);
-        const code = urlParams.get('code');
+   useEffect(() => {
+    // Read the code ONCE from the URL at mount time
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
 
-        if (code) {
-            // OAuth callback — exchange code for token
-            navigate(location.pathname, { replace: true });
-            handleOAuthCallback(code);
-        } else {
-            // No code → user navigated to /auth directly — skip UI, go straight to B2Auth
-            const state = 'cliks-auth-state';
-            window.location.href =
-                `${BNX_AUTH_URL}/?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=${state}`;
-        }
-    }, [location, handleOAuthCallback, navigate]);
+    if (code) {
+        // Clean the URL without triggering another React Router navigation
+        window.history.replaceState({}, '', window.location.pathname);
+
+        // Exchange the OAuth code for a token
+        handleOAuthCallback(code);
+    } else {
+        // No code → redirect user to BNX login
+        const state = 'cliks-auth-state';
+
+        window.location.href =
+            `${BNX_AUTH_URL}/?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=${state}`;
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []); // run once on mount only — do NOT add location/navigate as deps
 
     const handleLoginWithBNX = () => {
         const state = 'cliks-auth-state';
