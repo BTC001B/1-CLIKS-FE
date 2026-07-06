@@ -156,7 +156,7 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
             </div>
 
             {/* Right Group */}
-            <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', paddingRight: '1rem' }}>
+            <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', paddingRight: '17px' }}>
 
                 {/* Search bar — global search */}
                 <SearchBox onOpenCalculator={onOpenCalculator} />
