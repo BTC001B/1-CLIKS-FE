@@ -14,16 +14,18 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
 
-    // Reward points state synced with localStorage
+    // Reward points — default 1000, synced with localStorage
     const [rewardPoints, setRewardPoints] = useState(() => {
         const saved = localStorage.getItem('cliks_reward_points');
-        return saved ? parseInt(saved, 10) : 1000; // default 1000 Pts
+        const parsed = parseInt(saved, 10);
+        return saved && !isNaN(parsed) ? parsed : 1000;
     });
 
     useEffect(() => {
         const handleStorageChange = () => {
             const saved = localStorage.getItem('cliks_reward_points');
-            setRewardPoints(saved ? parseInt(saved, 10) : 1000);
+            const parsed = parseInt(saved, 10);
+            setRewardPoints(saved && !isNaN(parsed) ? parsed : 1000);
         };
         window.addEventListener('storage', handleStorageChange);
         const interval = setInterval(handleStorageChange, 1000);

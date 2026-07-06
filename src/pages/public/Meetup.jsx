@@ -21,7 +21,8 @@ import {
     Eye,
     Building,
     Mail,
-    QrCode
+    QrCode,
+    ArrowRight
 } from 'lucide-react';
 import { meetupsService, profileService } from '../../services';
 import { QRCodeCanvas } from 'qrcode.react';

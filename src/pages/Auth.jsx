@@ -62,9 +62,14 @@ const Auth = () => {
         const code = urlParams.get('code');
 
         if (code) {
-            // ✅ Clean URL immediately to prevent 500 error on refresh (code is one-time use)
+            // OAuth callback — exchange code for token
             navigate(location.pathname, { replace: true });
             handleOAuthCallback(code);
+        } else {
+            // No code → user navigated to /auth directly — skip UI, go straight to B2Auth
+            const state = 'cliks-auth-state';
+            window.location.href =
+                `${BNX_AUTH_URL}/?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=${state}`;
         }
     }, [location, handleOAuthCallback, navigate]);
 

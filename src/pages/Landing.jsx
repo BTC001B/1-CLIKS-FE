@@ -79,7 +79,14 @@ const Landing = () => {
 
     const handleLogin = (e) => {
         if (e) e.preventDefault();
-        navigate('/auth');
+        // Redirect directly to B2Auth — skip the intermediate /auth page.
+        // The /auth route is still needed to receive the OAuth callback (redirect_uri).
+        const CLIENT_ID    = 'cliks-app';
+        const REDIRECT_URI = 'https://cliks.beta-softnet.com/auth';
+        const BNX_AUTH_URL = 'https://www.b2auth.com';
+        const state        = 'cliks-auth-state';
+        window.location.href =
+            `${BNX_AUTH_URL}/?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=${state}`;
     };
 
     const scrollToSection = (id) => {

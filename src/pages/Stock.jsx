@@ -51,12 +51,14 @@ const Stock = () => {
         name: '',
         sub_name: '',
         category: '',
-        quantity: 1,
-        unit: 'pcs',
+        quantity: '',
+        unit: '',
         unit_price: '',
         status: 'In Stock',
-        low_stock_threshold: 5
+        low_stock_threshold: ''
     });
+    const [formErrors, setFormErrors] = useState({});
+    const [successToast, setSuccessToast] = useState('');
 
     // Queries
     const { data: items = [], isLoading } = useQuery({
@@ -81,7 +83,12 @@ const Stock = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['stock'] });
             queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
+            setSuccessToast('Product initialized successfully.');
+            setTimeout(() => setSuccessToast(''), 3500);
             closeModal();
+        },
+        onError: (err) => {
+            setFormErrors({ submit: err?.response?.data?.message || err?.message || 'Failed to save product. Please try again.' });
         }
     });
 
@@ -90,7 +97,12 @@ const Stock = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['stock'] });
             queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
+            setSuccessToast('Product updated successfully.');
+            setTimeout(() => setSuccessToast(''), 3500);
             closeModal();
+        },
+        onError: (err) => {
+            setFormErrors({ submit: err?.response?.data?.message || err?.message || 'Failed to update product. Please try again.' });
         }
     });
 
@@ -114,29 +126,31 @@ const Stock = () => {
     const closeModal = () => {
         setIsModalOpen(false);
         setEditingItem(null);
+        setFormErrors({});
         setFormData({
             name: '',
             sub_name: '',
             category: '',
-            quantity: 1,
-            unit: 'pcs',
+            quantity: '',
+            unit: '',
             unit_price: '',
             status: 'In Stock',
-            low_stock_threshold: 5
+            low_stock_threshold: ''
         });
     };
 
     const handleEdit = (item) => {
         setEditingItem(item);
+        setFormErrors({});
         setFormData({
             name: item.name,
             sub_name: item.sub_name || '',
             category: item.category || '',
-            quantity: item.quantity,
-            unit: item.unit || 'pcs',
+            quantity: item.quantity ?? '',
+            unit: item.unit || '',
             unit_price: item.unit_price || '',
             status: item.status || 'In Stock',
-            low_stock_threshold: item.low_stock_threshold ?? item.lowstockthreshold ?? item.lowStockThreshold ?? item.low_stock_threshold ?? 5
+            low_stock_threshold: item.low_stock_threshold ?? item.lowstockthreshold ?? item.lowStockThreshold ?? ''
         });
         setIsModalOpen(true);
     };
@@ -155,11 +169,30 @@ const Stock = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Client-side validation
+        const errors = {};
+        if (!formData.name.trim())            errors.name             = 'Product Name is required.';
+        if (!formData.category.trim())        errors.category         = 'Category is required.';
+        if (!formData.unit.trim())            errors.unit             = 'Unit Label is required.';
+        if (formData.quantity === '' || formData.quantity === null)
+                                              errors.quantity         = 'Initial Quantity is required.';
+        if (formData.unit_price === '' || formData.unit_price === null)
+                                              errors.unit_price       = 'Unit Valuation is required.';
+        if (formData.low_stock_threshold === '' || formData.low_stock_threshold === null)
+                                              errors.low_stock_threshold = 'Low Stock Level is required.';
+
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            return;
+        }
+
+        setFormErrors({});
         const payload = {
             ...formData,
-            quantity: Number(formData.quantity || 0),
-            unit_price: Number(formData.unit_price || 0),
-            low_stock_threshold: Number(formData.low_stock_threshold || 5)
+            quantity:            Number(formData.quantity),
+            unit_price:          Number(formData.unit_price),
+            low_stock_threshold: Number(formData.low_stock_threshold)
         };
         if (editingItem) {
             updateMutation.mutate({ id: editingItem.id, data: payload });
@@ -485,10 +518,17 @@ const Stock = () => {
                             <button onClick={closeModal} style={{ border: 'none', background: '#F1F5F9', padding: '0.6rem', borderRadius: '14px', cursor: 'pointer', color: '#64748B' }}><X size={22} /></button>
                         </div>
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+                            {/* API-level error */}
+                            {formErrors.submit && (
+                                <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C', padding: '0.875rem 1rem', borderRadius: '12px', fontSize: '0.875rem', fontWeight: 600 }}>
+                                    {formErrors.submit}
+                                </div>
+                            )}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Name</label>
-                                    <input required placeholder="e.g. MacBook Pro M3" type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Name *</label>
+                                    <input placeholder="e.g. MacBook Pro M3" type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: `1px solid ${formErrors.name ? '#FCA5A5' : '#E2E8F0'}`, outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    {formErrors.name && <p style={{ color: '#EF4444', fontSize: '0.75rem', marginTop: '0.35rem', fontWeight: 600 }}>{formErrors.name}</p>}
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sub Name</label>
@@ -497,28 +537,40 @@ const Stock = () => {
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</label>
-                                    <input required placeholder="e.g. Electronics" type="text" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category *</label>
+                                    <input placeholder="e.g. Electronics" type="text" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: `1px solid ${formErrors.category ? '#FCA5A5' : '#E2E8F0'}`, outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    {formErrors.category && <p style={{ color: '#EF4444', fontSize: '0.75rem', marginTop: '0.35rem', fontWeight: 600 }}>{formErrors.category}</p>}
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Label</label>
-                                    <input required placeholder="pcs / Units" type="text" value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
-                                </div>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Initial Quantity</label>
-                                    <input required type="number" value={formData.quantity === 0 ? '' : formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value === '' ? '' : parseInt(e.target.value) || 0})} disabled={!!editingItem} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Valuation (₹)</label>
-                                    <input required type="number" step="0.01" value={formData.unit_price} onChange={(e) => setFormData({...formData, unit_price: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Label *</label>
+                                    <input placeholder="pcs / kg / litre / box / packet" type="text" value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: `1px solid ${formErrors.unit ? '#FCA5A5' : '#E2E8F0'}`, outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    {formErrors.unit && <p style={{ color: '#EF4444', fontSize: '0.75rem', marginTop: '0.35rem', fontWeight: 600 }}>{formErrors.unit}</p>}
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Low Stock Level</label>
-                                    <input required type="number" value={formData.low_stock_threshold === 0 ? '' : formData.low_stock_threshold} onChange={(e) => setFormData({...formData, low_stock_threshold: e.target.value === '' ? '' : parseInt(e.target.value) || 0})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Initial Quantity *</label>
+                                    <input
+                                        type="number"
+                                        placeholder="Enter quantity"
+                                        value={formData.quantity}
+                                        onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+                                        disabled={!!editingItem}
+                                        style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: `1px solid ${formErrors.quantity ? '#FCA5A5' : '#E2E8F0'}`, outline: 'none', fontSize: '1rem', fontWeight: '600', background: editingItem ? '#F8FAFC' : 'white' }}
+                                    />
+                                    {formErrors.quantity && <p style={{ color: '#EF4444', fontSize: '0.75rem', marginTop: '0.35rem', fontWeight: 600 }}>{formErrors.quantity}</p>}
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Valuation (₹) *</label>
+                                    <input placeholder="Enter price" type="number" step="0.01" value={formData.unit_price} onChange={(e) => setFormData({...formData, unit_price: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: `1px solid ${formErrors.unit_price ? '#FCA5A5' : '#E2E8F0'}`, outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    {formErrors.unit_price && <p style={{ color: '#EF4444', fontSize: '0.75rem', marginTop: '0.35rem', fontWeight: 600 }}>{formErrors.unit_price}</p>}
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: '#94A3B8', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Low Stock Level *</label>
+                                    <input placeholder="Alert threshold" type="number" value={formData.low_stock_threshold} onChange={(e) => setFormData({...formData, low_stock_threshold: e.target.value})} style={{ width: '100%', padding: '1rem', borderRadius: '16px', border: `1px solid ${formErrors.low_stock_threshold ? '#FCA5A5' : '#E2E8F0'}`, outline: 'none', fontSize: '1rem', fontWeight: '600' }} />
+                                    {formErrors.low_stock_threshold && <p style={{ color: '#EF4444', fontSize: '0.75rem', marginTop: '0.35rem', fontWeight: 600 }}>{formErrors.low_stock_threshold}</p>}
                                 </div>
                             </div>
                             <button type="submit" disabled={addMutation.isPending || addMutation.isLoading || updateMutation.isPending || updateMutation.isLoading} style={{ 
@@ -656,6 +708,21 @@ const Stock = () => {
                             )}
                         </button>
                     </div>
+                </div>
+            )}
+
+            {/* Success toast */}
+            {successToast && (
+                <div style={{
+                    position: 'fixed', bottom: '2rem', right: '2rem',
+                    background: '#065F46', color: 'white',
+                    padding: '0.875rem 1.5rem', borderRadius: '14px',
+                    boxShadow: '0 10px 24px rgba(0,0,0,0.15)',
+                    fontWeight: 700, fontSize: '0.9rem',
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    zIndex: 2000,
+                }}>
+                    <CheckCircle2 size={18} /> {successToast}
                 </div>
             )}
 

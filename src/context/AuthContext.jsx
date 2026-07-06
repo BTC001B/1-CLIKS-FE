@@ -11,6 +11,8 @@ export const AuthProvider = ({ children }) => {
 
     const logout = React.useCallback(() => {
         localStorage.removeItem('books_auth_token');
+        // Reset per-user data so a new user doesn't inherit previous user's values
+        localStorage.removeItem('cliks_reward_points');
         setToken(null);
         setUser(null);
         // Clear query cache to prevent User B from seeing User A's cached data
@@ -45,6 +47,8 @@ export const AuthProvider = ({ children }) => {
         const { accessToken, user: newUser } = data;
 
         localStorage.setItem('books_auth_token', accessToken);
+        // Reset reward points to 1000 for every new login session
+        localStorage.setItem('cliks_reward_points', '1000');
         setToken(accessToken);
         setUser(newUser);
 

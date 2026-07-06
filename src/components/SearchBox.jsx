@@ -9,6 +9,8 @@ import {
     Home, BookOpen, Globe, Star, Calendar
 } from 'lucide-react';
 
+// (default points are 1000 — set in Wallet.jsx and Rewards.jsx)
+
 /* ─────────────────────────────────────────────────────────────────
    SEARCH INDEX
    Add entries here for every navigable destination.
@@ -111,11 +113,30 @@ const SearchBox = ({ onOpenCalculator }) => {
     const navigate = useNavigate();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false); // collapsed by default
     const [activeIdx, setActiveIdx] = useState(0);
     const wrapperRef = useRef(null);
     const inputRef   = useRef(null);
     const debounceRef = useRef(null);
+
+    /* Expand search and auto-focus */
+    const expand = () => {
+        setIsExpanded(true);
+        // Focus after CSS transition starts
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => inputRef.current?.focus());
+        });
+    };
+
+    /* Collapse search and reset state */
+    const collapse = () => {
+        setIsExpanded(false);
+        setIsDropdownOpen(false);
+        setQuery('');
+        setResults([]);
+        inputRef.current?.blur();
+    };
 
     /* Debounced search */
     const handleChange = (e) => {
@@ -126,7 +147,7 @@ const SearchBox = ({ onOpenCalculator }) => {
         debounceRef.current = setTimeout(() => {
             const found = searchItems(val);
             setResults(found);
-            setIsOpen(val.trim().length > 0);
+            setIsDropdownOpen(val.trim().length > 0);
         }, 200);
     };
 
@@ -136,15 +157,16 @@ const SearchBox = ({ onOpenCalculator }) => {
         } else {
             navigate(item.path);
         }
-        setQuery('');
-        setResults([]);
-        setIsOpen(false);
-        inputRef.current?.blur();
+        collapse();
     }, [navigate, onOpenCalculator]);
 
     /* Keyboard navigation */
     const handleKeyDown = (e) => {
-        if (!isOpen) return;
+        if (e.key === 'Escape') {
+            collapse();
+            return;
+        }
+        if (!isDropdownOpen) return;
         if (e.key === 'ArrowDown') {
             e.preventDefault();
             setActiveIdx(i => Math.min(i + 1, results.length - 1));
@@ -154,10 +176,7 @@ const SearchBox = ({ onOpenCalculator }) => {
         } else if (e.key === 'Enter') {
             e.preventDefault();
             if (results[activeIdx]) handleSelect(results[activeIdx]);
-        } else if (e.key === 'Escape') {
-            setIsOpen(false);
-            setQuery('');
-            inputRef.current?.blur();
+            else if (!query.trim()) collapse(); // empty Enter collapses
         }
     };
 
@@ -165,7 +184,7 @@ const SearchBox = ({ onOpenCalculator }) => {
     useEffect(() => {
         const handler = (e) => {
             if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-                setIsOpen(false);
+                collapse();
             }
         };
         document.addEventListener('mousedown', handler);
@@ -176,50 +195,82 @@ const SearchBox = ({ onOpenCalculator }) => {
     useEffect(() => () => clearTimeout(debounceRef.current), []);
 
     return (
-        <div ref={wrapperRef} style={{ position: 'relative', minWidth: '180px' }}>
-            {/* Search pill — same styling as the original */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '7px 14px',
-                borderRadius: '999px',
-                background: isOpen ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.08)',
-                border: isOpen ? '1px solid rgba(255,255,255,0.28)' : '1px solid rgba(255,255,255,0.14)',
-                transition: 'background 0.2s, border-color 0.2s',
-            }}>
-                <Search size={15} color="rgba(255,255,255,0.55)" style={{ flexShrink: 0 }} />
-                <input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Search..."
-                    value={query}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => { if (query.trim()) setIsOpen(true); }}
-                    aria-label="Global search"
-                    aria-autocomplete="list"
-                    aria-expanded={isOpen}
-                    style={{
-                        border: 'none',
-                        outline: 'none',
-                        background: 'transparent',
-                        color: '#ffffff',
-                        fontSize: '13px',
-                        fontWeight: 500,
-                        width: '100%',
-                        minWidth: 0,
-                    }}
-                />
-            </div>
+        <div ref={wrapperRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
 
-            {/* Dropdown */}
-            {isOpen && (
+            {/* ── Collapsed: icon-only button ── */}
+            {!isExpanded && (
+                <button
+                    onClick={expand}
+                    aria-label="Open search"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '34px',
+                        height: '34px',
+                        borderRadius: '999px',
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(255,255,255,0.14)',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        padding: 0,
+                        transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.14)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                >
+                    <Search size={15} color="rgba(255,255,255,0.75)" />
+                </button>
+            )}
+
+            {/* ── Expanded: full search pill ── */}
+            {isExpanded && (
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '7px 14px',
+                        borderRadius: '999px',
+                        background: 'rgba(255,255,255,0.14)',
+                        border: '1px solid rgba(255,255,255,0.28)',
+                        width: '220px',
+                        animation: 'searchExpand 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                >
+                    <Search size={15} color="rgba(255,255,255,0.65)" style={{ flexShrink: 0 }} />
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        placeholder="Search..."
+                        value={query}
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        onFocus={() => { if (query.trim()) setIsDropdownOpen(true); }}
+                        aria-label="Global search"
+                        aria-autocomplete="list"
+                        aria-expanded={isDropdownOpen}
+                        style={{
+                            border: 'none',
+                            outline: 'none',
+                            background: 'transparent',
+                            color: '#ffffff',
+                            fontSize: '13px',
+                            fontWeight: 500,
+                            width: '100%',
+                            minWidth: 0,
+                            padding: 0,
+                        }}
+                    />
+                </div>
+            )}
+
+            {/* ── Dropdown results ── */}
+            {isDropdownOpen && (
                 <div style={{
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
                     left: 0,
-                    right: 0,
                     minWidth: '280px',
                     background: '#ffffff',
                     borderRadius: '14px',
@@ -255,17 +306,14 @@ const SearchBox = ({ onOpenCalculator }) => {
                                                 transition: 'background 0.1s',
                                             }}
                                         >
-                                            {/* Icon box */}
                                             <span style={{
-                                                width: 32, height: 32,
-                                                borderRadius: 8,
+                                                width: 32, height: 32, borderRadius: 8,
                                                 background: isActive ? '#DCFCE7' : '#F1F5F9',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 flexShrink: 0,
                                             }}>
                                                 <Icon size={15} color={isActive ? '#1B6B3A' : '#64748B'} />
                                             </span>
-                                            {/* Label + category */}
                                             <span style={{ flex: 1, minWidth: 0 }}>
                                                 <span style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#1E293B', lineHeight: 1.3 }}>
                                                     {item.label}
@@ -282,6 +330,14 @@ const SearchBox = ({ onOpenCalculator }) => {
                     )}
                 </div>
             )}
+
+            {/* Expand animation keyframe */}
+            <style>{`
+                @keyframes searchExpand {
+                    from { opacity: 0; transform: scaleX(0.6); transform-origin: left; }
+                    to   { opacity: 1; transform: scaleX(1);   transform-origin: left; }
+                }
+            `}</style>
         </div>
     );
 };

@@ -18,7 +18,7 @@ const Rewards = () => {
     
     const [rewardPoints] = useState(() => {
         const saved = localStorage.getItem('cliks_reward_points');
-        return saved ? parseInt(saved, 10) : 1450;
+        return saved ? parseInt(saved, 10) : 1000;
     });
 
     const handleConvertPoints = () => {

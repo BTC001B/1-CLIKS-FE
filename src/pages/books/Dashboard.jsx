@@ -50,6 +50,8 @@ const BooksDashboard = () => {
         return saved ? JSON.parse(saved) : MASTER_SHORTCUTS.map(s => s.id);
     });
 
+    const [searchTerm, setSearchTerm] = useState('');
+
     const toggleShortcut = (id) => {
         setSelectedShortcuts(prev => {
             const next = prev.includes(id)
@@ -122,6 +124,8 @@ const BooksDashboard = () => {
                             type="text"
                             placeholder="Find modules, assets..."
                             className="dashboard-search-input"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
@@ -168,83 +172,102 @@ const BooksDashboard = () => {
                 <div style={{ marginTop: '2rem', marginBottom: '1rem' }}>
                     <h2 style={{ fontSize: '1.15rem', fontWeight: '850', color: '#1E293B', marginBottom: '1.25rem', letterSpacing: '-0.3px' }}>Quick Action Center</h2>
 
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                        {MASTER_SHORTCUTS.filter(s => selectedShortcuts.includes(s.id)).map(shortcut => {
-                            const Icon = shortcut.icon;
-                            return (
-                                <button
-                                    key={shortcut.id}
-                                    onClick={() => navigate(shortcut.path)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.85rem',
-                                        padding: '0.75rem 1.25rem',
-                                        borderRadius: '16px',
-                                        background: 'white',
-                                        border: '1px solid #E2E8F0',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    }}
-                                    onMouseOver={(e) => {
-                                        e.currentTarget.style.transform = 'translateY(-3px)';
-                                        e.currentTarget.style.boxShadow = '0 12px 20px -8px rgba(0,0,0,0.08)';
-                                        e.currentTarget.style.borderColor = shortcut.color;
-                                    }}
-                                    onMouseOut={(e) => {
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                        e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.04)';
-                                        e.currentTarget.style.borderColor = '#E2E8F0';
-                                    }}
-                                >
-                                    <div style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '10px',
-                                        background: `${shortcut.color}12`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: shortcut.color
-                                    }}>
-                                        <Icon size={16} strokeWidth={2.5} />
-                                    </div>
-                                    <span style={{ fontWeight: '750', fontSize: '0.9rem', color: '#1E293B' }}>{shortcut.label}</span>
-                                </button>
-                            );
-                        })}
+                    {(() => {
+                        const q = searchTerm.trim().toLowerCase();
+                        const visibleShortcuts = MASTER_SHORTCUTS
+                            .filter(s => selectedShortcuts.includes(s.id))
+                            .filter(s => !q || s.label.toLowerCase().includes(q));
 
-                        {/* Add/Manage Button Card */}
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                padding: '0.75rem 1.25rem',
-                                borderRadius: '16px',
-                                background: 'transparent',
-                                border: '2px dashed #CBD5E1',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                color: '#64748B'
-                            }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.borderColor = '#1B6B3A';
-                                e.currentTarget.style.color = '#1B6B3A';
-                                e.currentTarget.style.background = '#F0FDF4';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.borderColor = '#CBD5E1';
-                                e.currentTarget.style.color = '#64748B';
-                                e.currentTarget.style.background = 'transparent';
-                            }}
-                        >
-                            <Plus size={16} strokeWidth={2.5} />
-                            <span style={{ fontWeight: '750', fontSize: '0.9rem' }}>Manage Shortcuts</span>
-                        </button>
-                    </div>
+                        return (
+                            <>
+                                {q && visibleShortcuts.length === 0 ? (
+                                    <div style={{ padding: '1.5rem 0', color: '#94A3B8', fontSize: '0.9rem', fontWeight: 600 }}>
+                                        No matching modules found.
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                        {visibleShortcuts.map(shortcut => {
+                                            const Icon = shortcut.icon;
+                                            return (
+                                                <button
+                                                    key={shortcut.id}
+                                                    onClick={() => navigate(shortcut.path)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.85rem',
+                                                        padding: '0.75rem 1.25rem',
+                                                        borderRadius: '16px',
+                                                        background: 'white',
+                                                        border: '1px solid #E2E8F0',
+                                                        cursor: 'pointer',
+                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    }}
+                                                    onMouseOver={(e) => {
+                                                        e.currentTarget.style.transform = 'translateY(-3px)';
+                                                        e.currentTarget.style.boxShadow = '0 12px 20px -8px rgba(0,0,0,0.08)';
+                                                        e.currentTarget.style.borderColor = shortcut.color;
+                                                    }}
+                                                    onMouseOut={(e) => {
+                                                        e.currentTarget.style.transform = 'translateY(0)';
+                                                        e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.04)';
+                                                        e.currentTarget.style.borderColor = '#E2E8F0';
+                                                    }}
+                                                >
+                                                    <div style={{
+                                                        width: '32px',
+                                                        height: '32px',
+                                                        borderRadius: '10px',
+                                                        background: `${shortcut.color}12`,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        color: shortcut.color
+                                                    }}>
+                                                        <Icon size={16} strokeWidth={2.5} />
+                                                    </div>
+                                                    <span style={{ fontWeight: '750', fontSize: '0.9rem', color: '#1E293B' }}>{shortcut.label}</span>
+                                                </button>
+                                            );
+                                        })}
+
+                                        {/* Add/Manage Button — hide during search */}
+                                        {!q && (
+                                            <button
+                                                onClick={() => setIsModalOpen(true)}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.75rem',
+                                                    padding: '0.75rem 1.25rem',
+                                                    borderRadius: '16px',
+                                                    background: 'transparent',
+                                                    border: '2px dashed #CBD5E1',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                    color: '#64748B'
+                                                }}
+                                                onMouseOver={(e) => {
+                                                    e.currentTarget.style.borderColor = '#1B6B3A';
+                                                    e.currentTarget.style.color = '#1B6B3A';
+                                                    e.currentTarget.style.background = '#F0FDF4';
+                                                }}
+                                                onMouseOut={(e) => {
+                                                    e.currentTarget.style.borderColor = '#CBD5E1';
+                                                    e.currentTarget.style.color = '#64748B';
+                                                    e.currentTarget.style.background = 'transparent';
+                                                }}
+                                            >
+                                                <Plus size={16} strokeWidth={2.5} />
+                                                <span style={{ fontWeight: '750', fontSize: '0.9rem' }}>Manage Shortcuts</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
 
                 {/* Main Content Grid */}

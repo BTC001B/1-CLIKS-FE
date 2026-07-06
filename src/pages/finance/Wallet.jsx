@@ -36,7 +36,7 @@ const Wallet = () => {
     // Reward points state synced with localStorage
     const [rewardPoints, setRewardPoints] = useState(() => {
         const saved = localStorage.getItem('cliks_reward_points');
-        return saved ? parseInt(saved, 10) : 1450;
+        return saved ? parseInt(saved, 10) : 1000;
     });
 
     const [activeTab, setActiveTab] = useState('gateway'); // 'gateway' | 'points'
