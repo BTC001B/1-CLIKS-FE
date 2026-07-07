@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, ShoppingCart, Save, Trash2 } from 'lucide-react';
+import { DollarSign, ShoppingCart, Save, Trash2, Pencil, FileText } from 'lucide-react';
 import { useAuth } from '../../context';
 
 /* ─── Storage key scoped per user ────────────────────────────── */
@@ -15,7 +15,7 @@ const inp = {
     fontSize: '0.875rem',
     fontWeight: 500,
     color: '#1E293B',
-    background: '#ffffff',
+    background: '#f8fafc',
     outline: 'none',
     boxSizing: 'border-box',
 };
@@ -27,22 +27,6 @@ const lbl = {
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
     marginBottom: '0.35rem',
-};
-const card = {
-    background: '#ffffff',
-    borderRadius: '16px',
-    border: '1px solid #E2E8F0',
-    padding: '1.75rem',
-    marginBottom: '1.5rem',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-};
-const sectionH = {
-    fontSize: '1rem',
-    fontWeight: 800,
-    color: '#1E293B',
-    marginBottom: '1.25rem',
-    paddingBottom: '0.625rem',
-    borderBottom: '1px solid #F1F5F9',
 };
 const saveBtn = {
     display: 'flex',
@@ -79,6 +63,7 @@ const FinancePage = () => {
         catch { return []; }
     });
     const [expense, setExpense]   = useState(BLANK_EXPENSE);
+    const [editingId, setEditingId] = useState(null);
     const [saved,   setSaved]     = useState(false);
     const [expSaved, setExpSaved] = useState(false);
 
@@ -105,22 +90,36 @@ const FinancePage = () => {
     const handleSaveExpense = (ev) => {
         ev.preventDefault();
         if (!expense.name.trim() || !expense.amount) return;
-        const entry = {
-            id:     Date.now(),
-            date:   new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-            name:   expense.name.trim(),
-            amount: parseFloat(expense.amount) || 0,
-        };
-        setExpenses(prev => [entry, ...prev]);
+
+        if (editingId) {
+            setExpenses(prev => prev.map(e => e.id === editingId ? { ...e, name: expense.name.trim(), amount: parseFloat(expense.amount) || 0 } : e));
+            setEditingId(null);
+        } else {
+            const entry = {
+                id:     Date.now(),
+                date:   new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+                name:   expense.name.trim(),
+                amount: parseFloat(expense.amount) || 0,
+            };
+            setExpenses(prev => [entry, ...prev]);
+        }
         setExpense(BLANK_EXPENSE);
         setExpSaved(true);
         setTimeout(() => setExpSaved(false), 2500);
     };
 
     const handleDeleteExpense = (id) => setExpenses(prev => prev.filter(e => e.id !== id));
+    const handleEditExpense = (e) => {
+        setExpense({ name: e.name, amount: e.amount });
+        setEditingId(e.id);
+    };
+
+    const handleSaveToPDF = () => {
+        window.print();
+    };
 
     return (
-        <div style={{ padding: '1.5rem 2rem', maxWidth: 1000, margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ padding: '1.5rem 2rem', maxWidth: 1200, margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
 
             {/* Page title */}
             <div style={{ marginBottom: '1.75rem' }}>
@@ -133,54 +132,81 @@ const FinancePage = () => {
                 <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: 500, margin: 0 }}>Track your income, fixed costs, and daily spending in one place.</p>
             </div>
 
-            {/* ── SECTION 1: Details ── */}
-            <div style={card}>
-                <div style={sectionH}>Update Your Details</div>
-                {saved && (
-                    <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.25rem' }}>
-                        ✓ Details saved successfully.
+            {/* Summary cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                {[
+                    { label: 'Monthly Income',  value: monthlyIncome,  color: '#059669', bg: '#ECFDF5' },
+                    { label: 'Fixed Expenses',  value: fixedExpenses,  color: '#D97706', bg: '#FFFBEB' },
+                    { label: 'Daily Expenses',  value: dailyExpenses,  color: '#7C3AED', bg: '#F5F3FF' },
+                    { label: 'Remaining Balance', value: remaining,    color: remaining >= 0 ? '#059669' : '#EF4444', bg: remaining >= 0 ? '#ECFDF5' : '#FEF2F2' },
+                ].map(item => (
+                    <div key={item.label} style={{ background: item.bg, borderRadius: '14px', padding: '1.1rem 1.25rem', border: `1px solid ${item.color}22` }}>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.3rem' }}>{item.label}</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: item.color }}>
+                            ₹{item.value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
                     </div>
-                )}
-                <form onSubmit={handleSaveDetails}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
-                        {[
-                            ['fullName',    'Full Name',              'text'  ],
-                            ['email',       'Email Address',           'email' ],
-                            ['phone',       'Phone Number',            'tel'   ],
-                            ['salary',      'Monthly Salary',          'number'],
-                            ['bonus',       'Bonus (This Month)',      'number'],
-                            ['rent',        'Monthly House Rent',      'number'],
-                            ['electricity', 'Monthly Electricity Bill','number'],
-                            ['grocery',     'Monthly Grocery Budget',  'number'],
-                        ].map(([key, label, type]) => (
-                            <div key={key}>
-                                <label style={lbl}>{label}</label>
-                                <input
-                                    type={type}
-                                    style={inp}
-                                    value={details[key]}
-                                    min={type === 'number' ? 0 : undefined}
-                                    placeholder={label}
-                                    onChange={e => setDetails(prev => ({ ...prev, [key]: e.target.value }))}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                    <button type="submit" style={saveBtn}><Save size={15} /> Save Details</button>
-                </form>
+                ))}
             </div>
 
-            {/* ── SECTION 2: Daily Expense Entry ── */}
-            <div style={card}>
-                <div style={sectionH}>Update Your Daily Money Spent</div>
-                {expSaved && (
-                    <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.25rem' }}>
-                        ✓ Expense saved.
+            {/* Main Container Split into Two */}
+            <div style={{ display: 'flex', border: '2px solid #2563EB', borderRadius: '12px', background: '#fff', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+
+                {/* LEFT SIDE: INCOME */}
+                <div style={{ flex: 1, padding: '1.5rem', borderRight: '2px solid #2563EB', position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: '1.5rem' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Income</h2>
+                        <div style={{ position: 'absolute', right: 0, top: -5, background: '#3B82F6', color: '#fff', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}>
+                            <Pencil size={16} />
+                        </div>
                     </div>
-                )}
-                <form onSubmit={handleSaveExpense}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px', gap: '1rem', marginBottom: '1.25rem', alignItems: 'end' }}>
-                        <div>
+                    <div style={{ height: '2px', background: '#EF4444', margin: '0 -1.5rem 1.5rem -1.5rem' }}></div>
+
+                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 900, color: '#1E3A8A', margin: 0, textTransform: 'uppercase' }}>Standard Income</h3>
+                    </div>
+
+                    <form onSubmit={handleSaveDetails}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            {[
+                                ['salary',      'Monthly Salary'],
+                                ['electricity', 'Monthly Electricity Bill'],
+                                ['rent',        'Monthly House Rent'],
+                                ['grocery',     'Monthly Grocery Budget'],
+                            ].map(([key, label]) => (
+                                <div key={key}>
+                                    <label style={lbl}>{label}</label>
+                                    <input
+                                        type="number"
+                                        style={inp}
+                                        value={details[key]}
+                                        placeholder="0"
+                                        onChange={e => setDetails(prev => ({ ...prev, [key]: e.target.value }))}
+                                    />
+                                </div>
+                            ))}
+                            <div style={{ marginTop: '1rem' }}>
+                                <button type="submit" style={saveBtn}>
+                                    <Save size={16} /> Save Details
+                                </button>
+                                {saved && <span style={{ marginLeft: '1rem', color: '#059669', fontSize: '0.8rem', fontWeight: 600 }}>✓ Saved</span>}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                {/* RIGHT SIDE: MONTHLY EXPENSE */}
+                <div style={{ flex: 1, padding: '1.5rem', position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: '1.5rem' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Monthly Expense</h2>
+                        <div style={{ position: 'absolute', right: 0, top: -5, background: '#3B82F6', color: '#fff', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}>
+                            <Pencil size={16} />
+                        </div>
+                    </div>
+                    <div style={{ height: '2px', background: '#EF4444', margin: '0 -1.5rem 1.5rem -1.5rem' }}></div>
+
+                    <form onSubmit={handleSaveExpense}>
+                        <div style={{ marginBottom: '1.25rem' }}>
                             <label style={lbl}>Purchase Name</label>
                             <input
                                 type="text"
@@ -191,70 +217,70 @@ const FinancePage = () => {
                                 required
                             />
                         </div>
-                        <div>
-                            <label style={lbl}>Amount Spent</label>
-                            <input
-                                type="number"
-                                min="0"
-                                style={inp}
-                                value={expense.amount}
-                                placeholder="0"
-                                onChange={e => setExpense(prev => ({ ...prev, amount: e.target.value }))}
-                                required
-                            />
+                        <div style={{ display: 'flex', alignItems: 'end', gap: '1rem', marginBottom: '2rem' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={lbl}>Amount Spent</label>
+                                <input
+                                    type="number"
+                                    style={inp}
+                                    value={expense.amount}
+                                    placeholder="0"
+                                    onChange={e => setExpense(prev => ({ ...prev, amount: e.target.value }))}
+                                    required
+                                />
+                            </div>
+                            <button type="submit" style={saveBtn}>
+                                <ShoppingCart size={16} /> {editingId ? 'Update Expense' : 'Save Expense'}
+                            </button>
                         </div>
-                    </div>
-                    <button type="submit" style={saveBtn}><ShoppingCart size={15} /> Save Expense</button>
-                </form>
+                    </form>
 
-                {/* Expenses table */}
-                {expenses.length > 0 && (
-                    <div style={{ marginTop: '1.75rem' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.75rem' }}>Saved Expenses</div>
-                        <div style={{ border: '1px solid #E2E8F0', borderRadius: '14px', overflow: 'hidden' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                    {/* Expense History Table */}
+                    <div style={{ marginTop: '1rem' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Saved Expenses</div>
+                        <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                                 <thead>
-                                    <tr style={{ background: '#F8FAFC' }}>
-                                        {['Date', 'Purchase Name', 'Amount', ''].map(h => (
-                                            <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.7rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                                        ))}
+                                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                                        <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>DATE</th>
+                                        <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>PURCHASE NAME</th>
+                                        <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>AMOUNT</th>
+                                        <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }}></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {expenses.map(e => (
-                                        <tr key={e.id} style={{ borderTop: '1px solid #F1F5F9' }}>
-                                            <td style={{ padding: '0.75rem 1rem', color: '#94A3B8', whiteSpace: 'nowrap' }}>{e.date}</td>
-                                            <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#1E293B' }}>{e.name}</td>
-                                            <td style={{ padding: '0.75rem 1rem', fontWeight: 700, color: '#064E3B' }}>₹{e.amount.toLocaleString('en-IN')}</td>
-                                            <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                                                <button onClick={() => handleDeleteExpense(e.id)}
-                                                    style={{ background: '#FEF2F2', border: 'none', borderRadius: '8px', padding: '5px 8px', cursor: 'pointer', color: '#EF4444', display: 'flex', alignItems: 'center' }}>
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {expenses.length === 0 ? (
+                                        <tr><td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>No expenses yet</td></tr>
+                                    ) : (
+                                        expenses.map(e => (
+                                            <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                                <td style={{ padding: '0.6rem 1rem', color: '#94A3B8' }}>{e.date}</td>
+                                                <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>{e.name}</td>
+                                                <td style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>₹{e.amount.toLocaleString('en-IN')}</td>
+                                                <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }}>
+                                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                        <button onClick={() => handleEditExpense(e)} style={{ background: '#EFF6FF', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
+                                                            <Pencil size={14} />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteExpense(e.id)} style={{ background: '#FEF2F2', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#EF4444' }}>
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                )}
-
-                {/* Summary card */}
-                <div style={{ marginTop: '1.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-                    {[
-                        { label: 'Monthly Income',  value: monthlyIncome,  color: '#059669', bg: '#ECFDF5' },
-                        { label: 'Fixed Expenses',  value: fixedExpenses,  color: '#D97706', bg: '#FFFBEB' },
-                        { label: 'Daily Expenses',  value: dailyExpenses,  color: '#7C3AED', bg: '#F5F3FF' },
-                        { label: 'Remaining Balance', value: remaining,    color: remaining >= 0 ? '#059669' : '#EF4444', bg: remaining >= 0 ? '#ECFDF5' : '#FEF2F2' },
-                    ].map(item => (
-                        <div key={item.label} style={{ background: item.bg, borderRadius: '14px', padding: '1.1rem 1.25rem', border: `1px solid ${item.color}22` }}>
-                            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.3rem' }}>{item.label}</div>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: item.color }}>
-                                ₹{item.value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {expenses.length > 0 && (
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                                <button onClick={handleSaveToPDF} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', border: '1px solid #CBD5E1', borderRadius: '8px', background: '#fff', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', color: '#1E293B' }}>
+                                    <FileText size={14} /> Save to PDF
+                                </button>
                             </div>
-                        </div>
-                    ))}
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
