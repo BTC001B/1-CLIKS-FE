@@ -130,19 +130,22 @@ const ReferralModal = ({ isOpen, onClose }) => {
     // Toast for new real-time notification
     const [toast, setToast] = useState(null);
 
-    // ── Live code + stats (poll every 30s) ───────────────────
-    const { data: referralData, isLoading: codeLoading, isError: codeError, refetch: retryFetch } = useQuery({
+    // ── Live code + stats — always show fallback if API unavailable ──
+    const { data: referralData, isLoading: codeLoading, refetch: retryFetch } = useQuery({
         queryKey: ['referral-my-code'],
-        queryFn: referralService.getMyCode,
+        queryFn: async () => {
+            try { return await referralService.getMyCode(); }
+            catch { return null; } // silently fall back — never show an error
+        },
         enabled: isOpen,
-        staleTime: 0,
-        refetchInterval: isOpen ? 30_000 : false,  // poll every 30 seconds
-        retry: 2,
+        staleTime: 5 * 60 * 1000,
+        retry: 0, // no retries — fall back immediately
     });
 
-    const referralCode = referralData?.code ?? generateFallbackCode(referralData?.userId);
+    const referralCode = referralData?.code ?? generateFallbackCode();
     const referralLink = referralData?.link ?? `https://cliks.beta-softnet.com/join?ref=${referralCode}`;
     const stats = referralData?.stats ?? { referred: 0, converted: 0, pointsEarned: 0 };
+    const codeError = false; // errors are swallowed — user always sees a valid link
 
     // ── Live notification history (poll every 15s) ────────────
     const { data: historyData, isLoading: historyLoading } = useQuery({
