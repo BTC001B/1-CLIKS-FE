@@ -156,7 +156,7 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
             </div>
 
             {/* Right Group */}
-            <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', paddingRight: '17px' }}>
+            <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', paddingRight: '14px' }}>
 
                 {/* Search bar — global search */}
                 <SearchBox onOpenCalculator={onOpenCalculator} />
@@ -208,6 +208,7 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                     height: '28px',
                     background: 'rgba(255,255,255,0.18)',
                     flexShrink: 0,
+                    marginRight: '8px'
                 }} />
 
                 {/* Sliders / filter icon — far right, toggles the quick-access toolbar */}
@@ -219,9 +220,9 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        width: '38px',
-                        height: '38px',
-                        borderRadius: '10px',
+                        width: '44px',
+                        height: '44px',
+                        borderRadius: '12px',
                         background: isToolbarOpen
                             ? 'rgba(255,255,255,0.22)'
                             : 'rgba(255,255,255,0.08)',
@@ -231,7 +232,7 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                         color: '#ffffff',
                         cursor: 'pointer',
                         flexShrink: 0,
-                        transition: 'background 0.2s, border-color 0.2s',
+                        transition: 'all 0.2s ease',
                         outline: 'none',
                     }}
                     onMouseEnter={(e) => {
@@ -243,7 +244,7 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                             : 'rgba(255,255,255,0.08)';
                     }}
                 >
-                    <SlidersHorizontal size={17} />
+                    <SlidersHorizontal size={18} />
                 </button>
             </div>
         </header>
