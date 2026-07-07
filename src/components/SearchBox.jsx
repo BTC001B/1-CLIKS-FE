@@ -21,6 +21,7 @@ const SEARCH_INDEX = [
     { label: 'Dashboard',        path: '/books/dashboard',           icon: LayoutDashboard, category: 'Books',    keywords: ['dashboard', 'home', 'overview', 'console', 'books'] },
     { label: 'Stock',            path: '/books/stock',               icon: TrendingUp,      category: 'Books',    keywords: ['stock', 'inventory', 'assets', 'items'] },
     { label: 'People',           path: '/books/people',              icon: Users,           category: 'Books',    keywords: ['people', 'contacts', 'customers', 'clients', 'persons'] },
+    { label: 'Finance',          path: '/books/finance',             icon: PiggyBank,       category: 'Books',    keywords: ['finance', 'money', 'spending', 'details'] },
     { label: 'Split Expenses',   path: '/payments/split-expense',    icon: Split,           category: 'Books',    keywords: ['split', 'expense', 'share', 'bill'] },
     { label: 'Report',           path: '/books',                     icon: BarChart3,        category: 'Books',    keywords: ['report', 'analytics', 'summary'] },
     { label: 'FIN-PRO Audit',    path: '/ca',                        icon: Briefcase,       category: 'FIN-PRO',  keywords: ['finpro', 'fin-pro', 'audit', 'ca', 'chartered', 'auditor'] },
@@ -33,7 +34,7 @@ const SEARCH_INDEX = [
     { label: 'Rewards & Offers', path: '/payments/rewards-offers',   icon: Gift,            category: 'Payments', keywords: ['reward', 'offer', 'points', 'loyalty', 'cashback'] },
 
     // ── Finance ────────────────────────────────────────────────
-    { label: 'Finance Dashboard',path: '/finance/dashboard',         icon: DollarSign,      category: 'Finance',  keywords: ['finance', 'financial', 'money', 'dashboard'] },
+    { label: 'Payments Dashboard',path: '/finance/dashboard',        icon: DollarSign,      category: 'Finance',  keywords: ['finance', 'financial', 'money', 'dashboard'] },
     { label: 'Income',           path: '/finance/income',            icon: TrendingUp,      category: 'Finance',  keywords: ['income', 'revenue', 'earnings', 'salary'] },
     { label: 'Expenses',         path: '/finance/expenses',          icon: ShoppingCart,    category: 'Finance',  keywords: ['expense', 'spend', 'cost', 'expenditure'] },
     { label: 'Budgets',          path: '/finance/budgets',           icon: Target,          category: 'Finance',  keywords: ['budget', 'limit', 'plan', 'cap'] },

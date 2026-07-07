@@ -76,6 +76,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
         if (path.includes('/books/dashboard')) return 'Books Dashboard';
         if (path.includes('/books/stock')) return 'Stock';
         if (path.includes('/books/people')) return 'People';
+        if (path.includes('/books/finance')) return 'Finance';
         if (path === '/books' || path === '/books/') return 'Report';
         if (path.includes('/books/settings')) return 'Settings';
         if (path.includes('/books/faq')) return 'Help & Support';
@@ -120,7 +121,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
 
     // Show Finance sidebar for root, home (redirect), and finance paths
     const showFinanceSidebar = (location.pathname === '/' || location.pathname.startsWith('/home') || location.pathname.startsWith('/finance') || location.pathname.startsWith('/payments')) && !location.pathname.startsWith('/payments/split-expense');
-    const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor' || location.pathname.startsWith('/ca') || location.pathname.startsWith('/payments/split-expense');
+    const showBooksSidebar = (location.pathname.startsWith('/books') && location.pathname !== '/books/profile') || location.pathname === '/auditor' || location.pathname.startsWith('/ca') || location.pathname.startsWith('/payments/split-expense') || location.pathname === '/subscription';
     const showPublicSidebar = location.pathname.startsWith('/public') || location.pathname.startsWith('/social');
 
 
@@ -256,7 +257,18 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             </div>
                         </button>
 
-                        {/* 4. Split Expenses */}
+                        {/* 4. Finance */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Finance' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Finance', '/books/finance')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <PiggyBank size={20} style={{ color: activeItem === 'Finance' ? '#ffffff' : '#1B6B3A' }} />
+                                <span className="sidebar-label">Finance</span>
+                            </div>
+                        </button>
+
+                        {/* 5. Split Expenses */}
                         <button
                             className={`sidebar-item ${activeItem === 'Split Expenses' ? 'active' : ''}`}
                             onClick={() => handleItemClick('Split Expenses', '/payments/split-expense')}

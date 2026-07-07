@@ -89,6 +89,18 @@ const Books = () => {
                         ]}
                     />
 
+                    {/* Finance Overview */}
+                    <OverviewCard
+                        title="Finance"
+                        icon={TrendingUp}
+                        color="#1B6B3A"
+                        path="/books/finance"
+                        stats={[
+                            { label: 'Tracking', value: 'Active' },
+                            { label: 'Updates', value: 'Real-time' }
+                        ]}
+                    />
+
                     {/* Financial Contacts */}
                     <OverviewCard
                         title="Financial Contacts"

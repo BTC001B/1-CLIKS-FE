@@ -38,6 +38,7 @@ const MASTER_SHORTCUTS = [
     { id: 'investments', label: 'Investments', path: '/finance/investments', icon: ArrowUpRight, color: '#EA580C' },
     { id: 'debts', label: 'Debts & Loans', path: '/finance/debts', icon: ShieldCheck, color: '#65A30D' },
     { id: 'ca_hub', label: 'FIN-PRO CA Hub', path: '/ca', icon: Briefcase, color: '#004aad' },
+    { id: 'finance_module', label: 'Finance', path: '/books/finance', icon: TrendingUp, color: '#1B6B3A' },
 ];
 
 const BooksDashboard = () => {
@@ -304,6 +305,22 @@ const BooksDashboard = () => {
                                     <div>
                                         <h4 style={{ fontSize: '1rem', fontWeight: '800', color: '#0F172A', margin: '0 0 0.25rem 0' }}>People Hub</h4>
                                         <p style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '500', margin: 0, lineHeight: '1.4' }}>Operational base for handling contacts, payables, receivables, and transactions.</p>
+                                    </div>
+                                </div>
+                                <div style={{ color: '#1B6B3A', background: '#DCF2E4', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <ArrowRight size={16} />
+                                </div>
+                            </div>
+
+                            {/* Finance Module */}
+                            <div style={{ padding: '1.25rem', borderRadius: '16px', border: '1px solid #F1F5F9', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.2s' }} onClick={() => navigate('/books/finance')}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                                    <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'white', color: '#1B6B3A', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                                        <TrendingUp size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 style={{ fontSize: '1rem', fontWeight: '800', color: '#0F172A', margin: '0 0 0.25rem 0' }}>Finance</h4>
+                                        <p style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '500', margin: 0, lineHeight: '1.4' }}>Track personal income, fixed costs, and daily expenses with automatic balance calculation.</p>
                                     </div>
                                 </div>
                                 <div style={{ color: '#1B6B3A', background: '#DCF2E4', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

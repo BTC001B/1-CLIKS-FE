@@ -46,6 +46,7 @@ const Profile = React.lazy(() => import('./pages/Profile'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const FAQ = React.lazy(() => import('./pages/FAQ'));
 const Subscription = React.lazy(() => import('./pages/Subscription'));
+const FinancePage = React.lazy(() => import('./pages/books/FinancePage'));
 
 
 import './App.css';
@@ -121,6 +122,7 @@ function AppContent() {
                     <Route path="/payments/rewards-offers" element={<Rewards />} />
 
                     {/* Books Section */}
+                    <Route path="/books/finance" element={<FinancePage />} />
                     <Route path="/books" element={<Books />} />
                     <Route path="/books/dashboard" element={<BooksDashboard />} />
                     <Route path="/books/stock" element={<Stock />} />
