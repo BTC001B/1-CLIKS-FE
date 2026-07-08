@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { DollarSign, ShoppingCart, Save, Trash2, Pencil, FileText, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc } from 'lucide-react';
 import { useAuth } from '../../context';
+import { transactionsService } from '../../services';
 
 /* ─── Storage key scoped per user ────────────────────────────── */
 const incomeKey   = (uid) => `cliks_finance_income_v2_${uid}`;
@@ -233,6 +234,32 @@ const FinancePage = () => {
     const dailyExpenses   = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
     const remaining       = monthlyIncome - fixedExpenses - dailyExpenses;
 
+    // Helper for syncing with Transactions
+    const mapCategory = (name) => {
+        const n = name.toLowerCase();
+        if (n.includes('salary') || n.includes('employment')) return 'Employment';
+        if (n.includes('business')) return 'Business';
+        if (n.includes('freelance')) return 'Freelance';
+        if (n.includes('rent') || n.includes('rental')) return 'Rental';
+        if (n.includes('invest')) return 'Investment';
+        if (n.includes('food') || n.includes('grocery')) return 'Food';
+        if (n.includes('utility') || n.includes('bill') || n.includes('electricity')) return 'Utilities';
+        if (n.includes('petrol') || n.includes('transport') || n.includes('fuel')) return 'Transport';
+        return 'Other';
+    };
+
+    const formatAPIDate = (dStr) => {
+        if (!dStr) return new Date().toISOString().split('T')[0];
+        try {
+            const parts = dStr.split(' ');
+            if (parts.length !== 3) return new Date().toISOString().split('T')[0];
+            const [d, m, y] = parts;
+            const monthMap = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+            const date = new Date(y, monthMap[m], d);
+            return isNaN(date.getTime()) ? new Date().toISOString().split('T')[0] : date.toISOString().split('T')[0];
+        } catch { return new Date().toISOString().split('T')[0]; }
+    };
+
     const handleAddIncomeSource = (e) => {
         e.preventDefault();
         if (!newIncome.name.trim() || !newIncome.amount) return;
@@ -252,33 +279,107 @@ const FinancePage = () => {
         setNewIncome({ name: '', amount: '', description: '' });
     };
 
-    const handleDeleteIncomeSource = (id) => setIncomeSources(prev => prev.filter(i => i.id !== id));
+    const handleDeleteIncomeSource = async (id) => {
+        const item = incomeSources.find(i => i.id === id);
+        if (item?.transactionId) {
+            try { await transactionsService.deleteTransaction(item.transactionId); }
+            catch (err) { console.error("Sync error deleting transaction:", err); }
+        }
+        setIncomeSources(prev => prev.filter(i => i.id !== id));
+    };
     const handleEditIncomeSource = (i) => {
         setNewIncome({ name: i.name, amount: i.amount, description: i.description || '' });
         setEditingIncomeId(i.id);
     };
 
-    const handleSaveDetails = (ev) => {
+    const handleSaveDetails = async (ev) => {
         ev.preventDefault();
+
+        // Sync all income sources to transactions
+        const updatedSources = await Promise.all(incomeSources.map(async (source) => {
+            const data = {
+                type: 'Income',
+                title: source.name,
+                category: mapCategory(source.name),
+                amount: source.amount,
+                date: new Date().toISOString().split('T')[0],
+                notes: source.description || '',
+                status: 'Completed'
+            };
+
+            try {
+                if (source.transactionId) {
+                    await transactionsService.updateTransaction(source.transactionId, data);
+                    return source;
+                } else {
+                    const res = await transactionsService.createTransaction(data);
+                    return { ...source, transactionId: res.id || res.data?.id };
+                }
+            } catch (err) {
+                console.error("Sync error saving income source:", err);
+                return source;
+            }
+        }));
+
+        setIncomeSources(updatedSources);
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
     };
 
-    const handleSaveExpense = (ev) => {
+    const handleSaveExpense = async (ev) => {
         ev.preventDefault();
         if (!expense.name.trim() || !expense.amount) return;
 
+        let entry;
         if (editingId) {
-            setExpenses(prev => prev.map(e => e.id === editingId ? { ...e, name: expense.name.trim(), amount: parseFloat(expense.amount) || 0, description: expense.description.trim() } : e));
+            const existing = expenses.find(e => e.id === editingId);
+            entry = { ...existing, name: expense.name.trim(), amount: parseFloat(expense.amount) || 0, description: expense.description.trim() };
+
+            const data = {
+                type: 'Expense',
+                title: entry.name,
+                category: mapCategory(entry.name),
+                amount: entry.amount,
+                date: formatAPIDate(entry.date),
+                notes: entry.description || '',
+                status: 'Completed'
+            };
+
+            try {
+                if (entry.transactionId) {
+                    await transactionsService.updateTransaction(entry.transactionId, data);
+                } else {
+                    const res = await transactionsService.createTransaction(data);
+                    entry.transactionId = res.id || res.data?.id;
+                }
+            } catch (err) { console.error("Sync error updating expense:", err); }
+
+            setExpenses(prev => prev.map(e => e.id === editingId ? entry : e));
             setEditingId(null);
         } else {
-            const entry = {
+            entry = {
                 id:     Date.now(),
                 date:   new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
                 name:   expense.name.trim(),
                 amount: parseFloat(expense.amount) || 0,
                 description: expense.description.trim(),
             };
+
+            const data = {
+                type: 'Expense',
+                title: entry.name,
+                category: mapCategory(entry.name),
+                amount: entry.amount,
+                date: formatAPIDate(entry.date),
+                notes: entry.description || '',
+                status: 'Completed'
+            };
+
+            try {
+                const res = await transactionsService.createTransaction(data);
+                entry.transactionId = res.id || res.data?.id;
+            } catch (err) { console.error("Sync error creating expense:", err); }
+
             setExpenses(prev => [entry, ...prev]);
         }
         setExpense(BLANK_EXPENSE);
@@ -287,7 +388,14 @@ const FinancePage = () => {
         setTimeout(() => setExpSaved(false), 2500);
     };
 
-    const handleDeleteExpense = (id) => setExpenses(prev => prev.filter(e => e.id !== id));
+    const handleDeleteExpense = async (id) => {
+        const item = expenses.find(e => e.id === id);
+        if (item?.transactionId) {
+            try { await transactionsService.deleteTransaction(item.transactionId); }
+            catch (err) { console.error("Sync error deleting transaction:", err); }
+        }
+        setExpenses(prev => prev.filter(e => e.id !== id));
+    };
     const handleEditExpense = (e) => {
         setExpense({ name: e.name, amount: e.amount, description: e.description || '' });
         setEditingId(e.id);
