@@ -48,7 +48,7 @@ const BLANK_DETAILS = {
     salary: '', bonus: '',
     rent: '', electricity: '', grocery: '',
 };
-const BLANK_EXPENSE = { name: '', amount: '' };
+const BLANK_EXPENSE = { name: '', amount: '', description: '' };
 
 const FinancePage = () => {
     const { user } = useAuth();
@@ -63,7 +63,7 @@ const FinancePage = () => {
         catch { return []; }
     });
 
-    const [newIncome, setNewIncome] = useState({ name: '', amount: '' });
+    const [newIncome, setNewIncome] = useState({ name: '', amount: '', description: '' });
     const [editingIncomeId, setEditingIncomeId] = useState(null);
 
     const [expense, setExpense]   = useState(BLANK_EXPENSE);
@@ -148,22 +148,23 @@ const FinancePage = () => {
         if (!newIncome.name.trim() || !newIncome.amount) return;
 
         if (editingIncomeId) {
-            setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? { ...i, name: newIncome.name.trim(), amount: parseFloat(newIncome.amount) || 0 } : i));
+            setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? { ...i, name: newIncome.name.trim(), amount: parseFloat(newIncome.amount) || 0, description: newIncome.description.trim() } : i));
             setEditingIncomeId(null);
         } else {
             const entry = {
                 id: Date.now(),
                 name: newIncome.name.trim(),
                 amount: parseFloat(newIncome.amount) || 0,
+                description: newIncome.description.trim(),
             };
             setIncomeSources(prev => [...prev, entry]);
         }
-        setNewIncome({ name: '', amount: '' });
+        setNewIncome({ name: '', amount: '', description: '' });
     };
 
     const handleDeleteIncomeSource = (id) => setIncomeSources(prev => prev.filter(i => i.id !== id));
     const handleEditIncomeSource = (i) => {
-        setNewIncome({ name: i.name, amount: i.amount });
+        setNewIncome({ name: i.name, amount: i.amount, description: i.description || '' });
         setEditingIncomeId(i.id);
     };
 
@@ -178,7 +179,7 @@ const FinancePage = () => {
         if (!expense.name.trim() || !expense.amount) return;
 
         if (editingId) {
-            setExpenses(prev => prev.map(e => e.id === editingId ? { ...e, name: expense.name.trim(), amount: parseFloat(expense.amount) || 0 } : e));
+            setExpenses(prev => prev.map(e => e.id === editingId ? { ...e, name: expense.name.trim(), amount: parseFloat(expense.amount) || 0, description: expense.description.trim() } : e));
             setEditingId(null);
         } else {
             const entry = {
@@ -186,6 +187,7 @@ const FinancePage = () => {
                 date:   new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
                 name:   expense.name.trim(),
                 amount: parseFloat(expense.amount) || 0,
+                description: expense.description.trim(),
             };
             setExpenses(prev => [entry, ...prev]);
         }
@@ -197,7 +199,7 @@ const FinancePage = () => {
 
     const handleDeleteExpense = (id) => setExpenses(prev => prev.filter(e => e.id !== id));
     const handleEditExpense = (e) => {
-        setExpense({ name: e.name, amount: e.amount });
+        setExpense({ name: e.name, amount: e.amount, description: e.description || '' });
         setEditingId(e.id);
     };
 
@@ -347,16 +349,11 @@ const FinancePage = () => {
 
             {/* Fixed Source Section Heading */}
             <div style={{
-                marginBottom: '2rem',
-                marginTop: '1rem',
-                background: '#F0FDF4',
-                padding: '1.5rem 2rem',
-                borderRadius: '20px',
-                border: '1px solid #DCF2E4',
+                marginBottom: '2.5rem',
+                marginTop: '1.5rem',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1.25rem',
-                boxShadow: '0 4px 12px rgba(6, 78, 59, 0.03)'
             }}>
                 <div style={{ width: 54, height: 54, borderRadius: '16px', background: 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 8px 16px rgba(27, 107, 58, 0.2)' }}>
                     <Briefcase size={28} />
@@ -468,6 +465,16 @@ const FinancePage = () => {
                                             required
                                         />
                                     </div>
+                                    <div>
+                                        <label style={lbl}>Description</label>
+                                        <textarea
+                                            style={{ ...inp, height: 'auto', resize: 'vertical' }}
+                                            rows={3}
+                                            value={newIncome.description}
+                                            placeholder="Enter notes about this income source (optional)...&#10;Example: Monthly salary credited on the 1st of every month."
+                                            onChange={e => setNewIncome(prev => ({ ...prev, description: e.target.value }))}
+                                        />
+                                    </div>
                                     <div style={{ marginTop: '0.5rem' }}>
                                         <button type="submit" style={{ ...saveBtn, background: 'linear-gradient(135deg, #1B6B3A 0%, #135029 100%)' }}>
                                             <Plus size={16} /> {editingIncomeId ? 'Update Income Source' : 'Add Income Source'}
@@ -484,17 +491,19 @@ const FinancePage = () => {
                                         <thead>
                                             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>SOURCE NAME</th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>DESCRIPTION</th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>AMOUNT (MONTHLY)</th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }} className="no-print">ACTIONS</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {filteredIncome.length === 0 ? (
-                                                <tr><td colSpan="3" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{incomeSearch ? 'No matching income source found.' : 'No income sources added yet'}</td></tr>
+                                                <tr><td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{incomeSearch ? 'No matching income source found.' : 'No income sources added yet'}</td></tr>
                                             ) : (
                                                 filteredIncome.map(i => (
                                                     <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>{i.name}</td>
+                                                        <td style={{ padding: '0.6rem 1rem', color: '#64748B', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={i.description}>{i.description || '—'}</td>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>₹{i.amount.toLocaleString('en-IN')}</td>
                                                         <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }} className="no-print">
                                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
@@ -610,6 +619,16 @@ const FinancePage = () => {
                                         required
                                     />
                                 </div>
+                                <div style={{ marginBottom: '1.25rem' }}>
+                                    <label style={lbl}>Description</label>
+                                    <textarea
+                                        style={{ ...inp, height: 'auto', resize: 'vertical' }}
+                                        rows={3}
+                                        value={expense.description}
+                                        placeholder="Enter notes about this expense (optional)...&#10;Example: Grocery shopping for July, Electricity bill payment, Petrol for bike, etc."
+                                        onChange={e => setExpense(prev => ({ ...prev, description: e.target.value }))}
+                                    />
+                                </div>
                                 <div style={{ display: 'flex', alignItems: 'end', gap: '1rem', marginBottom: '2rem' }}>
                                     <div style={{ flex: 1 }}>
                                         <label style={lbl}>Amount Spent</label>
@@ -637,18 +656,20 @@ const FinancePage = () => {
                                             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>DATE</th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>PURCHASE NAME</th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>DESCRIPTION</th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>AMOUNT</th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }} className="no-print"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {filteredExpenses.length === 0 ? (
-                                                <tr><td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{expenseSearch ? 'No matching expense found.' : 'No expenses yet'}</td></tr>
+                                                <tr><td colSpan="5" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{expenseSearch ? 'No matching expense found.' : 'No expenses yet'}</td></tr>
                                             ) : (
                                                 filteredExpenses.map(e => (
                                                     <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                         <td style={{ padding: '0.6rem 1rem', color: '#94A3B8' }}>{e.date}</td>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>{e.name}</td>
+                                                        <td style={{ padding: '0.6rem 1rem', color: '#64748B', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={e.description}>{e.description || '—'}</td>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>₹{e.amount.toLocaleString('en-IN')}</td>
                                                         <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }} className="no-print">
                                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
