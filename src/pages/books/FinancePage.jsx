@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { DollarSign, ShoppingCart, Save, Trash2, Pencil, FileText, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc } from 'lucide-react';
 import { useAuth } from '../../context';
 import { transactionsService } from '../../services';
+import { useQueryClient } from '@tanstack/react-query';
 
 /* ─── Storage key scoped per user ────────────────────────────── */
 const incomeKey   = (uid) => `cliks_finance_income_v2_${uid}`;
@@ -53,6 +54,7 @@ const BLANK_EXPENSE = { name: '', amount: '', description: '' };
 
 const FinancePage = () => {
     const { user } = useAuth();
+    const queryClient = useQueryClient();
     const uid = user?.id ?? user?.email ?? 'guest';
 
     const [incomeSources, setIncomeSources] = useState(() => {
@@ -282,7 +284,10 @@ const FinancePage = () => {
     const handleDeleteIncomeSource = async (id) => {
         const item = incomeSources.find(i => i.id === id);
         if (item?.transactionId) {
-            try { await transactionsService.deleteTransaction(item.transactionId); }
+            try {
+                await transactionsService.deleteTransaction(item.transactionId);
+                queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            }
             catch (err) { console.error("Sync error deleting transaction:", err); }
         }
         setIncomeSources(prev => prev.filter(i => i.id !== id));
@@ -295,6 +300,7 @@ const FinancePage = () => {
     const handleSaveDetails = async (ev) => {
         ev.preventDefault();
 
+        let hasError = false;
         // Sync all income sources to transactions
         const updatedSources = await Promise.all(incomeSources.map(async (source) => {
             const data = {
@@ -313,17 +319,24 @@ const FinancePage = () => {
                     return source;
                 } else {
                     const res = await transactionsService.createTransaction(data);
-                    return { ...source, transactionId: res.id || res.data?.id };
+                    return { ...source, transactionId: res?.id || res?.data?.id };
                 }
             } catch (err) {
                 console.error("Sync error saving income source:", err);
+                hasError = true;
                 return source;
             }
         }));
 
         setIncomeSources(updatedSources);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2500);
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+
+        if (!hasError) {
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2500);
+        } else {
+            alert("Some income sources could not be synchronized with transactions. Please check your connection.");
+        }
     };
 
     const handleSaveExpense = async (ev) => {
@@ -331,67 +344,73 @@ const FinancePage = () => {
         if (!expense.name.trim() || !expense.amount) return;
 
         let entry;
-        if (editingId) {
-            const existing = expenses.find(e => e.id === editingId);
-            entry = { ...existing, name: expense.name.trim(), amount: parseFloat(expense.amount) || 0, description: expense.description.trim() };
+        try {
+            if (editingId) {
+                const existing = expenses.find(e => e.id === editingId);
+                entry = { ...existing, name: expense.name.trim(), amount: parseFloat(expense.amount) || 0, description: expense.description.trim() };
 
-            const data = {
-                type: 'Expense',
-                title: entry.name,
-                category: mapCategory(entry.name),
-                amount: entry.amount,
-                date: formatAPIDate(entry.date),
-                notes: entry.description || '',
-                status: 'Completed'
-            };
+                const data = {
+                    type: 'Expense',
+                    title: entry.name,
+                    category: mapCategory(entry.name),
+                    amount: entry.amount,
+                    date: formatAPIDate(entry.date),
+                    notes: entry.description || '',
+                    status: 'Completed'
+                };
 
-            try {
                 if (entry.transactionId) {
                     await transactionsService.updateTransaction(entry.transactionId, data);
                 } else {
                     const res = await transactionsService.createTransaction(data);
-                    entry.transactionId = res.id || res.data?.id;
+                    entry.transactionId = res?.id || res?.data?.id;
                 }
-            } catch (err) { console.error("Sync error updating expense:", err); }
 
-            setExpenses(prev => prev.map(e => e.id === editingId ? entry : e));
-            setEditingId(null);
-        } else {
-            entry = {
-                id:     Date.now(),
-                date:   new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-                name:   expense.name.trim(),
-                amount: parseFloat(expense.amount) || 0,
-                description: expense.description.trim(),
-            };
+                setExpenses(prev => prev.map(e => e.id === editingId ? entry : e));
+                setEditingId(null);
+            } else {
+                entry = {
+                    id:     Date.now(),
+                    date:   new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+                    name:   expense.name.trim(),
+                    amount: parseFloat(expense.amount) || 0,
+                    description: expense.description.trim(),
+                };
 
-            const data = {
-                type: 'Expense',
-                title: entry.name,
-                category: mapCategory(entry.name),
-                amount: entry.amount,
-                date: formatAPIDate(entry.date),
-                notes: entry.description || '',
-                status: 'Completed'
-            };
+                const data = {
+                    type: 'Expense',
+                    title: entry.name,
+                    category: mapCategory(entry.name),
+                    amount: entry.amount,
+                    date: formatAPIDate(entry.date),
+                    notes: entry.description || '',
+                    status: 'Completed'
+                };
 
-            try {
                 const res = await transactionsService.createTransaction(data);
-                entry.transactionId = res.id || res.data?.id;
-            } catch (err) { console.error("Sync error creating expense:", err); }
+                entry.transactionId = res?.id || res?.data?.id;
 
-            setExpenses(prev => [entry, ...prev]);
+                setExpenses(prev => [entry, ...prev]);
+            }
+
+            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            setExpense(BLANK_EXPENSE);
+            setIsAddingExpense(false);
+            setExpSaved(true);
+            setTimeout(() => setExpSaved(false), 2500);
+        } catch (err) {
+            console.error("Sync error saving expense:", err);
+            alert("Failed to synchronize expense with transactions.");
         }
-        setExpense(BLANK_EXPENSE);
-        setIsAddingExpense(false);
-        setExpSaved(true);
-        setTimeout(() => setExpSaved(false), 2500);
     };
 
     const handleDeleteExpense = async (id) => {
         const item = expenses.find(e => e.id === id);
         if (item?.transactionId) {
-            try { await transactionsService.deleteTransaction(item.transactionId); }
+            try {
+                await transactionsService.deleteTransaction(item.transactionId);
+                queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            }
             catch (err) { console.error("Sync error deleting transaction:", err); }
         }
         setExpenses(prev => prev.filter(e => e.id !== id));
