@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { DollarSign, ShoppingCart, Save, Trash2, Pencil, FileText, Briefcase, Plus, Search, Filter, X } from 'lucide-react';
+import { DollarSign, ShoppingCart, Save, Trash2, Pencil, FileText, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc } from 'lucide-react';
 import { useAuth } from '../../context';
 
 /* ─── Storage key scoped per user ────────────────────────────── */
@@ -84,42 +84,132 @@ const FinancePage = () => {
     const [showExpenseSort, setShowExpenseSort] = useState(false);
     const expenseSortRef = useRef(null);
 
+    // Column-level Filter States
+    const [incomeFilters, setIncomeFilters] = useState({
+        name: { search: '', sort: '' },
+        description: { search: '', sort: '' },
+        amount: { search: '', sort: '' },
+    });
+    const [expenseFilters, setExpenseFilters] = useState({
+        date: { search: '', sort: '' },
+        name: { search: '', sort: '' },
+        description: { search: '', sort: '' },
+        amount: { search: '', sort: '' },
+    });
+    const [activeFilter, setActiveFilter] = useState({ type: null, column: null });
+    const filterDropdownRef = useRef(null);
+
     // Filtered and Sorted Data
     const filteredIncome = useMemo(() => {
-        let result = incomeSources.filter(i => i.name.toLowerCase().includes(incomeSearch.toLowerCase()));
+        let result = [...incomeSources];
 
-        switch (incomeSort) {
-            case 'highest': result.sort((a, b) => b.amount - a.amount); break;
-            case 'lowest':  result.sort((a, b) => a.amount - b.amount); break;
-            case 'az':      result.sort((a, b) => a.name.localeCompare(b.name)); break;
-            case 'za':      result.sort((a, b) => b.name.localeCompare(a.name)); break;
-            case 'newest':  result.sort((a, b) => b.id - a.id); break;
-            case 'oldest':  result.sort((a, b) => a.id - b.id); break;
-            default: break;
+        // Global search
+        if (incomeSearch) {
+            result = result.filter(i => i.name.toLowerCase().includes(incomeSearch.toLowerCase()));
+        }
+
+        // Column-level search
+        Object.keys(incomeFilters).forEach(key => {
+            if (incomeFilters[key].search) {
+                const searchVal = incomeFilters[key].search.toLowerCase();
+                result = result.filter(item => String(item[key] || '').toLowerCase().includes(searchVal));
+            }
+        });
+
+        // Column-level sort (only one active at a time)
+        const activeSortCol = Object.keys(incomeFilters).find(key => incomeFilters[key].sort);
+        if (activeSortCol) {
+            const sortDir = incomeFilters[activeSortCol].sort;
+            result.sort((a, b) => {
+                let valA = a[activeSortCol];
+                let valB = b[activeSortCol];
+
+                if (activeSortCol === 'amount') {
+                    return sortDir === 'asc' ? valA - valB : valB - valA;
+                }
+
+                valA = String(valA || '').toLowerCase();
+                valB = String(valB || '').toLowerCase();
+                return sortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            });
+        } else {
+            // Default global sort
+            switch (incomeSort) {
+                case 'highest': result.sort((a, b) => b.amount - a.amount); break;
+                case 'lowest':  result.sort((a, b) => a.amount - b.amount); break;
+                case 'az':      result.sort((a, b) => a.name.localeCompare(b.name)); break;
+                case 'za':      result.sort((a, b) => b.name.localeCompare(a.name)); break;
+                case 'newest':  result.sort((a, b) => b.id - a.id); break;
+                case 'oldest':  result.sort((a, b) => a.id - b.id); break;
+                default: break;
+            }
         }
         return result;
-    }, [incomeSources, incomeSearch, incomeSort]);
+    }, [incomeSources, incomeSearch, incomeSort, incomeFilters]);
 
     const filteredExpenses = useMemo(() => {
-        let result = expenses.filter(e => e.name.toLowerCase().includes(expenseSearch.toLowerCase()));
+        let result = [...expenses];
 
-        switch (expenseSort) {
-            case 'highest': result.sort((a, b) => b.amount - a.amount); break;
-            case 'lowest':  result.sort((a, b) => a.amount - b.amount); break;
-            case 'az':      result.sort((a, b) => a.name.localeCompare(b.name)); break;
-            case 'za':      result.sort((a, b) => b.name.localeCompare(a.name)); break;
-            case 'newest':  result.sort((a, b) => b.id - a.id); break;
-            case 'oldest':  result.sort((a, b) => a.id - b.id); break;
-            default: break;
+        // Global search
+        if (expenseSearch) {
+            result = result.filter(e => e.name.toLowerCase().includes(expenseSearch.toLowerCase()));
+        }
+
+        // Column-level search
+        Object.keys(expenseFilters).forEach(key => {
+            if (expenseFilters[key].search) {
+                const searchVal = expenseFilters[key].search.toLowerCase();
+                result = result.filter(item => String(item[key] || '').toLowerCase().includes(searchVal));
+            }
+        });
+
+        // Column-level sort
+        const activeSortCol = Object.keys(expenseFilters).find(key => expenseFilters[key].sort);
+        if (activeSortCol) {
+            const sortDir = expenseFilters[activeSortCol].sort;
+            result.sort((a, b) => {
+                let valA = a[activeSortCol];
+                let valB = b[activeSortCol];
+
+                if (activeSortCol === 'amount') {
+                    return sortDir === 'asc' ? valA - valB : valB - valA;
+                }
+
+                if (activeSortCol === 'date') {
+                    // Dates are in DD MMM YYYY format
+                    const parseDate = (dStr) => {
+                        if (!dStr) return 0;
+                        const [d, m, y] = dStr.split(' ');
+                        return new Date(`${m} ${d}, ${y}`).getTime();
+                    };
+                    return sortDir === 'asc' ? parseDate(valA) - parseDate(valB) : parseDate(valB) - parseDate(valA);
+                }
+
+                valA = String(valA || '').toLowerCase();
+                valB = String(valB || '').toLowerCase();
+                return sortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            });
+        } else {
+            // Default global sort
+            switch (expenseSort) {
+                case 'highest': result.sort((a, b) => b.amount - a.amount); break;
+                case 'lowest':  result.sort((a, b) => a.amount - b.amount); break;
+                case 'az':      result.sort((a, b) => a.name.localeCompare(b.name)); break;
+                case 'za':      result.sort((a, b) => b.name.localeCompare(a.name)); break;
+                case 'newest':  result.sort((a, b) => b.id - a.id); break;
+                case 'oldest':  result.sort((a, b) => a.id - b.id); break;
+                default: break;
+            }
         }
         return result;
-    }, [expenses, expenseSearch, expenseSort]);
+    }, [expenses, expenseSearch, expenseSort, expenseFilters]);
 
     // Close dropdowns on outside click
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (incomeSortRef.current && !incomeSortRef.current.contains(event.target)) setShowIncomeSort(false);
             if (expenseSortRef.current && !expenseSortRef.current.contains(event.target)) setShowExpenseSort(false);
+            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) setActiveFilter({ type: null, column: null });
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -201,6 +291,145 @@ const FinancePage = () => {
     const handleEditExpense = (e) => {
         setExpense({ name: e.name, amount: e.amount, description: e.description || '' });
         setEditingId(e.id);
+    };
+
+    const ColumnFilterDropdown = ({ type, column, label, filterState, setFilterState }) => {
+        const isActive = activeFilter.type === type && activeFilter.column === column;
+        const currentFilter = filterState[column];
+
+        const handleSort = (dir) => {
+            setFilterState(prev => {
+                const newState = { ...prev };
+                Object.keys(newState).forEach(key => {
+                    newState[key] = { ...newState[key], sort: key === column ? dir : '' };
+                });
+                return newState;
+            });
+            setActiveFilter({ type: null, column: null });
+        };
+
+        const handleSearch = (val) => {
+            setFilterState(prev => ({
+                ...prev,
+                [column]: { ...prev[column], search: val }
+            }));
+        };
+
+        const clearFilter = () => {
+            setFilterState(prev => ({
+                ...prev,
+                [column]: { search: '', sort: '' }
+            }));
+            setActiveFilter({ type: null, column: null });
+        };
+
+        return (
+            <div style={{ position: 'relative', display: 'inline-block', marginLeft: '6px' }} className="no-print">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveFilter(isActive ? { type: null, column: null } : { type, column });
+                    }}
+                    style={{
+                        background: currentFilter.search || currentFilter.sort ? '#F0FDF4' : 'transparent',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '2px',
+                        cursor: 'pointer',
+                        color: currentFilter.search || currentFilter.sort ? '#1B6B3A' : '#94A3B8',
+                        display: 'flex',
+                        alignItems: 'center',
+                        transition: 'all 0.2s'
+                    }}
+                    title="Filter & Sort"
+                >
+                    <ArrowUpDown size={12} />
+                </button>
+
+                {isActive && (
+                    <div
+                        ref={filterDropdownRef}
+                        style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: column === 'amount' || column === 'actions' ? 'auto' : 0,
+                            right: column === 'amount' || column === 'actions' ? 0 : 'auto',
+                            background: '#fff',
+                            border: '1px solid #E2E8F0',
+                            borderRadius: '12px',
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                            zIndex: 1000,
+                            padding: '12px',
+                            minWidth: '200px',
+                            marginTop: '8px'
+                        }}
+                    >
+                        <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
+                            Filter {label}
+                        </div>
+
+                        <div style={{ position: 'relative', marginBottom: '12px' }}>
+                            <Search size={12} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                            <input
+                                type="text"
+                                placeholder={`Search ${label}...`}
+                                value={currentFilter.search}
+                                onChange={(e) => handleSearch(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                    width: '100%',
+                                    padding: '6px 8px 6px 28px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #E2E8F0',
+                                    fontSize: '0.75rem',
+                                    outline: 'none',
+                                    boxSizing: 'border-box',
+                                    fontWeight: 500
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            {column === 'amount' ? (
+                                <>
+                                    <button onClick={() => handleSort('desc')} className="column-filter-option">
+                                        <SortDesc size={14} /> Highest → Lowest
+                                    </button>
+                                    <button onClick={() => handleSort('asc')} className="column-filter-option">
+                                        <SortAsc size={14} /> Lowest → Highest
+                                    </button>
+                                </>
+                            ) : column === 'date' ? (
+                                <>
+                                    <button onClick={() => handleSort('desc')} className="column-filter-option">
+                                        <SortDesc size={14} /> Newest First
+                                    </button>
+                                    <button onClick={() => handleSort('asc')} className="column-filter-option">
+                                        <SortAsc size={14} /> Oldest First
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button onClick={() => handleSort('asc')} className="column-filter-option">
+                                        <SortAsc size={14} /> Sort A → Z
+                                    </button>
+                                    <button onClick={() => handleSort('desc')} className="column-filter-option">
+                                        <SortDesc size={14} /> Sort Z → A
+                                    </button>
+                                </>
+                            )}
+                            <button
+                                onClick={clearFilter}
+                                style={{ marginTop: '6px', borderTop: '1px solid #F1F5F9', borderRadius: 0, paddingTop: '8px', color: '#EF4444' }}
+                                className="column-filter-option"
+                            >
+                                <X size={14} /> Clear Filter
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
     };
 
     const handleSaveToPDF = () => {
@@ -298,6 +527,26 @@ const FinancePage = () => {
                     transition: all 0.2s;
                 }
                 .filter-option:hover {
+                    background: #F0FDF4;
+                    color: #1B6B3A;
+                }
+                .column-filter-option {
+                    width: 100%;
+                    padding: 6px 8px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    color: #475569;
+                    text-align: left;
+                    background: transparent;
+                    border: none;
+                    cursor: pointer;
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: all 0.2s;
+                }
+                .column-filter-option:hover {
                     background: #F0FDF4;
                     color: #1B6B3A;
                 }
@@ -490,9 +739,24 @@ const FinancePage = () => {
                                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                                         <thead>
                                             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>SOURCE NAME</th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>DESCRIPTION</th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>AMOUNT (MONTHLY)</th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        SOURCE NAME
+                                                        <ColumnFilterDropdown type="income" column="name" label="Source" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                                    </div>
+                                                </th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        DESCRIPTION
+                                                        <ColumnFilterDropdown type="income" column="description" label="Description" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                                    </div>
+                                                </th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        AMOUNT (MONTHLY)
+                                                        <ColumnFilterDropdown type="income" column="amount" label="Amount" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                                    </div>
+                                                </th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }} className="no-print">ACTIONS</th>
                                             </tr>
                                         </thead>
@@ -654,10 +918,30 @@ const FinancePage = () => {
                                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                                         <thead>
                                             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>DATE</th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>PURCHASE NAME</th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>DESCRIPTION</th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>AMOUNT</th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        DATE
+                                                        <ColumnFilterDropdown type="expense" column="date" label="Date" filterState={expenseFilters} setFilterState={setExpenseFilters} />
+                                                    </div>
+                                                </th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        PURCHASE NAME
+                                                        <ColumnFilterDropdown type="expense" column="name" label="Purchase" filterState={expenseFilters} setFilterState={setExpenseFilters} />
+                                                    </div>
+                                                </th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        DESCRIPTION
+                                                        <ColumnFilterDropdown type="expense" column="description" label="Description" filterState={expenseFilters} setFilterState={setExpenseFilters} />
+                                                    </div>
+                                                </th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        AMOUNT
+                                                        <ColumnFilterDropdown type="expense" column="amount" label="Amount" filterState={expenseFilters} setFilterState={setExpenseFilters} />
+                                                    </div>
+                                                </th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }} className="no-print"></th>
                                             </tr>
                                         </thead>
