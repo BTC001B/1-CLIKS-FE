@@ -331,7 +331,7 @@ const FinancePage = () => {
                 category: mapCategory(source.name),
                 amount: source.amount,
                 date: new Date().toISOString().split('T')[0],
-                notes: source.description || '',
+                notes: `${source.description || ''}${source.salaryCreditDate ? ` (Monthly Credit Date: ${source.salaryCreditDate}${getOrdinal(source.salaryCreditDate)})` : ''}`.trim(),
                 status: 'Completed'
             };
 
@@ -573,7 +573,7 @@ const FinancePage = () => {
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            {column === 'amount' ? (
+                            {column === 'amount' || column === 'salaryCreditDate' ? (
                                 <>
                                     <button onClick={() => handleSort('desc')} className="column-filter-option">
                                         <SortDesc size={14} /> Highest → Lowest
@@ -863,6 +863,7 @@ const FinancePage = () => {
                                             style={{ ...inp, cursor: 'pointer' }}
                                             value={newIncome.salaryCreditDate}
                                             onChange={e => setNewIncome(prev => ({ ...prev, salaryCreditDate: e.target.value }))}
+                                            required
                                         >
                                             <option value="">Select your monthly salary credit date</option>
                                             {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31].map(day => (
@@ -924,7 +925,7 @@ const FinancePage = () => {
                                         </thead>
                                         <tbody>
                                             {filteredIncome.length === 0 ? (
-                                                <tr><td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{incomeSearch ? 'No matching income source found.' : 'No income sources added yet'}</td></tr>
+                                                <tr><td colSpan="5" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{incomeSearch ? 'No matching income source found.' : 'No income sources added yet'}</td></tr>
                                             ) : (
                                                 filteredIncome.map(i => (
                                                     <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
