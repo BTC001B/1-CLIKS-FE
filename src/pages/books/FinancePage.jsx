@@ -858,15 +858,15 @@ const FinancePage = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label style={lbl}>Salary Credit Date</label>
+                                        <label style={lbl}>Salary Credit Date (Monthly)</label>
                                         <select
-                                            style={inp}
+                                            style={{ ...inp, cursor: 'pointer' }}
                                             value={newIncome.salaryCreditDate}
                                             onChange={e => setNewIncome(prev => ({ ...prev, salaryCreditDate: e.target.value }))}
                                         >
                                             <option value="">Select your monthly salary credit date</option>
-                                            {[...Array(31)].map((_, i) => (
-                                                <option key={i + 1} value={i + 1}>{i + 1}{getOrdinal(i + 1)}</option>
+                                            {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31].map(day => (
+                                                <option key={day} value={day}>{day}{getOrdinal(day)} of every month</option>
                                             ))}
                                         </select>
                                     </div>
