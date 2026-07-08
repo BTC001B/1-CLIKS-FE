@@ -176,25 +176,21 @@ const FinancePage = () => {
                     <div style={{ height: '2px', background: '#EF4444', margin: '0 -1.5rem 1.5rem -1.5rem' }}></div>
 
                     {isIncomeEmpty && !isAddingIncome ? (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '320px' }}>
                             <button
                                 onClick={() => setIsAddingIncome(true)}
                                 style={{
-                                    display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.85rem 1.75rem', background: '#fff', color: '#1B6B3A',
+                                    display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.9rem 1.8rem', background: '#fff', color: '#1B6B3A',
                                     border: '2px dashed #1B6B3A', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s'
                                 }}
-                                onMouseOver={e => { e.currentTarget.style.background = '#F0FDF4'; }}
-                                onMouseOut={e => { e.currentTarget.style.background = '#fff'; }}
+                                onMouseOver={e => { e.currentTarget.style.background = '#F0FDF4'; e.currentTarget.style.transform = 'scale(1.02)'; }}
+                                onMouseOut={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.transform = 'scale(1)'; }}
                             >
                                 Add Income +
                             </button>
                         </div>
                     ) : (
-                        <>
-                            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                                <h3 style={{ fontSize: '1rem', fontWeight: 900, color: '#1E3A8A', margin: 0, textTransform: 'uppercase' }}>Standard Income</h3>
-                            </div>
-
+                        <div style={{ paddingTop: '1rem' }}>
                             <form onSubmit={handleSaveDetails}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                     {[
@@ -222,7 +218,7 @@ const FinancePage = () => {
                                     </div>
                                 </div>
                             </form>
-                        </>
+                        </div>
                     )}
                 </div>
 
@@ -237,21 +233,21 @@ const FinancePage = () => {
                     <div style={{ height: '2px', background: '#EF4444', margin: '0 -1.5rem 1.5rem -1.5rem' }}></div>
 
                     {isExpenseEmpty && !isAddingExpense ? (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '320px' }}>
                             <button
                                 onClick={() => setIsAddingExpense(true)}
                                 style={{
-                                    display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.85rem 1.75rem', background: '#fff', color: '#1B6B3A',
+                                    display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.9rem 1.8rem', background: '#fff', color: '#1B6B3A',
                                     border: '2px dashed #1B6B3A', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s'
                                 }}
-                                onMouseOver={e => { e.currentTarget.style.background = '#F0FDF4'; }}
-                                onMouseOut={e => { e.currentTarget.style.background = '#fff'; }}
+                                onMouseOver={e => { e.currentTarget.style.background = '#F0FDF4'; e.currentTarget.style.transform = 'scale(1.02)'; }}
+                                onMouseOut={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.transform = 'scale(1)'; }}
                             >
                                 Add Expense +
                             </button>
                         </div>
                     ) : (
-                        <>
+                        <div style={{ paddingTop: '1rem' }}>
                             <form onSubmit={handleSaveExpense}>
                                 <div style={{ marginBottom: '1.25rem' }}>
                                     <label style={lbl}>Purchase Name</label>
@@ -328,7 +324,7 @@ const FinancePage = () => {
                                     </div>
                                 )}
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>
