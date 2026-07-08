@@ -69,6 +69,7 @@ const FinancePage = () => {
     const [isAddingIncome, setIsAddingIncome] = useState(false);
     const [isAddingExpense, setIsAddingExpense] = useState(false);
 
+    // Empty state logic: all 4 form fields must be empty (or 0) for income to be "empty"
     const isIncomeEmpty = !details.salary && !details.electricity && !details.rent && !details.grocery;
     const isExpenseEmpty = expenses.length === 0;
 
@@ -140,7 +141,7 @@ const FinancePage = () => {
             </div>
 
             {/* Summary cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1rem' }}>
                 {[
                     { label: 'Monthly Income',  value: monthlyIncome,  color: '#059669', bg: '#ECFDF5' },
                     { label: 'Fixed Expenses',  value: fixedExpenses,  color: '#D97706', bg: '#FFFBEB' },
@@ -157,7 +158,7 @@ const FinancePage = () => {
             </div>
 
             {/* Fixed Source Section Heading */}
-            <div style={{ marginBottom: '1.25rem' }}>
+            <div style={{ marginBottom: '1.25rem', marginTop: '0.5rem' }}>
                 <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1E293B', margin: 0 }}>Fixed Source</h2>
             </div>
 
