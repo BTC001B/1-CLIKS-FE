@@ -235,7 +235,18 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             </div>
                         </button>
 
-                        {/* 2. Stock */}
+                        {/* 2. Finance */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Finance' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Finance', '/books/finance')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <PiggyBank size={20} style={{ color: activeItem === 'Finance' ? '#ffffff' : '#1B6B3A' }} />
+                                <span className="sidebar-label">Finance</span>
+                            </div>
+                        </button>
+
+                        {/* 3. Stock */}
                         <button
                             className={`sidebar-item ${activeItem === 'Stock' ? 'active' : ''}`}
                             onClick={() => handleItemClick('Stock', '/books/stock')}
@@ -246,7 +257,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             </div>
                         </button>
 
-                        {/* 3. People */}
+                        {/* 4. People */}
                         <button
                             className={`sidebar-item ${activeItem === 'People' ? 'active' : ''}`}
                             onClick={() => handleItemClick('People', '/books/people')}
@@ -254,17 +265,6 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             <div className="flex items-center gap-3">
                                 <Users size={20} style={{ color: activeItem === 'People' ? '#ffffff' : '#1B6B3A' }} />
                                 <span className="sidebar-label">People</span>
-                            </div>
-                        </button>
-
-                        {/* 4. Finance */}
-                        <button
-                            className={`sidebar-item ${activeItem === 'Finance' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Finance', '/books/finance')}
-                        >
-                            <div className="flex items-center gap-3">
-                                <PiggyBank size={20} style={{ color: activeItem === 'Finance' ? '#ffffff' : '#1B6B3A' }} />
-                                <span className="sidebar-label">Finance</span>
                             </div>
                         </button>
 
