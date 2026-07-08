@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { DollarSign, ShoppingCart, Save, Trash2, Pencil, FileText, Briefcase, Plus } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { DollarSign, ShoppingCart, Save, Trash2, Pencil, FileText, Briefcase, Plus, Search, Filter, X } from 'lucide-react';
 import { useAuth } from '../../context';
 
 /* ─── Storage key scoped per user ────────────────────────────── */
@@ -72,6 +72,58 @@ const FinancePage = () => {
     const [expSaved, setExpSaved] = useState(false);
     const [isAddingIncome, setIsAddingIncome] = useState(false);
     const [isAddingExpense, setIsAddingExpense] = useState(false);
+
+    // Search and Filter State
+    const [incomeSearch, setIncomeSearch] = useState('');
+    const [incomeSort, setIncomeSort] = useState('newest'); // default newest
+    const [showIncomeSort, setShowIncomeSort] = useState(false);
+    const incomeSortRef = useRef(null);
+
+    const [expenseSearch, setExpenseSearch] = useState('');
+    const [expenseSort, setExpenseSort] = useState('newest'); // default newest
+    const [showExpenseSort, setShowExpenseSort] = useState(false);
+    const expenseSortRef = useRef(null);
+
+    // Filtered and Sorted Data
+    const filteredIncome = useMemo(() => {
+        let result = incomeSources.filter(i => i.name.toLowerCase().includes(incomeSearch.toLowerCase()));
+
+        switch (incomeSort) {
+            case 'highest': result.sort((a, b) => b.amount - a.amount); break;
+            case 'lowest':  result.sort((a, b) => a.amount - b.amount); break;
+            case 'az':      result.sort((a, b) => a.name.localeCompare(b.name)); break;
+            case 'za':      result.sort((a, b) => b.name.localeCompare(a.name)); break;
+            case 'newest':  result.sort((a, b) => b.id - a.id); break;
+            case 'oldest':  result.sort((a, b) => a.id - b.id); break;
+            default: break;
+        }
+        return result;
+    }, [incomeSources, incomeSearch, incomeSort]);
+
+    const filteredExpenses = useMemo(() => {
+        let result = expenses.filter(e => e.name.toLowerCase().includes(expenseSearch.toLowerCase()));
+
+        switch (expenseSort) {
+            case 'highest': result.sort((a, b) => b.amount - a.amount); break;
+            case 'lowest':  result.sort((a, b) => a.amount - b.amount); break;
+            case 'az':      result.sort((a, b) => a.name.localeCompare(b.name)); break;
+            case 'za':      result.sort((a, b) => b.name.localeCompare(a.name)); break;
+            case 'newest':  result.sort((a, b) => b.id - a.id); break;
+            case 'oldest':  result.sort((a, b) => a.id - b.id); break;
+            default: break;
+        }
+        return result;
+    }, [expenses, expenseSearch, expenseSort]);
+
+    // Close dropdowns on outside click
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (incomeSortRef.current && !incomeSortRef.current.contains(event.target)) setShowIncomeSort(false);
+            if (expenseSortRef.current && !expenseSortRef.current.contains(event.target)) setShowExpenseSort(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Empty state logic
     const isIncomeEmpty = incomeSources.length === 0;
@@ -190,11 +242,78 @@ const FinancePage = () => {
                     display: flex;
                     flex-direction: column;
                 }
+                .search-filter-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    position: absolute;
+                    right: 0;
+                    top: -6px;
+                }
+                .search-input-wrapper {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                }
+                .compact-search-input {
+                    padding: 0.4rem 0.75rem 0.4rem 2rem;
+                    border-radius: 999px;
+                    border: 1px solid #E2E8F0;
+                    font-size: 0.75rem;
+                    outline: none;
+                    width: 140px;
+                    transition: all 0.2s ease;
+                }
+                .compact-search-input:focus {
+                    width: 180px;
+                    border-color: #1B6B3A;
+                    box-shadow: 0 0 0 3px rgba(27, 107, 58, 0.1);
+                }
+                .filter-dropdown {
+                    position: absolute;
+                    top: calc(100% + 8px);
+                    right: 0;
+                    background: #ffffff;
+                    border: 1px solid #E2E8F0;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                    z-index: 100;
+                    min-width: 180px;
+                    overflow: hidden;
+                    padding: 4px;
+                }
+                .filter-option {
+                    width: 100%;
+                    padding: 0.6rem 1rem;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: #475569;
+                    text-align: left;
+                    background: transparent;
+                    border: none;
+                    cursor: pointer;
+                    border-radius: 8px;
+                    transition: all 0.2s;
+                }
+                .filter-option:hover {
+                    background: #F0FDF4;
+                    color: #1B6B3A;
+                }
+                .filter-option.active {
+                    background: #ECFDF5;
+                    color: #064E3B;
+                }
                 @media print {
                     .finance-premium-container { border: none !important; box-shadow: none !important; overflow: visible !important; display: block !important; }
                     .finance-panel-left { border-right: none !important; padding: 0 !important; }
                     .finance-panel-right { padding: 0 !important; }
                     .red-divider { display: none !important; }
+                    .no-print { display: none !important; }
+                    .compact-search-input, .search-filter-container { display: none !important; }
+                    table { width: 100% !important; border-collapse: collapse !important; }
+                    th, td { border: 1px solid #E2E8F0 !important; padding: 8px !important; visibility: visible !important; }
+                    body * { visibility: hidden; }
+                    .finance-premium-container, .finance-premium-container * { visibility: visible; }
                 }
             `}</style>
 
@@ -255,14 +374,62 @@ const FinancePage = () => {
                 <div className="finance-panel-left">
                     <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Income</h2>
-                        <div style={{ position: 'absolute', right: 0, top: -5, background: '#3B82F6', color: '#fff', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}>
-                            <Pencil size={16} />
+
+                        <div className="search-filter-container">
+                            <div className="search-input-wrapper">
+                                <Search size={14} style={{ position: 'absolute', left: '10px', color: '#94A3B8' }} />
+                                <input
+                                    type="text"
+                                    placeholder="Search income..."
+                                    className="compact-search-input"
+                                    value={incomeSearch}
+                                    onChange={(e) => setIncomeSearch(e.target.value)}
+                                />
+                            </div>
+                            <div style={{ position: 'relative' }} ref={incomeSortRef}>
+                                <button
+                                    onClick={() => setShowIncomeSort(!showIncomeSort)}
+                                    style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center' }}
+                                    title="Sort & Filter"
+                                >
+                                    <Filter size={16} />
+                                </button>
+                                {showIncomeSort && (
+                                    <div className="filter-dropdown">
+                                        {[
+                                            { id: 'highest', label: 'Highest Amount' },
+                                            { id: 'lowest',  label: 'Lowest Amount' },
+                                            { id: 'az',      label: 'A–Z (Source Name)' },
+                                            { id: 'za',      label: 'Z–A (Source Name)' },
+                                            { id: 'newest',  label: 'Newest First' },
+                                            { id: 'oldest',  label: 'Oldest First' },
+                                            { id: 'clear',   label: 'Clear Filter' },
+                                        ].map(opt => (
+                                            <button
+                                                key={opt.id}
+                                                className={`filter-option ${incomeSort === opt.id ? 'active' : ''}`}
+                                                onClick={() => {
+                                                    if (opt.id === 'clear') {
+                                                        setIncomeSort('newest');
+                                                        setIncomeSearch('');
+                                                    } else {
+                                                        setIncomeSort(opt.id);
+                                                    }
+                                                    setShowIncomeSort(false);
+                                                }}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className="red-divider"></div>
 
                     {isIncomeEmpty && !isAddingIncome ? (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '320px' }}>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '320px' }} className="no-print">
                             <button
                                 onClick={() => setIsAddingIncome(true)}
                                 style={{
@@ -277,7 +444,7 @@ const FinancePage = () => {
                         </div>
                     ) : (
                         <div style={{ paddingTop: '1rem' }}>
-                            <form onSubmit={handleAddIncomeSource}>
+                            <form onSubmit={handleAddIncomeSource} className="no-print">
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                     <div>
                                         <label style={lbl}>Income Source Name</label>
@@ -318,18 +485,18 @@ const FinancePage = () => {
                                             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>SOURCE NAME</th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>AMOUNT (MONTHLY)</th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }}>ACTIONS</th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }} className="no-print">ACTIONS</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {incomeSources.length === 0 ? (
-                                                <tr><td colSpan="3" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>No income sources added yet</td></tr>
+                                            {filteredIncome.length === 0 ? (
+                                                <tr><td colSpan="3" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{incomeSearch ? 'No matching income source found.' : 'No income sources added yet'}</td></tr>
                                             ) : (
-                                                incomeSources.map(i => (
+                                                filteredIncome.map(i => (
                                                     <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>{i.name}</td>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>₹{i.amount.toLocaleString('en-IN')}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }}>
+                                                        <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }} className="no-print">
                                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                                                 <button onClick={() => handleEditIncomeSource(i)} style={{ background: '#EFF6FF', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
                                                                     <Pencil size={14} />
@@ -347,7 +514,7 @@ const FinancePage = () => {
                                 </div>
                             </div>
 
-                            <div style={{ marginTop: '2rem', borderTop: '1px solid #E2E8F0', paddingTop: '1.5rem' }}>
+                            <div style={{ marginTop: '2rem', borderTop: '1px solid #E2E8F0', paddingTop: '1.5rem' }} className="no-print">
                                 <button onClick={handleSaveDetails} style={saveBtn}>
                                     <Save size={16} /> Save Details
                                 </button>
@@ -361,14 +528,62 @@ const FinancePage = () => {
                 <div className="finance-panel-right">
                     <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Monthly Expense</h2>
-                        <div style={{ position: 'absolute', right: 0, top: -5, background: '#3B82F6', color: '#fff', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}>
-                            <Pencil size={16} />
+
+                        <div className="search-filter-container">
+                            <div className="search-input-wrapper">
+                                <Search size={14} style={{ position: 'absolute', left: '10px', color: '#94A3B8' }} />
+                                <input
+                                    type="text"
+                                    placeholder="Search expense..."
+                                    className="compact-search-input"
+                                    value={expenseSearch}
+                                    onChange={(e) => setExpenseSearch(e.target.value)}
+                                />
+                            </div>
+                            <div style={{ position: 'relative' }} ref={expenseSortRef}>
+                                <button
+                                    onClick={() => setShowExpenseSort(!showExpenseSort)}
+                                    style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center' }}
+                                    title="Sort & Filter"
+                                >
+                                    <Filter size={16} />
+                                </button>
+                                {showExpenseSort && (
+                                    <div className="filter-dropdown">
+                                        {[
+                                            { id: 'highest', label: 'Highest Amount' },
+                                            { id: 'lowest',  label: 'Lowest Amount' },
+                                            { id: 'az',      label: 'A–Z (Purchase Name)' },
+                                            { id: 'za',      label: 'Z–A (Purchase Name)' },
+                                            { id: 'newest',  label: 'Newest First' },
+                                            { id: 'oldest',  label: 'Oldest First' },
+                                            { id: 'clear',   label: 'Clear Filter' },
+                                        ].map(opt => (
+                                            <button
+                                                key={opt.id}
+                                                className={`filter-option ${expenseSort === opt.id ? 'active' : ''}`}
+                                                onClick={() => {
+                                                    if (opt.id === 'clear') {
+                                                        setExpenseSort('newest');
+                                                        setExpenseSearch('');
+                                                    } else {
+                                                        setExpenseSort(opt.id);
+                                                    }
+                                                    setShowExpenseSort(false);
+                                                }}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className="red-divider"></div>
 
                     {isExpenseEmpty && !isAddingExpense ? (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '320px' }}>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '320px' }} className="no-print">
                             <button
                                 onClick={() => setIsAddingExpense(true)}
                                 style={{
@@ -383,7 +598,7 @@ const FinancePage = () => {
                         </div>
                     ) : (
                         <div style={{ paddingTop: '1rem' }}>
-                            <form onSubmit={handleSaveExpense}>
+                            <form onSubmit={handleSaveExpense} className="no-print">
                                 <div style={{ marginBottom: '1.25rem' }}>
                                     <label style={lbl}>Purchase Name</label>
                                     <input
@@ -423,19 +638,19 @@ const FinancePage = () => {
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>DATE</th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>PURCHASE NAME</th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>AMOUNT</th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }}></th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }} className="no-print"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {expenses.length === 0 ? (
-                                                <tr><td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>No expenses yet</td></tr>
+                                            {filteredExpenses.length === 0 ? (
+                                                <tr><td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{expenseSearch ? 'No matching expense found.' : 'No expenses yet'}</td></tr>
                                             ) : (
-                                                expenses.map(e => (
+                                                filteredExpenses.map(e => (
                                                     <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                         <td style={{ padding: '0.6rem 1rem', color: '#94A3B8' }}>{e.date}</td>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>{e.name}</td>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>₹{e.amount.toLocaleString('en-IN')}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }}>
+                                                        <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }} className="no-print">
                                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                                                 <button onClick={() => handleEditExpense(e)} style={{ background: '#EFF6FF', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
                                                                     <Pencil size={14} />
