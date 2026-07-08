@@ -52,6 +52,18 @@ const BLANK_DETAILS = {
 };
 const BLANK_EXPENSE = { name: '', amount: '', description: '' };
 
+const getOrdinal = (d) => {
+    const day = parseInt(d);
+    if (isNaN(day)) return "";
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+        case 1:  return "st";
+        case 2:  return "nd";
+        case 3:  return "rd";
+        default: return "th";
+    }
+};
+
 const FinancePage = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();
@@ -66,7 +78,7 @@ const FinancePage = () => {
         catch { return []; }
     });
 
-    const [newIncome, setNewIncome] = useState({ name: '', amount: '', description: '' });
+    const [newIncome, setNewIncome] = useState({ name: '', amount: '', description: '', salaryCreditDate: '' });
     const [editingIncomeId, setEditingIncomeId] = useState(null);
 
     const [expense, setExpense]   = useState(BLANK_EXPENSE);
@@ -92,6 +104,7 @@ const FinancePage = () => {
         name: { search: '', sort: '' },
         description: { search: '', sort: '' },
         amount: { search: '', sort: '' },
+        salaryCreditDate: { search: '', sort: '' },
     });
     const [expenseFilters, setExpenseFilters] = useState({
         date: { search: '', sort: '' },
@@ -127,7 +140,7 @@ const FinancePage = () => {
                 let valA = a[activeSortCol];
                 let valB = b[activeSortCol];
 
-                if (activeSortCol === 'amount') {
+                if (activeSortCol === 'amount' || activeSortCol === 'salaryCreditDate') {
                     return sortDir === 'asc' ? valA - valB : valB - valA;
                 }
 
@@ -174,7 +187,7 @@ const FinancePage = () => {
                 let valA = a[activeSortCol];
                 let valB = b[activeSortCol];
 
-                if (activeSortCol === 'amount') {
+                if (activeSortCol === 'amount' || activeSortCol === 'salaryCreditDate') {
                     return sortDir === 'asc' ? valA - valB : valB - valA;
                 }
 
@@ -267,7 +280,13 @@ const FinancePage = () => {
         if (!newIncome.name.trim() || !newIncome.amount) return;
 
         if (editingIncomeId) {
-            setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? { ...i, name: newIncome.name.trim(), amount: parseFloat(newIncome.amount) || 0, description: newIncome.description.trim() } : i));
+            setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? {
+                ...i,
+                name: newIncome.name.trim(),
+                amount: parseFloat(newIncome.amount) || 0,
+                description: newIncome.description.trim(),
+                salaryCreditDate: newIncome.salaryCreditDate
+            } : i));
             setEditingIncomeId(null);
         } else {
             const entry = {
@@ -275,10 +294,11 @@ const FinancePage = () => {
                 name: newIncome.name.trim(),
                 amount: parseFloat(newIncome.amount) || 0,
                 description: newIncome.description.trim(),
+                salaryCreditDate: newIncome.salaryCreditDate
             };
             setIncomeSources(prev => [...prev, entry]);
         }
-        setNewIncome({ name: '', amount: '', description: '' });
+        setNewIncome({ name: '', amount: '', description: '', salaryCreditDate: '' });
     };
 
     const handleDeleteIncomeSource = async (id) => {
@@ -293,7 +313,12 @@ const FinancePage = () => {
         setIncomeSources(prev => prev.filter(i => i.id !== id));
     };
     const handleEditIncomeSource = (i) => {
-        setNewIncome({ name: i.name, amount: i.amount, description: i.description || '' });
+        setNewIncome({
+            name: i.name,
+            amount: i.amount,
+            description: i.description || '',
+            salaryCreditDate: i.salaryCreditDate || ''
+        });
         setEditingIncomeId(i.id);
     };
 
@@ -611,10 +636,21 @@ const FinancePage = () => {
                     border-color: #D6E4F0;
                 }
                 .red-divider {
-                    height: 1px;
-                    background: #EF4444;
+                    height: 1.5px;
+                    background: #E2E8F0;
                     margin: 0 -1.5rem 1.5rem -1.5rem;
-                    opacity: 0.8;
+                    position: relative;
+                }
+                .red-divider::after {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 120px;
+                    height: 2px;
+                    background: linear-gradient(90deg, #1B6B3A 0%, #064E3B 100%);
+                    border-radius: 4px;
                 }
                 .finance-panel-left {
                     flex: 1;
@@ -822,6 +858,19 @@ const FinancePage = () => {
                                         />
                                     </div>
                                     <div>
+                                        <label style={lbl}>Salary Credit Date</label>
+                                        <select
+                                            style={inp}
+                                            value={newIncome.salaryCreditDate}
+                                            onChange={e => setNewIncome(prev => ({ ...prev, salaryCreditDate: e.target.value }))}
+                                        >
+                                            <option value="">Select your monthly salary credit date</option>
+                                            {[...Array(31)].map((_, i) => (
+                                                <option key={i + 1} value={i + 1}>{i + 1}{getOrdinal(i + 1)}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
                                         <label style={lbl}>Description</label>
                                         <textarea
                                             style={{ ...inp, height: 'auto', resize: 'vertical' }}
@@ -860,6 +909,12 @@ const FinancePage = () => {
                                                 </th>
                                                 <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        CREDIT DATE
+                                                        <ColumnFilterDropdown type="income" column="salaryCreditDate" label="Credit Date" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                                    </div>
+                                                </th>
+                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
                                                         AMOUNT (MONTHLY)
                                                         <ColumnFilterDropdown type="income" column="amount" label="Amount" filterState={incomeFilters} setFilterState={setIncomeFilters} />
                                                     </div>
@@ -874,7 +929,8 @@ const FinancePage = () => {
                                                 filteredIncome.map(i => (
                                                     <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>{i.name}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', color: '#64748B', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={i.description}>{i.description || '—'}</td>
+                                                        <td style={{ padding: '0.6rem 1rem', color: '#64748B', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={i.description}>{i.description || '—'}</td>
+                                                        <td style={{ padding: '0.6rem 1rem', color: '#64748B', fontWeight: 600 }}>{i.salaryCreditDate ? `${i.salaryCreditDate}${getOrdinal(i.salaryCreditDate)}` : '—'}</td>
                                                         <td style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>₹{i.amount.toLocaleString('en-IN')}</td>
                                                         <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }} className="no-print">
                                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
