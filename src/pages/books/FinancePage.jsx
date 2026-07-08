@@ -297,10 +297,7 @@ const FinancePage = () => {
         setEditingIncomeId(i.id);
     };
 
-    const handleSaveDetails = async (ev) => {
-        ev.preventDefault();
-
-        let hasError = false;
+        let errorMessages = [];
         // Sync all income sources to transactions
         const updatedSources = await Promise.all(incomeSources.map(async (source) => {
             const data = {
@@ -313,17 +310,38 @@ const FinancePage = () => {
                 status: 'Completed'
             };
 
+            console.log("FinancePage: Syncing Income Source", { id: source.id, transactionId: source.transactionId, payload: data });
+
             try {
+                let res;
                 if (source.transactionId) {
-                    await transactionsService.updateTransaction(source.transactionId, data);
-                    return source;
+                    console.log(`FinancePage: Updating Transaction ${source.transactionId}`, data);
+                    res = await transactionsService.updateTransaction(source.transactionId, data);
+                    console.log("FinancePage: Update Income Success", res);
+                    // If the service returns the data, it's res. Otherwise source.
+                    return { ...source, ...res };
                 } else {
-                    const res = await transactionsService.createTransaction(data);
-                    return { ...source, transactionId: res?.id || res?.data?.id };
+                    console.log("FinancePage: Creating New Transaction", data);
+                    res = await transactionsService.createTransaction(data);
+                    console.log("FinancePage: Create Income Success", res);
+                    // Capturing the ID from the response.
+                    // Based on transactionsService.js, res should be the 'data' part of the response.
+                    const transactionId = res?.id || res?.data?.id || res?._id;
+                    if (!transactionId) {
+                        console.warn("FinancePage: No ID returned from createTransaction", res);
+                    }
+                    return { ...source, transactionId };
                 }
             } catch (err) {
-                console.error("Sync error saving income source:", err);
-                hasError = true;
+                console.error("FinancePage: Sync Income Error Detail", {
+                    source: source.name,
+                    status: err.status,
+                    code: err.code,
+                    details: err.details,
+                    message: err.message
+                });
+                const statusInfo = err.status ? `(Status: ${err.status})` : "";
+                errorMessages.push(`${source.name}: ${err.message} ${statusInfo}`);
                 return source;
             }
         }));
@@ -331,11 +349,11 @@ const FinancePage = () => {
         setIncomeSources(updatedSources);
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
 
-        if (!hasError) {
+        if (errorMessages.length === 0) {
             setSaved(true);
             setTimeout(() => setSaved(false), 2500);
         } else {
-            alert("Some income sources could not be synchronized with transactions. Please check your connection.");
+            alert("Synchronization Failed:\n" + errorMessages.join("\n"));
         }
     };
 
@@ -359,10 +377,14 @@ const FinancePage = () => {
                     status: 'Completed'
                 };
 
+                console.log("FinancePage: Syncing Expense (Update)", { id: entry.id, transactionId: entry.transactionId, payload: data });
+
                 if (entry.transactionId) {
-                    await transactionsService.updateTransaction(entry.transactionId, data);
+                    const res = await transactionsService.updateTransaction(entry.transactionId, data);
+                    console.log("FinancePage: Update Expense Success", res);
                 } else {
                     const res = await transactionsService.createTransaction(data);
+                    console.log("FinancePage: Create Expense Success", res);
                     entry.transactionId = res?.id || res?.data?.id;
                 }
 
@@ -387,7 +409,10 @@ const FinancePage = () => {
                     status: 'Completed'
                 };
 
+                console.log("FinancePage: Syncing Expense (Create)", { payload: data });
+
                 const res = await transactionsService.createTransaction(data);
+                console.log("FinancePage: Create Expense Success", res);
                 entry.transactionId = res?.id || res?.data?.id;
 
                 setExpenses(prev => [entry, ...prev]);
@@ -399,8 +424,14 @@ const FinancePage = () => {
             setExpSaved(true);
             setTimeout(() => setExpSaved(false), 2500);
         } catch (err) {
-            console.error("Sync error saving expense:", err);
-            alert("Failed to synchronize expense with transactions.");
+            console.error("FinancePage: Sync Expense Error Detail", {
+                status: err.status,
+                code: err.code,
+                details: err.details,
+                message: err.message
+            });
+            const statusInfo = err.status ? `(Status: ${err.status})` : "";
+            alert(`Synchronization Failed: ${err.message} ${statusInfo}`);
         }
     };
 
