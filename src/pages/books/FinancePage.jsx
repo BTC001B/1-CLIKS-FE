@@ -5,9 +5,9 @@ import { transactionsService } from '../../services';
 import { useQueryClient } from '@tanstack/react-query';
 
 /* ─── Storage keys scoped per user ────────────────────────────── */
-const incomeKey   = (uid) => `cliks_finance_income_v2_${uid}`;
+const incomeKey = (uid) => `cliks_finance_income_v2_${uid}`;
 const expensesKey = (uid) => `cliks_finance_expenses_${uid}`;
-const additionalIncomeKey   = (uid) => `cliks_finance_add_income_${uid}`;
+const additionalIncomeKey = (uid) => `cliks_finance_add_income_${uid}`;
 const additionalExpensesKey = (uid) => `cliks_finance_add_expenses_${uid}`;
 
 /* ─── Shared input style ─────────────────────────────────────── */
@@ -55,9 +55,9 @@ const getOrdinal = (d) => {
     if (isNaN(day)) return "";
     if (day > 3 && day < 21) return 'th';
     switch (day % 10) {
-        case 1:  return "st";
-        case 2:  return "nd";
-        case 3:  return "rd";
+        case 1: return "st";
+        case 2: return "nd";
+        case 3: return "rd";
         default: return "th";
     }
 };
@@ -92,7 +92,7 @@ const FinancePage = () => {
     const [newAdditionalIncome, setNewAdditionalIncome] = useState(BLANK_INCOME);
     const [editingAdditionalIncomeId, setEditingAdditionalIncomeId] = useState(null);
 
-    const [expense, setExpense]   = useState(BLANK_EXPENSE);
+    const [expense, setExpense] = useState(BLANK_EXPENSE);
     const [editingId, setEditingId] = useState(null);
 
     const [additionalExpense, setAdditionalExpense] = useState(BLANK_EXPENSE);
@@ -151,7 +151,7 @@ const FinancePage = () => {
             const parts = dStr.split(' ');
             if (parts.length !== 3) return new Date().toISOString().split('T')[0];
             const [d, m, y] = parts;
-            const monthMap = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+            const monthMap = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
             const date = new Date(y, monthMap[m], d);
             return isNaN(date.getTime()) ? new Date().toISOString().split('T')[0] : date.toISOString().split('T')[0];
         } catch { return new Date().toISOString().split('T')[0]; }
@@ -413,7 +413,7 @@ const FinancePage = () => {
                     position: relative;
                     display: flex;
                     flex-direction: column;
-                    height: 500px;
+                    height: 380px;
                     box-sizing: border-box;
                 }
                 .finance-table-wrapper {
@@ -456,10 +456,10 @@ const FinancePage = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
                 {[
-                    { label: 'Monthly Income',  value: monthlyIncome,  color: '#059669', bg: '#ECFDF5' },
-                    { label: 'Fixed Expenses',  value: fixedExpenses,  color: '#D97706', bg: '#FFFBEB' },
-                    { label: 'Daily Expenses',  value: dailyExpenses,  color: '#7C3AED', bg: '#F5F3FF' },
-                    { label: 'Remaining Balance', value: remaining,    color: remaining >= 0 ? '#059669' : '#EF4444', bg: remaining >= 0 ? '#ECFDF5' : '#FEF2F2' },
+                    { label: 'Monthly Income', value: monthlyIncome, color: '#059669', bg: '#ECFDF5' },
+                    { label: 'Fixed Expenses', value: fixedExpenses, color: '#D97706', bg: '#FFFBEB' },
+                    { label: 'Daily Expenses', value: dailyExpenses, color: '#7C3AED', bg: '#F5F3FF' },
+                    { label: 'Remaining Balance', value: remaining, color: remaining >= 0 ? '#059669' : '#EF4444', bg: remaining >= 0 ? '#ECFDF5' : '#FEF2F2' },
                 ].map(item => (
                     <div key={item.label} style={{ background: item.bg, borderRadius: '14px', padding: '1.1rem 1.25rem', border: `1px solid ${item.color}22` }}>
                         <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.3rem' }}>{item.label}</div>
