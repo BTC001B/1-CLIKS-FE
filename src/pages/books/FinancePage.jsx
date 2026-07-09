@@ -165,7 +165,8 @@ const FinancePage = () => {
             result = result.filter(i =>
                 i.name.toLowerCase().includes(q) ||
                 (i.description || '').toLowerCase().includes(q) ||
-                (i.schedule || '').toLowerCase().includes(q)
+                (i.schedule || '').toLowerCase().includes(q) ||
+                (i.amount || '').toString().toLowerCase().includes(q)
             );
         }
         Object.keys(incomeFilters).forEach(key => { if (incomeFilters[key].search) result = result.filter(item => String(item[key] || '').toLowerCase().includes(incomeFilters[key].search.toLowerCase())); });
@@ -183,21 +184,45 @@ const FinancePage = () => {
 
     const filteredExpenses = useMemo(() => {
         let result = [...expenses];
-        if (expenseSearch) result = result.filter(e => e.name.toLowerCase().includes(expenseSearch.toLowerCase()));
+        if (expenseSearch) {
+            const q = expenseSearch.toLowerCase();
+            result = result.filter(e =>
+                e.name.toLowerCase().includes(q) ||
+                (e.description || '').toLowerCase().includes(q) ||
+                (e.schedule || '').toLowerCase().includes(q) ||
+                (e.amount || '').toString().toLowerCase().includes(q)
+            );
+        }
         Object.keys(expenseFilters).forEach(key => { if (expenseFilters[key].search) result = result.filter(item => String(item[key] || '').toLowerCase().includes(expenseFilters[key].search.toLowerCase())); });
         return result;
     }, [expenses, expenseSearch, expenseFilters]);
 
     const filteredAdditionalIncome = useMemo(() => {
         let result = [...additionalIncomeSources];
-        if (addIncomeSearch) result = result.filter(i => i.name.toLowerCase().includes(addIncomeSearch.toLowerCase()));
+        if (addIncomeSearch) {
+            const q = addIncomeSearch.toLowerCase();
+            result = result.filter(i =>
+                i.name.toLowerCase().includes(q) ||
+                (i.description || '').toLowerCase().includes(q) ||
+                (i.schedule || '').toLowerCase().includes(q) ||
+                (i.amount || '').toString().toLowerCase().includes(q)
+            );
+        }
         Object.keys(addIncomeFilters).forEach(key => { if (addIncomeFilters[key].search) result = result.filter(item => String(item[key] || '').toLowerCase().includes(addIncomeFilters[key].search.toLowerCase())); });
         return result;
     }, [additionalIncomeSources, addIncomeSearch, addIncomeFilters]);
 
     const filteredAdditionalExpenses = useMemo(() => {
         let result = [...additionalExpenses];
-        if (addExpenseSearch) result = result.filter(e => e.name.toLowerCase().includes(addExpenseSearch.toLowerCase()));
+        if (addExpenseSearch) {
+            const q = addExpenseSearch.toLowerCase();
+            result = result.filter(e =>
+                e.name.toLowerCase().includes(q) ||
+                (e.description || '').toLowerCase().includes(q) ||
+                (e.schedule || '').toLowerCase().includes(q) ||
+                (e.amount || '').toString().toLowerCase().includes(q)
+            );
+        }
         Object.keys(addExpenseFilters).forEach(key => { if (addExpenseFilters[key].search) result = result.filter(item => String(item[key] || '').toLowerCase().includes(addExpenseFilters[key].search.toLowerCase())); });
         return result;
     }, [additionalExpenses, addExpenseSearch, addExpenseFilters]);
@@ -423,33 +448,56 @@ const FinancePage = () => {
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Income</h2>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
-                        <div style={{ flex: 1 }}></div>
-                        <button
-                            onClick={() => {
-                                setShowAddIncomeForm(true);
-                                setEditingAdditionalIncomeId(null);
-                                setNewAdditionalIncome(BLANK_INCOME);
-                            }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                padding: '0.6rem 1.5rem',
-                                background: '#1B6B3A',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '12px',
-                                fontWeight: 800,
-                                fontSize: '0.8rem',
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap',
-                                boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
-                            }}
-                        >
-                            <Plus size={16} strokeWidth={3} /> Add Income
-                        </button>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        <div style={{ textAlign: 'left' }}>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
+                        </div>
+
+                        <div style={{ position: 'relative', width: '280px' }}>
+                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                            <input
+                                type="text"
+                                value={addIncomeSearch}
+                                onChange={(e) => setAddIncomeSearch(e.target.value)}
+                                placeholder="Search income..."
+                                style={{
+                                    width: '100%',
+                                    padding: '0.6rem 1rem 0.6rem 2.5rem',
+                                    borderRadius: '999px',
+                                    border: '1px solid #E2E8F0',
+                                    fontSize: '0.85rem',
+                                    outline: 'none',
+                                    background: '#fff',
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                            <button
+                                onClick={() => {
+                                    setShowAddIncomeForm(true);
+                                    setEditingAdditionalIncomeId(null);
+                                    setNewAdditionalIncome(BLANK_INCOME);
+                                }}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.6rem 1.5rem',
+                                    background: '#1B6B3A',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    fontWeight: 800,
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap',
+                                    boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                                }}
+                            >
+                                <Plus size={16} strokeWidth={3} /> Add Income
+                            </button>
+                        </div>
                     </div>
 
                     {showAddIncomeForm && (
@@ -533,33 +581,56 @@ const FinancePage = () => {
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Expense</h2>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
-                        <div style={{ flex: 1 }}></div>
-                        <button
-                            onClick={() => {
-                                setShowAddExpenseForm(true);
-                                setEditingAdditionalId(null);
-                                setAdditionalExpense(BLANK_EXPENSE);
-                            }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                padding: '0.6rem 1.5rem',
-                                background: '#1B6B3A',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '12px',
-                                fontWeight: 800,
-                                fontSize: '0.8rem',
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap',
-                                boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
-                            }}
-                        >
-                            <Plus size={16} strokeWidth={3} /> Add Expense
-                        </button>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        <div style={{ textAlign: 'left' }}>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
+                        </div>
+
+                        <div style={{ position: 'relative', width: '280px' }}>
+                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                            <input
+                                type="text"
+                                value={addExpenseSearch}
+                                onChange={(e) => setAddExpenseSearch(e.target.value)}
+                                placeholder="Search expense..."
+                                style={{
+                                    width: '100%',
+                                    padding: '0.6rem 1rem 0.6rem 2.5rem',
+                                    borderRadius: '999px',
+                                    border: '1px solid #E2E8F0',
+                                    fontSize: '0.85rem',
+                                    outline: 'none',
+                                    background: '#fff',
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                            <button
+                                onClick={() => {
+                                    setShowAddExpenseForm(true);
+                                    setEditingAdditionalId(null);
+                                    setAdditionalExpense(BLANK_EXPENSE);
+                                }}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.6rem 1.5rem',
+                                    background: '#1B6B3A',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    fontWeight: 800,
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap',
+                                    boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                                }}
+                            >
+                                <Plus size={16} strokeWidth={3} /> Add Expense
+                            </button>
+                        </div>
                     </div>
 
                     {showAddExpenseForm && (
@@ -653,35 +724,56 @@ const FinancePage = () => {
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Income</h2>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        <div style={{ textAlign: 'left' }}>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
+                        </div>
 
-                        <div style={{ flex: 1 }}></div>
+                        <div style={{ position: 'relative', width: '280px' }}>
+                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                            <input
+                                type="text"
+                                value={incomeSearch}
+                                onChange={(e) => setIncomeSearch(e.target.value)}
+                                placeholder="Search income..."
+                                style={{
+                                    width: '100%',
+                                    padding: '0.6rem 1rem 0.6rem 2.5rem',
+                                    borderRadius: '999px',
+                                    border: '1px solid #E2E8F0',
+                                    fontSize: '0.85rem',
+                                    outline: 'none',
+                                    background: '#fff',
+                                }}
+                            />
+                        </div>
 
-                        <button
-                            onClick={() => {
-                                setShowIncomeForm(true);
-                                setEditingIncomeId(null);
-                                setNewIncome(BLANK_INCOME);
-                            }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                padding: '0.6rem 1.5rem',
-                                background: '#1B6B3A',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '12px',
-                                fontWeight: 800,
-                                fontSize: '0.8rem',
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap',
-                                boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
-                            }}
-                        >
-                            <Plus size={16} strokeWidth={3} /> Add Income
-                        </button>
+                        <div style={{ textAlign: 'right' }}>
+                            <button
+                                onClick={() => {
+                                    setShowIncomeForm(true);
+                                    setEditingIncomeId(null);
+                                    setNewIncome(BLANK_INCOME);
+                                }}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.6rem 1.5rem',
+                                    background: '#1B6B3A',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    fontWeight: 800,
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap',
+                                    boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                                }}
+                            >
+                                <Plus size={16} strokeWidth={3} /> Add Income
+                            </button>
+                        </div>
                     </div>
 
                     {showIncomeForm && (
@@ -803,33 +895,56 @@ const FinancePage = () => {
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Expense</h2>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
-                        <div style={{ flex: 1 }}></div>
-                        <button
-                            onClick={() => {
-                                setShowExpenseForm(true);
-                                setEditingId(null);
-                                setExpense(BLANK_EXPENSE);
-                            }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                padding: '0.6rem 1.5rem',
-                                background: '#1B6B3A',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '12px',
-                                fontWeight: 800,
-                                fontSize: '0.8rem',
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap',
-                                boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
-                            }}
-                        >
-                            <Plus size={16} strokeWidth={3} /> Add Expense
-                        </button>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        <div style={{ textAlign: 'left' }}>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
+                        </div>
+
+                        <div style={{ position: 'relative', width: '280px' }}>
+                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                            <input
+                                type="text"
+                                value={expenseSearch}
+                                onChange={(e) => setExpenseSearch(e.target.value)}
+                                placeholder="Search expense..."
+                                style={{
+                                    width: '100%',
+                                    padding: '0.6rem 1rem 0.6rem 2.5rem',
+                                    borderRadius: '999px',
+                                    border: '1px solid #E2E8F0',
+                                    fontSize: '0.85rem',
+                                    outline: 'none',
+                                    background: '#fff',
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                            <button
+                                onClick={() => {
+                                    setShowExpenseForm(true);
+                                    setEditingId(null);
+                                    setExpense(BLANK_EXPENSE);
+                                }}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.6rem 1.5rem',
+                                    background: '#1B6B3A',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    fontWeight: 800,
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap',
+                                    boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                                }}
+                            >
+                                <Plus size={16} strokeWidth={3} /> Add Expense
+                            </button>
+                        </div>
                     </div>
 
                     {showExpenseForm && (
