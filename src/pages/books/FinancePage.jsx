@@ -206,14 +206,28 @@ const FinancePage = () => {
     // Handlers
     const handleAddIncomeSource = async (e) => {
         e.preventDefault();
-        if (!newIncome.name.trim() || !newIncome.amount) return;
+        if (!newIncome.name.trim()) return;
         let entry;
+        const now = new Date();
+        const defaultDate = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const defaultTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
         if (editingIncomeId) {
-            entry = { ...incomeSources.find(i => i.id === editingIncomeId), ...newIncome, amount: parseFloat(newIncome.amount) || 0 };
+            entry = {
+                ...incomeSources.find(i => i.id === editingIncomeId),
+                ...newIncome,
+                amount: parseFloat(newIncome.amount) || 0
+            };
             setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? entry : i));
             setEditingIncomeId(null);
         } else {
-            entry = { ...newIncome, id: Date.now(), amount: parseFloat(newIncome.amount) || 0 };
+            entry = {
+                ...newIncome,
+                id: Date.now(),
+                date: newIncome.date || defaultDate,
+                time: newIncome.time || defaultTime,
+                amount: parseFloat(newIncome.amount) || 0
+            };
             setIncomeSources(prev => [...prev, entry]);
         }
         setNewIncome(BLANK_INCOME);
@@ -515,18 +529,30 @@ const FinancePage = () => {
                         </div>
                     </div>
                     <div style={{ marginBottom: '1.5rem' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E40AF', marginBottom: '0.5rem' }}>ADDED INCOME</div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <input type="text" style={{ ...inp, background: '#fff' }} placeholder="Enter name" value={newIncome.name} onChange={e => setNewIncome(p => ({ ...p, name: e.target.value }))} />
-                            <button onClick={handleAddIncomeSource} style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer' }}><Plus size={20} /></button>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E40AF', marginBottom: '1rem' }}>ADDED INCOME</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.5fr 1fr auto', gap: '0.75rem', alignItems: 'end' }}>
+                            <div>
+                                <label style={lbl}>Income Name</label>
+                                <input type="text" style={{ ...inp, background: '#fff' }} placeholder="e.g. Salary" value={newIncome.name} onChange={e => setNewIncome(p => ({ ...p, name: e.target.value }))} />
+                            </div>
+                            <div>
+                                <label style={lbl}>Description</label>
+                                <input type="text" style={{ ...inp, background: '#fff' }} placeholder="Short description" value={newIncome.description} onChange={e => setNewIncome(p => ({ ...p, description: e.target.value }))} />
+                            </div>
+                            <div>
+                                <label style={lbl}>Schedule</label>
+                                <select style={{ ...inp, background: '#fff', padding: '0.55rem 0.875rem' }} value={newIncome.schedule} onChange={e => setNewIncome(p => ({ ...p, schedule: e.target.value }))}>
+                                    <option value="Daily">Daily</option>
+                                    <option value="Weekly">Weekly</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Yearly">Yearly</option>
+                                </select>
+                            </div>
+                            <button onClick={handleAddIncomeSource} style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '10px', padding: '0 1.25rem', cursor: 'pointer', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                                {editingIncomeId ? 'Update' : <Plus size={20} />}
+                            </button>
                         </div>
                     </div>
-                    <form onSubmit={handleAddIncomeSource} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '0.5rem', alignItems: 'end', marginBottom: '1.5rem' }}>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>DATE</label><input type="date" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={newIncome.date} onChange={e => setNewIncome(p => ({ ...p, date: e.target.value }))} /></div>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>TIME</label><input type="time" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={newIncome.time} onChange={e => setNewIncome(p => ({ ...p, time: e.target.value }))} /></div>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>AMOUNT</label><input type="number" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={newIncome.amount} onChange={e => setNewIncome(p => ({ ...p, amount: e.target.value }))} /></div>
-                        <button type="submit" style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: 700, height: '32px' }}>{editingIncomeId ? 'Update' : 'Add'}</button>
-                    </form>
                     <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
                         <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
                             <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
