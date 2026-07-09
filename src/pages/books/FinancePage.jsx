@@ -45,12 +45,8 @@ const saveBtn = {
     boxShadow: '0 3px 10px rgba(27,107,58,0.22)',
 };
 
-const BLANK_DETAILS = {
-    fullName: '', email: '', phone: '',
-    salary: '', bonus: '',
-    rent: '', electricity: '', grocery: '',
-};
-const BLANK_EXPENSE = { name: '', amount: '', description: '' };
+const BLANK_INCOME = { name: '', description: '', date: '', time: '', schedule: 'Monthly', amount: '' };
+const BLANK_EXPENSE = { name: '', description: '', date: '', time: '', schedule: 'Monthly', amount: '' };
 
 const getOrdinal = (d) => {
     const day = parseInt(d);
@@ -78,7 +74,7 @@ const FinancePage = () => {
         catch { return []; }
     });
 
-    const [newIncome, setNewIncome] = useState({ name: '', amount: '', description: '', salaryCreditDate: '' });
+    const [newIncome, setNewIncome] = useState(BLANK_INCOME);
     const [editingIncomeId, setEditingIncomeId] = useState(null);
 
     const [expense, setExpense]   = useState(BLANK_EXPENSE);
@@ -282,23 +278,23 @@ const FinancePage = () => {
         if (editingIncomeId) {
             setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? {
                 ...i,
+                ...newIncome,
                 name: newIncome.name.trim(),
                 amount: parseFloat(newIncome.amount) || 0,
                 description: newIncome.description.trim(),
-                salaryCreditDate: newIncome.salaryCreditDate
             } : i));
             setEditingIncomeId(null);
         } else {
             const entry = {
+                ...newIncome,
                 id: Date.now(),
                 name: newIncome.name.trim(),
                 amount: parseFloat(newIncome.amount) || 0,
                 description: newIncome.description.trim(),
-                salaryCreditDate: newIncome.salaryCreditDate
             };
             setIncomeSources(prev => [...prev, entry]);
         }
-        setNewIncome({ name: '', amount: '', description: '', salaryCreditDate: '' });
+        setNewIncome(BLANK_INCOME);
     };
 
     const handleDeleteIncomeSource = async (id) => {
@@ -317,7 +313,9 @@ const FinancePage = () => {
             name: i.name,
             amount: i.amount,
             description: i.description || '',
-            salaryCreditDate: i.salaryCreditDate || ''
+            date: i.date || '',
+            time: i.time || '',
+            schedule: i.schedule || 'Monthly'
         });
         setEditingIncomeId(i.id);
     };
@@ -390,7 +388,13 @@ const FinancePage = () => {
         try {
             if (editingId) {
                 const existing = expenses.find(e => e.id === editingId);
-                entry = { ...existing, name: expense.name.trim(), amount: parseFloat(expense.amount) || 0, description: expense.description.trim() };
+                entry = {
+                    ...existing,
+                    ...expense,
+                    name: expense.name.trim(),
+                    amount: parseFloat(expense.amount) || 0,
+                    description: expense.description.trim()
+                };
 
                 const data = {
                     type: 'Expense',
@@ -417,8 +421,9 @@ const FinancePage = () => {
                 setEditingId(null);
             } else {
                 entry = {
+                    ...expense,
                     id:     Date.now(),
-                    date:   new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+                    date:   expense.date || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
                     name:   expense.name.trim(),
                     amount: parseFloat(expense.amount) || 0,
                     description: expense.description.trim(),
@@ -472,7 +477,14 @@ const FinancePage = () => {
         setExpenses(prev => prev.filter(e => e.id !== id));
     };
     const handleEditExpense = (e) => {
-        setExpense({ name: e.name, amount: e.amount, description: e.description || '' });
+        setExpense({
+            name: e.name,
+            amount: e.amount,
+            description: e.description || '',
+            date: e.date || '',
+            time: e.time || '',
+            schedule: e.schedule || 'Monthly'
+        });
         setEditingId(e.id);
     };
 
@@ -808,292 +820,292 @@ const FinancePage = () => {
             </div>
 
             {/* Main Container Split into Two */}
-            <div className="finance-premium-container">
+            <div className="finance-premium-container" style={{ border: 'none', boxShadow: 'none', background: 'transparent', gap: '2rem' }}>
 
                 {/* LEFT SIDE: INCOME */}
-                <div className="finance-panel-left">
-                    <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: '1.5rem' }}>
+                <div className="finance-panel-left" style={{ border: '1px solid #E2E8F0', borderRadius: '16px', background: '#fff', padding: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Income</h2>
                     </div>
-                    <div className="red-divider"></div>
 
-                    {isIncomeEmpty && !isAddingIncome ? (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '320px', backgroundColor: '#FEF2F2', borderRadius: '12px' }} className="no-print">
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E40AF', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Added Income</div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input
+                                type="text"
+                                style={{ ...inp, background: '#fff' }}
+                                placeholder="Enter income name"
+                                value={newIncome.name}
+                                onChange={e => setNewIncome(prev => ({ ...prev, name: e.target.value }))}
+                            />
                             <button
-                                onClick={() => setIsAddingIncome(true)}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.9rem 1.8rem', background: '#fff', color: '#1B6B3A',
-                                    border: '2px dashed #1B6B3A', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s'
-                                }}
-                                onMouseOver={e => { e.currentTarget.style.background = '#F0FDF4'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-                                onMouseOut={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                onClick={handleAddIncomeSource}
+                                style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                             >
-                                Add Income +
+                                <Plus size={20} />
                             </button>
                         </div>
-                    ) : (
-                        <div style={{ paddingTop: '1rem' }}>
-                            <form onSubmit={handleAddIncomeSource} className="no-print">
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                                    <div>
-                                        <label style={lbl}>Income Source Name</label>
-                                        <input
-                                            type="text"
-                                            style={inp}
-                                            value={newIncome.name}
-                                            placeholder="Examples: Salary, Business, Freelance, Rent, Other Income, etc."
-                                            onChange={e => setNewIncome(prev => ({ ...prev, name: e.target.value }))}
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label style={lbl}>Amount (Monthly)</label>
-                                        <input
-                                            type="number"
-                                            style={inp}
-                                            value={newIncome.amount}
-                                            placeholder="0"
-                                            onChange={e => setNewIncome(prev => ({ ...prev, amount: e.target.value }))}
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label style={lbl}>Salary Credit Date (Monthly)</label>
-                                        <select
-                                            style={{ ...inp, cursor: 'pointer' }}
-                                            value={newIncome.salaryCreditDate}
-                                            onChange={e => setNewIncome(prev => ({ ...prev, salaryCreditDate: e.target.value }))}
-                                            required
-                                        >
-                                            <option value="">Select your monthly salary credit date</option>
-                                            {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31].map(day => (
-                                                <option key={day} value={day}>{day}{getOrdinal(day)} of every month</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style={lbl}>Description</label>
-                                        <textarea
-                                            style={{ ...inp, height: 'auto', resize: 'vertical' }}
-                                            rows={3}
-                                            value={newIncome.description}
-                                            placeholder="Enter notes about this income source (optional)...&#10;Example: Monthly salary credited on the 1st of every month."
-                                            onChange={e => setNewIncome(prev => ({ ...prev, description: e.target.value }))}
-                                        />
-                                    </div>
-                                    <div style={{ marginTop: '0.5rem' }}>
-                                        <button type="submit" style={{ ...saveBtn, background: 'linear-gradient(135deg, #1B6B3A 0%, #135029 100%)' }}>
-                                            <Plus size={16} /> {editingIncomeId ? 'Update Income Source' : 'Add Income Source'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+                    </div>
 
-                            {/* Added Income Sources Table */}
-                            <div style={{ marginTop: '2rem' }}>
-                                <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Added Income Sources</div>
-                                <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                                        <thead>
-                                            <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        SOURCE NAME
-                                                        <ColumnFilterDropdown type="income" column="name" label="Source" filterState={incomeFilters} setFilterState={setIncomeFilters} />
-                                                    </div>
-                                                </th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        DESCRIPTION
-                                                        <ColumnFilterDropdown type="income" column="description" label="Description" filterState={incomeFilters} setFilterState={setIncomeFilters} />
-                                                    </div>
-                                                </th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        CREDIT DATE
-                                                        <ColumnFilterDropdown type="income" column="salaryCreditDate" label="Credit Date" filterState={incomeFilters} setFilterState={setIncomeFilters} />
-                                                    </div>
-                                                </th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        AMOUNT (MONTHLY)
-                                                        <ColumnFilterDropdown type="income" column="amount" label="Amount" filterState={incomeFilters} setFilterState={setIncomeFilters} />
-                                                    </div>
-                                                </th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }} className="no-print">ACTIONS</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {filteredIncome.length === 0 ? (
-                                                <tr><td colSpan="5" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{incomeSearch ? 'No matching income source found.' : 'No income sources added yet'}</td></tr>
-                                            ) : (
-                                                filteredIncome.map(i => (
-                                                    <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                                        <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>{i.name}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', color: '#64748B', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={i.description}>{i.description || '—'}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', color: '#64748B', fontWeight: 600 }}>{i.salaryCreditDate ? `${i.salaryCreditDate}${getOrdinal(i.salaryCreditDate)}` : '—'}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>₹{i.amount.toLocaleString('en-IN')}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }} className="no-print">
-                                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                                <button onClick={() => handleEditIncomeSource(i)} style={{ background: '#EFF6FF', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
-                                                                    <Pencil size={14} />
-                                                                </button>
-                                                                <button onClick={() => handleDeleteIncomeSource(i.id)} style={{ background: '#FEF2F2', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#EF4444' }}>
-                                                                    <Trash2 size={14} />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                    <form onSubmit={handleAddIncomeSource} style={{ marginBottom: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr auto', gap: '0.5rem', alignItems: 'end' }}>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>NAME</label>
+                                <input
+                                    type="text"
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={newIncome.name}
+                                    placeholder="Name"
+                                    onChange={e => setNewIncome(prev => ({ ...prev, name: e.target.value }))}
+                                    required
+                                />
                             </div>
-
-                            <div style={{ marginTop: '2rem', borderTop: '1px solid #E2E8F0', paddingTop: '1.5rem' }} className="no-print">
-                                <button onClick={handleSaveDetails} style={saveBtn}>
-                                    <Save size={16} /> Save Details
-                                </button>
-                                {saved && <span style={{ marginLeft: '1rem', color: '#059669', fontSize: '0.8rem', fontWeight: 600 }}>✓ Saved</span>}
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>DESCRIPTION</label>
+                                <textarea
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem', height: '32px', resize: 'none' }}
+                                    value={newIncome.description}
+                                    placeholder="Description"
+                                    onChange={e => setNewIncome(prev => ({ ...prev, description: e.target.value }))}
+                                />
                             </div>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>DATE</label>
+                                <input
+                                    type="date"
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={newIncome.date}
+                                    onChange={e => setNewIncome(prev => ({ ...prev, date: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>TIME</label>
+                                <input
+                                    type="time"
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={newIncome.time}
+                                    onChange={e => setNewIncome(prev => ({ ...prev, time: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>SCHEDULE</label>
+                                <select
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={newIncome.schedule}
+                                    onChange={e => setNewIncome(prev => ({ ...prev, schedule: e.target.value }))}
+                                >
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="One Time">One Time</option>
+                                    <option value="Weekly">Weekly</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>AMOUNT</label>
+                                <input
+                                    type="number"
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={newIncome.amount}
+                                    placeholder="Amount"
+                                    onChange={e => setNewIncome(prev => ({ ...prev, amount: e.target.value }))}
+                                    required
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', height: '32px' }}
+                            >
+                                Add
+                            </button>
                         </div>
-                    )}
+                    </form>
+
+                    <div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E40AF', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Income List</div>
+                        <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                                <thead>
+                                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>NAME</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>DESCRIPTION</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>DATE</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>TIME</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>SCHEDULE</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>AMOUNT</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900 }}>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredIncome.length === 0 ? (
+                                        <tr><td colSpan="7" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No income sources added yet</td></tr>
+                                    ) : (
+                                        filteredIncome.map(i => (
+                                            <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                                <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#10B981' }}>{i.name}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#64748B' }}>{i.description || '—'}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500 }}>{i.date || '—'}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500 }}>{i.time || '—'}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#64748B' }}>{i.schedule || 'Monthly'}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#10B981' }}>₹{(parseFloat(i.amount) || 0).toLocaleString('en-IN')}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
+                                                    <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                        <button onClick={() => handleEditIncomeSource(i)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
+                                                            <Pencil size={14} />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteIncomeSource(i.id)} style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#EF4444' }}>
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 {/* RIGHT SIDE: MONTHLY EXPENSE */}
-                <div className="finance-panel-right">
-                    <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: '1.5rem' }}>
+                <div className="finance-panel-right" style={{ border: '1px solid #E2E8F0', borderRadius: '16px', background: '#fff', padding: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Expense</h2>
                     </div>
-                    <div className="red-divider"></div>
 
-                    {isExpenseEmpty && !isAddingExpense ? (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '320px', backgroundColor: '#FEF2F2', borderRadius: '12px' }} className="no-print">
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E40AF', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Added Expense</div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input
+                                type="text"
+                                style={{ ...inp, background: '#fff' }}
+                                placeholder="Enter expense name"
+                                value={expense.name}
+                                onChange={e => setExpense(prev => ({ ...prev, name: e.target.value }))}
+                            />
                             <button
-                                onClick={() => setIsAddingExpense(true)}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.9rem 1.8rem', background: '#fff', color: '#1B6B3A',
-                                    border: '2px dashed #1B6B3A', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s'
-                                }}
-                                onMouseOver={e => { e.currentTarget.style.background = '#F0FDF4'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-                                onMouseOut={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                onClick={handleSaveExpense}
+                                style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                             >
-                                Add Expense +
+                                <Plus size={20} />
                             </button>
                         </div>
-                    ) : (
-                        <div style={{ paddingTop: '1rem' }}>
-                            <form onSubmit={handleSaveExpense} className="no-print">
-                                <div style={{ marginBottom: '1.25rem' }}>
-                                    <label style={lbl}>Purchase Name</label>
-                                    <input
-                                        type="text"
-                                        style={inp}
-                                        value={expense.name}
-                                        placeholder="Examples: Vegetables, Milk, Petrol, Ice Cream, Hotel Food, etc."
-                                        onChange={e => setExpense(prev => ({ ...prev, name: e.target.value }))}
-                                        required
-                                    />
-                                </div>
-                                <div style={{ marginBottom: '1.25rem' }}>
-                                    <label style={lbl}>Description</label>
-                                    <textarea
-                                        style={{ ...inp, height: 'auto', resize: 'vertical' }}
-                                        rows={3}
-                                        value={expense.description}
-                                        placeholder="Enter notes about this expense (optional)...&#10;Example: Grocery shopping for July, Electricity bill payment, Petrol for bike, etc."
-                                        onChange={e => setExpense(prev => ({ ...prev, description: e.target.value }))}
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'end', gap: '1rem', marginBottom: '2rem' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <label style={lbl}>Amount Spent</label>
-                                        <input
-                                            type="number"
-                                            style={inp}
-                                            value={expense.amount}
-                                            placeholder="0"
-                                            onChange={e => setExpense(prev => ({ ...prev, amount: e.target.value }))}
-                                            required
-                                        />
-                                    </div>
-                                    <button type="submit" style={saveBtn}>
-                                        <ShoppingCart size={16} /> {editingId ? 'Update Expense' : 'Save Expense'}
-                                    </button>
-                                </div>
-                            </form>
+                    </div>
 
-                            {/* Expense History Table */}
-                            <div style={{ marginTop: '1rem' }}>
-                                <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Saved Expenses</div>
-                                <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                                        <thead>
-                                            <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        DATE
-                                                        <ColumnFilterDropdown type="expense" column="date" label="Date" filterState={expenseFilters} setFilterState={setExpenseFilters} />
-                                                    </div>
-                                                </th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        PURCHASE NAME
-                                                        <ColumnFilterDropdown type="expense" column="name" label="Purchase" filterState={expenseFilters} setFilterState={setExpenseFilters} />
-                                                    </div>
-                                                </th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        DESCRIPTION
-                                                        <ColumnFilterDropdown type="expense" column="description" label="Description" filterState={expenseFilters} setFilterState={setExpenseFilters} />
-                                                    </div>
-                                                </th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#94A3B8' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        AMOUNT
-                                                        <ColumnFilterDropdown type="expense" column="amount" label="Amount" filterState={expenseFilters} setFilterState={setExpenseFilters} />
-                                                    </div>
-                                                </th>
-                                                <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#94A3B8' }} className="no-print"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {filteredExpenses.length === 0 ? (
-                                                <tr><td colSpan="5" style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8' }}>{expenseSearch ? 'No matching expense found.' : 'No expenses yet'}</td></tr>
-                                            ) : (
-                                                filteredExpenses.map(e => (
-                                                    <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                                        <td style={{ padding: '0.6rem 1rem', color: '#94A3B8' }}>{e.date}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>{e.name}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', color: '#64748B', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={e.description}>{e.description || '—'}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>₹{e.amount.toLocaleString('en-IN')}</td>
-                                                        <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }} className="no-print">
-                                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                                <button onClick={() => handleEditExpense(e)} style={{ background: '#EFF6FF', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
-                                                                    <Pencil size={14} />
-                                                                </button>
-                                                                <button onClick={() => handleDeleteExpense(e.id)} style={{ background: '#FEF2F2', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#EF4444' }}>
-                                                                    <Trash2 size={14} />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                {expenses.length > 0 && (
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                                        <button onClick={handleSaveToPDF} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', border: '1px solid #CBD5E1', borderRadius: '8px', background: '#fff', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', color: '#1E293B' }}>
-                                            <FileText size={14} /> Save to PDF
-                                        </button>
-                                    </div>
-                                )}
+                    <form onSubmit={handleSaveExpense} style={{ marginBottom: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr auto', gap: '0.5rem', alignItems: 'end' }}>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>NAME</label>
+                                <input
+                                    type="text"
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={expense.name}
+                                    placeholder="Name"
+                                    onChange={e => setExpense(prev => ({ ...prev, name: e.target.value }))}
+                                    required
+                                />
                             </div>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>DESCRIPTION</label>
+                                <textarea
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem', height: '32px', resize: 'none' }}
+                                    value={expense.description}
+                                    placeholder="Description"
+                                    onChange={e => setExpense(prev => ({ ...prev, description: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>DATE</label>
+                                <input
+                                    type="date"
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={expense.date}
+                                    onChange={e => setExpense(prev => ({ ...prev, date: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>TIME</label>
+                                <input
+                                    type="time"
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={expense.time}
+                                    onChange={e => setExpense(prev => ({ ...prev, time: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>SCHEDULE</label>
+                                <select
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={expense.schedule}
+                                    onChange={e => setExpense(prev => ({ ...prev, schedule: e.target.value }))}
+                                >
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="One Time">One Time</option>
+                                    <option value="Weekly">Weekly</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 900, color: '#1E40AF', display: 'block', marginBottom: '0.3rem' }}>AMOUNT</label>
+                                <input
+                                    type="number"
+                                    style={{ ...inp, background: '#fff', padding: '0.4rem 0.6rem' }}
+                                    value={expense.amount}
+                                    placeholder="Amount"
+                                    onChange={e => setExpense(prev => ({ ...prev, amount: e.target.value }))}
+                                    required
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', height: '32px' }}
+                            >
+                                Add
+                            </button>
                         </div>
-                    )}
+                    </form>
+
+                    <div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E40AF', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Expense List</div>
+                        <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                                <thead>
+                                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>NAME</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>DESCRIPTION</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>DATE</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>TIME</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>SCHEDULE</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>AMOUNT</th>
+                                        <th style={{ padding: '0.6rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900 }}>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredExpenses.length === 0 ? (
+                                        <tr><td colSpan="7" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No expenses yet</td></tr>
+                                    ) : (
+                                        filteredExpenses.map(e => (
+                                            <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                                <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#EF4444' }}>{e.name}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#64748B' }}>{e.description || '—'}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500 }}>{e.date || '—'}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500 }}>{e.time || '—'}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', color: '#64748B' }}>{e.schedule || 'Monthly'}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#EF4444' }}>₹{(parseFloat(e.amount) || 0).toLocaleString('en-IN')}</td>
+                                                <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
+                                                    <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                        <button onClick={() => handleEditExpense(e)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
+                                                            <Pencil size={14} />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteExpense(e.id)} style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#EF4444' }}>
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
