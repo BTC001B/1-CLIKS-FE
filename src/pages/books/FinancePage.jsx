@@ -204,16 +204,29 @@ const FinancePage = () => {
     const remaining = monthlyIncome - fixedExpenses - dailyExpenses;
 
     // Handlers
-    const handleAddIncomeSource = (e) => {
+    const handleAddIncomeSource = async (e) => {
         e.preventDefault();
         if (!newIncome.name.trim() || !newIncome.amount) return;
+        let entry;
         if (editingIncomeId) {
-            setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? { ...i, ...newIncome, amount: parseFloat(newIncome.amount) || 0 } : i));
+            entry = { ...incomeSources.find(i => i.id === editingIncomeId), ...newIncome, amount: parseFloat(newIncome.amount) || 0 };
+            setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? entry : i));
             setEditingIncomeId(null);
         } else {
-            setIncomeSources(prev => [...prev, { ...newIncome, id: Date.now(), amount: parseFloat(newIncome.amount) || 0 }]);
+            entry = { ...newIncome, id: Date.now(), amount: parseFloat(newIncome.amount) || 0 };
+            setIncomeSources(prev => [...prev, entry]);
         }
         setNewIncome(BLANK_INCOME);
+
+        try {
+            const data = { type: 'Income', title: entry.name, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), status: 'Completed' };
+            if (entry.transactionId) await transactionsService.updateTransaction(entry.transactionId, data);
+            else {
+                const res = await transactionsService.createTransaction(data);
+                entry.transactionId = res?.id || res?.data?.id;
+            }
+            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        } catch (err) { console.error(err); }
     };
 
     const handleDeleteIncomeSource = (id) => setIncomeSources(prev => prev.filter(i => i.id !== id));
@@ -287,21 +300,6 @@ const FinancePage = () => {
 
     const handleDeleteAddExpense = (id) => setAdditionalExpenses(prev => prev.filter(e => e.id !== id));
     const handleEditAddExpense = (e) => { setAdditionalExpense({ ...e }); setEditingAdditionalId(e.id); };
-
-    const handleSaveDetails = async () => {
-        try {
-            await Promise.all(incomeSources.map(async (s) => {
-                const data = { type: 'Income', title: s.name, category: mapCategory(s.name), amount: s.amount, date: formatAPIDate(s.date), status: 'Completed' };
-                if (s.transactionId) await transactionsService.updateTransaction(s.transactionId, data);
-                else {
-                    const res = await transactionsService.createTransaction(data);
-                    s.transactionId = res?.id || res?.data?.id;
-                }
-            }));
-            setSaved(true); setTimeout(() => setSaved(false), 2000);
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
-        } catch (err) { alert(err.message); }
-    };
 
     const handleSaveAddDetails = async () => {
         try {
@@ -531,33 +529,52 @@ const FinancePage = () => {
                     </form>
                     <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
                         <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
-                            <thead style={{ background: '#F8FAFC' }}>
+                            <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                 <tr>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>NAME <ColumnFilterDropdown type="income" column="name" label="Name" filterState={incomeFilters} setFilterState={setIncomeFilters} /></th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>DATE</th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>AMOUNT</th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'center' }}>ACTION</th>
+                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>
+                                        Name <ColumnFilterDropdown type="income" column="name" label="Name" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                    </th>
+                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>
+                                        Description <ColumnFilterDropdown type="income" column="description" label="Description" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                    </th>
+                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>
+                                        Date <ColumnFilterDropdown type="income" column="date" label="Date" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                    </th>
+                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>Time</th>
+                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>Schedule</th>
+                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>
+                                        Amount <ColumnFilterDropdown type="income" column="amount" label="Amount" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                    </th>
+                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900 }}>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredIncome.map(i => (
-                                    <tr key={i.id} style={{ borderTop: '1px solid #F1F5F9' }}>
-                                        <td style={{ padding: '0.6rem', fontWeight: 700, color: '#10B981' }}>{i.name}</td>
-                                        <td style={{ padding: '0.6rem' }}>{i.date}</td>
-                                        <td style={{ padding: '0.6rem', fontWeight: 800 }}>₹{i.amount.toLocaleString()}</td>
-                                        <td style={{ padding: '0.6rem', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                                                <button onClick={() => handleEditIncomeSource(i)} style={{ background: '#EFF6FF', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}><Pencil size={14} /></button>
-                                                <button onClick={() => handleDeleteIncomeSource(i.id)} style={{ background: '#FEF2F2', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}><Trash2 size={14} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {filteredIncome.length === 0 ? (
+                                    <tr><td colSpan="7" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No income sources added yet</td></tr>
+                                ) : (
+                                    filteredIncome.map(i => (
+                                        <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#10B981' }}>{i.name}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B' }}>{i.description || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500 }}>{i.date || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500 }}>{i.time || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B' }}>{i.schedule || 'Monthly'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#10B981' }}>₹{(parseFloat(i.amount) || 0).toLocaleString('en-IN')}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
+                                                <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                    <button onClick={() => handleEditIncomeSource(i)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteIncomeSource(i.id)} style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#EF4444' }}>
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
-                    </div>
-                    <div style={{ marginTop: '1.5rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }} className="no-print">
-                        <button onClick={handleSaveDetails} style={saveBtn}><Save size={16} /> Save Details</button>
                     </div>
                 </div>
                 {/* Expense panel */}
