@@ -627,21 +627,29 @@ const FinancePage = () => {
                         <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
                             <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                 <tr>
-                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>
-                                        Name <ColumnFilterDropdown type="income" column="name" label="Name" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            Name <ColumnFilterDropdown type="income" column="name" label="Name" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                        </div>
                                     </th>
-                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>
-                                        Description <ColumnFilterDropdown type="income" column="description" label="Description" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            Description <ColumnFilterDropdown type="income" column="description" label="Description" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                        </div>
                                     </th>
-                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>
-                                        Date <ColumnFilterDropdown type="income" column="date" label="Date" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            Date <ColumnFilterDropdown type="income" column="date" label="Date" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                        </div>
                                     </th>
-                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>Time</th>
-                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>Schedule</th>
-                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', color: '#1E40AF', fontWeight: 900 }}>
-                                        Amount <ColumnFilterDropdown type="income" column="amount" label="Amount" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>Time</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>Schedule</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            Amount <ColumnFilterDropdown type="income" column="amount" label="Amount" filterState={incomeFilters} setFilterState={setIncomeFilters} />
+                                        </div>
                                     </th>
-                                    <th style={{ padding: '0.6rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900 }}>Action</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>Action</th>
                                 </tr>
                             </thead>
                             <tbody>

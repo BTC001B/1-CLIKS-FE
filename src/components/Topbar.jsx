@@ -3,7 +3,7 @@ import { Wallet, BookOpen, Users, SlidersHorizontal, Bell } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
-import logoPng from '../assets/cliks.png'; // Final branding
+import logoPng from '../assets/logo_new.png'; // Final branding
 
 import { ProfileDropdown } from './ProfileDropdown';
 import SearchBox from './SearchBox';
@@ -54,8 +54,8 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                     style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     title="Toggle Sidebar"
                 >
-                    <div className="brand-logo-small" style={{ backgroundColor: 'transparent', borderRadius: '50%' }}>
-                        <img src={logoPng} alt="CLIKS Logo" style={{ width: '28px', height: '28px' }} />
+                    <div className="brand-logo-small" style={{ backgroundColor: 'transparent', borderRadius: '50%', width: 'auto', height: 'auto' }}>
+                        <img src={logoPng} alt="CLIKS Logo" style={{ height: '38px', width: 'auto' }} />
                     </div>
                     <span style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: '700', letterSpacing: '0.5px' }}>
                         CLIKS
