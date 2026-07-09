@@ -320,6 +320,7 @@ const FinancePage = () => {
         setEditingIncomeId(i.id);
     };
 
+    const handleSaveDetails = async () => {
         let errorMessages = [];
         // Sync all income sources to transactions
         const updatedSources = await Promise.all(incomeSources.map(async (source) => {
