@@ -100,6 +100,9 @@ const FinancePage = () => {
 
     const [saved, setSaved] = useState(false);
     const [showIncomeForm, setShowIncomeForm] = useState(false);
+    const [showExpenseForm, setShowExpenseForm] = useState(false);
+    const [showAddIncomeForm, setShowAddIncomeForm] = useState(false);
+    const [showAddExpenseForm, setShowAddExpenseForm] = useState(false);
 
     // Search and Sort State
     const [incomeSearch, setIncomeSearch] = useState('');
@@ -283,7 +286,7 @@ const FinancePage = () => {
     };
 
     const handleDeleteExpense = (id) => setExpenses(prev => prev.filter(e => e.id !== id));
-    const handleEditExpense = (e) => { setExpense({ ...e }); setEditingId(e.id); };
+    const handleEditExpense = (e) => { setExpense({ ...e }); setEditingId(e.id); setShowExpenseForm(true); };
 
     const handleAddAddIncomeSource = (e) => {
         e.preventDefault();
@@ -298,7 +301,7 @@ const FinancePage = () => {
     };
 
     const handleDeleteAddIncomeSource = (id) => setAdditionalIncomeSources(prev => prev.filter(i => i.id !== id));
-    const handleEditAddIncomeSource = (i) => { setNewAdditionalIncome({ ...i }); setEditingAdditionalIncomeId(i.id); };
+    const handleEditAddIncomeSource = (i) => { setNewAdditionalIncome({ ...i }); setEditingAdditionalIncomeId(i.id); setShowAddIncomeForm(true); };
 
     const handleSaveAddExpense = async (ev) => {
         ev.preventDefault();
@@ -325,7 +328,7 @@ const FinancePage = () => {
     };
 
     const handleDeleteAddExpense = (id) => setAdditionalExpenses(prev => prev.filter(e => e.id !== id));
-    const handleEditAddExpense = (e) => { setAdditionalExpense({ ...e }); setEditingAdditionalId(e.id); };
+    const handleEditAddExpense = (e) => { setAdditionalExpense({ ...e }); setEditingAdditionalId(e.id); setShowAddExpenseForm(true); };
 
     const handleSaveAddDetails = async () => {
         try {
@@ -419,48 +422,105 @@ const FinancePage = () => {
                 <div className="finance-panel-left">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Income</h2>
-                        <div className="search-filter-container no-print">
-                            <Search size={14} style={{ position: 'absolute', left: '10px', color: '#94A3B8' }} />
-                            <input type="text" placeholder="Search..." className="compact-search-input" value={addIncomeSearch} onChange={(e) => setAddIncomeSearch(e.target.value)} />
-                        </div>
                     </div>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E40AF', marginBottom: '0.5rem' }}>ADDED INCOME</div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <input type="text" style={{ ...inp, background: '#fff' }} placeholder="Enter name" value={newAdditionalIncome.name} onChange={e => setNewAdditionalIncome(p => ({ ...p, name: e.target.value }))} />
-                            <button onClick={handleAddAddIncomeSource} style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer' }}><Plus size={20} /></button>
-                        </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
+                        <div style={{ flex: 1 }}></div>
+                        <button
+                            onClick={() => {
+                                setShowAddIncomeForm(true);
+                                setEditingAdditionalIncomeId(null);
+                                setNewAdditionalIncome(BLANK_INCOME);
+                            }}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.6rem 1.5rem',
+                                background: '#1B6B3A',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '12px',
+                                fontWeight: 800,
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                                boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                            }}
+                        >
+                            <Plus size={16} strokeWidth={3} /> Add Income
+                        </button>
                     </div>
-                    <form onSubmit={handleAddAddIncomeSource} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '0.5rem', alignItems: 'end', marginBottom: '1.5rem' }}>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>DATE</label><input type="date" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={newAdditionalIncome.date} onChange={e => setNewAdditionalIncome(p => ({ ...p, date: e.target.value }))} /></div>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>TIME</label><input type="time" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={newAdditionalIncome.time} onChange={e => setNewAdditionalIncome(p => ({ ...p, time: e.target.value }))} /></div>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>AMOUNT</label><input type="number" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={newAdditionalIncome.amount} onChange={e => setNewAdditionalIncome(p => ({ ...p, amount: e.target.value }))} /></div>
-                        <button type="submit" style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: 700, height: '32px' }}>{editingAdditionalIncomeId ? 'Update' : 'Add'}</button>
-                    </form>
+
+                    {showAddIncomeForm && (
+                        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+                            <div style={{ width: '95%', maxWidth: '500px', background: '#fff', borderRadius: '24px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', position: 'relative' }}>
+                                <button onClick={() => { setShowAddIncomeForm(false); setEditingAdditionalIncomeId(null); setNewAdditionalIncome(BLANK_INCOME); }} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', padding: '0.5rem', cursor: 'pointer', color: '#64748B' }}><X size={20} /></button>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1E293B', marginBottom: '0.5rem' }}>{editingAdditionalIncomeId ? 'Edit Additional Income' : 'Add Additional Income'}</h2>
+                                <p style={{ color: '#64748B', fontSize: '0.875rem', marginBottom: '2rem', fontWeight: 500 }}>Enter the details of your additional income source below.</p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                    <div>
+                                        <label style={lbl}>Income Name</label>
+                                        <input type="text" style={inp} placeholder="e.g. Freelance project" value={newAdditionalIncome.name} onChange={e => setNewAdditionalIncome(p => ({ ...p, name: e.target.value }))} />
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Date</label>
+                                            <input type="date" style={inp} value={newAdditionalIncome.date} onChange={e => setNewAdditionalIncome(p => ({ ...p, date: e.target.value }))} />
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Time</label>
+                                            <input type="time" style={inp} value={newAdditionalIncome.time} onChange={e => setNewAdditionalIncome(p => ({ ...p, time: e.target.value }))} />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label style={lbl}>Amount (₹)</label>
+                                        <input type="number" style={inp} placeholder="0.00" value={newAdditionalIncome.amount} onChange={e => setNewAdditionalIncome(p => ({ ...p, amount: e.target.value }))} />
+                                    </div>
+                                    <button onClick={(e) => { handleAddAddIncomeSource(e); setShowAddIncomeForm(false); }} style={{ ...saveBtn, width: '100%', justifyContent: 'center', marginTop: '1rem', padding: '1rem' }}>
+                                        {editingAdditionalIncomeId ? 'Update Income' : 'Save Income'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
                         <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
-                            <thead style={{ background: '#F8FAFC' }}>
+                            <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                 <tr>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>NAME <ColumnFilterDropdown type="addIncome" column="name" label="Name" filterState={addIncomeFilters} setFilterState={setAddIncomeFilters} /></th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>DATE</th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>AMOUNT</th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'center' }}>ACTION</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            NAME <ColumnFilterDropdown type="addIncome" column="name" label="Name" filterState={addIncomeFilters} setFilterState={setAddIncomeFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>DATE</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>AMOUNT</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredAdditionalIncome.map(i => (
-                                    <tr key={i.id} style={{ borderTop: '1px solid #F1F5F9' }}>
-                                        <td style={{ padding: '0.6rem', fontWeight: 700, color: '#10B981' }}>{i.name}</td>
-                                        <td style={{ padding: '0.6rem' }}>{i.date}</td>
-                                        <td style={{ padding: '0.6rem', fontWeight: 800 }}>₹{i.amount.toLocaleString()}</td>
-                                        <td style={{ padding: '0.6rem', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                                                <button onClick={() => handleEditAddIncomeSource(i)} style={{ background: '#EFF6FF', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}><Pencil size={14} /></button>
-                                                <button onClick={() => handleDeleteAddIncomeSource(i.id)} style={{ background: '#FEF2F2', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}><Trash2 size={14} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {filteredAdditionalIncome.length === 0 ? (
+                                    <tr><td colSpan="4" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No income sources added yet</td></tr>
+                                ) : (
+                                    filteredAdditionalIncome.map(i => (
+                                        <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#10B981', textAlign: 'center' }}>{i.name}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{i.date}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>₹{parseFloat(i.amount).toLocaleString('en-IN')}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
+                                                <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                    <button onClick={() => handleEditAddIncomeSource(i)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteAddIncomeSource(i.id)} style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#EF4444' }}>
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -472,48 +532,105 @@ const FinancePage = () => {
                 <div className="finance-panel-right">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Expense</h2>
-                        <div className="search-filter-container no-print">
-                            <Search size={14} style={{ position: 'absolute', left: '10px', color: '#94A3B8' }} />
-                            <input type="text" placeholder="Search..." className="compact-search-input" value={addExpenseSearch} onChange={(e) => setAddExpenseSearch(e.target.value)} />
-                        </div>
                     </div>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E40AF', marginBottom: '0.5rem' }}>ADDED EXPENSE</div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <input type="text" style={{ ...inp, background: '#fff' }} placeholder="Enter name" value={additionalExpense.name} onChange={e => setAdditionalExpense(p => ({ ...p, name: e.target.value }))} />
-                            <button onClick={handleSaveAddExpense} style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer' }}><Plus size={20} /></button>
-                        </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
+                        <div style={{ flex: 1 }}></div>
+                        <button
+                            onClick={() => {
+                                setShowAddExpenseForm(true);
+                                setEditingAdditionalId(null);
+                                setAdditionalExpense(BLANK_EXPENSE);
+                            }}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.6rem 1.5rem',
+                                background: '#1B6B3A',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '12px',
+                                fontWeight: 800,
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                                boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                            }}
+                        >
+                            <Plus size={16} strokeWidth={3} /> Add Expense
+                        </button>
                     </div>
-                    <form onSubmit={handleSaveAddExpense} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '0.5rem', alignItems: 'end', marginBottom: '1.5rem' }}>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>DATE</label><input type="date" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={additionalExpense.date} onChange={e => setAdditionalExpense(p => ({ ...p, date: e.target.value }))} /></div>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>TIME</label><input type="time" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={additionalExpense.time} onChange={e => setAdditionalExpense(p => ({ ...p, time: e.target.value }))} /></div>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>AMOUNT</label><input type="number" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={additionalExpense.amount} onChange={e => setAdditionalExpense(p => ({ ...p, amount: e.target.value }))} /></div>
-                        <button type="submit" style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: 700, height: '32px' }}>{editingAdditionalId ? 'Update' : 'Add'}</button>
-                    </form>
+
+                    {showAddExpenseForm && (
+                        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+                            <div style={{ width: '95%', maxWidth: '500px', background: '#fff', borderRadius: '24px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', position: 'relative' }}>
+                                <button onClick={() => { setShowAddExpenseForm(false); setEditingAdditionalId(null); setAdditionalExpense(BLANK_EXPENSE); }} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', padding: '0.5rem', cursor: 'pointer', color: '#64748B' }}><X size={20} /></button>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1E293B', marginBottom: '0.5rem' }}>{editingAdditionalId ? 'Edit Additional Expense' : 'Add Additional Expense'}</h2>
+                                <p style={{ color: '#64748B', fontSize: '0.875rem', marginBottom: '2rem', fontWeight: 500 }}>Enter the details of your additional expense below.</p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                    <div>
+                                        <label style={lbl}>Expense Name</label>
+                                        <input type="text" style={inp} placeholder="e.g. Office supplies" value={additionalExpense.name} onChange={e => setAdditionalExpense(p => ({ ...p, name: e.target.value }))} />
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Date</label>
+                                            <input type="date" style={inp} value={additionalExpense.date} onChange={e => setAdditionalExpense(p => ({ ...p, date: e.target.value }))} />
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Time</label>
+                                            <input type="time" style={inp} value={additionalExpense.time} onChange={e => setAdditionalExpense(p => ({ ...p, time: e.target.value }))} />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label style={lbl}>Amount (₹)</label>
+                                        <input type="number" style={inp} placeholder="0.00" value={additionalExpense.amount} onChange={e => setAdditionalExpense(p => ({ ...p, amount: e.target.value }))} />
+                                    </div>
+                                    <button onClick={(e) => { handleSaveAddExpense(e); setShowAddExpenseForm(false); }} style={{ ...saveBtn, width: '100%', justifyContent: 'center', marginTop: '1rem', padding: '1rem' }}>
+                                        {editingAdditionalId ? 'Update Expense' : 'Save Expense'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
                         <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
-                            <thead style={{ background: '#F8FAFC' }}>
+                            <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                 <tr>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>NAME <ColumnFilterDropdown type="addExpense" column="name" label="Name" filterState={addExpenseFilters} setFilterState={setAddExpenseFilters} /></th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>DATE</th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>AMOUNT</th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'center' }}>ACTION</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            NAME <ColumnFilterDropdown type="addExpense" column="name" label="Name" filterState={addExpenseFilters} setFilterState={setAddExpenseFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>DATE</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>AMOUNT</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredAdditionalExpenses.map(e => (
-                                    <tr key={e.id} style={{ borderTop: '1px solid #F1F5F9' }}>
-                                        <td style={{ padding: '0.6rem', fontWeight: 700, color: '#EF4444' }}>{e.name}</td>
-                                        <td style={{ padding: '0.6rem' }}>{e.date}</td>
-                                        <td style={{ padding: '0.6rem', fontWeight: 800 }}>₹{e.amount.toLocaleString()}</td>
-                                        <td style={{ padding: '0.6rem', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                                                <button onClick={() => handleEditAddExpense(e)} style={{ background: '#EFF6FF', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}><Pencil size={14} /></button>
-                                                <button onClick={() => handleDeleteAddExpense(e.id)} style={{ background: '#FEF2F2', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}><Trash2 size={14} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {filteredAdditionalExpenses.length === 0 ? (
+                                    <tr><td colSpan="4" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No expenses added yet</td></tr>
+                                ) : (
+                                    filteredAdditionalExpenses.map(e => (
+                                        <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#EF4444', textAlign: 'center' }}>{e.name}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{e.date}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>₹{parseFloat(e.amount).toLocaleString('en-IN')}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
+                                                <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                    <button onClick={() => handleEditAddExpense(e)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteAddExpense(e.id)} style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#EF4444' }}>
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -658,12 +775,12 @@ const FinancePage = () => {
                                 ) : (
                                     filteredIncome.map(i => (
                                         <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#10B981' }}>{i.name}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B' }}>{i.description || '—'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500 }}>{i.date || '—'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500 }}>{i.time || '—'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B' }}>{i.schedule || 'Monthly'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#10B981' }}>₹{(parseFloat(i.amount) || 0).toLocaleString('en-IN')}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#10B981', textAlign: 'center' }}>{i.name}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{i.description || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{i.date || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{i.time || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{i.schedule || 'Monthly'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#10B981', textAlign: 'center' }}>₹{(parseFloat(i.amount) || 0).toLocaleString('en-IN')}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                                                     <button onClick={() => handleEditIncomeSource(i)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
@@ -685,48 +802,138 @@ const FinancePage = () => {
                 <div className="finance-panel-right">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Expense</h2>
-                        <div className="search-filter-container no-print">
-                            <Search size={14} style={{ position: 'absolute', left: '10px', color: '#94A3B8' }} />
-                            <input type="text" placeholder="Search..." className="compact-search-input" value={expenseSearch} onChange={(e) => setExpenseSearch(e.target.value)} />
-                        </div>
                     </div>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#1E40AF', marginBottom: '0.5rem' }}>ADDED EXPENSE</div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <input type="text" style={{ ...inp, background: '#fff' }} placeholder="Enter name" value={expense.name} onChange={e => setExpense(p => ({ ...p, name: e.target.value }))} />
-                            <button onClick={handleSaveExpense} style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer' }}><Plus size={20} /></button>
-                        </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
+                        <div style={{ flex: 1 }}></div>
+                        <button
+                            onClick={() => {
+                                setShowExpenseForm(true);
+                                setEditingId(null);
+                                setExpense(BLANK_EXPENSE);
+                            }}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.6rem 1.5rem',
+                                background: '#1B6B3A',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '12px',
+                                fontWeight: 800,
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                                boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                            }}
+                        >
+                            <Plus size={16} strokeWidth={3} /> Add Expense
+                        </button>
                     </div>
-                    <form onSubmit={handleSaveExpense} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '0.5rem', alignItems: 'end', marginBottom: '1.5rem' }}>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>DATE</label><input type="date" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={expense.date} onChange={e => setExpense(p => ({ ...p, date: e.target.value }))} /></div>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>TIME</label><input type="time" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={expense.time} onChange={e => setExpense(p => ({ ...p, time: e.target.value }))} /></div>
-                        <div><label style={{ fontSize: '0.6rem', fontWeight: 800 }}>AMOUNT</label><input type="number" style={{ ...inp, background: '#fff', padding: '0.4rem' }} value={expense.amount} onChange={e => setExpense(p => ({ ...p, amount: e.target.value }))} /></div>
-                        <button type="submit" style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: 700, height: '32px' }}>{editingId ? 'Update' : 'Add'}</button>
-                    </form>
+
+                    {showExpenseForm && (
+                        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+                            <div style={{ width: '95%', maxWidth: '500px', background: '#fff', borderRadius: '24px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', position: 'relative' }}>
+                                <button onClick={() => { setShowExpenseForm(false); setEditingId(null); setExpense(BLANK_EXPENSE); }} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', padding: '0.5rem', cursor: 'pointer', color: '#64748B' }}><X size={20} /></button>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1E293B', marginBottom: '0.5rem' }}>{editingId ? 'Edit Expense Source' : 'Add Expense Source'}</h2>
+                                <p style={{ color: '#64748B', fontSize: '0.875rem', marginBottom: '2rem', fontWeight: 500 }}>Enter the details of your expense source below.</p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                    <div>
+                                        <label style={lbl}>Expense Name</label>
+                                        <input type="text" style={inp} placeholder="e.g. Rent" value={expense.name} onChange={e => setExpense(p => ({ ...p, name: e.target.value }))} />
+                                    </div>
+                                    <div>
+                                        <label style={lbl}>Description</label>
+                                        <input type="text" style={inp} placeholder="Optional details..." value={expense.description} onChange={e => setExpense(p => ({ ...p, description: e.target.value }))} />
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Amount (₹)</label>
+                                            <input type="number" style={inp} placeholder="0.00" value={expense.amount} onChange={e => setExpense(p => ({ ...p, amount: e.target.value }))} />
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Schedule</label>
+                                            <select style={inp} value={expense.schedule} onChange={e => setExpense(p => ({ ...p, schedule: e.target.value }))}>
+                                                <option value="Daily">Daily</option>
+                                                <option value="Weekly">Weekly</option>
+                                                <option value="Monthly">Monthly</option>
+                                                <option value="Yearly">Yearly</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Date</label>
+                                            <input type="date" style={inp} value={expense.date} onChange={e => setExpense(p => ({ ...p, date: e.target.value }))} />
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Time</label>
+                                            <input type="time" style={inp} value={expense.time} onChange={e => setExpense(p => ({ ...p, time: e.target.value }))} />
+                                        </div>
+                                    </div>
+                                    <button onClick={async (e) => { await handleSaveExpense(e); setShowExpenseForm(false); }} style={{ ...saveBtn, width: '100%', justifyContent: 'center', marginTop: '1rem', padding: '1rem' }}>
+                                        {editingId ? 'Update Expense' : 'Save Expense'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
                         <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
-                            <thead style={{ background: '#F8FAFC' }}>
+                            <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                 <tr>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>NAME <ColumnFilterDropdown type="expense" column="name" label="Name" filterState={expenseFilters} setFilterState={setExpenseFilters} /></th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>DATE</th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'left' }}>AMOUNT</th>
-                                    <th style={{ padding: '0.6rem', textAlign: 'center' }}>ACTION</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            NAME <ColumnFilterDropdown type="expense" column="name" label="Name" filterState={expenseFilters} setFilterState={setExpenseFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            DESCRIPTION <ColumnFilterDropdown type="expense" column="description" label="Description" filterState={expenseFilters} setFilterState={setExpenseFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            DATE <ColumnFilterDropdown type="expense" column="date" label="Date" filterState={expenseFilters} setFilterState={setExpenseFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>TIME</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>SCHEDULE</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            AMOUNT <ColumnFilterDropdown type="expense" column="amount" label="Amount" filterState={expenseFilters} setFilterState={setExpenseFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredExpenses.map(e => (
-                                    <tr key={e.id} style={{ borderTop: '1px solid #F1F5F9' }}>
-                                        <td style={{ padding: '0.6rem', fontWeight: 700, color: '#EF4444' }}>{e.name}</td>
-                                        <td style={{ padding: '0.6rem' }}>{e.date}</td>
-                                        <td style={{ padding: '0.6rem', fontWeight: 800 }}>₹{e.amount.toLocaleString()}</td>
-                                        <td style={{ padding: '0.6rem', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                                                <button onClick={() => handleEditExpense(e)} style={{ background: '#EFF6FF', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}><Pencil size={14} /></button>
-                                                <button onClick={() => handleDeleteExpense(e.id)} style={{ background: '#FEF2F2', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}><Trash2 size={14} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {filteredExpenses.length === 0 ? (
+                                    <tr><td colSpan="7" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No expenses added yet</td></tr>
+                                ) : (
+                                    filteredExpenses.map(e => (
+                                        <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#EF4444', textAlign: 'center' }}>{e.name}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{e.description || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{e.date || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{e.time || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{e.schedule || 'Monthly'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#EF4444', textAlign: 'center' }}>₹{(parseFloat(e.amount) || 0).toLocaleString('en-IN')}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
+                                                <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                    <button onClick={() => handleEditExpense(e)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteExpense(e.id)} style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#EF4444' }}>
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
