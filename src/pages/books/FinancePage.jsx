@@ -157,7 +157,14 @@ const FinancePage = () => {
     // Filter Logic
     const filteredIncome = useMemo(() => {
         let result = [...incomeSources];
-        if (incomeSearch) result = result.filter(i => i.name.toLowerCase().includes(incomeSearch.toLowerCase()));
+        if (incomeSearch) {
+            const q = incomeSearch.toLowerCase();
+            result = result.filter(i =>
+                i.name.toLowerCase().includes(q) ||
+                (i.description || '').toLowerCase().includes(q) ||
+                (i.schedule || '').toLowerCase().includes(q)
+            );
+        }
         Object.keys(incomeFilters).forEach(key => { if (incomeFilters[key].search) result = result.filter(item => String(item[key] || '').toLowerCase().includes(incomeFilters[key].search.toLowerCase())); });
         const activeSort = Object.keys(incomeFilters).find(k => incomeFilters[k].sort);
         if (activeSort) {
@@ -206,8 +213,8 @@ const FinancePage = () => {
 
     // Handlers
     const handleAddIncomeSource = async (e) => {
-        e.preventDefault();
-        if (!newIncome.name.trim()) return;
+        if (e && e.preventDefault) e.preventDefault();
+        if (!newIncome.name.trim() || !newIncome.amount) return;
         let entry;
         const now = new Date();
         const defaultDate = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -528,69 +535,91 @@ const FinancePage = () => {
                 <div className="finance-panel-left">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Income</h2>
-                        <div className="search-filter-container no-print">
-                            <Search size={14} style={{ position: 'absolute', left: '10px', color: '#94A3B8' }} />
-                            <input type="text" placeholder="Search..." className="compact-search-input" value={incomeSearch} onChange={(e) => setIncomeSearch(e.target.value)} />
-                        </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#F8FAFC', padding: '0.75rem 1.25rem', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                        <h3 style={{ fontSize: '0.875rem', fontWeight: 900, color: '#1E40AF', margin: 0 }}>ADDED INCOME</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
+
+                        <div style={{ flex: 1 }}></div>
+
                         <button
                             onClick={() => {
-                                setShowIncomeForm(!showIncomeForm);
-                                if (showIncomeForm) {
-                                    setEditingIncomeId(null);
-                                    setNewIncome(BLANK_INCOME);
-                                }
+                                setShowIncomeForm(true);
+                                setEditingIncomeId(null);
+                                setNewIncome(BLANK_INCOME);
                             }}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.5rem',
-                                padding: '0.5rem 1rem',
+                                padding: '0.6rem 1.5rem',
                                 background: '#1B6B3A',
                                 color: '#fff',
                                 border: 'none',
-                                borderRadius: '8px',
-                                fontWeight: 700,
-                                fontSize: '0.75rem',
-                                cursor: 'pointer'
+                                borderRadius: '12px',
+                                fontWeight: 800,
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                                boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
                             }}
                         >
-                            {showIncomeForm ? <X size={14} /> : <Plus size={14} />}
-                            {showIncomeForm ? 'Cancel' : 'Add Income'}
+                            <Plus size={16} strokeWidth={3} /> Add Income
                         </button>
                     </div>
 
                     {showIncomeForm && (
-                        <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: '#fff', borderRadius: '12px', border: '1px solid #10B981', boxShadow: '0 4px 12px rgba(16,185,129,0.08)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.5fr 1fr auto', gap: '0.75rem', alignItems: 'end' }}>
-                                <div>
-                                    <label style={lbl}>Income Name</label>
-                                    <input type="text" style={{ ...inp, background: '#f8fafc' }} placeholder="e.g. Salary" value={newIncome.name} onChange={e => setNewIncome(p => ({ ...p, name: e.target.value }))} />
+                        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+                            <div style={{ width: '95%', maxWidth: '500px', background: '#fff', borderRadius: '24px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', position: 'relative' }}>
+                                <button onClick={() => { setShowIncomeForm(false); setEditingIncomeId(null); setNewIncome(BLANK_INCOME); }} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', padding: '0.5rem', cursor: 'pointer', color: '#64748B' }}><X size={20} /></button>
+
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1E293B', marginBottom: '0.5rem' }}>{editingIncomeId ? 'Edit Income Source' : 'Add Income Source'}</h2>
+                                <p style={{ color: '#64748B', fontSize: '0.875rem', marginBottom: '2rem', fontWeight: 500 }}>Enter the details of your income source below.</p>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                    <div>
+                                        <label style={lbl}>Income Name</label>
+                                        <input type="text" style={inp} placeholder="e.g. Monthly Salary" value={newIncome.name} onChange={e => setNewIncome(p => ({ ...p, name: e.target.value }))} />
+                                    </div>
+                                    <div>
+                                        <label style={lbl}>Description</label>
+                                        <input type="text" style={inp} placeholder="Optional details..." value={newIncome.description} onChange={e => setNewIncome(p => ({ ...p, description: e.target.value }))} />
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Amount (₹)</label>
+                                            <input type="number" style={inp} placeholder="0.00" value={newIncome.amount} onChange={e => setNewIncome(p => ({ ...p, amount: e.target.value }))} />
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Schedule</label>
+                                            <select style={inp} value={newIncome.schedule} onChange={e => setNewIncome(p => ({ ...p, schedule: e.target.value }))}>
+                                                <option value="Daily">Daily</option>
+                                                <option value="Weekly">Weekly</option>
+                                                <option value="Monthly">Monthly</option>
+                                                <option value="Yearly">Yearly</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Date</label>
+                                            <input type="date" style={inp} value={newIncome.date} onChange={e => setNewIncome(p => ({ ...p, date: e.target.value }))} />
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Time</label>
+                                            <input type="time" style={inp} value={newIncome.time} onChange={e => setNewIncome(p => ({ ...p, time: e.target.value }))} />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={async (e) => {
+                                            await handleAddIncomeSource(e);
+                                            setShowIncomeForm(false);
+                                        }}
+                                        style={{ ...saveBtn, width: '100%', justifyContent: 'center', marginTop: '1rem', padding: '1rem' }}
+                                    >
+                                        {editingIncomeId ? 'Update Income' : 'Save Income'}
+                                    </button>
                                 </div>
-                                <div>
-                                    <label style={lbl}>Description</label>
-                                    <input type="text" style={{ ...inp, background: '#f8fafc' }} placeholder="Short description" value={newIncome.description} onChange={e => setNewIncome(p => ({ ...p, description: e.target.value }))} />
-                                </div>
-                                <div>
-                                    <label style={lbl}>Schedule</label>
-                                    <select style={{ ...inp, background: '#f8fafc', padding: '0.55rem 0.875rem' }} value={newIncome.schedule} onChange={e => setNewIncome(p => ({ ...p, schedule: e.target.value }))}>
-                                        <option value="Daily">Daily</option>
-                                        <option value="Weekly">Weekly</option>
-                                        <option value="Monthly">Monthly</option>
-                                        <option value="Yearly">Yearly</option>
-                                    </select>
-                                </div>
-                                <button
-                                    onClick={async (e) => {
-                                        await handleAddIncomeSource(e);
-                                        setShowIncomeForm(false);
-                                    }}
-                                    style={{ background: '#10B981', color: '#fff', border: 'none', borderRadius: '10px', padding: '0 1.25rem', cursor: 'pointer', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}
-                                >
-                                    {editingIncomeId ? 'Update' : 'Save'}
-                                </button>
                             </div>
                         </div>
                     )}
