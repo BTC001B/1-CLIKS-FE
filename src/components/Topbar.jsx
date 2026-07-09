@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Wallet, BookOpen, Users, Coins, SlidersHorizontal } from 'lucide-react';
+import { Wallet, BookOpen, Users, SlidersHorizontal, Bell } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
@@ -13,27 +13,6 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
     const location = useLocation();
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
-
-    // Reward points — default 1000, synced with localStorage
-    const [rewardPoints, setRewardPoints] = useState(() => {
-        const saved = localStorage.getItem('cliks_reward_points');
-        const parsed = parseInt(saved, 10);
-        return saved && !isNaN(parsed) ? parsed : 1000;
-    });
-
-    useEffect(() => {
-        const handleStorageChange = () => {
-            const saved = localStorage.getItem('cliks_reward_points');
-            const parsed = parseInt(saved, 10);
-            setRewardPoints(saved && !isNaN(parsed) ? parsed : 1000);
-        };
-        window.addEventListener('storage', handleStorageChange);
-        const interval = setInterval(handleStorageChange, 1000);
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            clearInterval(interval);
-        };
-    }, []);
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
@@ -161,37 +140,56 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                 {/* Search bar — global search */}
                 <SearchBox onOpenCalculator={onOpenCalculator} />
 
-                {/* Points pill */}
+                {/* Notification Bell */}
                 <button
-                    onClick={() => navigate('/payments/rewards-offers')}
-                    title="Loyalty Points - View Rewards & Offers"
+                    onClick={() => {
+                        // Logic to open notification dropdown or navigate
+                        console.log("Notifications clicked");
+                    }}
+                    title="Notifications"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        padding: '7px 13px',
-                        borderRadius: '999px',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        color: '#FFFFFF',
-                        fontSize: '13px',
-                        fontWeight: '700',
+                        justifyContent: 'center',
+                        width: '44px',
+                        height: '44px',
+                        borderRadius: '12px',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        color: '#ffffff',
                         cursor: 'pointer',
-                        whiteSpace: 'nowrap',
+                        flexShrink: 0,
                         transition: 'all 0.2s ease',
                         outline: 'none',
+                        position: 'relative'
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                        e.currentTarget.style.borderColor = 'rgba(245,158,11,0.35)';
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.16)';
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
                     }}
                 >
-                    <Coins size={15} color="#F59E0B" style={{ filter: 'drop-shadow(0 0 2px rgba(245,158,11,0.5))' }} />
-                    <span>{rewardPoints.toLocaleString()} Pts</span>
+                    <Bell size={18} />
+                    {/* Notification Badge */}
+                    <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        width: '16px',
+                        height: '16px',
+                        backgroundColor: '#EF4444',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '10px',
+                        fontWeight: '700',
+                        color: '#ffffff',
+                        border: '2px solid #135029', // Matches Topbar background color
+                    }}>
+                        3
+                    </div>
                 </button>
 
                 {/* Profile dropdown */}
