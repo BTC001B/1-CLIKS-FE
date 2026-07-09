@@ -194,6 +194,15 @@ const FinancePage = () => {
             );
         }
         Object.keys(expenseFilters).forEach(key => { if (expenseFilters[key].search) result = result.filter(item => String(item[key] || '').toLowerCase().includes(expenseFilters[key].search.toLowerCase())); });
+        const activeSort = Object.keys(expenseFilters).find(k => expenseFilters[k].sort);
+        if (activeSort) {
+            const dir = expenseFilters[activeSort].sort;
+            result.sort((a, b) => {
+                let vA = a[activeSort], vB = b[activeSort];
+                if (activeSort === 'amount') return dir === 'asc' ? vA - vB : vB - vA;
+                return dir === 'asc' ? String(vA).localeCompare(String(vB)) : String(vB).localeCompare(String(vA));
+            });
+        }
         return result;
     }, [expenses, expenseSearch, expenseFilters]);
 
@@ -209,6 +218,15 @@ const FinancePage = () => {
             );
         }
         Object.keys(addIncomeFilters).forEach(key => { if (addIncomeFilters[key].search) result = result.filter(item => String(item[key] || '').toLowerCase().includes(addIncomeFilters[key].search.toLowerCase())); });
+        const activeSort = Object.keys(addIncomeFilters).find(k => addIncomeFilters[k].sort);
+        if (activeSort) {
+            const dir = addIncomeFilters[activeSort].sort;
+            result.sort((a, b) => {
+                let vA = a[activeSort], vB = b[activeSort];
+                if (activeSort === 'amount') return dir === 'asc' ? vA - vB : vB - vA;
+                return dir === 'asc' ? String(vA).localeCompare(String(vB)) : String(vB).localeCompare(String(vA));
+            });
+        }
         return result;
     }, [additionalIncomeSources, addIncomeSearch, addIncomeFilters]);
 
@@ -224,6 +242,15 @@ const FinancePage = () => {
             );
         }
         Object.keys(addExpenseFilters).forEach(key => { if (addExpenseFilters[key].search) result = result.filter(item => String(item[key] || '').toLowerCase().includes(addExpenseFilters[key].search.toLowerCase())); });
+        const activeSort = Object.keys(addExpenseFilters).find(k => addExpenseFilters[k].sort);
+        if (activeSort) {
+            const dir = addExpenseFilters[activeSort].sort;
+            result.sort((a, b) => {
+                let vA = a[activeSort], vB = b[activeSort];
+                if (activeSort === 'amount') return dir === 'asc' ? vA - vB : vB - vA;
+                return dir === 'asc' ? String(vA).localeCompare(String(vB)) : String(vB).localeCompare(String(vA));
+            });
+        }
         return result;
     }, [additionalExpenses, addExpenseSearch, addExpenseFilters]);
 
@@ -533,8 +560,8 @@ const FinancePage = () => {
                         </div>
                     )}
 
-                    <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
-                        <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
+                    <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflowX: 'auto' }}>
+                        <table style={{ width: '100%', minWidth: '1000px', fontSize: '0.75rem', borderCollapse: 'collapse', whiteSpace: 'nowrap' }}>
                             <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                 <tr>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
@@ -542,19 +569,37 @@ const FinancePage = () => {
                                             NAME <ColumnFilterDropdown type="addIncome" column="name" label="Name" filterState={addIncomeFilters} setFilterState={setAddIncomeFilters} />
                                         </div>
                                     </th>
-                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>DATE</th>
-                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>AMOUNT</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            DESCRIPTION <ColumnFilterDropdown type="addIncome" column="description" label="Description" filterState={addIncomeFilters} setFilterState={setAddIncomeFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            DATE <ColumnFilterDropdown type="addIncome" column="date" label="Date" filterState={addIncomeFilters} setFilterState={setAddIncomeFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>TIME</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>SCHEDULE</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            AMOUNT <ColumnFilterDropdown type="addIncome" column="amount" label="Amount" filterState={addIncomeFilters} setFilterState={setAddIncomeFilters} />
+                                        </div>
+                                    </th>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredAdditionalIncome.length === 0 ? (
-                                    <tr><td colSpan="4" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No income sources added yet</td></tr>
+                                    <tr><td colSpan="7" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No income sources added yet</td></tr>
                                 ) : (
                                     filteredAdditionalIncome.map(i => (
                                         <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#10B981', textAlign: 'center' }}>{i.name}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{i.description || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{i.date}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{i.time || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{i.schedule || 'Monthly'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>₹{parseFloat(i.amount).toLocaleString('en-IN')}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
@@ -666,8 +711,8 @@ const FinancePage = () => {
                         </div>
                     )}
 
-                    <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
-                        <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
+                    <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflowX: 'auto' }}>
+                        <table style={{ width: '100%', minWidth: '1000px', fontSize: '0.75rem', borderCollapse: 'collapse', whiteSpace: 'nowrap' }}>
                             <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                 <tr>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
@@ -675,19 +720,37 @@ const FinancePage = () => {
                                             NAME <ColumnFilterDropdown type="addExpense" column="name" label="Name" filterState={addExpenseFilters} setFilterState={setAddExpenseFilters} />
                                         </div>
                                     </th>
-                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>DATE</th>
-                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>AMOUNT</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            DESCRIPTION <ColumnFilterDropdown type="addExpense" column="description" label="Description" filterState={addExpenseFilters} setFilterState={setAddExpenseFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            DATE <ColumnFilterDropdown type="addExpense" column="date" label="Date" filterState={addExpenseFilters} setFilterState={setAddExpenseFilters} />
+                                        </div>
+                                    </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>TIME</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>SCHEDULE</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            AMOUNT <ColumnFilterDropdown type="addExpense" column="amount" label="Amount" filterState={addExpenseFilters} setFilterState={setAddExpenseFilters} />
+                                        </div>
+                                    </th>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredAdditionalExpenses.length === 0 ? (
-                                    <tr><td colSpan="4" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No expenses added yet</td></tr>
+                                    <tr><td colSpan="7" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No expenses added yet</td></tr>
                                 ) : (
                                     filteredAdditionalExpenses.map(e => (
                                         <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#EF4444', textAlign: 'center' }}>{e.name}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{e.description || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{e.date}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{e.time || '—'}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{e.schedule || 'Monthly'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>₹{parseFloat(e.amount).toLocaleString('en-IN')}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
@@ -832,8 +895,8 @@ const FinancePage = () => {
                             </div>
                         </div>
                     )}
-                    <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
-                        <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
+                    <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflowX: 'auto' }}>
+                        <table style={{ width: '100%', minWidth: '1000px', fontSize: '0.75rem', borderCollapse: 'collapse', whiteSpace: 'nowrap' }}>
                             <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                 <tr>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
@@ -995,8 +1058,8 @@ const FinancePage = () => {
                         </div>
                     )}
 
-                    <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
-                        <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
+                    <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', overflowX: 'auto' }}>
+                        <table style={{ width: '100%', minWidth: '1000px', fontSize: '0.75rem', borderCollapse: 'collapse', whiteSpace: 'nowrap' }}>
                             <thead style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                                 <tr>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
