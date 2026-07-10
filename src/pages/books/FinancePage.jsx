@@ -352,15 +352,20 @@ const FinancePage = () => {
 
         const mapTransactionToEntry = (tx) => {
             const isAdd = tx.title ? tx.title.startsWith('[Add] ') : false;
-            const name = isAdd ? tx.title.slice(6) : (tx.title || '');
+            const name = isAdd ? tx.title.slice(6) : (tx.name || tx.title || '');
+            let description = tx.description || '';
+            if (description === name) {
+                description = '';
+            }
             return {
                 id: tx.id,
                 transactionId: tx.id,
                 name: name,
-                description: tx.description || '',
+                description: description,
                 amount: parseFloat(tx.amount) || 0,
                 date: tx.date || '',
-                schedule: tx.notes || 'Monthly',
+                time: tx.time || '',
+                schedule: tx.schedule || tx.notes || 'Monthly',
             };
         };
 
@@ -426,7 +431,19 @@ const FinancePage = () => {
         setNewIncome(BLANK_INCOME);
 
         try {
-            const data = { type: 'income', title: entry.name, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), notes: entry.schedule || 'Monthly', status: 'Completed' };
+            const data = { 
+                type: 'income', 
+                title: entry.name, 
+                name: entry.name,
+                description: entry.description || '',
+                category: mapCategory(entry.name), 
+                amount: entry.amount, 
+                date: formatAPIDate(entry.date), 
+                time: entry.time || '',
+                schedule: entry.schedule || 'Monthly',
+                notes: entry.schedule || 'Monthly', 
+                status: 'Completed' 
+            };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
             } else {
@@ -474,7 +491,19 @@ const FinancePage = () => {
         setExpense(BLANK_EXPENSE);
 
         try {
-            const data = { type: 'expense', title: entry.name, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), notes: entry.schedule || 'Monthly', status: 'Completed' };
+            const data = { 
+                type: 'expense', 
+                title: entry.name, 
+                name: entry.name,
+                description: entry.description || '',
+                category: mapCategory(entry.name), 
+                amount: entry.amount, 
+                date: formatAPIDate(entry.date), 
+                time: entry.time || '',
+                schedule: entry.schedule || 'Monthly',
+                notes: entry.schedule || 'Monthly', 
+                status: 'Completed' 
+            };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
             } else {
@@ -529,7 +558,19 @@ const FinancePage = () => {
         setNewAdditionalIncome(BLANK_INCOME);
 
         try {
-            const data = { type: 'income', title: `[Add] ${entry.name}`, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), notes: entry.schedule || 'Monthly', status: 'Completed' };
+            const data = { 
+                type: 'income', 
+                title: `[Add] ${entry.name}`, 
+                name: entry.name,
+                description: entry.description || '',
+                category: mapCategory(entry.name), 
+                amount: entry.amount, 
+                date: formatAPIDate(entry.date), 
+                time: entry.time || '',
+                schedule: entry.schedule || 'Monthly',
+                notes: entry.schedule || 'Monthly', 
+                status: 'Completed' 
+            };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
             } else {
@@ -573,7 +614,19 @@ const FinancePage = () => {
         setAdditionalExpense(BLANK_EXPENSE);
 
         try {
-            const data = { type: 'expense', title: `[Add] ${entry.name}`, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), notes: entry.schedule || 'Monthly', status: 'Completed' };
+            const data = { 
+                type: 'expense', 
+                title: `[Add] ${entry.name}`, 
+                name: entry.name,
+                description: entry.description || '',
+                category: mapCategory(entry.name), 
+                amount: entry.amount, 
+                date: formatAPIDate(entry.date), 
+                time: entry.time || '',
+                schedule: entry.schedule || 'Monthly',
+                notes: entry.schedule || 'Monthly', 
+                status: 'Completed' 
+            };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
             } else {
@@ -602,7 +655,19 @@ const FinancePage = () => {
     const handleSaveAddDetails = async () => {
         try {
             await Promise.all(additionalIncomeSources.map(async (s) => {
-                const data = { type: 'Income', title: `[Add] ${s.name}`, category: mapCategory(s.name), amount: s.amount, date: formatAPIDate(s.date), status: 'Completed' };
+                const data = { 
+                    type: 'Income', 
+                    title: `[Add] ${s.name}`, 
+                    name: s.name,
+                    description: s.description || '',
+                    category: mapCategory(s.name), 
+                    amount: s.amount, 
+                    date: formatAPIDate(s.date), 
+                    time: s.time || '',
+                    schedule: s.schedule || 'Monthly',
+                    notes: s.schedule || 'Monthly',
+                    status: 'Completed' 
+                };
                 if (s.transactionId) await transactionsService.updateTransaction(s.transactionId, data);
                 else {
                     const res = await transactionsService.createTransaction(data);
