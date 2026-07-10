@@ -224,7 +224,7 @@ const Stock = () => {
         else if (stockStatusFilter === 'Low Stock') matchesStatus = isLow;
         else if (stockStatusFilter === 'Out of Stock') matchesStatus = isOut;
 
-        const matchesTab = filterStatus === 'all' || Number(item.quantity) < thresh;
+        const matchesTab = filterStatus === 'all' || isLow;
         const matchesCategory = categoryFilter === 'All' || item.category === categoryFilter;
 
         return matchesStatus && matchesTab && matchesCategory;
@@ -499,7 +499,11 @@ const Stock = () => {
                     )}
                 </div>
                 {filteredItems.length === 0 && !isLoading && (
-                    <div style={{ padding: '3rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>No inventory items found. Click "Add New Product" to initialize your stock.</div>
+                    <div style={{ padding: '3rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>
+                        {filterStatus === 'low' || stockStatusFilter === 'Low Stock'
+                            ? "No low stock products found"
+                            : 'No inventory items found. Click "Add New Product" to initialize your stock.'}
+                    </div>
                 )}
             </div>
 
