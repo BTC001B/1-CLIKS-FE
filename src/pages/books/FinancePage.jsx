@@ -488,7 +488,7 @@ const FinancePage = () => {
                             <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
                         </div>
 
-                        <div style={{ position: 'relative', width: '280px' }}>
+                        <div style={{ position: 'relative', width: '130px' }}>
                             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                             <input
                                 type="text"
@@ -517,8 +517,8 @@ const FinancePage = () => {
                                 style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '0.5rem',
-                                    padding: '0.6rem 1.5rem',
+                                    justifyContent: 'center',
+                                    padding: '0.6rem',
                                     background: '#1B6B3A',
                                     color: '#fff',
                                     border: 'none',
@@ -530,7 +530,7 @@ const FinancePage = () => {
                                     boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
                                 }}
                             >
-                                <Plus size={16} strokeWidth={3} /> Add Income
+                                <Plus size={16} strokeWidth={3} />
                             </button>
                         </div>
                     </div>
@@ -621,7 +621,7 @@ const FinancePage = () => {
                             <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
                         </div>
 
-                        <div style={{ position: 'relative', width: '280px' }}>
+                        <div style={{ position: 'relative', width: '130px' }}>
                             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                             <input
                                 type="text"
@@ -650,8 +650,8 @@ const FinancePage = () => {
                                 style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '0.5rem',
-                                    padding: '0.6rem 1.5rem',
+                                    justifyContent: 'center',
+                                    padding: '0.6rem',
                                     background: '#1B6B3A',
                                     color: '#fff',
                                     border: 'none',
@@ -663,7 +663,7 @@ const FinancePage = () => {
                                     boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
                                 }}
                             >
-                                <Plus size={16} strokeWidth={3} /> Add Expense
+                                <Plus size={16} strokeWidth={3} />
                             </button>
                         </div>
                     </div>
@@ -764,7 +764,7 @@ const FinancePage = () => {
                             <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
                         </div>
 
-                        <div style={{ position: 'relative', width: '280px' }}>
+                        <div style={{ position: 'relative', width: '130px' }}>
                             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                             <input
                                 type="text"
@@ -793,8 +793,8 @@ const FinancePage = () => {
                                 style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '0.5rem',
-                                    padding: '0.6rem 1.5rem',
+                                    justifyContent: 'center',
+                                    padding: '0.6rem',
                                     background: '#1B6B3A',
                                     color: '#fff',
                                     border: 'none',
@@ -806,7 +806,7 @@ const FinancePage = () => {
                                     boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
                                 }}
                             >
-                                <Plus size={16} strokeWidth={3} /> Add Income
+                                <Plus size={16} strokeWidth={3} />
                             </button>
                         </div>
                     </div>
@@ -935,7 +935,7 @@ const FinancePage = () => {
                             <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
                         </div>
 
-                        <div style={{ position: 'relative', width: '280px' }}>
+                        <div style={{ position: 'relative', width: '130px' }}>
                             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                             <input
                                 type="text"
@@ -964,8 +964,8 @@ const FinancePage = () => {
                                 style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '0.5rem',
-                                    padding: '0.6rem 1.5rem',
+                                    justifyContent: 'center',
+                                    padding: '0.6rem',
                                     background: '#1B6B3A',
                                     color: '#fff',
                                     border: 'none',
@@ -977,7 +977,7 @@ const FinancePage = () => {
                                     boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
                                 }}
                             >
-                                <Plus size={16} strokeWidth={3} /> Add Expense
+                                <Plus size={16} strokeWidth={3} />
                             </button>
                         </div>
                     </div>
