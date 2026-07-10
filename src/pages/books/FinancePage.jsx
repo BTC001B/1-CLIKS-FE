@@ -607,9 +607,6 @@ const FinancePage = () => {
                             </tbody>
                         </table>
                     </div>
-                    <div style={{ marginTop: '1.5rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }} className="no-print">
-                        <button onClick={handleSaveAddDetails} style={saveBtn}><Save size={16} /> Save Details</button>
-                    </div>
                 </div>
                 {/* Expense panel */}
                 <div className="finance-panel-right">
@@ -740,7 +737,6 @@ const FinancePage = () => {
                             </tbody>
                         </table>
                     </div>
-                    {additionalExpenses.length > 0 && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }} className="no-print"><button onClick={handleSaveToPDF} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', background: '#fff', border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}><FileText size={14} /> Save to PDF</button></div>}
                 </div>
             </div>
 
@@ -1087,7 +1083,6 @@ const FinancePage = () => {
                             </tbody>
                         </table>
                     </div>
-                    {expenses.length > 0 && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }} className="no-print"><button onClick={handleSaveToPDF} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', background: '#fff', border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}><FileText size={14} /> Save to PDF</button></div>}
                 </div>
             </div>
         </div>
