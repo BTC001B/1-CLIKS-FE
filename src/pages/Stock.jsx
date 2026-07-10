@@ -43,6 +43,7 @@ const Stock = () => {
     const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
     const [adjustType, setAdjustType] = useState('in'); // 'in' or 'out'
     const [adjustAmount, setAdjustAmount] = useState(1);
+    const [adjustError, setAdjustError] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -114,9 +115,14 @@ const Stock = () => {
         }
     });
 
-    const adjustMutation = useMutation({
+     const adjustMutation = useMutation({
         mutationFn: ({ id, delta }) => adjustStockQuantity(id, delta),
-        onSuccess: () => {
+        onSuccess: (data) => {
+            if (data) {
+                queryClient.setQueryData(['stock', searchTerm], (oldItems = []) => {
+                    return oldItems.map(item => item.id === data.id ? data : item);
+                });
+            }
             queryClient.invalidateQueries({ queryKey: ['stock'] });
             queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
             closeAdjustModal();
@@ -159,12 +165,37 @@ const Stock = () => {
         setSelectedItem(item);
         setAdjustType(type);
         setAdjustAmount(1);
+        setAdjustError('');
         setIsAdjustModalOpen(true);
     };
 
     const closeAdjustModal = () => {
         setIsAdjustModalOpen(false);
         setSelectedItem(null);
+        setAdjustError('');
+    };
+
+    const handleAdjustAmountChange = (rawVal) => {
+        const maxVal = adjustType === 'out' ? (selectedItem ? Number(selectedItem.quantity) : 0) : Infinity;
+        
+        let val;
+        if (rawVal === '') {
+            val = '';
+        } else {
+            val = parseInt(rawVal);
+            if (isNaN(val)) val = '';
+        }
+
+        if (adjustType === 'out' && val !== '' && val > maxVal) {
+            setAdjustAmount(maxVal);
+            setAdjustError(`Depletion quantity cannot exceed available stock (${maxVal}).`);
+        } else if (val !== '' && val <= 0) {
+            setAdjustAmount(1);
+            setAdjustError('Please enter a valid quantity.');
+        } else {
+            setAdjustAmount(val);
+            setAdjustError('');
+        }
     };
 
     const handleSubmit = (e) => {
@@ -667,7 +698,7 @@ const Stock = () => {
                             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Adjustment Volume</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                                 <button 
-                                    onClick={() => setAdjustAmount(Math.max(1, adjustAmount - 1))}
+                                    onClick={() => handleAdjustAmountChange(Number(adjustAmount || 0) - 1)}
                                     style={{ width: '52px', height: '52px', borderRadius: '16px', border: '2px solid #E2E8F0', background: 'white', fontSize: '1.5rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s', color: '#475569' }}
                                     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1B6B3A'}
                                     onMouseLeave={(e) => e.currentTarget.style.borderColor = '#E2E8F0'}
@@ -675,16 +706,21 @@ const Stock = () => {
                                 <input 
                                     type="number" 
                                     value={adjustAmount} 
-                                    onChange={(e) => setAdjustAmount(Math.max(1, parseInt(e.target.value) || 0))}
+                                    onChange={(e) => handleAdjustAmountChange(e.target.value)}
                                     style={{ flex: 1, padding: '1rem', borderRadius: '16px', border: '2px solid #1B6B3A', textAlign: 'center', fontSize: '1.5rem', fontWeight: '900', outline: 'none', color: '#1E293B', background: '#F0FDF4' }}
                                 />
                                 <button 
-                                    onClick={() => setAdjustAmount(adjustAmount + 1)}
+                                    onClick={() => handleAdjustAmountChange(Number(adjustAmount || 0) + 1)}
                                     style={{ width: '52px', height: '52px', borderRadius: '16px', border: '2px solid #E2E8F0', background: 'white', fontSize: '1.5rem', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s', color: '#475569' }}
                                     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1B6B3A'}
                                     onMouseLeave={(e) => e.currentTarget.style.borderColor = '#E2E8F0'}
                                 >+</button>
                             </div>
+                            {adjustError && (
+                                <p style={{ color: '#EF4444', fontSize: '0.8rem', fontWeight: '700', marginTop: '0.75rem', textAlign: 'center', margin: '0.75rem 0 0 0' }}>
+                                    {adjustError}
+                                </p>
+                            )}
                         </div>
 
                         <button 
@@ -692,7 +728,13 @@ const Stock = () => {
                                 id: selectedItem.id, 
                                 delta: adjustType === 'in' ? adjustAmount : -adjustAmount 
                             })}
-                            disabled={adjustMutation.isLoading}
+                            disabled={
+                                adjustMutation.isLoading || 
+                                !!adjustError || 
+                                !adjustAmount || 
+                                adjustAmount <= 0 || 
+                                (adjustType === 'out' && adjustAmount > (selectedItem ? Number(selectedItem.quantity) : 0))
+                            }
                             style={{ 
                                 width: '100%', padding: '1.25rem', borderRadius: '20px', 
                                 background: adjustType === 'in' ? 'linear-gradient(135deg, #1B6B3A 0%, #064E3B 100%)' : 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)', 
