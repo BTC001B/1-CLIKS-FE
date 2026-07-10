@@ -347,7 +347,7 @@ const Stock = () => {
                 {[
                     { label: 'Total Inventory Value', value: formatCurrency(totalValue), icon: TrendingUp, color: '#1B6B3A', bg: '#F0FDF4' },
                     { label: 'Low Stock Alerts', value: lowStockCount, icon: AlertTriangle, color: '#EF4444', bg: '#FEF2F2' },
-                    { label: 'Active Items', value: items.length, icon: Layers, color: '#064E3B', bg: '#ECFDF5' },
+                    { label: 'Active Items', value: items.filter(item => Number(item.quantity) > 0).length, icon: Layers, color: '#064E3B', bg: '#ECFDF5' },
                     { label: 'Total Units', value: totalUnits, icon: Package, color: '#0D9488', bg: '#F0FDFA' }
                 ].map((stat, idx) => (
                     <div key={idx} style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
