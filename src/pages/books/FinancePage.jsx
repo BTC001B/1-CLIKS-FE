@@ -404,7 +404,7 @@ const FinancePage = () => {
             <style>{`
                 .finance-premium-container { display: flex; gap: 2rem; }
                 .finance-panel-left, .finance-panel-right {
-                    flex: 1;
+                    width: 450px;
                     border: 1px solid #E2E8F0;
                     border-radius: 16px;
                     background: #fff;
