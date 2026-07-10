@@ -1,7 +1,7 @@
 import { apiClient } from '../api/client';
 
 export const stockService = {
-  getStocks: () => apiClient.get('/stock').then(res => res.data.data || res.data),
+  getStocks: (params) => apiClient.get('/stock', { params }).then(res => res.data.data || res.data),
   getStockStats: () => apiClient.get('/stock/stats').then(res => res.data.data || res.data),
   getStock: (id) => apiClient.get(`/stock/${id}`).then(res => res.data.data || res.data),
   createStock: (data) => apiClient.post('/stock', data).then(res => res.data.data || res.data),
