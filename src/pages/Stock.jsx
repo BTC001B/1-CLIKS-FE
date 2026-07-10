@@ -391,9 +391,6 @@ const Stock = () => {
                                 style={{ padding: '0.5rem 1.25rem', borderRadius: '10px', border: 'none', background: filterStatus === 'low' ? 'white' : 'transparent', color: filterStatus === 'low' ? '#064E3B' : '#64748B', fontWeight: '700', fontSize: '0.85rem', boxShadow: filterStatus === 'low' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', height: '100%' }}
                             >Low Stock</button>
                         </div>
-                        <button style={{ width: '44px', height: '44px', borderRadius: '14px', border: '1px solid #E2E8F0', background: 'white', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                            <Filter size={20} />
-                        </button>
                     </div>
                 </div>
 
