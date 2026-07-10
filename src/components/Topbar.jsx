@@ -35,7 +35,7 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
     ];
 
     return (
-        <header className="topbar">
+        <header className="topbar" style={{ paddingRight: '0.5rem' }}>
             {/* Left: Branding / App Switcher */}
             <div className="topbar-left">
                 {/* ... existing logo code ... */}
@@ -135,7 +135,7 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
             </div>
 
             {/* Right Group */}
-            <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', paddingRight: '14px' }}>
+            <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', paddingRight: '0px' }}>
 
                 {/* Search bar — global search */}
                 <SearchBox onOpenCalculator={onOpenCalculator} />
