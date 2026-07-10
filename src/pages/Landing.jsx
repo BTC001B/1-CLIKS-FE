@@ -120,12 +120,13 @@ const Landing = () => {
             alignItems: "center"
         },
         hero: {
-            padding: "100px 40px 60px",
+            padding: "140px 40px 80px",
             minHeight: "100vh",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "50px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
             alignItems: "center",
+            textAlign: "center",
             position: "relative",
             overflow: "hidden",
             background: "#F0FDF4"
@@ -228,7 +229,7 @@ const Landing = () => {
 
             {/* Hero Section */}
             <section id="hero" className="hero-grid" style={styles.hero}>
-                <div className="hero-content scroll-animate">
+                <div className="hero-content scroll-animate" style={{ maxWidth: "800px", display: "flex", flexDirection: "column", alignItems: "center", margin: "0 auto" }}>
                     <div style={{
                         display: "inline-block", padding: "8px 16px", background: "rgba(27, 107, 58, 0.1)",
                         color: "#1B6B3A", borderRadius: "30px", fontSize: "12px", fontWeight: "600", marginBottom: "16px",
@@ -240,7 +241,7 @@ const Landing = () => {
                         Make your money <br />
                         <span style={styles.gradientText}>easy to understand.</span>
                     </h1>
-                    <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#546E7A", marginBottom: "32px", maxWidth: "540px" }}>
+                    <p style={{ fontSize: "16px", lineHeight: "1.7", color: "#546E7A", marginBottom: "32px", maxWidth: "600px", margin: "0 auto 32px" }}>
                         Track accounts, budgets, debts and investments in one clean dashboard. No spreadsheets, no clutter — just clear insights.
                     </p>
 
@@ -261,7 +262,7 @@ const Landing = () => {
                         </button>
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%", maxWidth: "600px", margin: "0 auto" }}>
                         <div className="hover-lift" style={{
                             padding: "20px", background: "#FFFFFF", borderRadius: "14px",
                             boxShadow: "0 4px 20px rgba(27, 107, 58, 0.08)", border: "1px solid #DCF2E4", display: "flex", gap: "14px", alignItems: "center", textAlign: "left"
@@ -286,53 +287,6 @@ const Landing = () => {
                                 <p style={{ margin: 0, fontSize: "13px", color: "#546E7A" }}>Budgets, cashflow, goals and people connected.</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div className="scroll-animate" style={{ position: "relative", zIndex: 10 }}>
-                    <div style={{
-                        background: "#FFFFFF", borderRadius: "20px", padding: "32px 30px",
-                        boxShadow: "0 20px 60px rgba(27, 107, 58, 0.15)", border: "1px solid #DCF2E4", maxWidth: "420px", margin: "0 auto"
-                    }}>
-                        <div style={{ display: 'inline-flex', padding: '12px', background: '#E8F5E9', borderRadius: '12px', marginBottom: '16px' }}>
-                            <img src={logoPng} alt="CLIKS Logo" style={{ width: '40px', height: '40px' }} />
-                        </div>
-                        <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#064E3B", marginBottom: "8px" }}>Sign in to continue</h2>
-                        <p style={{ fontSize: "14px", color: "#78909C", marginBottom: "24px", lineHeight: "1.6" }}>
-                            Use your email to create a new workspace or return to an existing one.
-                        </p>
-                        <form onSubmit={handleLogin}>
-                            <div style={{ marginBottom: "20px" }}>
-                                <label style={{ display: "block", fontSize: "11px", fontWeight: "600", color: "#546E7A", marginBottom: "6px", letterSpacing: "0.5px" }}>EMAIL ADDRESS</label>
-                                <input
-                                    type="email"
-                                    placeholder="you@example.com"
-                                    style={{
-                                        marginBottom: "20px", padding: "12px 16px", borderRadius: "10px", border: "2px solid #DCF2E4",
-                                        fontSize: "14px", width: "100%", outline: "none", boxSizing: "border-box"
-                                    }}
-                                    onFocus={(e) => e.target.style.borderColor = "#1B6B3A"}
-                                    onBlur={(e) => e.target.style.borderColor = "#DCF2E4"}
-                                />
-                            </div>
-                            <button type="submit" className="hover-scale" style={{
-                                width: "100%", padding: "12px 20px", background: "linear-gradient(135deg, #1B6B3A 0%, #228B4C 100%)",
-                                color: "#FFFFFF", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "600",
-                                cursor: "pointer", marginBottom: "16px", boxShadow: "0 8px 20px rgba(27, 107, 58, 0.3)"
-                            }}>
-                                Continue with email
-                            </button>
-                        </form>
-                        <div style={{ textAlign: "center", color: "#B0BEC5", fontSize: "13px", margin: "16px 0" }}>or</div>
-                        <button onClick={handleLogin} style={{
-                            width: "100%", padding: "12px 20px", background: "#FFFFFF", color: "#1B6B3A",
-                            border: "2px solid #DCF2E4", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer"
-                        }} onMouseEnter={(e) => e.target.style.background = "#F8FAFC"} onMouseLeave={(e) => e.target.style.background = "#FFFFFF"}>
-                            Continue as guest
-                        </button>
-                        <p style={{ fontSize: "12px", color: "#90A4AE", marginTop: "20px", textAlign: "center" }}>
-                            By continuing you agree to the Terms and Privacy Policy.
-                        </p>
                     </div>
                 </div>
             </section>

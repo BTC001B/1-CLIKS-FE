@@ -76,8 +76,8 @@ const Transactions = () => {
             const data = await transactionsService.getTransactions();
             return data.map(tx => ({
                 id: tx.id,
-                type: tx.type,
-                title: tx.title,
+                type: tx.type ? (tx.type.charAt(0).toUpperCase() + tx.type.slice(1).toLowerCase()) : '',
+                title: tx.title || tx.description || '',
                 category: tx.category,
                 amount: parseFloat(tx.amount),
                 date: tx.date || tx.created_at,

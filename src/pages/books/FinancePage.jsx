@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { DollarSign, ShoppingCart, Save, Trash2, Pencil, FileText, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc } from 'lucide-react';
 import { useAuth } from '../../context';
 import { transactionsService } from '../../services';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 /* ─── Storage keys scoped per user ────────────────────────────── */
 const incomeKey = (uid) => `cliks_finance_income_v2_${uid}`;
@@ -66,6 +66,15 @@ const FinancePage = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const uid = user?.id ?? user?.email ?? 'guest';
+
+    // Transactions query (shared source of truth with Payments module)
+    const { data: dbTransactions = [] } = useQuery({
+        queryKey: ['transactions'],
+        queryFn: () => transactionsService.getTransactions(),
+        enabled: !!uid && uid !== 'guest',
+    });
+
+    const [isSynced, setIsSynced] = useState(false);
 
     // Data states
     const [incomeSources, setIncomeSources] = useState(() => {
@@ -133,20 +142,17 @@ const FinancePage = () => {
     // Helper for syncing
     const mapCategory = (name) => {
         const n = name.toLowerCase();
-        if (n.includes('salary') || n.includes('employment')) return 'Employment';
-        if (n.includes('business')) return 'Business';
-        if (n.includes('freelance')) return 'Freelance';
-        if (n.includes('rent') || n.includes('rental')) return 'Rental';
-        if (n.includes('invest')) return 'Investment';
-        if (n.includes('food') || n.includes('grocery')) return 'Food';
-        if (n.includes('utility') || n.includes('bill') || n.includes('electricity')) return 'Utilities';
-        if (n.includes('petrol') || n.includes('transport') || n.includes('fuel')) return 'Transport';
+        if (n.includes('salary') || n.includes('dividend') || n.includes('interest')) return 'Income';
+        if (n.includes('rent') || n.includes('lease')) return 'Rent';
+        if (n.includes('loan') || n.includes('debt') || n.includes('emi')) return 'Debt & Loan';
+        if (n.includes('tax') || n.includes('gst')) return 'Tax';
+        if (n.includes('invest') || n.includes('stock') || n.includes('mutual')) return 'Investment';
         return 'Other';
     };
 
     const formatAPIDate = (dStr) => {
-        if (!dStr) return new Date().toISOString().split('T')[0];
         try {
+            if (!dStr) return new Date().toISOString().split('T')[0];
             if (dStr.includes('-')) return dStr; // YYYY-MM-DD
             const parts = dStr.split(' ');
             if (parts.length !== 3) return new Date().toISOString().split('T')[0];
@@ -227,11 +233,158 @@ const FinancePage = () => {
         return result;
     }, [additionalExpenses, addExpenseSearch, addExpenseFilters]);
 
-    // Persist
-    useEffect(() => { localStorage.setItem(incomeKey(uid), JSON.stringify(incomeSources)); }, [incomeSources, uid]);
-    useEffect(() => { localStorage.setItem(expensesKey(uid), JSON.stringify(expenses)); }, [expenses, uid]);
-    useEffect(() => { localStorage.setItem(additionalIncomeKey(uid), JSON.stringify(additionalIncomeSources)); }, [additionalIncomeSources, uid]);
-    useEffect(() => { localStorage.setItem(additionalExpensesKey(uid), JSON.stringify(additionalExpenses)); }, [additionalExpenses, uid]);
+    // Persist local storage only if guest
+    useEffect(() => { if (!uid || uid === 'guest') { localStorage.setItem(incomeKey(uid), JSON.stringify(incomeSources)); } }, [incomeSources, uid]);
+    useEffect(() => { if (!uid || uid === 'guest') { localStorage.setItem(expensesKey(uid), JSON.stringify(expenses)); } }, [expenses, uid]);
+    useEffect(() => { if (!uid || uid === 'guest') { localStorage.setItem(additionalIncomeKey(uid), JSON.stringify(additionalIncomeSources)); } }, [additionalIncomeSources, uid]);
+    useEffect(() => { if (!uid || uid === 'guest') { localStorage.setItem(additionalExpensesKey(uid), JSON.stringify(additionalExpenses)); } }, [additionalExpenses, uid]);
+
+    // Auto-sync local storage items that do not have a transactionId (e.g. historical data)
+    useEffect(() => {
+        if (!uid || uid === 'guest') {
+            setIsSynced(true);
+            return;
+        }
+
+        let needsUpdate = false;
+        
+        const syncItems = async () => {
+            const updatedIncome = [...incomeSources];
+            for (let i = 0; i < updatedIncome.length; i++) {
+                const entry = updatedIncome[i];
+                if (!entry.transactionId && entry.name && entry.amount) {
+                    try {
+                        const data = { 
+                            type: 'income', 
+                            title: entry.name, 
+                            category: mapCategory(entry.name), 
+                            amount: entry.amount, 
+                            date: formatAPIDate(entry.date), 
+                            notes: entry.schedule || 'Monthly',
+                            status: 'Completed' 
+                        };
+                        const res = await transactionsService.createTransaction(data);
+                        entry.transactionId = res?.id || res?.data?.id;
+                        needsUpdate = true;
+                    } catch (err) { console.error('Auto-sync error:', err); }
+                }
+            }
+
+            const updatedExpenses = [...expenses];
+            for (let i = 0; i < updatedExpenses.length; i++) {
+                const entry = updatedExpenses[i];
+                if (!entry.transactionId && entry.name && entry.amount) {
+                    try {
+                        const data = { 
+                            type: 'expense', 
+                            title: entry.name, 
+                            category: mapCategory(entry.name), 
+                            amount: entry.amount, 
+                            date: formatAPIDate(entry.date), 
+                            notes: entry.schedule || 'Monthly',
+                            status: 'Completed' 
+                        };
+                        const res = await transactionsService.createTransaction(data);
+                        entry.transactionId = res?.id || res?.data?.id;
+                        needsUpdate = true;
+                    } catch (err) { console.error('Auto-sync error:', err); }
+                }
+            }
+
+            const updatedAddIncome = [...additionalIncomeSources];
+            for (let i = 0; i < updatedAddIncome.length; i++) {
+                const entry = updatedAddIncome[i];
+                if (!entry.transactionId && entry.name && entry.amount) {
+                    try {
+                        const data = { 
+                            type: 'income', 
+                            title: `[Add] ${entry.name}`, 
+                            category: mapCategory(entry.name), 
+                            amount: entry.amount, 
+                            date: formatAPIDate(entry.date), 
+                            notes: entry.schedule || 'Monthly',
+                            status: 'Completed' 
+                        };
+                        const res = await transactionsService.createTransaction(data);
+                        entry.transactionId = res?.id || res?.data?.id;
+                        needsUpdate = true;
+                    } catch (err) { console.error('Auto-sync error:', err); }
+                }
+            }
+
+            const updatedAddExpenses = [...additionalExpenses];
+            for (let i = 0; i < updatedAddExpenses.length; i++) {
+                const entry = updatedAddExpenses[i];
+                if (!entry.transactionId && entry.name && entry.amount) {
+                    try {
+                        const data = { 
+                            type: 'expense', 
+                            title: `[Add] ${entry.name}`, 
+                            category: mapCategory(entry.name), 
+                            amount: entry.amount, 
+                            date: formatAPIDate(entry.date), 
+                            notes: entry.schedule || 'Monthly',
+                            status: 'Completed' 
+                        };
+                        const res = await transactionsService.createTransaction(data);
+                        entry.transactionId = res?.id || res?.data?.id;
+                        needsUpdate = true;
+                    } catch (err) { console.error('Auto-sync error:', err); }
+                }
+            }
+
+            if (needsUpdate) {
+                setIncomeSources(updatedIncome);
+                setExpenses(updatedExpenses);
+                setAdditionalIncomeSources(updatedAddIncome);
+                setAdditionalExpenses(updatedAddExpenses);
+                queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            }
+            setIsSynced(true);
+        };
+
+        syncItems();
+    }, [uid]);
+
+    // Sync React states with query data once auto-sync is done
+    useEffect(() => {
+        if (!isSynced || !uid || uid === 'guest' || !dbTransactions) return;
+
+        const mapTransactionToEntry = (tx) => {
+            const isAdd = tx.title ? tx.title.startsWith('[Add] ') : false;
+            const name = isAdd ? tx.title.slice(6) : (tx.title || '');
+            return {
+                id: tx.id,
+                transactionId: tx.id,
+                name: name,
+                description: tx.description || '',
+                amount: parseFloat(tx.amount) || 0,
+                date: tx.date || '',
+                schedule: tx.notes || 'Monthly',
+            };
+        };
+
+        const syncedIncome = dbTransactions
+            .filter(tx => (tx.type || '').toLowerCase() === 'income' && !(tx.title || '').startsWith('[Add] '))
+            .map(mapTransactionToEntry);
+
+        const syncedExpenses = dbTransactions
+            .filter(tx => (tx.type || '').toLowerCase() === 'expense' && !(tx.title || '').startsWith('[Add] '))
+            .map(mapTransactionToEntry);
+
+        const syncedAddIncome = dbTransactions
+            .filter(tx => (tx.type || '').toLowerCase() === 'income' && (tx.title || '').startsWith('[Add] '))
+            .map(mapTransactionToEntry);
+
+        const syncedAddExpenses = dbTransactions
+            .filter(tx => (tx.type || '').toLowerCase() === 'expense' && (tx.title || '').startsWith('[Add] '))
+            .map(mapTransactionToEntry);
+
+        setIncomeSources(syncedIncome);
+        setExpenses(syncedExpenses);
+        setAdditionalIncomeSources(syncedAddIncome);
+        setAdditionalExpenses(syncedAddExpenses);
+    }, [dbTransactions, isSynced, uid]);
 
     // Derived
     const fixedSourceIncome = incomeSources.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
@@ -273,7 +426,7 @@ const FinancePage = () => {
         setNewIncome(BLANK_INCOME);
 
         try {
-            const data = { type: 'Income', title: entry.name, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), status: 'Completed' };
+            const data = { type: 'income', title: entry.name, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), notes: entry.schedule || 'Monthly', status: 'Completed' };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
             } else {
@@ -321,7 +474,7 @@ const FinancePage = () => {
         setExpense(BLANK_EXPENSE);
 
         try {
-            const data = { type: 'Expense', title: entry.name, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), status: 'Completed' };
+            const data = { type: 'expense', title: entry.name, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), notes: entry.schedule || 'Monthly', status: 'Completed' };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
             } else {
@@ -376,7 +529,7 @@ const FinancePage = () => {
         setNewAdditionalIncome(BLANK_INCOME);
 
         try {
-            const data = { type: 'Income', title: `[Add] ${entry.name}`, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), status: 'Completed' };
+            const data = { type: 'income', title: `[Add] ${entry.name}`, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), notes: entry.schedule || 'Monthly', status: 'Completed' };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
             } else {
@@ -420,7 +573,7 @@ const FinancePage = () => {
         setAdditionalExpense(BLANK_EXPENSE);
 
         try {
-            const data = { type: 'Expense', title: `[Add] ${entry.name}`, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), status: 'Completed' };
+            const data = { type: 'expense', title: `[Add] ${entry.name}`, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), notes: entry.schedule || 'Monthly', status: 'Completed' };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
             } else {
