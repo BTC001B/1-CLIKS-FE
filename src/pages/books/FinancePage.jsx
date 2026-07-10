@@ -234,10 +234,14 @@ const FinancePage = () => {
     useEffect(() => { localStorage.setItem(additionalExpensesKey(uid), JSON.stringify(additionalExpenses)); }, [additionalExpenses, uid]);
 
     // Derived
-    const monthlyIncome = incomeSources.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
-    const fixedExpenses = 0;
-    const dailyExpenses = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
-    const remaining = monthlyIncome - fixedExpenses - dailyExpenses;
+    const fixedSourceIncome = incomeSources.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+    const additionalSourceIncome = additionalIncomeSources.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+    const monthlyIncome = fixedSourceIncome + additionalSourceIncome;
+
+    const fixedExpenses = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+    const dailyExpenses = additionalExpenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+
+    const remaining = monthlyIncome - (fixedExpenses + dailyExpenses);
 
     // Handlers
     const handleAddIncomeSource = async (e) => {
@@ -270,16 +274,29 @@ const FinancePage = () => {
 
         try {
             const data = { type: 'Income', title: entry.name, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), status: 'Completed' };
-            if (entry.transactionId) await transactionsService.updateTransaction(entry.transactionId, data);
-            else {
+            if (entry.transactionId) {
+                await transactionsService.updateTransaction(entry.transactionId, data);
+            } else {
                 const res = await transactionsService.createTransaction(data);
-                entry.transactionId = res?.id || res?.data?.id;
+                const txId = res?.id || res?.data?.id;
+                entry.transactionId = txId;
+                setIncomeSources(prev => prev.map(i => i.id === entry.id ? { ...i, transactionId: txId } : i));
             }
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
         } catch (err) { console.error(err); }
     };
 
-    const handleDeleteIncomeSource = (id) => setIncomeSources(prev => prev.filter(i => i.id !== id));
+    const handleDeleteIncomeSource = async (id) => {
+        const entry = incomeSources.find(i => i.id === id);
+        if (entry && entry.transactionId) {
+            try {
+                await transactionsService.deleteTransaction(entry.transactionId);
+                queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            } catch (err) { console.error(err); }
+        }
+        setIncomeSources(prev => prev.filter(i => i.id !== id));
+    };
+
     const handleEditIncomeSource = (i) => {
         setNewIncome({ ...i });
         setEditingIncomeId(i.id);
@@ -290,69 +307,143 @@ const FinancePage = () => {
         ev.preventDefault();
         if (!expense.name.trim() || !expense.amount) return;
         let entry;
+        const now = new Date();
+        const defaultDate = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
         if (editingId) {
             entry = { ...expenses.find(e => e.id === editingId), ...expense, amount: parseFloat(expense.amount) || 0 };
             setExpenses(prev => prev.map(e => e.id === editingId ? entry : e));
             setEditingId(null);
         } else {
-            entry = { ...expense, id: Date.now(), date: expense.date || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), amount: parseFloat(expense.amount) || 0 };
+            entry = { ...expense, id: Date.now(), date: expense.date || defaultDate, amount: parseFloat(expense.amount) || 0 };
             setExpenses(prev => [entry, ...prev]);
         }
         setExpense(BLANK_EXPENSE);
+
         try {
             const data = { type: 'Expense', title: entry.name, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), status: 'Completed' };
-            if (entry.transactionId) await transactionsService.updateTransaction(entry.transactionId, data);
-            else {
+            if (entry.transactionId) {
+                await transactionsService.updateTransaction(entry.transactionId, data);
+            } else {
                 const res = await transactionsService.createTransaction(data);
-                entry.transactionId = res?.id || res?.data?.id;
+                const txId = res?.id || res?.data?.id;
+                entry.transactionId = txId;
+                setExpenses(prev => prev.map(e => e.id === entry.id ? { ...e, transactionId: txId } : e));
             }
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
         } catch (err) { console.error(err); }
     };
 
-    const handleDeleteExpense = (id) => setExpenses(prev => prev.filter(e => e.id !== id));
-    const handleEditExpense = (e) => { setExpense({ ...e }); setEditingId(e.id); setShowExpenseForm(true); };
-
-    const handleAddAddIncomeSource = (e) => {
-        e.preventDefault();
-        if (!newAdditionalIncome.name.trim() || !newAdditionalIncome.amount) return;
-        if (editingAdditionalIncomeId) {
-            setAdditionalIncomeSources(prev => prev.map(i => i.id === editingAdditionalIncomeId ? { ...i, ...newAdditionalIncome, amount: parseFloat(newAdditionalIncome.amount) || 0 } : i));
-            setEditingAdditionalIncomeId(null);
-        } else {
-            setAdditionalIncomeSources(prev => [...prev, { ...newAdditionalIncome, id: Date.now(), amount: parseFloat(newAdditionalIncome.amount) || 0 }]);
+    const handleDeleteExpense = async (id) => {
+        const entry = expenses.find(e => e.id === id);
+        if (entry && entry.transactionId) {
+            try {
+                await transactionsService.deleteTransaction(entry.transactionId);
+                queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            } catch (err) { console.error(err); }
         }
-        setNewAdditionalIncome(BLANK_INCOME);
+        setExpenses(prev => prev.filter(e => e.id !== id));
     };
 
-    const handleDeleteAddIncomeSource = (id) => setAdditionalIncomeSources(prev => prev.filter(i => i.id !== id));
+    const handleEditExpense = (e) => { setExpense({ ...e }); setEditingId(e.id); setShowExpenseForm(true); };
+
+    const handleAddAddIncomeSource = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (!newAdditionalIncome.name.trim() || !newAdditionalIncome.amount) return;
+        let entry;
+        const now = new Date();
+        const defaultDate = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const defaultTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+        if (editingAdditionalIncomeId) {
+            entry = {
+                ...additionalIncomeSources.find(i => i.id === editingAdditionalIncomeId),
+                ...newAdditionalIncome,
+                amount: parseFloat(newAdditionalIncome.amount) || 0
+            };
+            setAdditionalIncomeSources(prev => prev.map(i => i.id === editingAdditionalIncomeId ? entry : i));
+            setEditingAdditionalIncomeId(null);
+        } else {
+            entry = {
+                ...newAdditionalIncome,
+                id: Date.now(),
+                date: newAdditionalIncome.date || defaultDate,
+                time: newAdditionalIncome.time || defaultTime,
+                amount: parseFloat(newAdditionalIncome.amount) || 0
+            };
+            setAdditionalIncomeSources(prev => [...prev, entry]);
+        }
+        setNewAdditionalIncome(BLANK_INCOME);
+
+        try {
+            const data = { type: 'Income', title: `[Add] ${entry.name}`, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), status: 'Completed' };
+            if (entry.transactionId) {
+                await transactionsService.updateTransaction(entry.transactionId, data);
+            } else {
+                const res = await transactionsService.createTransaction(data);
+                const txId = res?.id || res?.data?.id;
+                entry.transactionId = txId;
+                setAdditionalIncomeSources(prev => prev.map(i => i.id === entry.id ? { ...i, transactionId: txId } : i));
+            }
+            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        } catch (err) { console.error(err); }
+    };
+
+    const handleDeleteAddIncomeSource = async (id) => {
+        const entry = additionalIncomeSources.find(i => i.id === id);
+        if (entry && entry.transactionId) {
+            try {
+                await transactionsService.deleteTransaction(entry.transactionId);
+                queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            } catch (err) { console.error(err); }
+        }
+        setAdditionalIncomeSources(prev => prev.filter(i => i.id !== id));
+    };
+
     const handleEditAddIncomeSource = (i) => { setNewAdditionalIncome({ ...i }); setEditingAdditionalIncomeId(i.id); setShowAddIncomeForm(true); };
 
     const handleSaveAddExpense = async (ev) => {
         ev.preventDefault();
         if (!additionalExpense.name.trim() || !additionalExpense.amount) return;
         let entry;
+        const now = new Date();
+        const defaultDate = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
         if (editingAdditionalId) {
             entry = { ...additionalExpenses.find(e => e.id === editingAdditionalId), ...additionalExpense, amount: parseFloat(additionalExpense.amount) || 0 };
             setAdditionalExpenses(prev => prev.map(e => e.id === editingAdditionalId ? entry : e));
             setEditingAdditionalId(null);
         } else {
-            entry = { ...additionalExpense, id: Date.now(), date: additionalExpense.date || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), amount: parseFloat(additionalExpense.amount) || 0 };
+            entry = { ...additionalExpense, id: Date.now(), date: additionalExpense.date || defaultDate, amount: parseFloat(additionalExpense.amount) || 0 };
             setAdditionalExpenses(prev => [entry, ...prev]);
         }
         setAdditionalExpense(BLANK_EXPENSE);
+
         try {
             const data = { type: 'Expense', title: `[Add] ${entry.name}`, category: mapCategory(entry.name), amount: entry.amount, date: formatAPIDate(entry.date), status: 'Completed' };
-            if (entry.transactionId) await transactionsService.updateTransaction(entry.transactionId, data);
-            else {
+            if (entry.transactionId) {
+                await transactionsService.updateTransaction(entry.transactionId, data);
+            } else {
                 const res = await transactionsService.createTransaction(data);
-                entry.transactionId = res?.id || res?.data?.id;
+                const txId = res?.id || res?.data?.id;
+                entry.transactionId = txId;
+                setAdditionalExpenses(prev => prev.map(e => e.id === entry.id ? { ...e, transactionId: txId } : e));
             }
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
         } catch (err) { console.error(err); }
     };
 
-    const handleDeleteAddExpense = (id) => setAdditionalExpenses(prev => prev.filter(e => e.id !== id));
+    const handleDeleteAddExpense = async (id) => {
+        const entry = additionalExpenses.find(e => e.id === id);
+        if (entry && entry.transactionId) {
+            try {
+                await transactionsService.deleteTransaction(entry.transactionId);
+                queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            } catch (err) { console.error(err); }
+        }
+        setAdditionalExpenses(prev => prev.filter(e => e.id !== id));
+    };
+
     const handleEditAddExpense = (e) => { setAdditionalExpense({ ...e }); setEditingAdditionalId(e.id); setShowAddExpenseForm(true); };
 
     const handleSaveAddDetails = async () => {
