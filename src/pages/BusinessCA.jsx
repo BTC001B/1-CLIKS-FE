@@ -4,7 +4,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { 
     Briefcase, ShieldAlert, FileText, CheckCircle2, AlertTriangle, 
     RefreshCw, Globe, ArrowLeftRight, Landmark, Calendar, Clock, 
-    UserCheck, ChevronRight, Layers, FileCheck, HelpCircle, TrendingUp, Plus, Search, Building,
+    UserCheck, ChevronRight, Layers, FileCheck, HelpCircle, TrendingUp, Plus, Search, Building, Eye,
     User, Wallet, Percent, PiggyBank, FileUp, Home, Users, Folder, BarChart, Play, Square, Trash2, PlusCircle, CheckSquare, FileSpreadsheet
 } from 'lucide-react';
 import { accountingService, gstService, contactsService, caService, profileService } from '../services';
@@ -198,6 +198,9 @@ export default function BusinessCA() {
     const [uploadedFileName, setUploadedFileName] = useState('');
     const [uploadedFileSize, setUploadedFileSize] = useState('1.4 MB');
     const [uploadTargetFolder, setUploadTargetFolder] = useState('ITR Filings FY2025-26');
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     const [_workpaperChecks, _setWorkpaperChecks] = useState({
         aisTds: true,
@@ -319,11 +322,28 @@ export default function BusinessCA() {
     const handleLaptopFileSelected = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        setSelectedFile(file);
         setUploadedFileName(file.name);
         const formattedSize = file.size > 1024 * 1024 
             ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
             : `${(file.size / 1024).toFixed(0)} KB`;
         setUploadedFileSize(formattedSize);
+    };
+
+    const handleOpenPreview = () => {
+        if (selectedFile) {
+            const url = URL.createObjectURL(selectedFile);
+            setPreviewUrl(url);
+            setShowPreviewModal(true);
+        }
+    };
+
+    const handleClosePreview = () => {
+        setShowPreviewModal(false);
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(null);
+        }
     };
 
     const handleSimulateDocumentUpload = (e) => {
@@ -599,6 +619,7 @@ export default function BusinessCA() {
             refetchFolders();
             setUploadedFileName('');
             setUploadProgress(null);
+            setSelectedFile(null);
         },
         onError: (err) => alert(err.response?.data?.message || err.message || 'Failed to upload file')
     });
@@ -2689,14 +2710,46 @@ export default function BusinessCA() {
                                                 </div>
 
                                                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px' }}>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Document Name (e.g. pan_card_draft_2026.pdf)..."
-                                                        value={uploadedFileName}
-                                                        onChange={e => setUploadedFileName(e.target.value)}
-                                                        required
-                                                        style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '600', outline: 'none' }}
-                                                    />
+                                                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Document Name (e.g. pan_card_draft_2026.pdf)..."
+                                                            value={uploadedFileName}
+                                                            onChange={e => setUploadedFileName(e.target.value)}
+                                                            required
+                                                            style={{ 
+                                                                width: '100%',
+                                                                padding: '8px 12px', 
+                                                                paddingRight: selectedFile ? '36px' : '12px',
+                                                                borderRadius: '8px', 
+                                                                border: '1px solid #CBD5E1', 
+                                                                fontSize: '13px', 
+                                                                fontWeight: '600', 
+                                                                outline: 'none' 
+                                                            }}
+                                                        />
+                                                        {selectedFile && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleOpenPreview}
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    right: '8px',
+                                                                    background: 'none',
+                                                                    border: 'none',
+                                                                    cursor: 'pointer',
+                                                                    padding: '4px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    color: '#64748B'
+                                                                }}
+                                                                title="Preview document"
+                                                            >
+                                                                <Eye size={16} />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                     <select
                                                         value={uploadTargetFolder}
                                                         onChange={e => setUploadTargetFolder(e.target.value)}
@@ -3088,6 +3141,135 @@ export default function BusinessCA() {
                             </form>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Document Preview Modal */}
+            {showPreviewModal && selectedFile && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999,
+                    padding: '20px'
+                }}>
+                    <div style={{
+                        background: '#FFFFFF',
+                        borderRadius: '16px',
+                        width: '100%',
+                        maxWidth: '800px',
+                        maxHeight: '90vh',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                        overflow: 'hidden'
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            padding: '16px 24px',
+                            borderBottom: '1px solid #E2E8F0',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <h3 style={{
+                                fontSize: '16px',
+                                fontWeight: '850',
+                                color: '#0F172A',
+                                margin: 0,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: '80%'
+                            }}>
+                                👁️ Preview: {uploadedFileName || selectedFile.name}
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={handleClosePreview}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    fontSize: '20px',
+                                    fontWeight: 'bold',
+                                    color: '#64748B',
+                                    cursor: 'pointer',
+                                    padding: '4px'
+                                }}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Content Area */}
+                        <div style={{
+                            flex: 1,
+                            padding: '24px',
+                            background: '#F8FAFC',
+                            overflowY: 'auto',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: '300px'
+                        }}>
+                            {(() => {
+                                const fileType = selectedFile.type || '';
+                                const fileName = selectedFile.name.toLowerCase();
+
+                                if (fileType.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp)$/i.test(fileName)) {
+                                    return (
+                                        <img
+                                            src={previewUrl}
+                                            alt={uploadedFileName}
+                                            style={{
+                                                maxWidth: '100%',
+                                                maxHeight: '60vh',
+                                                objectFit: 'contain',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                            }}
+                                        />
+                                    );
+                                } else if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+                                    return (
+                                        <iframe
+                                            src={previewUrl}
+                                            title={uploadedFileName}
+                                            style={{
+                                                width: '100%',
+                                                height: '60vh',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                            }}
+                                        />
+                                    );
+                                } else {
+                                    return (
+                                        <div style={{
+                                            textAlign: 'center',
+                                            padding: '40px 20px',
+                                            color: '#64748B'
+                                        }}>
+                                            <AlertTriangle size={48} style={{ color: '#D97706', marginBottom: '16px' }} />
+                                            <p style={{ fontSize: '15px', fontWeight: '750', margin: '0 0 8px 0', color: '#334155' }}>
+                                                Preview is not available for this file type
+                                            </p>
+                                            <p style={{ fontSize: '13px', margin: 0 }}>
+                                                Supported preview formats: PDF, PNG, JPG, JPEG, GIF, WEBP
+                                            </p>
+                                        </div>
+                                    );
+                                }
+                            })()}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
