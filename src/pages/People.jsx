@@ -299,6 +299,26 @@ const BusinessPeople = () => {
     const deleteReminderMutation = useMutation({
         mutationFn: (rem) => peopleService.deleteReminder(rem.person_id, rem.id),
         onSuccess: (_, variables) => {
+            queryClient.setQueryData(['people-reminders-all'], (old) => {
+                if (!old) return old;
+                if (old.data) {
+                    return {
+                        ...old,
+                        data: old.data.filter(r => r.id !== variables.id)
+                    };
+                }
+                return Array.isArray(old) ? old.filter(r => r.id !== variables.id) : old;
+            });
+            queryClient.setQueryData(['person-reminders', variables.person_id], (old) => {
+                if (!old) return old;
+                if (old.data) {
+                    return {
+                        ...old,
+                        data: old.data.filter(r => r.id !== variables.id)
+                    };
+                }
+                return Array.isArray(old) ? old.filter(r => r.id !== variables.id) : old;
+            });
             queryClient.invalidateQueries({ queryKey: ['people-reminders-all'] });
             queryClient.invalidateQueries({ queryKey: ['person-reminders', variables.person_id] });
             alert('Reminder dismissed.');
