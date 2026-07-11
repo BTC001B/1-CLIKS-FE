@@ -176,7 +176,7 @@ export default function BusinessCA() {
     // Timer States
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [timerSeconds, setTimerSeconds] = useState(0);
-    const [timerClient, setTimerClient] = useState('Rohan Sharma');
+    const [timerClient, setTimerClient] = useState('');
     const [timerTask, setTimerTask] = useState('');
 
     const [activeClientSearch, setActiveClientSearch] = useState('');
@@ -230,6 +230,16 @@ export default function BusinessCA() {
         }
         return () => clearInterval(interval);
     }, [isTimerRunning]);
+
+    // Sync timerClient with allPracticeClients when list loads or changes
+    useEffect(() => {
+        if (allPracticeClients.length > 0) {
+            const clientExists = allPracticeClients.some(c => c.name === timerClient);
+            if (!clientExists) {
+                setTimerClient(allPracticeClients[0].name);
+            }
+        }
+    }, [allPracticeClients, timerClient]);
 
     const formatTime = (totalSeconds) => {
         const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
