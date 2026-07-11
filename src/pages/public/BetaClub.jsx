@@ -206,14 +206,14 @@ export default function BetaClub() {
             {/* Slim, Beautiful Modern Header */}
             <div style={{
                 flexShrink: 0,
-                background: 'linear-gradient(135deg, #064E3B 0%, #022C22 100%)',
+                background: 'linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%)',
                 borderRadius: '20px',
                 padding: '1.5rem 2rem',
                 color: 'white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                boxShadow: '0 10px 25px -5px rgba(6, 78, 59, 0.15)',
+                boxShadow: '0 10px 25px -5px rgba(14, 165, 233, 0.25)',
                 marginBottom: '1.25rem',
                 position: 'relative',
                 overflow: 'hidden'
@@ -232,7 +232,7 @@ export default function BetaClub() {
                         fontWeight: '700',
                         letterSpacing: '0.05em',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
-                        color: '#34D399'
+                        color: '#F0F9FF'
                     }}>
                         <TrendingUp size={13} />
                         <span>VENTURE CONNECT</span>
@@ -240,7 +240,7 @@ export default function BetaClub() {
                     <h1 style={{ fontSize: '1.75rem', fontWeight: '850', marginBottom: '0.25rem', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
                         BETA Club Deal Marketplace
                     </h1>
-                    <p style={{ fontSize: '0.9rem', color: '#A7F3D0', maxWidth: '500px', margin: 0, opacity: 0.85 }}>
+                    <p style={{ fontSize: '0.9rem', color: '#E0F2FE', maxWidth: '500px', margin: 0, opacity: 0.85 }}>
                         Connect directly with verified founders, review pitches, and contact owners instantly.
                     </p>
                     
@@ -271,7 +271,7 @@ export default function BetaClub() {
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
-                            <MapPin size={13} color="#34D399" />
+                            <MapPin size={13} color="#E0F2FE" />
                             <span>
                                 {gpsState ? (
                                     `${cityName ? `${cityName}, ` : ''}${gpsState}${pincode ? `, Pincode: ${pincode}` : ''}`

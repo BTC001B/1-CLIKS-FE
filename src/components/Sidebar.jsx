@@ -296,10 +296,34 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         <button
                             className={`sidebar-item ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
                             onClick={() => handleItemClick('FIN-PRO', '/ca')}
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '0.5rem 0.6rem 0.5rem 0.85rem',
+                                background: activeItem === 'FIN-PRO' 
+                                    ? 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)'
+                                    : 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
+                                color: activeItem === 'FIN-PRO' ? '#FFFFFF' : '#1E293B',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontWeight: '750',
+                                fontSize: '0.85rem',
+                                borderRadius: '12px',
+                                boxShadow: activeItem === 'FIN-PRO'
+                                    ? '0 4px 12px rgba(30, 58, 138, 0.25)'
+                                    : '0 4px 12px rgba(0, 0, 0, 0.05)',
+                                transition: 'all 0.2s ease',
+                                minHeight: '52px',
+                                justifyContent: 'flex-start',
+                                gap: '0.75rem'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
-                            <div className="flex items-center gap-3">
-                                <Briefcase size={20} style={{ color: activeItem === 'FIN-PRO' ? '#ffffff' : '#D4AF37' }} />
-                                <span className="sidebar-label">FIN-PRO</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Briefcase size={20} style={{ color: activeItem === 'FIN-PRO' ? '#ffffff' : '#D4AF37', flexShrink: 0 }} />
+                                <span className="sidebar-label" style={{ fontWeight: '750' }}>FIN-PRO</span>
                             </div>
                         </button>
                     </>
@@ -336,10 +360,34 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                         <button
                             className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
                             onClick={() => handleItemClick('Beta Club', '/social/beta-club')}
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '0.5rem 0.6rem 0.5rem 0.85rem',
+                                background: activeItem === 'Beta Club' 
+                                    ? 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)'
+                                    : 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
+                                color: activeItem === 'Beta Club' ? '#FFFFFF' : '#1E293B',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontWeight: '750',
+                                fontSize: '0.85rem',
+                                borderRadius: '12px',
+                                boxShadow: activeItem === 'Beta Club'
+                                    ? '0 4px 12px rgba(30, 58, 138, 0.25)'
+                                    : '0 4px 12px rgba(0, 0, 0, 0.05)',
+                                transition: 'all 0.2s ease',
+                                minHeight: '52px',
+                                justifyContent: 'flex-start',
+                                gap: '0.75rem'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
-                            <div className="flex items-center gap-3">
-                                <Rocket size={20} style={{ color: activeItem === 'Beta Club' ? '#ffffff' : '#1B6B3A' }} />
-                                <span className="sidebar-label">Beta Club</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Rocket size={20} style={{ color: activeItem === 'Beta Club' ? '#ffffff' : '#1B6B3A', flexShrink: 0 }} />
+                                <span className="sidebar-label" style={{ fontWeight: '750' }}>Beta Club</span>
                             </div>
                         </button>
                     </>
