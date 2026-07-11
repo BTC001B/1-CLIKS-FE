@@ -304,7 +304,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                                 background: activeItem === 'FIN-PRO' 
                                     ? 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)'
                                     : 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
-                                color: activeItem === 'FIN-PRO' ? '#FFFFFF' : '#1E293B',
+                                color: activeItem === 'FIN-PRO' ? '#FBBF24' : '#D4AF37',
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontWeight: '750',
@@ -322,7 +322,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <Briefcase size={20} style={{ color: activeItem === 'FIN-PRO' ? '#ffffff' : '#D4AF37', flexShrink: 0 }} />
+                                <Briefcase size={20} style={{ color: activeItem === 'FIN-PRO' ? '#FBBF24' : '#D4AF37', flexShrink: 0 }} />
                                 <span className="sidebar-label" style={{ fontWeight: '750' }}>FIN-PRO</span>
                             </div>
                         </button>
@@ -368,7 +368,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                                 background: activeItem === 'Beta Club' 
                                     ? 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)'
                                     : 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
-                                color: activeItem === 'Beta Club' ? '#FFFFFF' : '#1E293B',
+                                color: activeItem === 'Beta Club' ? '#FBBF24' : '#D4AF37',
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontWeight: '750',
@@ -386,7 +386,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <Rocket size={20} style={{ color: activeItem === 'Beta Club' ? '#ffffff' : '#1B6B3A', flexShrink: 0 }} />
+                                <Rocket size={20} style={{ color: activeItem === 'Beta Club' ? '#FBBF24' : '#D4AF37', flexShrink: 0 }} />
                                 <span className="sidebar-label" style={{ fontWeight: '750' }}>Beta Club</span>
                             </div>
                         </button>
