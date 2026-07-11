@@ -301,18 +301,14 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 padding: '0.5rem 0.6rem 0.5rem 0.85rem',
-                                background: activeItem === 'FIN-PRO' 
-                                    ? 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)'
-                                    : 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
-                                color: activeItem === 'FIN-PRO' ? '#FBBF24' : '#D4AF37',
+                                background: 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)',
+                                color: '#D4AF37',
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontWeight: '750',
                                 fontSize: '0.85rem',
                                 borderRadius: '12px',
-                                boxShadow: activeItem === 'FIN-PRO'
-                                    ? '0 4px 12px rgba(30, 58, 138, 0.25)'
-                                    : '0 4px 12px rgba(0, 0, 0, 0.05)',
+                                boxShadow: '0 4px 12px rgba(30, 58, 138, 0.25)',
                                 transition: 'all 0.2s ease',
                                 minHeight: '52px',
                                 justifyContent: 'flex-start',
@@ -322,7 +318,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <Briefcase size={20} style={{ color: activeItem === 'FIN-PRO' ? '#FBBF24' : '#D4AF37', flexShrink: 0 }} />
+                                <Briefcase size={20} style={{ color: '#D4AF37', flexShrink: 0 }} />
                                 <span className="sidebar-label" style={{ fontWeight: '750' }}>FIN-PRO</span>
                             </div>
                         </button>
@@ -365,18 +361,14 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 padding: '0.5rem 0.6rem 0.5rem 0.85rem',
-                                background: activeItem === 'Beta Club' 
-                                    ? 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)'
-                                    : 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
-                                color: activeItem === 'Beta Club' ? '#FBBF24' : '#D4AF37',
+                                background: 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)',
+                                color: '#D4AF37',
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontWeight: '750',
                                 fontSize: '0.85rem',
                                 borderRadius: '12px',
-                                boxShadow: activeItem === 'Beta Club'
-                                    ? '0 4px 12px rgba(30, 58, 138, 0.25)'
-                                    : '0 4px 12px rgba(0, 0, 0, 0.05)',
+                                boxShadow: '0 4px 12px rgba(30, 58, 138, 0.25)',
                                 transition: 'all 0.2s ease',
                                 minHeight: '52px',
                                 justifyContent: 'flex-start',
@@ -386,7 +378,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <Rocket size={20} style={{ color: activeItem === 'Beta Club' ? '#FBBF24' : '#D4AF37', flexShrink: 0 }} />
+                                <Rocket size={20} style={{ color: '#D4AF37', flexShrink: 0 }} />
                                 <span className="sidebar-label" style={{ fontWeight: '750' }}>Beta Club</span>
                             </div>
                         </button>
