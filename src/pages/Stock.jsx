@@ -358,7 +358,31 @@ const Stock = () => {
                     <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{formatCurrency(totalValue)}</h3>
                 </div>
 
-                {/* Split second slot into two side-by-side square cards */}
+                {/* Active Items */}
+                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#064E3B' }}>
+                            <Layers size={24} />
+                        </div>
+                        <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Active Items</p>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{items.filter(item => Number(item.quantity) > 0).length}</h3>
+                </div>
+
+                {/* Total Units */}
+                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0D9488' }}>
+                            <Package size={24} />
+                        </div>
+                        <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Total Units</p>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{totalUnits}</h3>
+                </div>
+
+                {/* Split fourth slot into two side-by-side square cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                     {/* Low Stock Alerts */}
                     <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
@@ -383,30 +407,6 @@ const Stock = () => {
                         <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Out of Stock</p>
                         <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{outOfStockCount}</h3>
                     </div>
-                </div>
-
-                {/* Active Items */}
-                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#064E3B' }}>
-                            <Layers size={24} />
-                        </div>
-                        <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
-                    </div>
-                    <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Active Items</p>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{items.filter(item => Number(item.quantity) > 0).length}</h3>
-                </div>
-
-                {/* Total Units */}
-                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0D9488' }}>
-                            <Package size={24} />
-                        </div>
-                        <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
-                    </div>
-                    <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Total Units</p>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{totalUnits}</h3>
                 </div>
             </div>
 
