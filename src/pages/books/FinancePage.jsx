@@ -257,9 +257,13 @@ const FinancePage = () => {
                         const data = { 
                             type: 'income', 
                             title: entry.name, 
+                            name: entry.name,
+                            description: entry.description || '',
                             category: mapCategory(entry.name), 
                             amount: entry.amount, 
                             date: formatAPIDate(entry.date), 
+                            time: entry.time || '',
+                            schedule: entry.schedule || 'Monthly',
                             notes: entry.schedule || 'Monthly',
                             status: 'Completed' 
                         };
@@ -278,9 +282,13 @@ const FinancePage = () => {
                         const data = { 
                             type: 'expense', 
                             title: entry.name, 
+                            name: entry.name,
+                            description: entry.description || '',
                             category: mapCategory(entry.name), 
                             amount: entry.amount, 
                             date: formatAPIDate(entry.date), 
+                            time: entry.time || '',
+                            schedule: entry.schedule || 'Monthly',
                             notes: entry.schedule || 'Monthly',
                             status: 'Completed' 
                         };
@@ -299,9 +307,13 @@ const FinancePage = () => {
                         const data = { 
                             type: 'income', 
                             title: `[Add] ${entry.name}`, 
+                            name: entry.name,
+                            description: entry.description || '',
                             category: mapCategory(entry.name), 
                             amount: entry.amount, 
                             date: formatAPIDate(entry.date), 
+                            time: entry.time || '',
+                            schedule: entry.schedule || 'Monthly',
                             notes: entry.schedule || 'Monthly',
                             status: 'Completed' 
                         };
@@ -320,9 +332,13 @@ const FinancePage = () => {
                         const data = { 
                             type: 'expense', 
                             title: `[Add] ${entry.name}`, 
+                            name: entry.name,
+                            description: entry.description || '',
                             category: mapCategory(entry.name), 
                             amount: entry.amount, 
                             date: formatAPIDate(entry.date), 
+                            time: entry.time || '',
+                            schedule: entry.schedule || 'Monthly',
                             notes: entry.schedule || 'Monthly',
                             status: 'Completed' 
                         };
@@ -352,9 +368,13 @@ const FinancePage = () => {
 
         const mapTransactionToEntry = (tx) => {
             const isAdd = tx.title ? tx.title.startsWith('[Add] ') : false;
-            const name = isAdd ? tx.title.slice(6) : (tx.name || tx.title || '');
-            let description = tx.description || '';
-            if (description === name) {
+            let name = tx.name || tx.incomeName || tx.expenseName || tx.sourceName || tx.title || '';
+            if (name.startsWith('[Add] ')) {
+                name = name.slice(6);
+            }
+            let description = tx.description || tx.desc || '';
+            // Only clear description if it's identical to the name and no explicit name property was present.
+            if (description === name && !tx.name && !tx.incomeName && !tx.expenseName && !tx.sourceName) {
                 description = '';
             }
             return {
@@ -364,7 +384,7 @@ const FinancePage = () => {
                 description: description,
                 amount: parseFloat(tx.amount) || 0,
                 date: tx.date || '',
-                time: tx.time || '',
+                time: tx.time || tx.scheduledTime || '',
                 schedule: tx.schedule || tx.notes || 'Monthly',
             };
         };

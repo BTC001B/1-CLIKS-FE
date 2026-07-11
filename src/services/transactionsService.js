@@ -17,7 +17,7 @@ export const transactionsService = {
         return res.data;
     },
     updateTransaction: async (id, data) => {
-        const res = await apiClient.put(`/transactions/${id}`, data);
+        const res = await apiClient.patch(`/transactions/${id}`, data);
         return res.data;
     },
     deleteTransaction: async (id) => {
