@@ -8,6 +8,7 @@ import {
     Edit2, 
     Trash2, 
     AlertTriangle,
+    AlertCircle,
     CheckCircle2,
     Clock,
     X,
@@ -297,6 +298,7 @@ const Stock = () => {
 
     const totalValue = stats?.totalValue || 0;
     const lowStockCount = stats?.lowStockCount || 0;
+    const outOfStockCount = stats?.outOfStockCount || 0;
     const totalUnits = items.reduce((acc, i) => acc + parseInt(i.quantity || 0), 0);
 
     const handleDelete = (id) => {
@@ -344,23 +346,68 @@ const Stock = () => {
 
             {/* Premium Stats Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem', marginBottom: '1.5rem' }}>
-                {[
-                    { label: 'Total Inventory Value', value: formatCurrency(totalValue), icon: TrendingUp, color: '#1B6B3A', bg: '#F0FDF4' },
-                    { label: 'Low Stock Alerts', value: lowStockCount, icon: AlertTriangle, color: '#EF4444', bg: '#FEF2F2' },
-                    { label: 'Active Items', value: items.filter(item => Number(item.quantity) > 0).length, icon: Layers, color: '#064E3B', bg: '#ECFDF5' },
-                    { label: 'Total Units', value: totalUnits, icon: Package, color: '#0D9488', bg: '#F0FDFA' }
-                ].map((stat, idx) => (
-                    <div key={idx} style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
+                {/* Total Inventory Value */}
+                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1B6B3A' }}>
+                            <TrendingUp size={24} />
+                        </div>
+                        <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Total Inventory Value</p>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{formatCurrency(totalValue)}</h3>
+                </div>
+
+                {/* Split second slot into two side-by-side square cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                    {/* Low Stock Alerts */}
+                    <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
-                                <stat.icon size={24} />
+                            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444' }}>
+                                <AlertTriangle size={24} />
                             </div>
                             <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
                         </div>
-                        <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>{stat.label}</p>
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{stat.value}</h3>
+                        <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Low Stock Alerts</p>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{lowStockCount}</h3>
                     </div>
-                ))}
+
+                    {/* Out of Stock */}
+                    <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444' }}>
+                                <AlertCircle size={24} />
+                            </div>
+                            <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
+                        </div>
+                        <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Out of Stock</p>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{outOfStockCount}</h3>
+                    </div>
+                </div>
+
+                {/* Active Items */}
+                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#064E3B' }}>
+                            <Layers size={24} />
+                        </div>
+                        <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Active Items</p>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{items.filter(item => Number(item.quantity) > 0).length}</h3>
+                </div>
+
+                {/* Total Units */}
+                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)', transition: 'transform 0.2s, box-shadow 0.2s' }} className="stat-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0D9488' }}>
+                            <Package size={24} />
+                        </div>
+                        <div style={{ background: '#F8FAFC', padding: '0.4rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8' }}>+2.4%</div>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#64748B', marginBottom: '0.25rem' }}>Total Units</p>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: '850', color: '#1E293B', letterSpacing: '-0.02em' }}>{totalUnits}</h3>
+                </div>
             </div>
 
             {/* Main Content Area */}
