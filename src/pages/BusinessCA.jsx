@@ -1667,43 +1667,45 @@ export default function BusinessCA() {
                                                 style={{ width: '100%', border: 'none', outline: 'none', fontSize: '13.5px', fontWeight: '600', color: '#0F172A' }}
                                             />
                                         </div>
-                                        <button
-                                            onClick={() => setPersonalTab('requests')}
-                                            style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                flexShrink: 0,
-                                                gap: '8px',
-                                                padding: '10px 16px',
-                                                borderRadius: '10px',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s',
-                                                background: 'transparent',
-                                                color: '#475569',
-                                                fontWeight: '600',
-                                                fontSize: '13px'
-                                            }}
-                                            onMouseEnter={e => {
-                                                e.currentTarget.style.background = '#F8FAFC';
-                                                e.currentTarget.style.color = '#0F172A';
-                                            }}
-                                            onMouseLeave={e => {
-                                                e.currentTarget.style.background = 'transparent';
-                                                e.currentTarget.style.color = '#475569';
-                                            }}
-                                        >
-                                            <HelpCircle size={16} style={{ color: '#64748B' }} />
-                                            <span>Client Requests</span>
-                                            {practiceRequests.filter(r => r.status === 'Awaiting Client').length > 0 && (
-                                                <span style={{ fontSize: '10px', fontWeight: '900', background: '#FEF2F2', color: '#EF4444', border: '1px solid #FEE2E2', padding: '1px 6px', borderRadius: '8px', marginLeft: '2px' }}>
-                                                    {practiceRequests.filter(r => r.status === 'Awaiting Client').length}
-                                                </span>
-                                            )}
-                                        </button>
-                                        <button onClick={() => setShowAddClientModal(true)} style={{ padding: '8px 16px', background: '#15803d', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <Plus size={16} /> Add Taxpayer Client
-                                        </button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <button
+                                                onClick={() => setPersonalTab('requests')}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    flexShrink: 0,
+                                                    gap: '8px',
+                                                    padding: '10px 16px',
+                                                    borderRadius: '10px',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s',
+                                                    background: 'transparent',
+                                                    color: '#475569',
+                                                    fontWeight: '600',
+                                                    fontSize: '13px'
+                                                }}
+                                                onMouseEnter={e => {
+                                                    e.currentTarget.style.background = '#F8FAFC';
+                                                    e.currentTarget.style.color = '#0F172A';
+                                                }}
+                                                onMouseLeave={e => {
+                                                    e.currentTarget.style.background = 'transparent';
+                                                    e.currentTarget.style.color = '#475569';
+                                                }}
+                                            >
+                                                <HelpCircle size={16} style={{ color: '#64748B' }} />
+                                                <span>Client Requests</span>
+                                                {practiceRequests.filter(r => r.status === 'Awaiting Client').length > 0 && (
+                                                    <span style={{ fontSize: '10px', fontWeight: '900', background: '#FEF2F2', color: '#EF4444', border: '1px solid #FEE2E2', padding: '1px 6px', borderRadius: '8px', marginLeft: '2px' }}>
+                                                        {practiceRequests.filter(r => r.status === 'Awaiting Client').length}
+                                                    </span>
+                                                )}
+                                            </button>
+                                            <button onClick={() => setShowAddClientModal(true)} style={{ padding: '8px 16px', background: '#15803d', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Plus size={16} /> Add Taxpayer Client
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
