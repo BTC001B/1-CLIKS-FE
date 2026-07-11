@@ -351,6 +351,13 @@ const BusinessPeople = () => {
         e.preventDefault();
         if (!selectedPersonId) return alert('Target registry contact missing.');
         
+        if (inlineRemForm.amount !== undefined && inlineRemForm.amount !== null && inlineRemForm.amount !== '') {
+            const parsed = Number(inlineRemForm.amount);
+            if (isNaN(parsed) || parsed < 0) {
+                return alert('Claim Cap must be a valid number greater than or equal to 0.');
+            }
+        }
+        
         if (editingRemId) {
             updateReminderMutation.mutate(
                 { ...inlineRemForm, person_id: selectedPersonId, id: editingRemId }
@@ -372,6 +379,14 @@ const BusinessPeople = () => {
     const handleSaveReminder = (e) => {
         e.preventDefault();
         if (!reminderForm.person_id) return alert('Please select a contact.');
+        
+        if (reminderForm.amount !== undefined && reminderForm.amount !== null && reminderForm.amount !== '') {
+            const parsed = Number(reminderForm.amount);
+            if (isNaN(parsed) || parsed < 0) {
+                return alert('Claim Cap must be a valid number greater than or equal to 0.');
+            }
+        }
+        
         createReminderMutation.mutate(reminderForm);
     };
 
@@ -913,7 +928,7 @@ const BusinessPeople = () => {
                                         </td>
                                         <td style={{ padding: '1.5rem 2rem', fontWeight: '800', color: '#1E293B' }}>{r.person_name}</td>
                                         <td style={{ padding: '1.5rem 2rem', color: '#475569', fontWeight: '650' }}>{r.title}</td>
-                                        <td style={{ padding: '1.5rem 2rem', textAlign: 'right', fontWeight: '900', color: '#0F172A' }}>{formatCurr(r.amount)}</td>
+                                        <td style={{ padding: '1.5rem 2rem', textAlign: 'right', fontWeight: '900', color: '#0F172A' }}>{(r.amount !== undefined && r.amount !== null && r.amount !== '') ? formatCurr(r.amount) : ''}</td>
                                         <td style={{ padding: '1.5rem 2rem', textAlign: 'right' }}>
                                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                                                 <button 
@@ -1707,7 +1722,7 @@ const BusinessPeople = () => {
                                                                     <div key={i} style={{ padding: '1.1rem 1.25rem', background: 'white', border: '1px solid #E2E8F0', borderLeft: '4px solid #F59E0B', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.01)' }}>
                                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                                                             <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#334155' }}>{rem.title}</span>
-                                                                            <span style={{ fontSize: '0.95rem', fontWeight: '900', color: '#1E293B' }}>{formatCurr(rem.amount)}</span>
+                                                                            <span style={{ fontSize: '0.95rem', fontWeight: '900', color: '#1E293B' }}>{(rem.amount !== undefined && rem.amount !== null && rem.amount !== '') ? formatCurr(rem.amount) : ''}</span>
                                                                         </div>
                                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: '#E11D48', fontWeight: '800' }}>
@@ -1721,7 +1736,7 @@ const BusinessPeople = () => {
                                                                                         setEditingRemId(rem.id);
                                                                                         setInlineRemForm({
                                                                                             title: rem.title,
-                                                                                            amount: rem.amount,
+                                                                                            amount: rem.amount !== null && rem.amount !== undefined ? rem.amount : '',
                                                                                             due_date: new Date(rem.due_date).toISOString().split('T')[0]
                                                                                         });
                                                                                         setIsInlineRemOpen(true);

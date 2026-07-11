@@ -252,13 +252,13 @@ const PersonProfile = () => {
                                                     <div className="timeline-item" key={i}>
                                                         <div className="time-line"></div>
                                                         <div className="item-icon-box">
-                                                            {item.amount !== undefined ? <Coins size={14} /> : item.due_date ? <Bell size={14} /> : <FileText size={14} />}
+                                                            {item.amount !== undefined && !item.due_date ? <Coins size={14} /> : item.due_date ? <Bell size={14} /> : <FileText size={14} />}
                                                         </div>
                                                         <div className="item-content">
                                                             <div className="item-title">{item.description || item.title}</div>
                                                             <div className="item-time">{new Date(item.created_at).toLocaleDateString()}</div>
                                                         </div>
-                                                        {item.amount !== undefined && <div className={`item-val ${item.type}`}>{formatCurrency(item.amount)}</div>}
+                                                        {item.amount !== undefined && !item.due_date && <div className={`item-val ${item.type}`}>{formatCurrency(item.amount)}</div>}
                                                     </div>
                                                 )) : <div className="empty-state-mini">No recent activities found</div>;
                                             })()}
