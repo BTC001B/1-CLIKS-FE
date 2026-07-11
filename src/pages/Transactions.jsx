@@ -160,8 +160,8 @@ const Transactions = () => {
     const netBalance   = totalIncome - totalExpense;
 
     const filtered = transactions.filter((t) =>
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.category.toLowerCase().includes(searchQuery.toLowerCase())
+        (t.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (t.category || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const getIcon = (category) => ICON_MAP[category] || ICON_MAP.Default;

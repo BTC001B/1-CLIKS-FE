@@ -114,7 +114,7 @@ const SplitExpense = () => {
 
     // Filtered Splits List
     const filteredSplits = splits.filter(s =>
-        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (s.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (s.description || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -1155,8 +1155,8 @@ const SplitExpense = () => {
                                         const filteredExpenses = (activeSplit.expenses || []).filter(e => {
                                             if (!detailSearchQuery.trim()) return true;
                                             const term = detailSearchQuery.toLowerCase().trim();
-                                            return e.title.toLowerCase().includes(term) ||
-                                                   e.paidBy.toLowerCase().includes(term) ||
+                                            return (e.title || '').toLowerCase().includes(term) ||
+                                                   (e.paidBy || '').toLowerCase().includes(term) ||
                                                    String(e.amount).includes(term) ||
                                                    (e.attachment || '').toLowerCase().includes(term);
                                         });

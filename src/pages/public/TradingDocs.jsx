@@ -198,7 +198,7 @@ const TradingDocs = () => {
         
         return CURRICULUM_DATA.map(phase => {
             const matchingModules = phase.modules.filter(mod => 
-                mod.title.toLowerCase().includes(searchQuery.toLowerCase())
+                (mod.title || '').toLowerCase().includes(searchQuery.toLowerCase())
             );
             return { ...phase, modules: matchingModules };
         }).filter(phase => phase.modules.length > 0);
