@@ -197,7 +197,7 @@ export default function BusinessCA() {
     const [uploadProgress, setUploadProgress] = useState(null);
     const [uploadedFileName, setUploadedFileName] = useState('');
     const [uploadedFileSize, setUploadedFileSize] = useState('1.4 MB');
-    const [uploadTargetFolder, setUploadTargetFolder] = useState('ITR Filings FY2025-26');
+    const [uploadTargetFolder, setUploadTargetFolder] = useState('All Folders');
     const [selectedFile, setSelectedFile] = useState(null);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
@@ -2755,9 +2755,15 @@ export default function BusinessCA() {
                                                         onChange={e => setUploadTargetFolder(e.target.value)}
                                                         style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '750', outline: 'none' }}
                                                     >
-                                                        {practiceFolders.map(f => (
-                                                            <option key={f.id} value={f.name}>{f.name}</option>
-                                                        ))}
+                                                        <option value="All Folders">All Folders</option>
+                                                        <option value="Tax Documents">Tax Documents</option>
+                                                        <option value="Client Documents">Client Documents</option>
+                                                        <option value="GST Returns">GST Returns</option>
+                                                        <option value="Audit Reports">Audit Reports</option>
+                                                        <option value="Financial Statements">Financial Statements</option>
+                                                        <option value="Workpapers">Workpapers</option>
+                                                        <option value="Invoices">Invoices</option>
+                                                        <option value="Other Documents">Other Documents</option>
                                                     </select>
                                                 </div>
                                                 
