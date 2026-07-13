@@ -76,6 +76,10 @@
     transition: color 0.2s ease, transform 0.2s ease;
 }
 
+.sidebar-item svg.sidebar-icon-white {
+    color: #FFFFFF !important;
+}
+
 .sidebar-item:hover {
     background-color: #E2E8F0 !important;
     color: #000000 !important;

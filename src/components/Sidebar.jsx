@@ -318,7 +318,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <Briefcase size={20} style={{ color: '#FFFFFF', flexShrink: 0 }} />
+                                <Briefcase size={20} className="sidebar-icon-white" style={{ color: '#FFFFFF', flexShrink: 0 }} />
                                 <span className="sidebar-label" style={{ fontWeight: '750' }}>FIN-PRO</span>
                             </div>
                         </button>
@@ -378,7 +378,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
                             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <Rocket size={20} style={{ color: '#FFFFFF', flexShrink: 0 }} />
+                                <Rocket size={20} className="sidebar-icon-white" style={{ color: '#FFFFFF', flexShrink: 0 }} />
                                 <span className="sidebar-label" style={{ fontWeight: '750' }}>Beta Club</span>
                             </div>
                         </button>
