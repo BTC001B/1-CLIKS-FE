@@ -54,8 +54,8 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                     style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     title="Toggle Sidebar"
                 >
-                    <div className="brand-logo-small" style={{ backgroundColor: 'transparent', borderRadius: '999px', width: 'auto', height: 'auto' }}>
-                        <img src={logoPng} alt="CLIKS Logo" style={{ height: '38px', width: 'auto' }} />
+                    <div className="brand-logo-small" style={{ backgroundColor: 'transparent', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px' }}>
+                        <img src={logoPng} alt="CLIKS Logo" style={{ height: '38px', width: '38px', objectFit: 'cover', borderRadius: '8px' }} />
                     </div>
                     <span style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: '700', letterSpacing: '0.5px' }}>
                         CLIKS
