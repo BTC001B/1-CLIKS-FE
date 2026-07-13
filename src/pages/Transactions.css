@@ -7,6 +7,9 @@
     max-width: 1600px;
     margin: 0 auto;
     font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    min-height: calc(100vh - 64px);
+    box-sizing: border-box;
 }
 
 /* --- Header Section --- */
