@@ -59,7 +59,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
 import logoPng from '../assets/cliks.png'; // Final branding
 
-const Sidebar = ({ isOpen, onReferralClick }) => {
+const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -117,6 +117,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
     const handleItemClick = (label, path) => {
         setActiveItem(label);
         if (path) navigate(path);
+        if (onItemClick) onItemClick();
     };
 
     // Show Finance sidebar for root, home (redirect), and finance paths

@@ -40,7 +40,21 @@ const MainLayout = ({ children }) => {
                 }}
             />
             <div className="app-body">
-                <Sidebar isOpen={isSidebarOpen} onReferralClick={() => setIsReferralOpen(true)} />
+                <Sidebar 
+                    isOpen={isSidebarOpen} 
+                    onReferralClick={() => setIsReferralOpen(true)} 
+                    onItemClick={() => {
+                        if (window.innerWidth <= 768) {
+                            setIsSidebarOpen(false);
+                        }
+                    }}
+                />
+                {isSidebarOpen && (
+                    <div 
+                        className="sidebar-backdrop" 
+                        onClick={() => setIsSidebarOpen(false)}
+                    />
+                )}
 
                 {/* ── Every page renders here — margin-right shrinks automatically ── */}
                 <div
