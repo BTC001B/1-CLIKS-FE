@@ -92,7 +92,7 @@ const CalcPanel = ({ onClose }) => {
 };
 
 /* ─── Right Sidebar ───────────────────────────────────────────────── */
-const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onCalcClose }) => {
+const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onCalcClose, onToolbarClose }) => {
     const navigate = useNavigate();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -112,6 +112,14 @@ const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onC
     }, [isCalcOpen, onCalcClose]);
 
     const topIcons = [
+        {
+            id: 'close_toolbar',
+            title: 'Close Toolbar',
+            iconClass: 'icon-edit', // generic gray circle
+            icon: <X size={20} />,
+            action: onToolbarClose,
+            mobileOnly: true
+        },
         {
             id: 'calendar',
             title: 'Dashboard',
@@ -182,7 +190,7 @@ const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onC
                         <button
                             key={item.id}
                             type="button"
-                            className={`rightpanel-btn${item.active ? ' rightpanel-btn--active' : ''}`}
+                            className={`rightpanel-btn${item.active ? ' rightpanel-btn--active' : ''}${item.mobileOnly ? ' md:hidden' : ''}`}
                             onClick={item.action}
                             title={item.title}
                             aria-label={item.title}

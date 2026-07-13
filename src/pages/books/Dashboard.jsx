@@ -47,8 +47,18 @@ const BooksDashboard = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const [selectedShortcuts, setSelectedShortcuts] = useState(() => {
+        const default6 = ['stock_management', 'people_hub', 'expenses', 'budgets', 'split_collect', 'segregation'];
         const saved = localStorage.getItem('cliks_books_shortcuts');
-        return saved ? JSON.parse(saved) : MASTER_SHORTCUTS.map(s => s.id);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.length > 6) {
+                localStorage.setItem('cliks_books_shortcuts', JSON.stringify(default6));
+                return default6;
+            }
+            return parsed;
+        }
+        localStorage.setItem('cliks_books_shortcuts', JSON.stringify(default6));
+        return default6;
     });
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -186,25 +196,14 @@ const BooksDashboard = () => {
                                         No matching modules found.
                                     </div>
                                 ) : (
-                                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                    <div className="dashboard-shortcuts-container">
                                         {visibleShortcuts.map(shortcut => {
                                             const Icon = shortcut.icon;
                                             return (
                                                 <button
                                                     key={shortcut.id}
                                                     onClick={() => navigate(shortcut.path)}
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.85rem',
-                                                        padding: '0.75rem 1.25rem',
-                                                        borderRadius: '16px',
-                                                        background: 'white',
-                                                        border: '1px solid #E2E8F0',
-                                                        cursor: 'pointer',
-                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                    }}
+                                                    className="dashboard-shortcut-btn"
                                                     onMouseOver={(e) => {
                                                         e.currentTarget.style.transform = 'translateY(-3px)';
                                                         e.currentTarget.style.boxShadow = '0 12px 20px -8px rgba(0,0,0,0.08)';
@@ -216,19 +215,16 @@ const BooksDashboard = () => {
                                                         e.currentTarget.style.borderColor = '#E2E8F0';
                                                     }}
                                                 >
-                                                    <div style={{
-                                                        width: '32px',
-                                                        height: '32px',
-                                                        borderRadius: '10px',
-                                                        background: `${shortcut.color}12`,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        color: shortcut.color
-                                                    }}>
+                                                    <div 
+                                                        className="dashboard-shortcut-btn-icon-wrapper"
+                                                        style={{
+                                                            background: `${shortcut.color}12`,
+                                                            color: shortcut.color
+                                                        }}
+                                                    >
                                                         <Icon size={16} strokeWidth={2.5} />
                                                     </div>
-                                                    <span style={{ fontWeight: '750', fontSize: '0.9rem', color: '#1E293B' }}>{shortcut.label}</span>
+                                                    <span className="dashboard-shortcut-btn-label">{shortcut.label}</span>
                                                 </button>
                                             );
                                         })}
@@ -237,18 +233,7 @@ const BooksDashboard = () => {
                                         {!q && (
                                             <button
                                                 onClick={() => setIsModalOpen(true)}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.75rem',
-                                                    padding: '0.75rem 1.25rem',
-                                                    borderRadius: '16px',
-                                                    background: 'transparent',
-                                                    border: '2px dashed #CBD5E1',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.2s ease',
-                                                    color: '#64748B'
-                                                }}
+                                                className="dashboard-manage-shortcuts-btn"
                                                 onMouseOver={(e) => {
                                                     e.currentTarget.style.borderColor = '#1B6B3A';
                                                     e.currentTarget.style.color = '#1B6B3A';

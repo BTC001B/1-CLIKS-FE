@@ -78,6 +78,7 @@ const MainLayout = ({ children }) => {
                 isCalcOpen={isCalcOpen}
                 onCalcToggle={() => setIsCalcOpen(prev => !prev)}
                 onCalcClose={() => setIsCalcOpen(false)}
+                onToolbarClose={() => setIsToolbarOpen(false)}
             />
 
             <ReferralModal isOpen={isReferralOpen} onClose={() => setIsReferralOpen(false)} />

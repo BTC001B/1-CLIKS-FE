@@ -616,9 +616,21 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
                                 </button>
                                 <button 
                                     onClick={closeCalc} 
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: '6px' }}
+                                    style={{
+                                        background: '#F1F5F9',
+                                        border: '1px solid #E2E8F0',
+                                        borderRadius: '8px',
+                                        padding: '6px 12px',
+                                        cursor: 'pointer',
+                                        color: '#475569',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        fontSize: '12px',
+                                        fontWeight: '700'
+                                    }}
                                 >
-                                    <X size={16} />
+                                    <X size={14} /> <span>Close</span>
                                 </button>
                             </div>
                         </div>
