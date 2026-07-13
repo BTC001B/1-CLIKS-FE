@@ -1047,10 +1047,11 @@
 
 @media (max-width: 768px) {
     .sidebar {
-        position: absolute;
+        position: fixed;
         left: 0;
         top: 0;
-        height: 100%;
+        bottom: 0;
+        height: 100vh;
         transform: translateX(0);
         box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
         width: 250px;
@@ -2825,10 +2826,10 @@ div[style*="background-color: '#F0F9F4'"] {
     color: #10B981;
 }
 
-/* Responsive — hide toolbar on very small screens */
+/* Responsive — show toolbar when toggled on very small screens */
 @media (max-width: 640px) {
     .rightpanel {
-        display: none;
+        z-index: 250; /* ensure it stays on top of content when toggled */
     }
     .calc-panel {
         right: 0;

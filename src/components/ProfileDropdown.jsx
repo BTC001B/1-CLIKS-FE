@@ -501,7 +501,7 @@ export function ProfileDropdown({
                 }}>
                     <UserIcon size={14} />
                 </div>
-                <span style={{ 
+                <span className="hidden md:inline" style={{ 
                     textTransform: 'none', 
                     letterSpacing: '0px',
                     fontSize: '12px',
@@ -511,6 +511,13 @@ export function ProfileDropdown({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
                 }}>{displayName}</span>
+                <span className="md:hidden" style={{ 
+                    textTransform: 'none', 
+                    letterSpacing: '0px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    whiteSpace: 'nowrap',
+                }}>{displayName.slice(0, 5)}</span>
                 <ChevronDown
                     size={16}
                     style={{
