@@ -57,7 +57,7 @@ import {
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
-import logoPng from '../assets/cliks.jpg'; // Final branding
+import logoPng from '../assets/cliks.png'; // Final branding
 
 const Sidebar = ({ isOpen, onReferralClick }) => {
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
-import logoPng from '../../assets/cliks.jpg';
+import logoPng from '../../assets/cliks.png';
 
 const pulse = keyframes`
   0%, 100% {

@@ -3,7 +3,7 @@ import { Wallet, BookOpen, Users, SlidersHorizontal, Bell } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
-import logoPng from '../assets/logo_new.jpg'; // Final branding
+import logoPng from '../assets/logo_new.png'; // Final branding
 
 import { ProfileDropdown } from './ProfileDropdown';
 import SearchBox from './SearchBox';

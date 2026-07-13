@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 import { Loader } from '../components/common';
-import logoPng from '../assets/cliks.jpg';
+import logoPng from '../assets/cliks.png';
 import { useAuth } from '../context';
 
 // Animation hooks
