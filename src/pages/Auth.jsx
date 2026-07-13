@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context';
 import { referralService } from '../services/referralService';
-import logoPng from '../assets/cliks.png';
+import logoPng from '../assets/cliks.jpg';
 
 const Auth = () => {
     const navigate = useNavigate();
