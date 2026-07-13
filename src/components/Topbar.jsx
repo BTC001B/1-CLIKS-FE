@@ -35,7 +35,7 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
     ];
 
     return (
-        <header className="topbar" style={{ paddingRight: '0.5rem' }}>
+        <header className="topbar" style={{ paddingRight: '14px' }}>
             {/* Left: Branding / App Switcher */}
             <div className="topbar-left">
                 {/* ... existing logo code ... */}
@@ -200,50 +200,52 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                     onLogout={handleLogout}
                 />
 
-                {/* Vertical divider */}
-                <div style={{
-                    width: '1px',
-                    height: '28px',
-                    background: 'rgba(255,255,255,0.18)',
-                    flexShrink: 0,
-                    marginRight: '8px'
-                }} />
-
-                {/* Sliders / filter icon — far right, toggles the quick-access toolbar */}
-                <button
-                    onClick={onToggleToolbar}
-                    title={isToolbarOpen ? 'Hide toolbar' : 'Show toolbar'}
-                    aria-pressed={isToolbarOpen}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '44px',
-                        height: '44px',
-                        borderRadius: '12px',
-                        background: isToolbarOpen
-                            ? 'rgba(255,255,255,0.22)'
-                            : 'rgba(255,255,255,0.08)',
-                        border: isToolbarOpen
-                            ? '1px solid rgba(255,255,255,0.35)'
-                            : '1px solid rgba(255,255,255,0.12)',
-                        color: '#ffffff',
-                        cursor: 'pointer',
+                {/* Sub-flexbox to align divider and sliders button exactly to the 72px right sidebar */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginLeft: '4px' }}>
+                    {/* Vertical divider */}
+                    <div style={{
+                        width: '1px',
+                        height: '28px',
+                        background: 'rgba(255,255,255,0.18)',
                         flexShrink: 0,
-                        transition: 'all 0.2s ease',
-                        outline: 'none',
-                    }}
-                    onMouseEnter={(e) => {
-                        if (!isToolbarOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.16)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.background = isToolbarOpen
-                            ? 'rgba(255,255,255,0.22)'
-                            : 'rgba(255,255,255,0.08)';
-                    }}
-                >
-                    <SlidersHorizontal size={18} />
-                </button>
+                    }} />
+
+                    {/* Sliders / filter icon — far right, toggles the quick-access toolbar */}
+                    <button
+                        onClick={onToggleToolbar}
+                        title={isToolbarOpen ? 'Hide toolbar' : 'Show toolbar'}
+                        aria-pressed={isToolbarOpen}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: '12px',
+                            background: isToolbarOpen
+                                ? 'rgba(255,255,255,0.22)'
+                                : 'rgba(255,255,255,0.08)',
+                            border: isToolbarOpen
+                                ? '1px solid rgba(255,255,255,0.35)'
+                                : '1px solid rgba(255,255,255,0.12)',
+                            color: '#ffffff',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            transition: 'all 0.2s ease',
+                            outline: 'none',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isToolbarOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.16)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = isToolbarOpen
+                                ? 'rgba(255,255,255,0.22)'
+                                : 'rgba(255,255,255,0.08)';
+                        }}
+                    >
+                        <SlidersHorizontal size={18} />
+                    </button>
+                </div>
             </div>
         </header>
     );

@@ -80,6 +80,24 @@
     color: #FFFFFF !important;
 }
 
+/* Ensure dark-bg buttons are always white text and white icons, even when active or hovered */
+.sidebar-item.sidebar-item-dark-bg,
+.sidebar-item.sidebar-item-dark-bg.active {
+    background: linear-gradient(135deg, #1E3A8A 0%, #172554 100%) !important;
+    color: #FFFFFF !important;
+}
+
+.sidebar-item.sidebar-item-dark-bg:hover {
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+    color: #FFFFFF !important;
+}
+
+.sidebar-item.sidebar-item-dark-bg svg,
+.sidebar-item.sidebar-item-dark-bg.active svg,
+.sidebar-item.sidebar-item-dark-bg:hover svg {
+    color: #FFFFFF !important;
+}
+
 .sidebar-item:hover {
     background-color: #E2E8F0 !important;
     color: #000000 !important;

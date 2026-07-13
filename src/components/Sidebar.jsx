@@ -294,7 +294,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
 
                         {/* 6. FIN-PRO */}
                         <button
-                            className={`sidebar-item ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
+                            className={`sidebar-item sidebar-item-dark-bg ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
                             onClick={() => handleItemClick('FIN-PRO', '/ca')}
                             style={{
                                 width: '100%',
@@ -354,7 +354,7 @@ const Sidebar = ({ isOpen, onReferralClick }) => {
 
                         {/* Beta Club */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
+                            className={`sidebar-item sidebar-item-dark-bg ${activeItem === 'Beta Club' ? 'active' : ''}`}
                             onClick={() => handleItemClick('Beta Club', '/social/beta-club')}
                             style={{
                                 width: '100%',
