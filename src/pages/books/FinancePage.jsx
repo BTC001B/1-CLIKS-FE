@@ -94,10 +94,60 @@ const getOrdinal = (d) => {
     }
 };
 
+const mapCategory = (name) => {
+    const n = name.toLowerCase();
+    if (n.includes('salary') || n.includes('dividend') || n.includes('interest')) return 'Income';
+    if (n.includes('rent') || n.includes('lease')) return 'Rent';
+    if (n.includes('loan') || n.includes('debt') || n.includes('emi')) return 'Debt & Loan';
+    if (n.includes('tax') || n.includes('gst')) return 'Tax';
+    if (n.includes('invest') || n.includes('stock') || n.includes('mutual')) return 'Investment';
+    return 'Other';
+};
+
+const formatAPIDate = (dStr) => {
+    try {
+        if (!dStr) return new Date().toISOString().split('T')[0];
+        if (dStr.includes('-')) return dStr; // YYYY-MM-DD
+        const parts = dStr.split(' ');
+        if (parts.length !== 3) return new Date().toISOString().split('T')[0];
+        const [d, m, y] = parts;
+        const monthMap = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+        const date = new Date(y, monthMap[m], d);
+        return isNaN(date.getTime()) ? new Date().toISOString().split('T')[0] : date.toISOString().split('T')[0];
+    } catch { return new Date().toISOString().split('T')[0]; }
+};
+
 const FinancePage = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const uid = user?.id ?? user?.email ?? 'guest';
+
+    // Transactions query (shared source of truth with Payments module)
+    const { data: dbTransactions = [] } = useQuery({
+        queryKey: ['transactions'],
+        queryFn: () => transactionsService.getTransactions(),
+        enabled: !!uid && uid !== 'guest',
+    });
+
+    const [isSynced, setIsSynced] = useState(false);
+
+    // Data states
+    const [incomeSources, setIncomeSources] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(incomeKey(uid))) || []; }
+        catch { return []; }
+    });
+    const [expenses, setExpenses] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(expensesKey(uid))) || []; }
+        catch { return []; }
+    });
+    const [additionalIncomeSources, setAdditionalIncomeSources] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(additionalIncomeKey(uid))) || []; }
+        catch { return []; }
+    });
+    const [additionalExpenses, setAdditionalExpenses] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(additionalExpensesKey(uid))) || []; }
+        catch { return []; }
+    });
 
     // GST Navigation and Settings States
     const [activeTab, setActiveTab] = useState('tracker'); // 'tracker' | 'gst'
@@ -471,32 +521,7 @@ const FinancePage = () => {
         });
     };
 
-    // Transactions query (shared source of truth with Payments module)
-    const { data: dbTransactions = [] } = useQuery({
-        queryKey: ['transactions'],
-        queryFn: () => transactionsService.getTransactions(),
-        enabled: !!uid && uid !== 'guest',
-    });
 
-    const [isSynced, setIsSynced] = useState(false);
-
-    // Data states
-    const [incomeSources, setIncomeSources] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(incomeKey(uid))) || []; }
-        catch { return []; }
-    });
-    const [expenses, setExpenses] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(expensesKey(uid))) || []; }
-        catch { return []; }
-    });
-    const [additionalIncomeSources, setAdditionalIncomeSources] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(additionalIncomeKey(uid))) || []; }
-        catch { return []; }
-    });
-    const [additionalExpenses, setAdditionalExpenses] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(additionalExpensesKey(uid))) || []; }
-        catch { return []; }
-    });
 
     // Form states
     const [newIncome, setNewIncome] = useState(BLANK_INCOME);
@@ -543,29 +568,7 @@ const FinancePage = () => {
     const [activeFilter, setActiveFilter] = useState({ type: null, column: null });
     const filterDropdownRef = useRef(null);
 
-    // Helper for syncing
-    const mapCategory = (name) => {
-        const n = name.toLowerCase();
-        if (n.includes('salary') || n.includes('dividend') || n.includes('interest')) return 'Income';
-        if (n.includes('rent') || n.includes('lease')) return 'Rent';
-        if (n.includes('loan') || n.includes('debt') || n.includes('emi')) return 'Debt & Loan';
-        if (n.includes('tax') || n.includes('gst')) return 'Tax';
-        if (n.includes('invest') || n.includes('stock') || n.includes('mutual')) return 'Investment';
-        return 'Other';
-    };
 
-    const formatAPIDate = (dStr) => {
-        try {
-            if (!dStr) return new Date().toISOString().split('T')[0];
-            if (dStr.includes('-')) return dStr; // YYYY-MM-DD
-            const parts = dStr.split(' ');
-            if (parts.length !== 3) return new Date().toISOString().split('T')[0];
-            const [d, m, y] = parts;
-            const monthMap = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
-            const date = new Date(y, monthMap[m], d);
-            return isNaN(date.getTime()) ? new Date().toISOString().split('T')[0] : date.toISOString().split('T')[0];
-        } catch { return new Date().toISOString().split('T')[0]; }
-    };
 
     // Filter Logic
     const filteredIncome = useMemo(() => {
