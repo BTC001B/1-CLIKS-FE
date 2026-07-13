@@ -64,7 +64,7 @@ const PeopleRecords = () => {
     const createMutation = useMutation({
         mutationFn: (data) => peopleService.createRecord(data.person_id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-records-all']);
+            queryClient.invalidateQueries({ queryKey: ['people-records-all'] });
             closeModal();
         }
     });
@@ -72,7 +72,7 @@ const PeopleRecords = () => {
     const deleteMutation = useMutation({
         mutationFn: (rec) => peopleService.deleteRecord(rec.person_id, rec.id),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-records-all']);
+            queryClient.invalidateQueries({ queryKey: ['people-records-all'] });
         }
     });
 

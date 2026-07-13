@@ -41,7 +41,7 @@ const PeopleOverview = () => {
     const createMutation = useMutation({
         mutationFn: (data) => peopleService.createPerson(data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-list']);
+            queryClient.invalidateQueries({ queryKey: ['people-list'] });
             setIsModalOpen(false);
             setNewPerson({ name: '', role_type: 'friend', phone: '', email: '', company: '', relationship: '' });
         }
@@ -50,7 +50,7 @@ const PeopleOverview = () => {
     const deleteMutation = useMutation({
         mutationFn: (id) => peopleService.deletePerson(id),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-list']);
+            queryClient.invalidateQueries({ queryKey: ['people-list'] });
         }
     });
 

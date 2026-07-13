@@ -137,14 +137,20 @@ const Auth = () => {
                     onClick={() => navigate('/')}
                 >
                     <div style={{
-                        padding: '4px',
-                        background: '#E8F5E9',
-                        borderRadius: '50%'
+                        padding: '6px',
+                        background: '#ffffff',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justify: 'center',
+                        width: '56px',
+                        height: '56px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
                     }}>
                         <img
                             src={logoPng}
                             alt="CLIKS Logo"
-                            style={{ width: '48px', height: '48px' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                         />
                     </div>
                     <span style={{

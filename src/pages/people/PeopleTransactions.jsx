@@ -54,7 +54,7 @@ const PeopleTransactions = () => {
     const createMutation = useMutation({
         mutationFn: (data) => peopleService.createTransaction(data.person_id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-transactions-all']);
+            queryClient.invalidateQueries({ queryKey: ['people-transactions-all'] });
             closeModal();
         }
     });
@@ -62,7 +62,7 @@ const PeopleTransactions = () => {
     const updateMutation = useMutation({
         mutationFn: (data) => peopleService.updateTransaction(data.person_id, data.id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-transactions-all']);
+            queryClient.invalidateQueries({ queryKey: ['people-transactions-all'] });
             closeModal();
         }
     });
@@ -70,7 +70,7 @@ const PeopleTransactions = () => {
     const deleteMutation = useMutation({
         mutationFn: (txn) => peopleService.deleteTransaction(txn.person_id, txn.id),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-transactions-all']);
+            queryClient.invalidateQueries({ queryKey: ['people-transactions-all'] });
         }
     });
 

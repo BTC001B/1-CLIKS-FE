@@ -205,7 +205,7 @@ const BusinessPeople = () => {
     const createContactMutation = useMutation({
         mutationFn: (data) => peopleService.createPerson(data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-list']);
+            queryClient.invalidateQueries({ queryKey: ['people-list'] });
             setIsContactModalOpen(false);
             setContactForm({ name: '', role_type: 'friend', phone: '', email: '', company: '', relationship: '', contact_info: '' });
             alert('Contact added to your network.');
@@ -215,8 +215,8 @@ const BusinessPeople = () => {
     const updateContactMutation = useMutation({
         mutationFn: (variables) => peopleService.updatePerson(variables.id, variables.data),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['people-list']);
-            queryClient.invalidateQueries(['person-detail', variables.id]);
+            queryClient.invalidateQueries({ queryKey: ['people-list'] });
+            queryClient.invalidateQueries({ queryKey: ['person-detail', variables.id] });
             setIsContactModalOpen(false);
             setEditingContactId(null);
             setContactForm({ name: '', role_type: 'friend', phone: '', email: '', company: '', relationship: '', contact_info: '' });
@@ -227,7 +227,7 @@ const BusinessPeople = () => {
     const deleteContactMutation = useMutation({
         mutationFn: (id) => peopleService.deletePerson(id),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-list']);
+            queryClient.invalidateQueries({ queryKey: ['people-list'] });
             alert('Contact deleted successfully.');
         }
     });
@@ -235,11 +235,11 @@ const BusinessPeople = () => {
     const createTxMutation = useMutation({
         mutationFn: (data) => peopleService.createTransaction(data.person_id, data),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['people-transactions-all']);
-            queryClient.invalidateQueries(['people-list']);
+            queryClient.invalidateQueries({ queryKey: ['people-transactions-all'] });
+            queryClient.invalidateQueries({ queryKey: ['people-list'] });
             if (variables.person_id) {
-                queryClient.invalidateQueries(['person-transactions', variables.person_id]);
-                queryClient.invalidateQueries(['person-detail', variables.person_id]);
+                queryClient.invalidateQueries({ queryKey: ['person-transactions', variables.person_id] });
+                queryClient.invalidateQueries({ queryKey: ['person-detail', variables.person_id] });
             }
             setIsTxModalOpen(false);
             setIsInlineTxOpen(false);
@@ -252,11 +252,11 @@ const BusinessPeople = () => {
     const updateTxMutation = useMutation({
         mutationFn: (data) => peopleService.updateTransaction(data.person_id, data.id, data),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries(['people-transactions-all']);
-            queryClient.invalidateQueries(['people-list']);
+            queryClient.invalidateQueries({ queryKey: ['people-transactions-all'] });
+            queryClient.invalidateQueries({ queryKey: ['people-list'] });
             if (variables.person_id) {
-                queryClient.invalidateQueries(['person-transactions', variables.person_id]);
-                queryClient.invalidateQueries(['person-detail', variables.person_id]);
+                queryClient.invalidateQueries({ queryKey: ['person-transactions', variables.person_id] });
+                queryClient.invalidateQueries({ queryKey: ['person-detail', variables.person_id] });
             }
             setIsInlineTxOpen(false);
             setEditingTxId(null);
@@ -268,8 +268,8 @@ const BusinessPeople = () => {
     const deleteTxMutation = useMutation({
         mutationFn: (txn) => peopleService.deleteTransaction(txn.person_id, txn.id),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-transactions-all']);
-            queryClient.invalidateQueries(['people-list']);
+            queryClient.invalidateQueries({ queryKey: ['people-transactions-all'] });
+            queryClient.invalidateQueries({ queryKey: ['people-list'] });
             alert('Transaction removed.');
         }
     });
@@ -277,7 +277,7 @@ const BusinessPeople = () => {
     const createReminderMutation = useMutation({
         mutationFn: (data) => peopleService.createReminder(data.person_id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-reminders-all']);
+            queryClient.invalidateQueries({ queryKey: ['people-reminders-all'] });
             setIsReminderModalOpen(false);
             setReminderForm({ person_id: '', title: '', amount: '', due_date: new Date().toISOString().split('T')[0], notes: '' });
             alert('Reminder dispatched successfully.');

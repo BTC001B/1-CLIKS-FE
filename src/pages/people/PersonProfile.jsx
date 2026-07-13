@@ -78,7 +78,7 @@ const PersonProfile = () => {
     const createTxMutation = useMutation({
         mutationFn: (data) => peopleService.createTransaction(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['person-transactions', id]);
+            queryClient.invalidateQueries({ queryKey: ['person-transactions', id] });
             setModalType(null);
         }
     });
@@ -86,7 +86,7 @@ const PersonProfile = () => {
     const createNoteMutation = useMutation({
         mutationFn: (data) => peopleService.createRecord(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['person-records', id]);
+            queryClient.invalidateQueries({ queryKey: ['person-records', id] });
             setModalType(null);
         }
     });
@@ -94,7 +94,7 @@ const PersonProfile = () => {
     const createReminderMutation = useMutation({
         mutationFn: (data) => peopleService.createReminder(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['person-reminders', id]);
+            queryClient.invalidateQueries({ queryKey: ['person-reminders', id] });
             setModalType(null);
         }
     });
@@ -102,7 +102,7 @@ const PersonProfile = () => {
     const createWalletMutation = useMutation({
         mutationFn: (data) => goalWalletService.createWallet({ ...data, person_id: id }),
         onSuccess: () => {
-            queryClient.invalidateQueries(['person-wallets', id]);
+            queryClient.invalidateQueries({ queryKey: ['person-wallets', id] });
             setModalType(null);
         }
     });
@@ -270,7 +270,7 @@ const PersonProfile = () => {
                                     <div className="ov-section">
                                         <div className="sec-header">
                                             <h3>Reminders</h3>
-                                            <button className="btn-plus-small" onClick={() => { setModalType('reminder'); setFormData({ title: '', due_date: '', message: '' }); }}><Plus size={14} /></button>
+                                            <button className="btn-plus-small" onClick={() => { setModalType('reminder'); setFormData({ title: '', due_date: '', message: '', amount: '' }); }}><Plus size={14} /></button>
                                         </div>
                                         <div className="mini-rem-stack">
                                             {(() => {
@@ -280,6 +280,11 @@ const PersonProfile = () => {
                                                     <div className="mini-reminder-card" key={r.id}>
                                                         <div className="m-rem-info">
                                                             <span className="m-rem-title">{r.title}</span>
+                                                            {r.amount !== undefined && r.amount !== null && r.amount !== '' && (
+                                                                <span style={{ fontSize: '0.75rem', fontWeight: '850', color: '#1B6B3A', display: 'block', marginTop: '2px' }}>
+                                                                    Cap: {formatCurrency(r.amount)}
+                                                                </span>
+                                                            )}
                                                             <span className="m-rem-date">{new Date(r.due_date).toLocaleDateString()}</span>
                                                         </div>
                                                         <div className="m-rem-status">Pending</div>
@@ -420,7 +425,7 @@ const PersonProfile = () => {
                                     <h2 className="tab-title">Reminders & Tasks</h2>
                                     <p className="tab-desc">Manage follow-ups, payment deadlines, and interactions.</p>
                                 </div>
-                                <button className="btn-premium-action" onClick={() => { setModalType('reminder'); setFormData({ title: '', due_date: '', message: '' }); }}>
+                                <button className="btn-premium-action" onClick={() => { setModalType('reminder'); setFormData({ title: '', due_date: '', message: '', amount: '' }); }}>
                                     <Bell size={18} />
                                     <span>Set Reminder</span>
                                 </button>
@@ -439,6 +444,11 @@ const PersonProfile = () => {
                                                 <div className="rem-date-box">{new Date(rem.due_date).toLocaleDateString()}</div>
                                             </div>
                                             <p className="rem-msg">{rem.message}</p>
+                                            {rem.amount !== undefined && rem.amount !== null && rem.amount !== '' && (
+                                                 <p className="rem-msg" style={{ fontWeight: '800', color: '#1B6B3A', marginTop: '-4px', fontSize: '0.85rem' }}>
+                                                     Claim Cap: {formatCurrency(rem.amount)}
+                                                 </p>
+                                             )}
                                             <div className="rem-footer">
                                                 <span className="rem-status-v2">{rem.status}</span>
                                                 <button className="btn-mark-done">Mark Settled</button>
@@ -505,6 +515,10 @@ const PersonProfile = () => {
                                     <div className="p-form-group">
                                         <label>Due Date</label>
                                         <input type="date" required value={formData.due_date} onChange={e => setFormData({...formData, due_date: e.target.value})} />
+                                    </div>
+                                    <div className="p-form-group">
+                                        <label>Claim Cap (₹)</label>
+                                        <input type="number" placeholder="0.00" value={formData.amount || ''} onChange={e => setFormData({...formData, amount: e.target.value})} />
                                     </div>
                                     <div className="p-form-group">
                                         <label>Message</label>

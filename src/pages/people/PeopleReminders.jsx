@@ -16,17 +16,19 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { peopleService } from '../../services';
+import { useCurrency } from '../../context';
 import '../../App.css';
 
 const PeopleReminders = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { formatCurrency } = useCurrency();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     
     // Modal States
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [formData, setFormData] = useState({ person_id: '', title: '', due_date: '', message: '' });
+    const [formData, setFormData] = useState({ person_id: '', title: '', due_date: '', message: '', amount: '' });
 
     // ── Queries ─────────────────────────────────────────────────────────────
     const { data: remindersRes, isLoading } = useQuery({
@@ -50,16 +52,16 @@ const PeopleReminders = () => {
     const createMutation = useMutation({
         mutationFn: (data) => peopleService.createReminder(data.person_id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-reminders-all']);
+            queryClient.invalidateQueries({ queryKey: ['people-reminders-all'] });
             setIsModalOpen(false);
-            setFormData({ person_id: '', title: '', due_date: '', message: '' });
+            setFormData({ person_id: '', title: '', due_date: '', message: '', amount: '' });
         }
     });
 
     const settleMutation = useMutation({
         mutationFn: (rem) => peopleService.updateReminder(rem.person_id, rem.id, { status: 'settled' }),
         onSuccess: () => {
-            queryClient.invalidateQueries(['people-reminders-all']);
+            queryClient.invalidateQueries({ queryKey: ['people-reminders-all'] });
         }
     });
 
@@ -170,6 +172,12 @@ const PeopleReminders = () => {
                                 </div>
                                 <h3 className="rem-title">{rem.title}</h3>
                                 <p className="rem-msg">{rem.message}</p>
+                                {rem.amount !== undefined && rem.amount !== null && rem.amount !== '' && (
+                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', marginTop: '6px', color: '#1B6B3A', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <span>Claim Cap:</span>
+                                        <span>{formatCurrency(rem.amount)}</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="rem-meta-info">
                                 <div className="rem-date-box">
@@ -232,15 +240,27 @@ const PeopleReminders = () => {
                                             onChange={(e) => setFormData({...formData, title: e.target.value})}
                                         />
                                     </div>
-                                    <div className="form-group-premium">
-                                        <label>Due Date</label>
-                                        <input 
-                                            type="date" 
-                                            required 
-                                            className="premium-input"
-                                            value={formData.due_date}
-                                            onChange={(e) => setFormData({...formData, due_date: e.target.value})}
-                                        />
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                        <div className="form-group-premium">
+                                            <label>Due Date</label>
+                                            <input 
+                                                type="date" 
+                                                required 
+                                                className="premium-input"
+                                                value={formData.due_date}
+                                                onChange={(e) => setFormData({...formData, due_date: e.target.value})}
+                                            />
+                                        </div>
+                                        <div className="form-group-premium">
+                                            <label>Claim Cap</label>
+                                            <input 
+                                                type="number" 
+                                                placeholder="0.00"
+                                                className="premium-input"
+                                                value={formData.amount}
+                                                onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                                            />
+                                        </div>
                                     </div>
                                     <div className="form-group-premium">
                                         <label>Message / Details</label>
