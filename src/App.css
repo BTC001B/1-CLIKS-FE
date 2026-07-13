@@ -2434,14 +2434,27 @@ div[style*="background-color: '#F0F9F4'"] {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
+
+    .dashboard-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .dashboard-stat-card:nth-child(3) {
+        grid-column: span 2;
+    }
 }
 
 @media (max-width: 640px) {
     .dashboard-stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
     
+    .dashboard-stat-card:nth-child(3) {
+        grid-column: span 2;
+    }
+
     .dashboard-stat-card {
         padding: 1.25rem;
     }
