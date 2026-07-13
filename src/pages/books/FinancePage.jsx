@@ -234,10 +234,10 @@ const FinancePage = () => {
     }, [additionalExpenses, addExpenseSearch, addExpenseFilters]);
 
     // Persist local storage only if guest
-    useEffect(() => { if (!uid || uid === 'guest') { localStorage.setItem(incomeKey(uid), JSON.stringify(incomeSources)); } }, [incomeSources, uid]);
-    useEffect(() => { if (!uid || uid === 'guest') { localStorage.setItem(expensesKey(uid), JSON.stringify(expenses)); } }, [expenses, uid]);
-    useEffect(() => { if (!uid || uid === 'guest') { localStorage.setItem(additionalIncomeKey(uid), JSON.stringify(additionalIncomeSources)); } }, [additionalIncomeSources, uid]);
-    useEffect(() => { if (!uid || uid === 'guest') { localStorage.setItem(additionalExpensesKey(uid), JSON.stringify(additionalExpenses)); } }, [additionalExpenses, uid]);
+    useEffect(() => { localStorage.setItem(incomeKey(uid), JSON.stringify(incomeSources)); }, [incomeSources, uid]);
+    useEffect(() => { localStorage.setItem(expensesKey(uid), JSON.stringify(expenses)); }, [expenses, uid]);
+    useEffect(() => { localStorage.setItem(additionalIncomeKey(uid), JSON.stringify(additionalIncomeSources)); }, [additionalIncomeSources, uid]);
+    useEffect(() => { localStorage.setItem(additionalExpensesKey(uid), JSON.stringify(additionalExpenses)); }, [additionalExpenses, uid]);
 
     // Auto-sync local storage items that do not have a transactionId (e.g. historical data)
     useEffect(() => {
@@ -307,7 +307,7 @@ const FinancePage = () => {
                         const data = { 
                             type: 'income', 
                             title: `[Add] ${entry.name}`, 
-                            name: entry.name,
+                            name: `[Add] ${entry.name}`,
                             description: entry.description || '',
                             category: mapCategory(entry.name), 
                             amount: entry.amount, 
@@ -332,7 +332,7 @@ const FinancePage = () => {
                         const data = { 
                             type: 'expense', 
                             title: `[Add] ${entry.name}`, 
-                            name: entry.name,
+                            name: `[Add] ${entry.name}`,
                             description: entry.description || '',
                             category: mapCategory(entry.name), 
                             amount: entry.amount, 
@@ -390,19 +390,19 @@ const FinancePage = () => {
         };
 
         const syncedIncome = dbTransactions
-            .filter(tx => (tx.type || '').toLowerCase() === 'income' && !(tx.title || '').startsWith('[Add] '))
+            .filter(tx => (tx.type || '').toLowerCase() === 'income' && !(tx.title || '').startsWith('[Add] ') && !(tx.name || '').startsWith('[Add] '))
             .map(mapTransactionToEntry);
 
         const syncedExpenses = dbTransactions
-            .filter(tx => (tx.type || '').toLowerCase() === 'expense' && !(tx.title || '').startsWith('[Add] '))
+            .filter(tx => (tx.type || '').toLowerCase() === 'expense' && !(tx.title || '').startsWith('[Add] ') && !(tx.name || '').startsWith('[Add] '))
             .map(mapTransactionToEntry);
 
         const syncedAddIncome = dbTransactions
-            .filter(tx => (tx.type || '').toLowerCase() === 'income' && (tx.title || '').startsWith('[Add] '))
+            .filter(tx => (tx.type || '').toLowerCase() === 'income' && ((tx.title || '').startsWith('[Add] ') || (tx.name || '').startsWith('[Add] ')))
             .map(mapTransactionToEntry);
 
         const syncedAddExpenses = dbTransactions
-            .filter(tx => (tx.type || '').toLowerCase() === 'expense' && (tx.title || '').startsWith('[Add] '))
+            .filter(tx => (tx.type || '').toLowerCase() === 'expense' && ((tx.title || '').startsWith('[Add] ') || (tx.name || '').startsWith('[Add] ')))
             .map(mapTransactionToEntry);
 
         setIncomeSources(syncedIncome);
@@ -499,13 +499,14 @@ const FinancePage = () => {
         let entry;
         const now = new Date();
         const defaultDate = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const defaultTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
         if (editingId) {
             entry = { ...expenses.find(e => e.id === editingId), ...expense, amount: parseFloat(expense.amount) || 0 };
             setExpenses(prev => prev.map(e => e.id === editingId ? entry : e));
             setEditingId(null);
         } else {
-            entry = { ...expense, id: Date.now(), date: expense.date || defaultDate, amount: parseFloat(expense.amount) || 0 };
+            entry = { ...expense, id: Date.now(), date: expense.date || defaultDate, time: expense.time || defaultTime, amount: parseFloat(expense.amount) || 0 };
             setExpenses(prev => [entry, ...prev]);
         }
         setExpense(BLANK_EXPENSE);
@@ -581,7 +582,7 @@ const FinancePage = () => {
             const data = { 
                 type: 'income', 
                 title: `[Add] ${entry.name}`, 
-                name: entry.name,
+                name: `[Add] ${entry.name}`, 
                 description: entry.description || '',
                 category: mapCategory(entry.name), 
                 amount: entry.amount, 
@@ -622,13 +623,14 @@ const FinancePage = () => {
         let entry;
         const now = new Date();
         const defaultDate = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const defaultTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
         if (editingAdditionalId) {
             entry = { ...additionalExpenses.find(e => e.id === editingAdditionalId), ...additionalExpense, amount: parseFloat(additionalExpense.amount) || 0 };
             setAdditionalExpenses(prev => prev.map(e => e.id === editingAdditionalId ? entry : e));
             setEditingAdditionalId(null);
         } else {
-            entry = { ...additionalExpense, id: Date.now(), date: additionalExpense.date || defaultDate, amount: parseFloat(additionalExpense.amount) || 0 };
+            entry = { ...additionalExpense, id: Date.now(), date: additionalExpense.date || defaultDate, time: additionalExpense.time || defaultTime, amount: parseFloat(additionalExpense.amount) || 0 };
             setAdditionalExpenses(prev => [entry, ...prev]);
         }
         setAdditionalExpense(BLANK_EXPENSE);
@@ -637,7 +639,7 @@ const FinancePage = () => {
             const data = { 
                 type: 'expense', 
                 title: `[Add] ${entry.name}`, 
-                name: entry.name,
+                name: `[Add] ${entry.name}`, 
                 description: entry.description || '',
                 category: mapCategory(entry.name), 
                 amount: entry.amount, 
@@ -678,7 +680,7 @@ const FinancePage = () => {
                 const data = { 
                     type: 'Income', 
                     title: `[Add] ${s.name}`, 
-                    name: s.name,
+                    name: `[Add] ${s.name}`, 
                     description: s.description || '',
                     category: mapCategory(s.name), 
                     amount: s.amount, 
