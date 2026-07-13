@@ -129,7 +129,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
     return (
         <aside className={`sidebar ${isOpen ? 'open' : 'collapsed'}`}>
             <div className="sidebar-header">
-                <div className="brand-logo" style={{ background: '#ffffff', padding: '3px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', boxShadow: '0 2px 6px rgba(0,0,0,0.05)' }}>
+                <div className="brand-logo" style={{ background: '#f0fdf4', padding: '1px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', boxShadow: '0 2px 6px rgba(0,0,0,0.05)' }}>
                     <img src={logoPng} alt="CLIKS Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
                 <h2 className="app-title">CLIKS</h2>

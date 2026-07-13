@@ -137,12 +137,12 @@ const Auth = () => {
                     onClick={() => navigate('/')}
                 >
                     <div style={{
-                        padding: '6px',
-                        background: '#ffffff',
+                        padding: '2px',
+                        background: '#f0fdf4',
                         borderRadius: '12px',
                         display: 'flex',
                         alignItems: 'center',
-                        justify: 'center',
+                        justifyContent: 'center',
                         width: '56px',
                         height: '56px',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
