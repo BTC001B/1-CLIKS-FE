@@ -299,7 +299,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             onClick={() => handleItemClick('FIN-PRO', '/ca')}
                             style={{
                                 width: '140px',
-                                height: '40px',
+                                height: '34px',
                                 margin: '0.4rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -309,7 +309,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 border: '1px solid #B8860B',
                                 cursor: 'pointer',
                                 fontWeight: '800',
-                                fontSize: '0.85rem',
+                                fontSize: '0.82rem',
                                 borderRadius: '24px',
                                 boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -341,7 +341,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 transition: '0.5s',
                                 pointerEvents: 'none'
                             }} />
-                            <Gift size={18} style={{ color: '#000000', flexShrink: 0, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))' }} />
+                            <Gift size={16} style={{ color: '#000000', flexShrink: 0, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))' }} />
                             <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#000000', letterSpacing: '0.3px', textShadow: '0 0.5px 0 rgba(255,255,255,0.3)' }}>FIN-PRO</span>
                         </button>
                     </>
@@ -380,7 +380,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             onClick={() => handleItemClick('Beta Club', '/social/beta-club')}
                             style={{
                                 width: '140px',
-                                height: '40px',
+                                height: '34px',
                                 margin: '0.4rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -390,7 +390,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 border: '1px solid #B8860B',
                                 cursor: 'pointer',
                                 fontWeight: '800',
-                                fontSize: '0.85rem',
+                                fontSize: '0.82rem',
                                 borderRadius: '24px',
                                 boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -423,7 +423,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 pointerEvents: 'none'
                             }} />
 
-                            <Rocket size={18} style={{ color: '#000000', flexShrink: 0, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))' }} />
+                            <Rocket size={16} style={{ color: '#000000', flexShrink: 0, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))' }} />
                             <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#000000', letterSpacing: '0.3px', textShadow: '0 0.5px 0 rgba(255,255,255,0.3)' }}>Beta Club</span>
                         </button>
                     </>
