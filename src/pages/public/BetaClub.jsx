@@ -374,7 +374,7 @@ export default function BetaClub() {
                         zIndex: 2,
                         padding: '0.75rem 1.25rem',
                         borderRadius: '12px',
-                        background: '#10b981',
+                        background: '#C89F7A',
                         color: 'white',
                         fontWeight: '700',
                         fontSize: '0.875rem',
@@ -384,15 +384,15 @@ export default function BetaClub() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '0.5rem',
-                        boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
+                        boxShadow: '0 4px 14px rgba(200, 159, 122, 0.3)',
                         transition: 'transform 0.2s, background 0.2s'
                     }}
                     onMouseOver={(e) => {
-                        e.currentTarget.style.background = '#059669';
+                        e.currentTarget.style.background = '#B68D64';
                         e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseOut={(e) => {
-                        e.currentTarget.style.background = '#10b981';
+                        e.currentTarget.style.background = '#C89F7A';
                         e.currentTarget.style.transform = 'translateY(0)';
                     }}
                 >
