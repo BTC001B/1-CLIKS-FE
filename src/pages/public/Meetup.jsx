@@ -28,14 +28,19 @@ import { meetupsService, profileService } from '../../services';
 import { QRCodeCanvas } from 'qrcode.react';
 import '../../App.css';
 
-const CARD_THEMES = [
-    { gradient: 'linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%)', color: '#1E3A8A', lightColor: '#DBEAFE' }, // Blue
-    { gradient: 'linear-gradient(135deg, #881337 0%, #E11D48 100%)', color: '#881337', lightColor: '#FFE4E6' }, // Crimson Red
-    { gradient: 'linear-gradient(135deg, #064E3B 0%, #10B981 100%)', color: '#064E3B', lightColor: '#D1FAE5' }, // Green
-    { gradient: 'linear-gradient(135deg, #78350F 0%, #F59E0B 100%)', color: '#78350F', lightColor: '#FEF3C7' }, // Gold/Brown
-    { gradient: 'linear-gradient(135deg, #581C87 0%, #8B5CF6 100%)', color: '#581C87', lightColor: '#F3E8FF' }, // Purple
-    { gradient: 'linear-gradient(135deg, #134E5E 0%, #06B6D4 100%)', color: '#134E5E', lightColor: '#E0F2FE' }, // Teal
-];
+const CATEGORY_THEMES = {
+    'Finance': { bg: '#1E3A8A', badge: '#152C5B', light: '#DBEAFE' },
+    'Technology': { bg: '#6D28D9', badge: '#4C1D95', light: '#F3E8FF' },
+    'Networking': { bg: '#059669', badge: '#064E3B', light: '#D1FAE5' },
+    'Workshop': { bg: '#EA580C', badge: '#9A3412', light: '#FFEDD5' },
+    'Webinar': { bg: '#4338CA', badge: '#312E81', light: '#E0E7FF' },
+    'Science': { bg: '#0F766E', badge: '#134E4A', light: '#CCFBF1' },
+    'Business': { bg: '#9F1239', badge: '#881337', light: '#FFE4E6' },
+    'Startup': { bg: '#0284C7', badge: '#075985', light: '#E0F2FE' },
+    'Social': { bg: '#DB2777', badge: '#831843', light: '#FCE7F3' },
+    'Masterclass': { bg: '#0F172A', badge: '#000000', light: '#F1F5F9' },
+    'default': { bg: '#64748B', badge: '#334155', light: '#F1F5F9' }
+};
 
 const Meetup = () => {
     const queryClient = useQueryClient();
@@ -599,7 +604,8 @@ const Meetup = () => {
                         const maxSeats = event.max_seats || 100;
                         const currentAttendees = event.attendees || 0;
                         const isSoldOut = currentAttendees >= maxSeats;
-                        const cardTheme = CARD_THEMES[event.id % CARD_THEMES.length] || CARD_THEMES[0];
+                        const category = event.category || 'Networking';
+                        const theme = CATEGORY_THEMES[category] || CATEGORY_THEMES['default'];
                         
                         return (
                             <div key={event.id} style={{
@@ -624,7 +630,7 @@ const Meetup = () => {
                                 {/* Sleek Condensed Card Art Cover */}
                                 <div style={{
                                     height: '75px',
-                                    background: cardTheme.gradient,
+                                    background: theme.bg,
                                     position: 'relative',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -640,28 +646,28 @@ const Meetup = () => {
                                     )}
                                     
                                     {/* Category Label */}
-                                    <div style={{ position: 'absolute', top: '0.75rem', left: '1rem', background: 'rgba(0,0,0,0.25)', padding: '0.3rem 0.6rem', borderRadius: '6px', backdropFilter: 'blur(4px)', fontSize: '0.62rem', fontWeight: '850', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                        {event.category || 'Networking'}
+                                    <div style={{ position: 'absolute', top: '0.75rem', left: '1rem', background: theme.badge, padding: '0.3rem 0.6rem', borderRadius: '6px', backdropFilter: 'blur(4px)', fontSize: '0.62rem', fontWeight: '850', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        {category}
                                     </div>
 
                                     {/* Price Tag */}
-                                    <div style={{ position: 'absolute', top: '0.75rem', right: '1rem', background: 'white', color: cardTheme.color, padding: '0.3rem 0.6rem', borderRadius: '6px', fontWeight: '900', fontSize: '0.7rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                                    <div style={{ position: 'absolute', top: '0.75rem', right: '1rem', background: 'white', color: theme.bg, padding: '0.3rem 0.6rem', borderRadius: '6px', fontWeight: '900', fontSize: '0.7rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                                         {event.price || 'Free'}
                                     </div>
 
                                     {/* Dynamic Personalization / Location Match Ribbons */}
                                     {getRecommendationScore(event) >= 250 && (
-                                        <div style={{ position: 'absolute', bottom: '0.5rem', left: '1rem', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.58rem', fontWeight: '900', letterSpacing: '0.05em', boxShadow: '0 2px 5px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                        <div style={{ position: 'absolute', bottom: '0.5rem', left: '1rem', background: '#10B981', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.58rem', fontWeight: '900', letterSpacing: '0.05em', boxShadow: '0 2px 5px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '3px' }}>
                                             🔥 PERFECT MATCH
                                         </div>
                                     )}
                                     {getRecommendationScore(event) === 150 && (
-                                        <div style={{ position: 'absolute', bottom: '0.5rem', left: '1rem', background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.58rem', fontWeight: '900', letterSpacing: '0.05em', boxShadow: '0 2px 5px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                        <div style={{ position: 'absolute', bottom: '0.5rem', left: '1rem', background: '#F59E0B', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.58rem', fontWeight: '900', letterSpacing: '0.05em', boxShadow: '0 2px 5px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '3px' }}>
                                             ⭐ TOP INTEREST
                                         </div>
                                     )}
                                     {getRecommendationScore(event) === 100 && (
-                                        <div style={{ position: 'absolute', bottom: '0.5rem', left: '1rem', background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.58rem', fontWeight: '900', letterSpacing: '0.05em', boxShadow: '0 2px 5px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                        <div style={{ position: 'absolute', bottom: '0.5rem', left: '1rem', background: '#3B82F6', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.58rem', fontWeight: '900', letterSpacing: '0.05em', boxShadow: '0 2px 5px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '3px' }}>
                                             📍 NEAR YOU
                                         </div>
                                     )}
@@ -673,7 +679,7 @@ const Meetup = () => {
                                         <span style={{
                                             display: 'inline-flex', alignItems: 'center', gap: '3px',
                                             padding: '0.25rem 0.5rem', borderRadius: '6px',
-                                            background: cardTheme.lightColor, color: cardTheme.color, fontSize: '0.65rem', fontWeight: '850', textTransform: 'uppercase'
+                                            background: theme.light, color: theme.bg, fontSize: '0.65rem', fontWeight: '850', textTransform: 'uppercase'
                                         }}>
                                             {event.type || 'Offline'}
                                         </span>
@@ -706,7 +712,7 @@ const Meetup = () => {
                                         {/* Capacity visualizer */}
                                         <div style={{ marginTop: '0.15rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '0.35rem', fontSize: '0.68rem' }}>
                                             <span style={{ fontWeight: '800', color: '#64748B' }}>Seats:</span>
-                                            <span style={{ fontWeight: '900', color: isSoldOut ? '#DC2626' : cardTheme.color }}>
+                                            <span style={{ fontWeight: '900', color: isSoldOut ? '#DC2626' : theme.bg }}>
                                                 {currentAttendees}/{maxSeats} Booked {isSoldOut && '(FULL)'}
                                             </span>
                                         </div>
@@ -719,7 +725,7 @@ const Meetup = () => {
                                                 {['#10B981', '#3B82F6', '#EC4899'].slice(0, Math.min(currentAttendees || 1, 3)).map((color, i) => (
                                                     <div key={i} style={{
                                                         width: '22px', height: '22px', borderRadius: '50%',
-                                                        background: `linear-gradient(135deg, ${color}88, ${color})`, border: '2px solid white',
+                                                        background: color, border: '2px solid white',
                                                         marginLeft: '-6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                         fontSize: '0.55rem', fontWeight: '900', color: 'white'
                                                     }}>
@@ -729,7 +735,7 @@ const Meetup = () => {
                                                 {currentAttendees > 3 && (
                                                     <div style={{
                                                         width: '22px', height: '22px', borderRadius: '50%',
-                                                        background: cardTheme.color, border: '2px solid white', marginLeft: '-6px',
+                                                        background: theme.bg, border: '2px solid white', marginLeft: '-6px',
                                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                         fontSize: '0.55rem', color: 'white', fontWeight: '900'
                                                     }}>

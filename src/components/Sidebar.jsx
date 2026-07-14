@@ -304,7 +304,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 padding: '0 12px',
-                                background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)',
+                                background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)',
                                 color: '#000000',
                                 border: '1px solid #B8860B',
                                 cursor: 'pointer',
@@ -320,12 +320,12 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             }}
                             onMouseOver={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #F7E27E 50%, #FFD700 100%)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #D4AF37 100%)';
                                 e.currentTarget.style.boxShadow = 'inset 0 1px 3px rgba(255, 255, 255, 0.8), 0 8px 20px rgba(184, 134, 11, 0.35)';
                             }}
                             onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)';
                                 e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)';
                             }}
                         >
@@ -385,7 +385,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 padding: '0 12px',
-                                background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)',
+                                background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)',
                                 color: '#000000',
                                 border: '1px solid #B8860B',
                                 cursor: 'pointer',
@@ -401,12 +401,12 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             }}
                             onMouseOver={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #F7E27E 50%, #FFD700 100%)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #D4AF37 100%)';
                                 e.currentTarget.style.boxShadow = 'inset 0 1px 3px rgba(255, 255, 255, 0.8), 0 8px 20px rgba(184, 134, 11, 0.35)';
                             }}
                             onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)';
                                 e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)';
                             }}
                         >
