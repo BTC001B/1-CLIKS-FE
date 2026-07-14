@@ -1,19 +1,11 @@
 import { apiClient } from '../api/client';
 
 /**
- * GST & Tax Service connected to live /gst backend
+ * Minimal GST & Tax Service to support CA module compatibility
  */
 export const gstService = {
-    getSettings: () => apiClient.get('/gst/settings').then(res => res.data.data || res.data),
-    getInvoices: () => apiClient.get('/gst/invoices').then(res => res.data.data || res.data),
-    generateInvoice: (data) => apiClient.post('/gst/einvoice', data).then(res => res.data.data || res.data),
-    getEways: () => apiClient.get('/gst/ewaybill').then(res => res.data.data || res.data || []),
-    createEway: (data) => apiClient.post('/gst/ewaybill', data).then(res => res.data.data || res.data),
-    getReconciliations: () => apiClient.get('/gst/reconciliation').then(res => res.data.data || res.data),
-    runReconciliation: (data) => apiClient.post('/gst/reconciliation/run', data).then(res => res.data.data || res.data),
-    deleteInvoice: (id) => apiClient.delete(`/gst/invoices/${id}`).then(res => res.data.data || res.data),
     getGSTR3B: () => apiClient.get('/gst/reports/gstr3b').then(res => res.data.data || res.data),
-    getGSTR9: () => apiClient.get('/gst/reports/gstr9').then(res => res.data.data || res.data)
+    fileGstr3b: () => apiClient.post('/gst/filings/gstr3b').then(res => res.data.data || res.data)
 };
 
 export default gstService;

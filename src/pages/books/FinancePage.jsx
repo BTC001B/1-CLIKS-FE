@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { DollarSign, ShoppingCart, Save, Trash2, Pencil, FileText, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc } from 'lucide-react';
+import { DollarSign, Trash2, Pencil, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc } from 'lucide-react';
 import { useAuth } from '../../context';
 import { transactionsService } from '../../services';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -53,16 +53,7 @@ const BLANK_INCOME = {
     date: '', 
     time: '', 
     schedule: 'Monthly', 
-    amount: '',
-    gstApplicable: false,
-    gstType: 'CGST + SGST',
-    gstRate: '18',
-    customGstRate: '0',
-    invoiceNumber: '',
-    gstNumber: '',
-    customerVendorName: '',
-    gstAmount: 0,
-    totalAmount: 0
+    amount: ''
 };
 const BLANK_EXPENSE = { 
     name: '', 
@@ -70,16 +61,7 @@ const BLANK_EXPENSE = {
     date: '', 
     time: '', 
     schedule: 'Monthly', 
-    amount: '',
-    gstApplicable: false,
-    gstType: 'CGST + SGST',
-    gstRate: '18',
-    customGstRate: '0',
-    invoiceNumber: '',
-    gstNumber: '',
-    customerVendorName: '',
-    gstAmount: 0,
-    totalAmount: 0
+    amount: ''
 };
 
 const getOrdinal = (d) => {
@@ -148,381 +130,6 @@ const FinancePage = () => {
         try { return JSON.parse(localStorage.getItem(additionalExpensesKey(uid))) || []; }
         catch { return []; }
     });
-
-    // GST Navigation and Settings States
-    const [activeTab, setActiveTab] = useState('tracker'); // 'tracker' | 'gst'
-    const [activeGstTab, setActiveGstTab] = useState('dashboard'); // 'dashboard' | 'sales' | 'purchase' | 'reports' | 'settings'
-    const [gstReportType, setGstReportType] = useState('monthly'); // 'monthly' | 'quarterly' | 'yearly' | 'sales_register' | 'purchase_register' | 'gst_summary'
-    const [gstSettings, setGstSettings] = useState(() => {
-        try {
-            const saved = localStorage.getItem(`cliks_gst_settings_${uid}`);
-            return saved ? JSON.parse(saved) : {
-                businessName: '',
-                businessGstNumber: '',
-                state: '',
-                country: '',
-                defaultGstRate: '18',
-                invoicePrefix: 'INV-',
-                invoiceStartingNumber: '1001',
-                taxCalculationMethod: 'Exclusive',
-                currency: 'INR'
-            };
-        } catch {
-            return {
-                businessName: '',
-                businessGstNumber: '',
-                state: '',
-                country: '',
-                defaultGstRate: '18',
-                invoicePrefix: 'INV-',
-                invoiceStartingNumber: '1001',
-                taxCalculationMethod: 'Exclusive',
-                currency: 'INR'
-            };
-        }
-    });
-
-    // Helper to calculate GST Amount and Grand Total based on current settings
-    const calculateGstDetails = (amountVal, isGst, rateStr, customRateStr, method) => {
-        const amount = parseFloat(amountVal) || 0;
-        if (!isGst) {
-            return { gstAmount: 0, totalAmount: amount };
-        }
-        
-        let rate = 18;
-        if (rateStr === 'custom' || rateStr === 'Custom') {
-            rate = parseFloat(customRateStr) || 0;
-        } else {
-            rate = parseFloat(rateStr) || 0;
-        }
-
-        if (method === 'Inclusive') {
-            // Inclusive GST formula
-            const gstAmount = amount - (amount / (1 + rate / 100));
-            return {
-                gstAmount: parseFloat(gstAmount.toFixed(2)),
-                totalAmount: parseFloat(amount.toFixed(2))
-            };
-        } else {
-            // Exclusive GST formula (default)
-            const gstAmount = amount * (rate / 100);
-            const totalAmount = amount + gstAmount;
-            return {
-                gstAmount: parseFloat(gstAmount.toFixed(2)),
-                totalAmount: parseFloat(totalAmount.toFixed(2))
-            };
-        }
-    };
-
-    // Export utility for reports
-    const exportCSV = (dataList, filename, headers) => {
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += headers.join(",") + "\n";
-        
-        dataList.forEach(row => {
-            csvContent += row.map(val => `"${String(val || '').replace(/"/g, '""')}"`).join(",") + "\n";
-        });
-        
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    // Sales / Purchase Register states
-    const [salesSearch, setSalesSearch] = useState('');
-    const [salesSortKey, setSalesSortKey] = useState('date');
-    const [salesSortDirection, setSalesSortDirection] = useState('desc');
-    const [salesFilterRate, setSalesFilterRate] = useState('all');
-    const [salesCurrentPage, setSalesCurrentPage] = useState(1);
-
-    const [purchaseSearch, setPurchaseSearch] = useState('');
-    const [purchaseSortKey, setPurchaseSortKey] = useState('date');
-    const [purchaseSortDirection, setPurchaseSortDirection] = useState('desc');
-    const [purchaseFilterRate, setPurchaseFilterRate] = useState('all');
-    const [purchaseCurrentPage, setPurchaseCurrentPage] = useState(1);
-    
-    // Selected transaction for details modal
-    const [selectedGstTx, setSelectedGstTx] = useState(null);
-
-    // Derived GST Transactions from all sources (local + db fallback)
-    const gstTransactions = useMemo(() => {
-        const list = [];
-        
-        incomeSources.forEach(x => {
-            if (x.gstApplicable) {
-                list.push({ ...x, categoryType: 'income' });
-            }
-        });
-        additionalIncomeSources.forEach(x => {
-            if (x.gstApplicable) {
-                list.push({ ...x, categoryType: 'income' });
-            }
-        });
-        expenses.forEach(x => {
-            if (x.gstApplicable) {
-                list.push({ ...x, categoryType: 'expense' });
-            }
-        });
-        additionalExpenses.forEach(x => {
-            if (x.gstApplicable) {
-                list.push({ ...x, categoryType: 'expense' });
-            }
-        });
-
-        const localTxIds = new Set(list.map(x => x.transactionId).filter(Boolean));
-        dbTransactions.forEach(tx => {
-            if (tx.gstApplicable && !localTxIds.has(tx.id)) {
-                list.push({
-                    id: tx.id,
-                    name: tx.name || tx.title || '',
-                    description: tx.description || '',
-                    amount: tx.amount,
-                    date: tx.date,
-                    time: tx.time,
-                    gstApplicable: true,
-                    gstType: tx.gstType,
-                    gstRate: tx.gstRate,
-                    customGstRate: tx.customGstRate,
-                    invoiceNumber: tx.invoiceNumber,
-                    gstNumber: tx.gstNumber,
-                    customerVendorName: tx.customerVendorName,
-                    gstAmount: tx.gstAmount,
-                    totalAmount: tx.totalAmount,
-                    categoryType: (tx.type || '').toLowerCase() === 'income' ? 'income' : 'expense',
-                    transactionId: tx.id
-                });
-            }
-        });
-
-        return list.sort((a, b) => new Date(formatAPIDate(b.date)) - new Date(formatAPIDate(a.date)));
-    }, [incomeSources, expenses, additionalIncomeSources, additionalExpenses, dbTransactions]);
-
-    const gstStats = useMemo(() => {
-        let collected = 0;
-        let paid = 0;
-        let salesCount = 0;
-        let purchaseCount = 0;
-        const monthlyMap = {};
-
-        gstTransactions.forEach(tx => {
-            const amt = parseFloat(tx.gstAmount) || 0;
-            const isIncome = tx.categoryType === 'income';
-            
-            if (isIncome) {
-                collected += amt;
-                salesCount++;
-            } else {
-                paid += amt;
-                purchaseCount++;
-            }
-
-            try {
-                const dateObj = new Date(formatAPIDate(tx.date));
-                if (!isNaN(dateObj.getTime())) {
-                    const monthKey = dateObj.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-                    if (!monthlyMap[monthKey]) {
-                        monthlyMap[monthKey] = { month: monthKey, collected: 0, paid: 0, net: 0 };
-                    }
-                    if (isIncome) {
-                        monthlyMap[monthKey].collected += amt;
-                    } else {
-                        monthlyMap[monthKey].paid += amt;
-                    }
-                    monthlyMap[monthKey].net = monthlyMap[monthKey].collected - monthlyMap[monthKey].paid;
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        });
-
-        return {
-            collected: parseFloat(collected.toFixed(2)),
-            paid: parseFloat(paid.toFixed(2)),
-            net: parseFloat((collected - paid).toFixed(2)),
-            salesCount,
-            purchaseCount,
-            monthlySummary: Object.values(monthlyMap)
-        };
-    }, [gstTransactions]);
-
-    const salesTransactions = useMemo(() => {
-        let result = gstTransactions.filter(tx => tx.categoryType === 'income');
-        
-        if (salesSearch) {
-            const q = salesSearch.toLowerCase();
-            result = result.filter(tx => 
-                (tx.invoiceNumber || '').toLowerCase().includes(q) ||
-                (tx.customerVendorName || '').toLowerCase().includes(q) ||
-                (tx.gstNumber || '').toLowerCase().includes(q) ||
-                (tx.name || '').toLowerCase().includes(q)
-            );
-        }
-
-        if (salesFilterRate !== 'all') {
-            result = result.filter(tx => String(tx.gstRate) === salesFilterRate);
-        }
-
-        result.sort((a, b) => {
-            let vA = a[salesSortKey];
-            let vB = b[salesSortKey];
-
-            if (salesSortKey === 'date') {
-                vA = new Date(formatAPIDate(a.date));
-                vB = new Date(formatAPIDate(b.date));
-            } else if (salesSortKey === 'amount' || salesSortKey === 'gstAmount' || salesSortKey === 'totalAmount') {
-                vA = parseFloat(vA) || 0;
-                vB = parseFloat(vB) || 0;
-            } else {
-                vA = String(vA || '').toLowerCase();
-                vB = String(vB || '').toLowerCase();
-            }
-
-            if (vA < vB) return salesSortDirection === 'asc' ? -1 : 1;
-            if (vA > vB) return salesSortDirection === 'asc' ? 1 : -1;
-            return 0;
-        });
-
-        return result;
-    }, [gstTransactions, salesSearch, salesFilterRate, salesSortKey, salesSortDirection]);
-
-    const salesPageCount = Math.ceil(salesTransactions.length / 5) || 1;
-    const paginatedSales = useMemo(() => {
-        const start = (salesCurrentPage - 1) * 5;
-        return salesTransactions.slice(start, start + 5);
-    }, [salesTransactions, salesCurrentPage]);
-
-    const purchaseTransactions = useMemo(() => {
-        let result = gstTransactions.filter(tx => tx.categoryType === 'expense');
-        
-        if (purchaseSearch) {
-            const q = purchaseSearch.toLowerCase();
-            result = result.filter(tx => 
-                (tx.invoiceNumber || '').toLowerCase().includes(q) ||
-                (tx.customerVendorName || '').toLowerCase().includes(q) ||
-                (tx.gstNumber || '').toLowerCase().includes(q) ||
-                (tx.name || '').toLowerCase().includes(q)
-            );
-        }
-
-        if (purchaseFilterRate !== 'all') {
-            result = result.filter(tx => String(tx.gstRate) === purchaseFilterRate);
-        }
-
-        result.sort((a, b) => {
-            let vA = a[purchaseSortKey];
-            let vB = b[purchaseSortKey];
-
-            if (purchaseSortKey === 'date') {
-                vA = new Date(formatAPIDate(a.date));
-                vB = new Date(formatAPIDate(b.date));
-            } else if (purchaseSortKey === 'amount' || purchaseSortKey === 'gstAmount' || purchaseSortKey === 'totalAmount') {
-                vA = parseFloat(vA) || 0;
-                vB = parseFloat(vB) || 0;
-            } else {
-                vA = String(vA || '').toLowerCase();
-                vB = String(vB || '').toLowerCase();
-            }
-
-            if (vA < vB) return purchaseSortDirection === 'asc' ? -1 : 1;
-            if (vA > vB) return purchaseSortDirection === 'asc' ? 1 : -1;
-            return 0;
-        });
-
-        return result;
-    }, [gstTransactions, purchaseSearch, purchaseFilterRate, purchaseSortKey, purchaseSortDirection]);
-
-    const purchasePageCount = Math.ceil(purchaseTransactions.length / 5) || 1;
-    const paginatedPurchases = useMemo(() => {
-        const start = (purchaseCurrentPage - 1) * 5;
-        return purchaseTransactions.slice(start, start + 5);
-    }, [purchaseTransactions, purchaseCurrentPage]);
-
-    const getNextInvoiceNumber = (isIncome) => {
-        const prefix = gstSettings.invoicePrefix || (isIncome ? 'INV-' : 'BILL-');
-        const startNo = parseInt(gstSettings.invoiceStartingNumber) || 1001;
-        const list = gstTransactions.filter(tx => isIncome ? tx.categoryType === 'income' : tx.categoryType === 'expense');
-        const count = list.length;
-        return `${prefix}${startNo + count}`;
-    };
-
-    const handleIncomeFieldChange = (field, value) => {
-        setNewIncome(prev => {
-            const updated = { ...prev, [field]: value };
-            if (field === 'amount' || field === 'gstApplicable' || field === 'gstRate' || field === 'customGstRate') {
-                const { gstAmount, totalAmount } = calculateGstDetails(
-                    field === 'amount' ? value : updated.amount,
-                    field === 'gstApplicable' ? value : updated.gstApplicable,
-                    field === 'gstRate' ? value : updated.gstRate,
-                    field === 'customGstRate' ? value : updated.customGstRate,
-                    gstSettings.taxCalculationMethod
-                );
-                updated.gstAmount = gstAmount;
-                updated.totalAmount = totalAmount;
-            }
-            return updated;
-        });
-    };
-
-    const handleExpenseFieldChange = (field, value) => {
-        setExpense(prev => {
-            const updated = { ...prev, [field]: value };
-            if (field === 'amount' || field === 'gstApplicable' || field === 'gstRate' || field === 'customGstRate') {
-                const { gstAmount, totalAmount } = calculateGstDetails(
-                    field === 'amount' ? value : updated.amount,
-                    field === 'gstApplicable' ? value : updated.gstApplicable,
-                    field === 'gstRate' ? value : updated.gstRate,
-                    field === 'customGstRate' ? value : updated.customGstRate,
-                    gstSettings.taxCalculationMethod
-                );
-                updated.gstAmount = gstAmount;
-                updated.totalAmount = totalAmount;
-            }
-            return updated;
-        });
-    };
-
-    const handleAdditionalIncomeFieldChange = (field, value) => {
-        setNewAdditionalIncome(prev => {
-            const updated = { ...prev, [field]: value };
-            if (field === 'amount' || field === 'gstApplicable' || field === 'gstRate' || field === 'customGstRate') {
-                const { gstAmount, totalAmount } = calculateGstDetails(
-                    field === 'amount' ? value : updated.amount,
-                    field === 'gstApplicable' ? value : updated.gstApplicable,
-                    field === 'gstRate' ? value : updated.gstRate,
-                    field === 'customGstRate' ? value : updated.customGstRate,
-                    gstSettings.taxCalculationMethod
-                );
-                updated.gstAmount = gstAmount;
-                updated.totalAmount = totalAmount;
-            }
-            return updated;
-        });
-    };
-
-    const handleAdditionalExpenseFieldChange = (field, value) => {
-        setAdditionalExpense(prev => {
-            const updated = { ...prev, [field]: value };
-            if (field === 'amount' || field === 'gstApplicable' || field === 'gstRate' || field === 'customGstRate') {
-                const { gstAmount, totalAmount } = calculateGstDetails(
-                    field === 'amount' ? value : updated.amount,
-                    field === 'gstApplicable' ? value : updated.gstApplicable,
-                    field === 'gstRate' ? value : updated.gstRate,
-                    field === 'customGstRate' ? value : updated.customGstRate,
-                    gstSettings.taxCalculationMethod
-                );
-                updated.gstAmount = gstAmount;
-                updated.totalAmount = totalAmount;
-            }
-            return updated;
-        });
-    };
-
-
-
     // Form states
     const [newIncome, setNewIncome] = useState(BLANK_INCOME);
     const [editingIncomeId, setEditingIncomeId] = useState(null);
@@ -841,9 +448,7 @@ const FinancePage = () => {
             entry = {
                 ...incomeSources.find(i => i.id === editingIncomeId),
                 ...newIncome,
-                amount: parseFloat(newIncome.amount) || 0,
-                gstAmount: parseFloat(newIncome.gstAmount) || 0,
-                totalAmount: parseFloat(newIncome.totalAmount) || 0
+                amount: parseFloat(newIncome.amount) || 0
             };
             setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? entry : i));
             setEditingIncomeId(null);
@@ -853,40 +458,25 @@ const FinancePage = () => {
                 id: Date.now(),
                 date: newIncome.date || defaultDate,
                 time: newIncome.time || defaultTime,
-                amount: parseFloat(newIncome.amount) || 0,
-                gstAmount: parseFloat(newIncome.gstAmount) || 0,
-                totalAmount: parseFloat(newIncome.totalAmount) || 0
+                amount: parseFloat(newIncome.amount) || 0
             };
             setIncomeSources(prev => [...prev, entry]);
         }
         setNewIncome(BLANK_INCOME);
 
         try {
-            const taxableAmount = (entry.gstApplicable && gstSettings.taxCalculationMethod === 'Inclusive')
-                ? (entry.amount - entry.gstAmount)
-                : entry.amount;
-
             const data = { 
                 type: 'income', 
                 title: entry.name, 
                 name: entry.name,
                 description: entry.description || '',
                 category: mapCategory(entry.name), 
-                amount: taxableAmount, 
+                amount: entry.amount, 
                 date: formatAPIDate(entry.date), 
                 time: entry.time || '',
                 schedule: entry.schedule || 'Monthly',
                 notes: entry.schedule || 'Monthly', 
-                status: 'Completed',
-                gstApplicable: entry.gstApplicable || false,
-                gstType: entry.gstType || 'CGST + SGST',
-                gstRate: entry.gstRate || '18',
-                customGstRate: entry.customGstRate || '0',
-                invoiceNumber: entry.invoiceNumber || '',
-                gstNumber: entry.gstNumber || '',
-                customerVendorName: entry.customerVendorName || '',
-                gstAmount: entry.gstAmount || 0,
-                totalAmount: entry.totalAmount || entry.amount
+                status: 'Completed'
             };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
@@ -914,16 +504,7 @@ const FinancePage = () => {
     const handleEditIncomeSource = (i) => {
         setNewIncome({
             ...BLANK_INCOME,
-            ...i,
-            gstApplicable: i.gstApplicable || false,
-            gstType: i.gstType || 'CGST + SGST',
-            gstRate: i.gstRate || '18',
-            customGstRate: i.customGstRate || '0',
-            invoiceNumber: i.invoiceNumber || '',
-            gstNumber: i.gstNumber || '',
-            customerVendorName: i.customerVendorName || '',
-            gstAmount: i.gstAmount || 0,
-            totalAmount: i.totalAmount || i.amount || 0
+            ...i
         });
         setEditingIncomeId(i.id);
         setShowIncomeForm(true);
@@ -941,9 +522,7 @@ const FinancePage = () => {
             entry = { 
                 ...expenses.find(e => e.id === editingId), 
                 ...expense, 
-                amount: parseFloat(expense.amount) || 0,
-                gstAmount: parseFloat(expense.gstAmount) || 0,
-                totalAmount: parseFloat(expense.totalAmount) || 0
+                amount: parseFloat(expense.amount) || 0
             };
             setExpenses(prev => prev.map(e => e.id === editingId ? entry : e));
             setEditingId(null);
@@ -953,40 +532,25 @@ const FinancePage = () => {
                 id: Date.now(), 
                 date: expense.date || defaultDate, 
                 time: expense.time || defaultTime, 
-                amount: parseFloat(expense.amount) || 0,
-                gstAmount: parseFloat(expense.gstAmount) || 0,
-                totalAmount: parseFloat(expense.totalAmount) || 0
+                amount: parseFloat(expense.amount) || 0
             };
             setExpenses(prev => [entry, ...prev]);
         }
         setExpense(BLANK_EXPENSE);
 
         try {
-            const taxableAmount = (entry.gstApplicable && gstSettings.taxCalculationMethod === 'Inclusive')
-                ? (entry.amount - entry.gstAmount)
-                : entry.amount;
-
             const data = { 
                 type: 'expense', 
                 title: entry.name, 
                 name: entry.name,
                 description: entry.description || '',
                 category: mapCategory(entry.name), 
-                amount: taxableAmount, 
+                amount: entry.amount, 
                 date: formatAPIDate(entry.date), 
                 time: entry.time || '',
                 schedule: entry.schedule || 'Monthly',
                 notes: entry.schedule || 'Monthly', 
-                status: 'Completed',
-                gstApplicable: entry.gstApplicable || false,
-                gstType: entry.gstType || 'CGST + SGST',
-                gstRate: entry.gstRate || '18',
-                customGstRate: entry.customGstRate || '0',
-                invoiceNumber: entry.invoiceNumber || '',
-                gstNumber: entry.gstNumber || '',
-                customerVendorName: entry.customerVendorName || '',
-                gstAmount: entry.gstAmount || 0,
-                totalAmount: entry.totalAmount || entry.amount
+                status: 'Completed'
             };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
@@ -1014,16 +578,7 @@ const FinancePage = () => {
     const handleEditExpense = (e) => {
         setExpense({
             ...BLANK_EXPENSE,
-            ...e,
-            gstApplicable: e.gstApplicable || false,
-            gstType: e.gstType || 'CGST + SGST',
-            gstRate: e.gstRate || '18',
-            customGstRate: e.customGstRate || '0',
-            invoiceNumber: e.invoiceNumber || '',
-            gstNumber: e.gstNumber || '',
-            customerVendorName: e.customerVendorName || '',
-            gstAmount: e.gstAmount || 0,
-            totalAmount: e.totalAmount || e.amount || 0
+            ...e
         });
         setEditingId(e.id);
         setShowExpenseForm(true);
@@ -1041,9 +596,7 @@ const FinancePage = () => {
             entry = {
                 ...additionalIncomeSources.find(i => i.id === editingAdditionalIncomeId),
                 ...newAdditionalIncome,
-                amount: parseFloat(newAdditionalIncome.amount) || 0,
-                gstAmount: parseFloat(newAdditionalIncome.gstAmount) || 0,
-                totalAmount: parseFloat(newAdditionalIncome.totalAmount) || 0
+                amount: parseFloat(newAdditionalIncome.amount) || 0
             };
             setAdditionalIncomeSources(prev => prev.map(i => i.id === editingAdditionalIncomeId ? entry : i));
             setEditingAdditionalIncomeId(null);
@@ -1053,40 +606,25 @@ const FinancePage = () => {
                 id: Date.now(),
                 date: newAdditionalIncome.date || defaultDate,
                 time: newAdditionalIncome.time || defaultTime,
-                amount: parseFloat(newAdditionalIncome.amount) || 0,
-                gstAmount: parseFloat(newAdditionalIncome.gstAmount) || 0,
-                totalAmount: parseFloat(newAdditionalIncome.totalAmount) || 0
+                amount: parseFloat(newAdditionalIncome.amount) || 0
             };
             setAdditionalIncomeSources(prev => [...prev, entry]);
         }
         setNewAdditionalIncome(BLANK_INCOME);
 
         try {
-            const taxableAmount = (entry.gstApplicable && gstSettings.taxCalculationMethod === 'Inclusive')
-                ? (entry.amount - entry.gstAmount)
-                : entry.amount;
-
             const data = { 
                 type: 'income', 
                 title: `[Add] ${entry.name}`, 
                 name: `[Add] ${entry.name}`, 
                 description: entry.description || '',
                 category: mapCategory(entry.name), 
-                amount: taxableAmount, 
+                amount: entry.amount, 
                 date: formatAPIDate(entry.date), 
                 time: entry.time || '',
                 schedule: entry.schedule || 'Monthly',
                 notes: entry.schedule || 'Monthly', 
-                status: 'Completed',
-                gstApplicable: entry.gstApplicable || false,
-                gstType: entry.gstType || 'CGST + SGST',
-                gstRate: entry.gstRate || '18',
-                customGstRate: entry.customGstRate || '0',
-                invoiceNumber: entry.invoiceNumber || '',
-                gstNumber: entry.gstNumber || '',
-                customerVendorName: entry.customerVendorName || '',
-                gstAmount: entry.gstAmount || 0,
-                totalAmount: entry.totalAmount || entry.amount
+                status: 'Completed'
             };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
@@ -1114,16 +652,7 @@ const FinancePage = () => {
     const handleEditAddIncomeSource = (i) => {
         setNewAdditionalIncome({
             ...BLANK_INCOME,
-            ...i,
-            gstApplicable: i.gstApplicable || false,
-            gstType: i.gstType || 'CGST + SGST',
-            gstRate: i.gstRate || '18',
-            customGstRate: i.customGstRate || '0',
-            invoiceNumber: i.invoiceNumber || '',
-            gstNumber: i.gstNumber || '',
-            customerVendorName: i.customerVendorName || '',
-            gstAmount: i.gstAmount || 0,
-            totalAmount: i.totalAmount || i.amount || 0
+            ...i
         });
         setEditingAdditionalIncomeId(i.id);
         setShowAddIncomeForm(true);
@@ -1141,9 +670,7 @@ const FinancePage = () => {
             entry = { 
                 ...additionalExpenses.find(e => e.id === editingAdditionalId), 
                 ...additionalExpense, 
-                amount: parseFloat(additionalExpense.amount) || 0,
-                gstAmount: parseFloat(additionalExpense.gstAmount) || 0,
-                totalAmount: parseFloat(additionalExpense.totalAmount) || 0
+                amount: parseFloat(additionalExpense.amount) || 0
             };
             setAdditionalExpenses(prev => prev.map(e => e.id === editingAdditionalId ? entry : e));
             setEditingAdditionalId(null);
@@ -1153,40 +680,25 @@ const FinancePage = () => {
                 id: Date.now(), 
                 date: additionalExpense.date || defaultDate, 
                 time: additionalExpense.time || defaultTime, 
-                amount: parseFloat(additionalExpense.amount) || 0,
-                gstAmount: parseFloat(additionalExpense.gstAmount) || 0,
-                totalAmount: parseFloat(additionalExpense.totalAmount) || 0
+                amount: parseFloat(additionalExpense.amount) || 0
             };
             setAdditionalExpenses(prev => [entry, ...prev]);
         }
         setAdditionalExpense(BLANK_EXPENSE);
 
         try {
-            const taxableAmount = (entry.gstApplicable && gstSettings.taxCalculationMethod === 'Inclusive')
-                ? (entry.amount - entry.gstAmount)
-                : entry.amount;
-
             const data = { 
                 type: 'expense', 
                 title: `[Add] ${entry.name}`, 
                 name: `[Add] ${entry.name}`, 
                 description: entry.description || '',
                 category: mapCategory(entry.name), 
-                amount: taxableAmount, 
+                amount: entry.amount, 
                 date: formatAPIDate(entry.date), 
                 time: entry.time || '',
                 schedule: entry.schedule || 'Monthly',
                 notes: entry.schedule || 'Monthly', 
-                status: 'Completed',
-                gstApplicable: entry.gstApplicable || false,
-                gstType: entry.gstType || 'CGST + SGST',
-                gstRate: entry.gstRate || '18',
-                customGstRate: entry.customGstRate || '0',
-                invoiceNumber: entry.invoiceNumber || '',
-                gstNumber: entry.gstNumber || '',
-                customerVendorName: entry.customerVendorName || '',
-                gstAmount: entry.gstAmount || 0,
-                totalAmount: entry.totalAmount || entry.amount
+                status: 'Completed'
             };
             if (entry.transactionId) {
                 await transactionsService.updateTransaction(entry.transactionId, data);
@@ -1214,16 +726,7 @@ const FinancePage = () => {
     const handleEditAddExpense = (e) => {
         setAdditionalExpense({
             ...BLANK_EXPENSE,
-            ...e,
-            gstApplicable: e.gstApplicable || false,
-            gstType: e.gstType || 'CGST + SGST',
-            gstRate: e.gstRate || '18',
-            customGstRate: e.customGstRate || '0',
-            invoiceNumber: e.invoiceNumber || '',
-            gstNumber: e.gstNumber || '',
-            customerVendorName: e.customerVendorName || '',
-            gstAmount: e.gstAmount || 0,
-            totalAmount: e.totalAmount || e.amount || 0
+            ...e
         });
         setEditingAdditionalId(e.id);
         setShowAddExpenseForm(true);
@@ -1319,7 +822,6 @@ const FinancePage = () => {
                 .compact-search-input { padding: 0.4rem 0.75rem 0.4rem 2rem; border-radius: 999px; border: 1px solid #E2E8F0; font-size: 0.75rem; outline: none; width: 140px; }
                 .column-filter-option { width: 100%; padding: 6px 8px; font-size: 0.75rem; font-weight: 600; color: #475569; text-align: left; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 6px; }
                 .column-filter-option:hover { background: #F0FDF4; color: #1B6B3A; }
-                .gst-row:hover { background: #F8FAFC !important; }
                 @media print {
                     .no-print { display: none !important; }
                     .finance-panel-left, .finance-panel-right {
@@ -1341,50 +843,7 @@ const FinancePage = () => {
                 <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: 500, margin: 0 }}>Track your income, fixed costs, and daily spending in one place.</p>
             </div>
 
-            {/* Top tab switcher */}
-            <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.75rem', marginBottom: '2rem' }}>
-                <button
-                    onClick={() => setActiveTab('tracker')}
-                    style={{
-                        padding: '0.6rem 1.25rem',
-                        borderRadius: '10px',
-                        border: 'none',
-                        fontSize: '0.9rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        background: activeTab === 'tracker' ? '#ECFDF5' : 'transparent',
-                        color: activeTab === 'tracker' ? '#1B6B3A' : '#64748B',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                    }}
-                >
-                    <DollarSign size={18} />
-                    General Finance
-                </button>
-                <button
-                    onClick={() => setActiveTab('gst')}
-                    style={{
-                        padding: '0.6rem 1.25rem',
-                        borderRadius: '10px',
-                        border: 'none',
-                        fontSize: '0.9rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        background: activeTab === 'gst' ? '#ECFDF5' : 'transparent',
-                        color: activeTab === 'gst' ? '#1B6B3A' : '#64748B',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                    }}
-                >
-                    <Save size={18} />
-                    GST Center (Read-only)
-                </button>
-            </div>
-
-            {activeTab === 'tracker' ? (
-                <>
+            <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
                         {[
                             { label: 'Monthly Income', value: monthlyIncome, color: '#059669', bg: '#ECFDF5' },
@@ -1399,46 +858,6 @@ const FinancePage = () => {
                         ))}
                     </div>
 
-                    {/* Integrated GST Summary Card */}
-                    <div style={{ background: '#F8FAFC', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '1.5rem', marginBottom: '2.5rem', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
-                        <div>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 850, color: '#064E3B', marginTop: 0, marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GST Quick Summary</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.25rem' }}>
-                                <div style={{ background: '#ECFDF5', padding: '1rem', borderRadius: '12px', border: '1px solid #A7F3D0' }}>
-                                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#065F46', textTransform: 'uppercase', marginBottom: '4px' }}>GST Collected</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#047857' }}>₹{gstStats.collected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                </div>
-                                <div style={{ background: '#FEF2F2', padding: '1rem', borderRadius: '12px', border: '1px solid #FCA5A5' }}>
-                                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#991B1B', textTransform: 'uppercase', marginBottom: '4px' }}>GST Paid</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#B91C1C' }}>₹{gstStats.paid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                </div>
-                                <div style={{ background: gstStats.net >= 0 ? '#EFF6FF' : '#FFF7ED', padding: '1rem', borderRadius: '12px', border: gstStats.net >= 0 ? '#BFDBFE' : '#FED7AA' }}>
-                                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: gstStats.net >= 0 ? '#1E40AF' : '#C2410C', textTransform: 'uppercase', marginBottom: '4px' }}>Net GST</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: gstStats.net >= 0 ? '#1D4ED8' : '#EA580C' }}>₹{gstStats.net.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div style={{ borderLeft: '1px solid #E2E8F0', paddingLeft: '2rem' }}>
-                            <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569', marginTop: 0, marginBottom: '0.75rem', textTransform: 'uppercase' }}>Recent GST Activities</h4>
-                            {gstTransactions.slice(0, 3).length === 0 ? (
-                                <div style={{ fontSize: '0.8rem', color: '#94A3B8', fontStyle: 'italic', paddingTop: '10px' }}>No recent GST transactions logged.</div>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    {gstTransactions.slice(0, 3).map(tx => (
-                                        <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
-                                            <div>
-                                                <span style={{ fontWeight: 700, color: '#1E293B' }}>{tx.name}</span>
-                                                <span style={{ fontSize: '0.7rem', color: '#64748B', marginLeft: '6px' }}>({tx.invoiceNumber || 'No Ref'})</span>
-                                            </div>
-                                            <span style={{ fontWeight: 800, color: tx.categoryType === 'income' ? '#10B981' : '#EF4444' }}>
-                                                {tx.categoryType === 'income' ? '+' : '-'}₹{tx.gstAmount.toLocaleString('en-IN')}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
 
             {/* SECTION: ADDITIONAL SOURCE */}
             <div style={{ marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
@@ -1484,26 +903,7 @@ const FinancePage = () => {
                                 onClick={() => {
                                     setShowAddIncomeForm(true);
                                     setEditingAdditionalIncomeId(null);
-                                    setNewAdditionalIncome({
-                                        ...BLANK_INCOME,
-                                        gstRate: gstSettings.defaultGstRate || '18',
-                                        invoiceNumber: getNextInvoiceNumber(true)
-                                    });
-                                }}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '0.6rem',
-                                    background: '#1B6B3A',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    fontWeight: 800,
-                                    fontSize: '0.8rem',
-                                    cursor: 'pointer',
-                                    whiteSpace: 'nowrap',
-                                    boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                                    setNewAdditionalIncome(BLANK_INCOME);
                                 }}
                             >
                                 <Plus size={16} strokeWidth={3} />
@@ -1534,149 +934,13 @@ const FinancePage = () => {
                                     </div>
                                     <div>
                                         <label style={lbl}>Amount (₹)</label>
-                                        <input type="number" style={inp} placeholder="0.00" value={newAdditionalIncome.amount} onChange={e => handleAdditionalIncomeFieldChange('amount', e.target.value)} />
+                                        <input type="number" style={inp} placeholder="0.00" value={newAdditionalIncome.amount} onChange={e => setNewAdditionalIncome(p => ({ ...p, amount: e.target.value }))} />
                                     </div>
-
-                                    {/* GST Fields */}
-                                    <div style={{ borderTop: '1px dashed #E2E8F0', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>GST APPLICABLE</span>
-                                            <div style={{ display: 'flex', gap: '6px' }}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAdditionalIncomeFieldChange('gstApplicable', true)}
-                                                    style={{
-                                                        padding: '6px 16px',
-                                                        borderRadius: '8px',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 700,
-                                                        cursor: 'pointer',
-                                                        border: '1px solid',
-                                                        borderColor: newAdditionalIncome.gstApplicable ? '#1B6B3A' : '#CBD5E1',
-                                                        background: newAdditionalIncome.gstApplicable ? '#ECFDF5' : '#fff',
-                                                        color: newAdditionalIncome.gstApplicable ? '#1B6B3A' : '#64748B'
-                                                    }}
-                                                >
-                                                    Yes
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAdditionalIncomeFieldChange('gstApplicable', false)}
-                                                    style={{
-                                                        padding: '6px 16px',
-                                                        borderRadius: '8px',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 700,
-                                                        cursor: 'pointer',
-                                                        border: '1px solid',
-                                                        borderColor: !newAdditionalIncome.gstApplicable ? '#EF4444' : '#CBD5E1',
-                                                        background: !newAdditionalIncome.gstApplicable ? '#FEF2F2' : '#fff',
-                                                        color: !newAdditionalIncome.gstApplicable ? '#EF4444' : '#64748B'
-                                                    }}
-                                                >
-                                                    No
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {newAdditionalIncome.gstApplicable && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                                    <div>
-                                                        <label style={lbl}>GST Type</label>
-                                                        <select
-                                                            style={inp}
-                                                            value={newAdditionalIncome.gstType}
-                                                            onChange={e => handleAdditionalIncomeFieldChange('gstType', e.target.value)}
-                                                        >
-                                                            <option value="CGST + SGST">CGST + SGST</option>
-                                                            <option value="IGST">IGST</option>
-                                                            <option value="Exempt">Exempt</option>
-                                                            <option value="Nil Rated">Nil Rated</option>
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label style={lbl}>GST Rate</label>
-                                                        <select
-                                                            style={inp}
-                                                            value={newAdditionalIncome.gstRate}
-                                                            onChange={e => handleAdditionalIncomeFieldChange('gstRate', e.target.value)}
-                                                        >
-                                                            <option value="5">5%</option>
-                                                            <option value="12">12%</option>
-                                                            <option value="18">18%</option>
-                                                            <option value="28">28%</option>
-                                                            <option value="custom">Custom</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                {newAdditionalIncome.gstRate === 'custom' && (
-                                                    <div>
-                                                        <label style={lbl}>Custom GST Rate (%)</label>
-                                                        <input
-                                                            type="number"
-                                                            style={inp}
-                                                            placeholder="e.g. 15"
-                                                            value={newAdditionalIncome.customGstRate}
-                                                            onChange={e => handleAdditionalIncomeFieldChange('customGstRate', e.target.value)}
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                                    <div>
-                                                        <label style={lbl}>Invoice Number</label>
-                                                        <input
-                                                            type="text"
-                                                            style={inp}
-                                                            placeholder="INV-XXXX"
-                                                            value={newAdditionalIncome.invoiceNumber}
-                                                            onChange={e => handleAdditionalIncomeFieldChange('invoiceNumber', e.target.value)}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label style={lbl}>GST Number</label>
-                                                        <input
-                                                            type="text"
-                                                            style={inp}
-                                                            placeholder="GSTIN"
-                                                            value={newAdditionalIncome.gstNumber}
-                                                            onChange={e => handleAdditionalIncomeFieldChange('gstNumber', e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label style={lbl}>Customer Name</label>
-                                                    <input
-                                                        type="text"
-                                                        style={inp}
-                                                        placeholder="Customer Name"
-                                                        value={newAdditionalIncome.customerVendorName}
-                                                        onChange={e => handleAdditionalIncomeFieldChange('customerVendorName', e.target.value)}
-                                                    />
-                                                </div>
-
-                                                {/* Calculations displays */}
-                                                <div style={{ background: '#F8FAFC', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #E2E8F0', marginTop: '0.5rem' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#64748B', marginBottom: '4px' }}>
-                                                        <span>GST Amount:</span>
-                                                        <span style={{ fontWeight: 700 }}>₹{newAdditionalIncome.gstAmount}</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#1E293B', fontWeight: 800 }}>
-                                                        <span>Grand Total:</span>
-                                                        <span style={{ color: '#1B6B3A' }}>₹{newAdditionalIncome.totalAmount}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                </div>
 
                                     <button onClick={(e) => { handleAddAddIncomeSource(e); setShowAddIncomeForm(false); }} style={{ ...saveBtn, width: '100%', justifyContent: 'center', marginTop: '1rem', padding: '1rem' }}>
                                         {editingAdditionalIncomeId ? 'Update Income' : 'Save Income'}
                                     </button>
-                                </div>
                             </div>
                         </div>
                     )}
@@ -1755,26 +1019,7 @@ const FinancePage = () => {
                                 onClick={() => {
                                     setShowAddExpenseForm(true);
                                     setEditingAdditionalId(null);
-                                    setAdditionalExpense({
-                                        ...BLANK_EXPENSE,
-                                        gstRate: gstSettings.defaultGstRate || '18',
-                                        invoiceNumber: getNextInvoiceNumber(false)
-                                    });
-                                }}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '0.6rem',
-                                    background: '#1B6B3A',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    fontWeight: 800,
-                                    fontSize: '0.8rem',
-                                    cursor: 'pointer',
-                                    whiteSpace: 'nowrap',
-                                    boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                                    setAdditionalExpense(BLANK_EXPENSE);
                                 }}
                             >
                                 <Plus size={16} strokeWidth={3} />
@@ -1805,149 +1050,13 @@ const FinancePage = () => {
                                     </div>
                                     <div>
                                         <label style={lbl}>Amount (₹)</label>
-                                        <input type="number" style={inp} placeholder="0.00" value={additionalExpense.amount} onChange={e => handleAdditionalExpenseFieldChange('amount', e.target.value)} />
+                                        <input type="number" style={inp} placeholder="0.00" value={additionalExpense.amount} onChange={e => setAdditionalExpense(p => ({ ...p, amount: e.target.value }))} />
                                     </div>
-
-                                    {/* GST Fields */}
-                                    <div style={{ borderTop: '1px dashed #E2E8F0', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>GST APPLICABLE</span>
-                                            <div style={{ display: 'flex', gap: '6px' }}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAdditionalExpenseFieldChange('gstApplicable', true)}
-                                                    style={{
-                                                        padding: '6px 16px',
-                                                        borderRadius: '8px',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 700,
-                                                        cursor: 'pointer',
-                                                        border: '1px solid',
-                                                        borderColor: additionalExpense.gstApplicable ? '#1B6B3A' : '#CBD5E1',
-                                                        background: additionalExpense.gstApplicable ? '#ECFDF5' : '#fff',
-                                                        color: additionalExpense.gstApplicable ? '#1B6B3A' : '#64748B'
-                                                    }}
-                                                >
-                                                    Yes
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAdditionalExpenseFieldChange('gstApplicable', false)}
-                                                    style={{
-                                                        padding: '6px 16px',
-                                                        borderRadius: '8px',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 700,
-                                                        cursor: 'pointer',
-                                                        border: '1px solid',
-                                                        borderColor: !additionalExpense.gstApplicable ? '#EF4444' : '#CBD5E1',
-                                                        background: !additionalExpense.gstApplicable ? '#FEF2F2' : '#fff',
-                                                        color: !additionalExpense.gstApplicable ? '#EF4444' : '#64748B'
-                                                    }}
-                                                >
-                                                    No
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {additionalExpense.gstApplicable && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                                    <div>
-                                                        <label style={lbl}>GST Type</label>
-                                                        <select
-                                                            style={inp}
-                                                            value={additionalExpense.gstType}
-                                                            onChange={e => handleAdditionalExpenseFieldChange('gstType', e.target.value)}
-                                                        >
-                                                            <option value="CGST + SGST">CGST + SGST</option>
-                                                            <option value="IGST">IGST</option>
-                                                            <option value="Exempt">Exempt</option>
-                                                            <option value="Nil Rated">Nil Rated</option>
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label style={lbl}>GST Rate</label>
-                                                        <select
-                                                            style={inp}
-                                                            value={additionalExpense.gstRate}
-                                                            onChange={e => handleAdditionalExpenseFieldChange('gstRate', e.target.value)}
-                                                        >
-                                                            <option value="5">5%</option>
-                                                            <option value="12">12%</option>
-                                                            <option value="18">18%</option>
-                                                            <option value="28">28%</option>
-                                                            <option value="custom">Custom</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                {additionalExpense.gstRate === 'custom' && (
-                                                    <div>
-                                                        <label style={lbl}>Custom GST Rate (%)</label>
-                                                        <input
-                                                            type="number"
-                                                            style={inp}
-                                                            placeholder="e.g. 15"
-                                                            value={additionalExpense.customGstRate}
-                                                            onChange={e => handleAdditionalExpenseFieldChange('customGstRate', e.target.value)}
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                                    <div>
-                                                        <label style={lbl}>Bill Number</label>
-                                                        <input
-                                                            type="text"
-                                                            style={inp}
-                                                            placeholder="BILL-XXXX"
-                                                            value={additionalExpense.invoiceNumber}
-                                                            onChange={e => handleAdditionalExpenseFieldChange('invoiceNumber', e.target.value)}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label style={lbl}>GST Number</label>
-                                                        <input
-                                                            type="text"
-                                                            style={inp}
-                                                            placeholder="GSTIN"
-                                                            value={additionalExpense.gstNumber}
-                                                            onChange={e => handleAdditionalExpenseFieldChange('gstNumber', e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label style={lbl}>Vendor Name</label>
-                                                    <input
-                                                        type="text"
-                                                        style={inp}
-                                                        placeholder="Vendor Name"
-                                                        value={additionalExpense.customerVendorName}
-                                                        onChange={e => handleAdditionalExpenseFieldChange('customerVendorName', e.target.value)}
-                                                    />
-                                                </div>
-
-                                                {/* Calculations displays */}
-                                                <div style={{ background: '#F8FAFC', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #E2E8F0', marginTop: '0.5rem' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#64748B', marginBottom: '4px' }}>
-                                                        <span>GST Amount:</span>
-                                                        <span style={{ fontWeight: 700 }}>₹{additionalExpense.gstAmount}</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#1E293B', fontWeight: 800 }}>
-                                                        <span>Grand Total:</span>
-                                                        <span style={{ color: '#1B6B3A' }}>₹{additionalExpense.totalAmount}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                </div>
 
                                     <button onClick={(e) => { handleSaveAddExpense(e); setShowAddExpenseForm(false); }} style={{ ...saveBtn, width: '100%', justifyContent: 'center', marginTop: '1rem', padding: '1rem' }}>
                                         {editingAdditionalId ? 'Update Expense' : 'Save Expense'}
                                     </button>
-                                </div>
                             </div>
                         </div>
                     )}
@@ -2038,26 +1147,7 @@ const FinancePage = () => {
                                 onClick={() => {
                                     setShowIncomeForm(true);
                                     setEditingIncomeId(null);
-                                    setNewIncome({
-                                        ...BLANK_INCOME,
-                                        gstRate: gstSettings.defaultGstRate || '18',
-                                        invoiceNumber: getNextInvoiceNumber(true)
-                                    });
-                                }}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '0.6rem',
-                                    background: '#1B6B3A',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    fontWeight: 800,
-                                    fontSize: '0.8rem',
-                                    cursor: 'pointer',
-                                    whiteSpace: 'nowrap',
-                                    boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                                    setNewIncome(BLANK_INCOME);
                                 }}
                             >
                                 <Plus size={16} strokeWidth={3} />
@@ -2085,7 +1175,7 @@ const FinancePage = () => {
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                         <div>
                                             <label style={lbl}>Amount (₹)</label>
-                                            <input type="number" style={inp} placeholder="0.00" value={newIncome.amount} onChange={e => handleIncomeFieldChange('amount', e.target.value)} />
+                                            <input type="number" style={inp} placeholder="0.00" value={newIncome.amount} onChange={e => setNewIncome(p => ({ ...p, amount: e.target.value }))} />
                                         </div>
                                         <div>
                                             <label style={lbl}>Schedule</label>
@@ -2107,142 +1197,7 @@ const FinancePage = () => {
                                             <input type="time" style={inp} value={newIncome.time} onChange={e => setNewIncome(p => ({ ...p, time: e.target.value }))} />
                                         </div>
                                     </div>
-
-                                    {/* GST Fields */}
-                                    <div style={{ borderTop: '1px dashed #E2E8F0', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>GST APPLICABLE</span>
-                                            <div style={{ display: 'flex', gap: '6px' }}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleIncomeFieldChange('gstApplicable', true)}
-                                                    style={{
-                                                        padding: '6px 16px',
-                                                        borderRadius: '8px',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 700,
-                                                        cursor: 'pointer',
-                                                        border: '1px solid',
-                                                        borderColor: newIncome.gstApplicable ? '#1B6B3A' : '#CBD5E1',
-                                                        background: newIncome.gstApplicable ? '#ECFDF5' : '#fff',
-                                                        color: newIncome.gstApplicable ? '#1B6B3A' : '#64748B'
-                                                    }}
-                                                >
-                                                    Yes
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleIncomeFieldChange('gstApplicable', false)}
-                                                    style={{
-                                                        padding: '6px 16px',
-                                                        borderRadius: '8px',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 700,
-                                                        cursor: 'pointer',
-                                                        border: '1px solid',
-                                                        borderColor: !newIncome.gstApplicable ? '#EF4444' : '#CBD5E1',
-                                                        background: !newIncome.gstApplicable ? '#FEF2F2' : '#fff',
-                                                        color: !newIncome.gstApplicable ? '#EF4444' : '#64748B'
-                                                    }}
-                                                >
-                                                    No
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {newIncome.gstApplicable && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                                    <div>
-                                                        <label style={lbl}>GST Type</label>
-                                                        <select
-                                                            style={inp}
-                                                            value={newIncome.gstType}
-                                                            onChange={e => handleIncomeFieldChange('gstType', e.target.value)}
-                                                        >
-                                                            <option value="CGST + SGST">CGST + SGST</option>
-                                                            <option value="IGST">IGST</option>
-                                                            <option value="Exempt">Exempt</option>
-                                                            <option value="Nil Rated">Nil Rated</option>
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label style={lbl}>GST Rate</label>
-                                                        <select
-                                                            style={inp}
-                                                            value={newIncome.gstRate}
-                                                            onChange={e => handleIncomeFieldChange('gstRate', e.target.value)}
-                                                        >
-                                                            <option value="5">5%</option>
-                                                            <option value="12">12%</option>
-                                                            <option value="18">18%</option>
-                                                            <option value="28">28%</option>
-                                                            <option value="custom">Custom</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                {newIncome.gstRate === 'custom' && (
-                                                    <div>
-                                                        <label style={lbl}>Custom GST Rate (%)</label>
-                                                        <input
-                                                            type="number"
-                                                            style={inp}
-                                                            placeholder="e.g. 15"
-                                                            value={newIncome.customGstRate}
-                                                            onChange={e => handleIncomeFieldChange('customGstRate', e.target.value)}
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                                    <div>
-                                                        <label style={lbl}>Invoice Number</label>
-                                                        <input
-                                                            type="text"
-                                                            style={inp}
-                                                            placeholder="INV-XXXX"
-                                                            value={newIncome.invoiceNumber}
-                                                            onChange={e => handleIncomeFieldChange('invoiceNumber', e.target.value)}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label style={lbl}>GST Number</label>
-                                                        <input
-                                                            type="text"
-                                                            style={inp}
-                                                            placeholder="GSTIN"
-                                                            value={newIncome.gstNumber}
-                                                            onChange={e => handleIncomeFieldChange('gstNumber', e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label style={lbl}>Customer Name</label>
-                                                    <input
-                                                        type="text"
-                                                        style={inp}
-                                                        placeholder="Customer Name"
-                                                        value={newIncome.customerVendorName}
-                                                        onChange={e => handleIncomeFieldChange('customerVendorName', e.target.value)}
-                                                    />
-                                                </div>
-
-                                                {/* Calculations displays */}
-                                                <div style={{ background: '#F8FAFC', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #E2E8F0', marginTop: '0.5rem' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#64748B', marginBottom: '4px' }}>
-                                                        <span>GST Amount:</span>
-                                                        <span style={{ fontWeight: 700 }}>₹{newIncome.gstAmount}</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#1E293B', fontWeight: 800 }}>
-                                                        <span>Grand Total:</span>
-                                                        <span style={{ color: '#1B6B3A' }}>₹{newIncome.totalAmount}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                </div>
 
                                     <button
                                         onClick={async (e) => {
@@ -2253,7 +1208,6 @@ const FinancePage = () => {
                                     >
                                         {editingIncomeId ? 'Update Income' : 'Save Income'}
                                     </button>
-                                </div>
                             </div>
                         </div>
                     )}
@@ -2349,26 +1303,7 @@ const FinancePage = () => {
                                 onClick={() => {
                                     setShowExpenseForm(true);
                                     setEditingId(null);
-                                    setExpense({
-                                        ...BLANK_EXPENSE,
-                                        gstRate: gstSettings.defaultGstRate || '18',
-                                        invoiceNumber: getNextInvoiceNumber(false)
-                                    });
-                                }}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '0.6rem',
-                                    background: '#1B6B3A',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    fontWeight: 800,
-                                    fontSize: '0.8rem',
-                                    cursor: 'pointer',
-                                    whiteSpace: 'nowrap',
-                                    boxShadow: '0 4px 12px rgba(27,107,58,0.2)'
+                                    setExpense(BLANK_EXPENSE);
                                 }}
                             >
                                 <Plus size={16} strokeWidth={3} />
@@ -2394,7 +1329,7 @@ const FinancePage = () => {
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                         <div>
                                             <label style={lbl}>Amount (₹)</label>
-                                            <input type="number" style={inp} placeholder="0.00" value={expense.amount} onChange={e => handleExpenseFieldChange('amount', e.target.value)} />
+                                            <input type="number" style={inp} placeholder="0.00" value={expense.amount} onChange={e => setExpense(p => ({ ...p, amount: e.target.value }))} />
                                         </div>
                                         <div>
                                             <label style={lbl}>Schedule</label>
@@ -2416,147 +1351,11 @@ const FinancePage = () => {
                                             <input type="time" style={inp} value={expense.time} onChange={e => setExpense(p => ({ ...p, time: e.target.value }))} />
                                         </div>
                                     </div>
-
-                                    {/* GST Fields */}
-                                    <div style={{ borderTop: '1px dashed #E2E8F0', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>GST APPLICABLE</span>
-                                            <div style={{ display: 'flex', gap: '6px' }}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleExpenseFieldChange('gstApplicable', true)}
-                                                    style={{
-                                                        padding: '6px 16px',
-                                                        borderRadius: '8px',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 700,
-                                                        cursor: 'pointer',
-                                                        border: '1px solid',
-                                                        borderColor: expense.gstApplicable ? '#1B6B3A' : '#CBD5E1',
-                                                        background: expense.gstApplicable ? '#ECFDF5' : '#fff',
-                                                        color: expense.gstApplicable ? '#1B6B3A' : '#64748B'
-                                                    }}
-                                                >
-                                                    Yes
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleExpenseFieldChange('gstApplicable', false)}
-                                                    style={{
-                                                        padding: '6px 16px',
-                                                        borderRadius: '8px',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 700,
-                                                        cursor: 'pointer',
-                                                        border: '1px solid',
-                                                        borderColor: !expense.gstApplicable ? '#EF4444' : '#CBD5E1',
-                                                        background: !expense.gstApplicable ? '#FEF2F2' : '#fff',
-                                                        color: !expense.gstApplicable ? '#EF4444' : '#64748B'
-                                                    }}
-                                                >
-                                                    No
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {expense.gstApplicable && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                                    <div>
-                                                        <label style={lbl}>GST Type</label>
-                                                        <select
-                                                            style={inp}
-                                                            value={expense.gstType}
-                                                            onChange={e => handleExpenseFieldChange('gstType', e.target.value)}
-                                                        >
-                                                            <option value="CGST + SGST">CGST + SGST</option>
-                                                            <option value="IGST">IGST</option>
-                                                            <option value="Exempt">Exempt</option>
-                                                            <option value="Nil Rated">Nil Rated</option>
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label style={lbl}>GST Rate</label>
-                                                        <select
-                                                            style={inp}
-                                                            value={expense.gstRate}
-                                                            onChange={e => handleExpenseFieldChange('gstRate', e.target.value)}
-                                                        >
-                                                            <option value="5">5%</option>
-                                                            <option value="12">12%</option>
-                                                            <option value="18">18%</option>
-                                                            <option value="28">28%</option>
-                                                            <option value="custom">Custom</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                {expense.gstRate === 'custom' && (
-                                                    <div>
-                                                        <label style={lbl}>Custom GST Rate (%)</label>
-                                                        <input
-                                                            type="number"
-                                                            style={inp}
-                                                            placeholder="e.g. 15"
-                                                            value={expense.customGstRate}
-                                                            onChange={e => handleExpenseFieldChange('customGstRate', e.target.value)}
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                                    <div>
-                                                        <label style={lbl}>Bill Number</label>
-                                                        <input
-                                                            type="text"
-                                                            style={inp}
-                                                            placeholder="BILL-XXXX"
-                                                            value={expense.invoiceNumber}
-                                                            onChange={e => handleExpenseFieldChange('invoiceNumber', e.target.value)}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label style={lbl}>GST Number</label>
-                                                        <input
-                                                            type="text"
-                                                            style={inp}
-                                                            placeholder="GSTIN"
-                                                            value={expense.gstNumber}
-                                                            onChange={e => handleExpenseFieldChange('gstNumber', e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label style={lbl}>Vendor Name</label>
-                                                    <input
-                                                        type="text"
-                                                        style={inp}
-                                                        placeholder="Vendor Name"
-                                                        value={expense.customerVendorName}
-                                                        onChange={e => handleExpenseFieldChange('customerVendorName', e.target.value)}
-                                                    />
-                                                </div>
-
-                                                {/* Calculations displays */}
-                                                <div style={{ background: '#F8FAFC', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #E2E8F0', marginTop: '0.5rem' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#64748B', marginBottom: '4px' }}>
-                                                        <span>GST Amount:</span>
-                                                        <span style={{ fontWeight: 700 }}>₹{expense.gstAmount}</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#1E293B', fontWeight: 800 }}>
-                                                        <span>Grand Total:</span>
-                                                        <span style={{ color: '#1B6B3A' }}>₹{expense.totalAmount}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                </div>
 
                                     <button onClick={async (e) => { await handleSaveExpense(e); setShowExpenseForm(false); }} style={{ ...saveBtn, width: '100%', justifyContent: 'center', marginTop: '1rem', padding: '1rem' }}>
                                         {editingId ? 'Update Expense' : 'Save Expense'}
                                     </button>
-                                </div>
                             </div>
                         </div>
                     )}
@@ -2621,623 +1420,6 @@ const FinancePage = () => {
                 </div>
             </div>
             </>
-            ) : (
-                <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                    {/* GST Center Sub-Navigation Tabs */}
-                    <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '4px', borderRadius: '12px', marginBottom: '2rem', width: 'fit-content' }}>
-                        {[
-                            { id: 'dashboard', label: 'GST Dashboard' },
-                            { id: 'sales', label: 'Sales GST' },
-                            { id: 'purchase', label: 'Purchase GST' },
-                            { id: 'reports', label: 'GST Reports' },
-                            { id: 'settings', label: 'GST Settings' }
-                        ].map(sub => (
-                            <button
-                                key={sub.id}
-                                onClick={() => setActiveGstTab(sub.id)}
-                                style={{
-                                    padding: '0.5rem 1.25rem',
-                                    borderRadius: '10px',
-                                    border: 'none',
-                                    fontSize: '0.825rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    background: activeGstTab === sub.id ? '#ffffff' : 'transparent',
-                                    color: activeGstTab === sub.id ? '#1B6B3A' : '#64748B',
-                                    boxShadow: activeGstTab === sub.id ? '0 2px 6px rgba(0,0,0,0.05)' : 'none',
-                                    transition: 'all 0.15s ease'
-                                }}
-                            >
-                                {sub.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* View 1: GST Dashboard */}
-                    {activeGstTab === 'dashboard' && (
-                        <div>
-                            {/* KPI Metrics */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-                                <div style={{ background: '#EFF6FF', borderRadius: '12px', padding: '1.25rem', border: '1px solid #BFDBFE' }}>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1E40AF', textTransform: 'uppercase', marginBottom: '6px' }}>Total GST Collected</div>
-                                    <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#1D4ED8' }}>₹{gstStats.collected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                    <div style={{ fontSize: '0.7rem', color: '#60A5FA', marginTop: '4px', fontWeight: 650 }}>{gstStats.salesCount} Invoices</div>
-                                </div>
-                                <div style={{ background: '#FEF2F2', borderRadius: '12px', padding: '1.25rem', border: '1px solid #FCA5A5' }}>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#991B1B', textTransform: 'uppercase', marginBottom: '6px' }}>Total GST Paid</div>
-                                    <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#B91C1C' }}>₹{gstStats.paid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                    <div style={{ fontSize: '0.7rem', color: '#F87171', marginTop: '4px', fontWeight: 650 }}>{gstStats.purchaseCount} Bills</div>
-                                </div>
-                                <div style={{ background: gstStats.net >= 0 ? '#ECFDF5' : '#FFF7ED', borderRadius: '12px', padding: '1.25rem', border: gstStats.net >= 0 ? '#A7F3D0' : '#FED7AA' }}>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: gstStats.net >= 0 ? '#065F46' : '#C2410C', textTransform: 'uppercase', marginBottom: '6px' }}>Net GST Liability</div>
-                                    <div style={{ fontSize: '1.6rem', fontWeight: 900, color: gstStats.net >= 0 ? '#047857' : '#EA580C' }}>₹{gstStats.net.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                    <div style={{ fontSize: '0.7rem', color: gstStats.net >= 0 ? '#34D399' : '#FDBA74', marginTop: '4px', fontWeight: 650 }}>{gstStats.net >= 0 ? 'Payable to Government' : 'Credit Claimable'}</div>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem', marginTop: '2.5rem' }}>
-                                {/* Left Side: Chart (HTML/CSS Bar Chart) */}
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 850, color: '#0F172A', marginTop: 0, marginBottom: '1.5rem' }}>Monthly GST Trend</h3>
-                                    {gstStats.monthlySummary.length === 0 ? (
-                                        <div style={{ border: '1px dashed #E2E8F0', borderRadius: '12px', padding: '3rem 1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.875rem' }}>
-                                            No transaction trend data available.
-                                        </div>
-                                    ) : (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                                            {gstStats.monthlySummary.map(m => {
-                                                const maxAmt = Math.max(...gstStats.monthlySummary.map(x => Math.max(x.collected, x.paid))) || 1;
-                                                const colPct = Math.min(100, Math.max(5, (m.collected / maxAmt) * 100));
-                                                const paidPct = Math.min(100, Math.max(5, (m.paid / maxAmt) * 100));
-
-                                                return (
-                                                    <div key={m.month} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', alignItems: 'center', gap: '1rem' }}>
-                                                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>{m.month}</span>
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                <div style={{ width: `${colPct}%`, height: '8px', background: '#3B82F6', borderRadius: '4px' }} />
-                                                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#1D4ED8' }}>₹{m.collected.toLocaleString('en-IN')}</span>
-                                                            </div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                <div style={{ width: `${paidPct}%`, height: '8px', background: '#EF4444', borderRadius: '4px' }} />
-                                                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#B91C1C' }}>₹{m.paid.toLocaleString('en-IN')}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', borderTop: '1px solid #F1F5F9', paddingTop: '1rem' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 650, color: '#64748B' }}>
-                                                    <div style={{ width: 12, height: 12, background: '#3B82F6', borderRadius: '3px' }} />
-                                                    Collected (Sales)
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 650, color: '#64748B' }}>
-                                                    <div style={{ width: 12, height: 12, background: '#EF4444', borderRadius: '3px' }} />
-                                                    Paid (Purchases)
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Right Side: Recent Transactions */}
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 850, color: '#0F172A', marginTop: 0, marginBottom: '1.5rem' }}>Recent GST Activities</h3>
-                                    {gstTransactions.length === 0 ? (
-                                        <div style={{ border: '1px dashed #E2E8F0', borderRadius: '12px', padding: '3rem 1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.875rem' }}>
-                                            No recent activity logged.
-                                        </div>
-                                    ) : (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                            {gstTransactions.slice(0, 5).map(tx => (
-                                                <div
-                                                    key={tx.id}
-                                                    onClick={() => setSelectedGstTx(tx)}
-                                                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.15s ease' }}
-                                                    className="gst-row"
-                                                >
-                                                    <div>
-                                                        <div style={{ fontSize: '0.85rem', fontWeight: 750, color: '#1E293B' }}>{tx.name}</div>
-                                                        <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>
-                                                            {tx.invoiceNumber || 'No Ref'} | {tx.customerVendorName || '—'}
-                                                        </div>
-                                                    </div>
-                                                    <div style={{ textAlign: 'right' }}>
-                                                        <div style={{ fontSize: '0.85rem', fontWeight: 900, color: tx.categoryType === 'income' ? '#059669' : '#EF4444' }}>
-                                                            {tx.categoryType === 'income' ? '+' : '-'}₹{tx.gstAmount.toLocaleString('en-IN')}
-                                                        </div>
-                                                        <span style={{ fontSize: '0.65rem', padding: '2px 6px', background: tx.categoryType === 'income' ? '#E1F5FE' : '#FFEBEE', color: tx.categoryType === 'income' ? '#0288D1' : '#C62828', borderRadius: '4px', fontWeight: 700, display: 'inline-block', marginTop: '4px' }}>
-                                                            {tx.gstType} ({tx.gstRate}%)
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* View 2: Sales GST (Income transactions with GST) */}
-                    {activeGstTab === 'sales' && (
-                        <div>
-                            {/* Actions bar */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', background: '#F8FAFC', padding: '1rem', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                                <div style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '500px' }}>
-                                    <div style={{ position: 'relative', flex: 1 }}>
-                                        <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-                                        <input
-                                            type="text"
-                                            value={salesSearch}
-                                            onChange={e => { setSalesSearch(e.target.value); setSalesCurrentPage(1); }}
-                                            placeholder="Search sales invoices..."
-                                            style={{ width: '100%', padding: '0.5rem 1rem 0.5rem 2.25rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem', outline: 'none', background: '#fff' }}
-                                        />
-                                    </div>
-                                    <select
-                                        style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem', outline: 'none', background: '#fff', color: '#475569' }}
-                                        value={salesFilterRate}
-                                        onChange={e => { setSalesFilterRate(e.target.value); setSalesCurrentPage(1); }}
-                                    >
-                                        <option value="all">All Rates</option>
-                                        <option value="5">5%</option>
-                                        <option value="12">12%</option>
-                                        <option value="18">18%</option>
-                                        <option value="28">28%</option>
-                                        <option value="custom">Custom</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Table */}
-                            <div style={{ border: '1px solid #E2E8F0', borderRadius: '12px', overflow: 'hidden' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                                    <thead>
-                                        <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', textTransform: 'uppercase', fontSize: '0.7rem', color: '#64748B', fontWeight: 800 }}>
-                                            <th style={{ padding: '1rem', textAlign: 'left', cursor: 'pointer' }} onClick={() => { setSalesSortKey('invoiceNumber'); setSalesSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Invoice Ref</th>
-                                            <th style={{ padding: '1rem', textAlign: 'left', cursor: 'pointer' }} onClick={() => { setSalesSortKey('customerVendorName'); setSalesSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Customer</th>
-                                            <th style={{ padding: '1rem', textAlign: 'right', cursor: 'pointer' }} onClick={() => { setSalesSortKey('amount'); setSalesSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Taxable Amt</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center' }}>GST Rate</th>
-                                            <th style={{ padding: '1rem', textAlign: 'right', cursor: 'pointer' }} onClick={() => { setSalesSortKey('gstAmount'); setSalesSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>GST Amt</th>
-                                            <th style={{ padding: '1rem', textAlign: 'right', cursor: 'pointer' }} onClick={() => { setSalesSortKey('totalAmount'); setSalesSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Grand Total</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center', cursor: 'pointer' }} onClick={() => { setSalesSortKey('date'); setSalesSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Date</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center' }}>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {paginatedSales.length === 0 ? (
-                                            <tr><td colSpan="8" style={{ padding: '3rem 1rem', textAlign: 'center', color: '#94A3B8' }}>No sales invoice data matched your search</td></tr>
-                                        ) : (
-                                            paginatedSales.map(tx => (
-                                                <tr
-                                                    key={tx.id}
-                                                    onClick={() => setSelectedGstTx(tx)}
-                                                    style={{ borderBottom: '1px solid #F1F5F9', cursor: 'pointer' }}
-                                                    className="gst-row"
-                                                >
-                                                    <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: '#1E293B' }}>{tx.invoiceNumber || 'No Ref'}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', color: '#475569' }}>{tx.customerVendorName || '—'}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 600 }}>₹{tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>{tx.gstType} ({tx.gstRate}%)</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#1B6B3A', fontWeight: 700 }}>₹{tx.gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#064E3B', fontWeight: 800 }}>₹{tx.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center', color: '#64748B' }}>{tx.date}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
-                                                        <span style={{ fontSize: '0.65rem', padding: '2px 8px', background: '#ECFDF5', color: '#065F46', borderRadius: '99px', fontWeight: 700 }}>Completed</span>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* Pagination */}
-                            {salesTransactions.length > 5 && (
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '1.25rem' }}>
-                                    <button
-                                        onClick={() => setSalesCurrentPage(p => Math.max(1, p - 1))}
-                                        disabled={salesCurrentPage === 1}
-                                        style={{ padding: '4px 10px', background: '#fff', border: '1px solid #CBD5E1', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', opacity: salesCurrentPage === 1 ? 0.5 : 1 }}
-                                    >
-                                        Prev
-                                    </button>
-                                    <span style={{ fontSize: '0.75rem', alignSelf: 'center', color: '#64748B' }}>Page {salesCurrentPage} of {salesPageCount}</span>
-                                    <button
-                                        onClick={() => setSalesCurrentPage(p => Math.min(salesPageCount, p + 1))}
-                                        disabled={salesCurrentPage === salesPageCount}
-                                        style={{ padding: '4px 10px', background: '#fff', border: '1px solid #CBD5E1', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', opacity: salesCurrentPage === salesPageCount ? 0.5 : 1 }}
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* View 3: Purchase GST (Expense transactions with GST) */}
-                    {activeGstTab === 'purchase' && (
-                        <div>
-                            {/* Actions bar */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', background: '#F8FAFC', padding: '1rem', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                                <div style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '500px' }}>
-                                    <div style={{ position: 'relative', flex: 1 }}>
-                                        <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-                                        <input
-                                            type="text"
-                                            value={purchaseSearch}
-                                            onChange={e => { setPurchaseSearch(e.target.value); setPurchaseCurrentPage(1); }}
-                                            placeholder="Search purchase bills..."
-                                            style={{ width: '100%', padding: '0.5rem 1rem 0.5rem 2.25rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem', outline: 'none', background: '#fff' }}
-                                        />
-                                    </div>
-                                    <select
-                                        style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem', outline: 'none', background: '#fff', color: '#475569' }}
-                                        value={purchaseFilterRate}
-                                        onChange={e => { setPurchaseFilterRate(e.target.value); setPurchaseCurrentPage(1); }}
-                                    >
-                                        <option value="all">All Rates</option>
-                                        <option value="5">5%</option>
-                                        <option value="12">12%</option>
-                                        <option value="18">18%</option>
-                                        <option value="28">28%</option>
-                                        <option value="custom">Custom</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Table */}
-                            <div style={{ border: '1px solid #E2E8F0', borderRadius: '12px', overflow: 'hidden' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                                    <thead>
-                                        <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', textTransform: 'uppercase', fontSize: '0.7rem', color: '#64748B', fontWeight: 800 }}>
-                                            <th style={{ padding: '1rem', textAlign: 'left', cursor: 'pointer' }} onClick={() => { setPurchaseSortKey('invoiceNumber'); setPurchaseSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Bill Ref</th>
-                                            <th style={{ padding: '1rem', textAlign: 'left', cursor: 'pointer' }} onClick={() => { setPurchaseSortKey('customerVendorName'); setPurchaseSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Vendor</th>
-                                            <th style={{ padding: '1rem', textAlign: 'right', cursor: 'pointer' }} onClick={() => { setPurchaseSortKey('amount'); setPurchaseSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Taxable Amt</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center' }}>GST Rate</th>
-                                            <th style={{ padding: '1rem', textAlign: 'right', cursor: 'pointer' }} onClick={() => { setPurchaseSortKey('gstAmount'); setPurchaseSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>GST Amt</th>
-                                            <th style={{ padding: '1rem', textAlign: 'right', cursor: 'pointer' }} onClick={() => { setPurchaseSortKey('totalAmount'); setPurchaseSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Grand Total</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center', cursor: 'pointer' }} onClick={() => { setPurchaseSortKey('date'); setPurchaseSortDirection(p => p === 'asc' ? 'desc' : 'asc'); }}>Date</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center' }}>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {paginatedPurchases.length === 0 ? (
-                                            <tr><td colSpan="8" style={{ padding: '3rem 1rem', textAlign: 'center', color: '#94A3B8' }}>No purchase bill data matched your search</td></tr>
-                                        ) : (
-                                            paginatedPurchases.map(tx => (
-                                                <tr
-                                                    key={tx.id}
-                                                    onClick={() => setSelectedGstTx(tx)}
-                                                    style={{ borderBottom: '1px solid #F1F5F9', cursor: 'pointer' }}
-                                                    className="gst-row"
-                                                >
-                                                    <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: '#1E293B' }}>{tx.invoiceNumber || 'No Ref'}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', color: '#475569' }}>{tx.customerVendorName || '—'}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 600 }}>₹{tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>{tx.gstType} ({tx.gstRate}%)</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#EF4444', fontWeight: 700 }}>₹{tx.gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#B91C1C', fontWeight: 800 }}>₹{tx.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center', color: '#64748B' }}>{tx.date}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
-                                                        <span style={{ fontSize: '0.65rem', padding: '2px 8px', background: '#ECFDF5', color: '#065F46', borderRadius: '99px', fontWeight: 700 }}>Completed</span>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* Pagination */}
-                            {purchaseTransactions.length > 5 && (
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '1.25rem' }}>
-                                    <button
-                                        onClick={() => setPurchaseCurrentPage(p => Math.max(1, p - 1))}
-                                        disabled={purchaseCurrentPage === 1}
-                                        style={{ padding: '4px 10px', background: '#fff', border: '1px solid #CBD5E1', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', opacity: purchaseCurrentPage === 1 ? 0.5 : 1 }}
-                                    >
-                                        Prev
-                                    </button>
-                                    <span style={{ fontSize: '0.75rem', alignSelf: 'center', color: '#64748B' }}>Page {purchaseCurrentPage} of {purchasePageCount}</span>
-                                    <button
-                                        onClick={() => setPurchaseCurrentPage(p => Math.min(purchasePageCount, p + 1))}
-                                        disabled={purchaseCurrentPage === purchasePageCount}
-                                        style={{ padding: '4px 10px', background: '#fff', border: '1px solid #CBD5E1', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', opacity: purchaseCurrentPage === purchasePageCount ? 0.5 : 1 }}
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* View 4: GST Reports */}
-                    {activeGstTab === 'reports' && (
-                        <div>
-                            {/* Report Selector & Export buttons */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '1rem', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '2rem' }}>
-                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                    {[
-                                        { id: 'monthly', label: 'Monthly' },
-                                        { id: 'quarterly', label: 'Quarterly' },
-                                        { id: 'yearly', label: 'Yearly' },
-                                        { id: 'sales_register', label: 'Sales Reg' },
-                                        { id: 'purchase_register', label: 'Purchase Reg' },
-                                        { id: 'gst_summary', label: 'GST Summary' }
-                                    ].map(rep => (
-                                        <button
-                                            key={rep.id}
-                                            onClick={() => setGstReportType(rep.id)}
-                                            style={{
-                                                padding: '6px 12px',
-                                                border: '1px solid',
-                                                borderColor: gstReportType === rep.id ? '#1B6B3A' : '#CBD5E1',
-                                                background: gstReportType === rep.id ? '#ECFDF5' : '#fff',
-                                                color: gstReportType === rep.id ? '#1B6B3A' : '#64748B',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 700,
-                                                borderRadius: '6px',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            {rep.label}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <button
-                                        onClick={() => {
-                                            const headers = ["Invoice Ref", "Entity", "Taxable Amount", "GST Rate %", "GST Amount", "Grand Total", "Date"];
-                                            const rows = gstTransactions.map(tx => [
-                                                tx.invoiceNumber || 'No Ref',
-                                                tx.customerVendorName || '—',
-                                                tx.amount,
-                                                tx.gstRate,
-                                                tx.gstAmount,
-                                                tx.totalAmount,
-                                                tx.date
-                                            ]);
-                                            exportCSV(rows, `cliks_gst_report_${gstReportType}.csv`, headers);
-                                        }}
-                                        style={{ ...saveBtn, background: '#1B6B3A', boxShadow: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem' }}
-                                    >
-                                        Excel/CSV
-                                    </button>
-                                    <button
-                                        onClick={() => window.print()}
-                                        style={{ ...saveBtn, background: '#1B6B3A', boxShadow: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem' }}
-                                    >
-                                        PDF Print
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Reports Table rendering */}
-                            <div style={{ border: '1px solid #E2E8F0', borderRadius: '12px', padding: '1.5rem', background: '#fff' }}>
-                                <div style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #F1F5F9', paddingBottom: '1.5rem' }}>
-                                    <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0F172A', margin: '0 0 4px 0' }}>{gstSettings.businessName || 'CLIKS Business'}</h2>
-                                    <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 500 }}>GSTIN: {gstSettings.businessGstNumber || 'NOT CONFIGURED'} | {gstSettings.state}, {gstSettings.country}</div>
-                                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1B6B3A', textTransform: 'uppercase', marginTop: '1rem', letterSpacing: '0.05em' }}>
-                                        {gstReportType.replace('_', ' ')} Report
-                                    </h3>
-                                </div>
-
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                                    <thead>
-                                        <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', textTransform: 'uppercase', fontSize: '0.7rem', color: '#64748B', fontWeight: 800 }}>
-                                            <th style={{ padding: '0.85rem 1rem', textAlign: 'left' }}>Ref No / Title</th>
-                                            <th style={{ padding: '0.85rem 1rem', textAlign: 'left' }}>Particulars</th>
-                                            <th style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>Taxable Base</th>
-                                            <th style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>GST Rate</th>
-                                            <th style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>GST Amount</th>
-                                            <th style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>Grand Total</th>
-                                            <th style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {gstTransactions.length === 0 ? (
-                                            <tr><td colSpan="7" style={{ padding: '3rem 1rem', textAlign: 'center', color: '#94A3B8' }}>No GST transaction records loaded.</td></tr>
-                                        ) : (
-                                            gstTransactions.map(tx => (
-                                                <tr key={tx.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                                    <td style={{ padding: '0.85rem 1rem', fontWeight: 700 }}>{tx.invoiceNumber || '—'}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', color: '#475569' }}>
-                                                        {tx.customerVendorName || tx.name} 
-                                                        <span style={{ fontSize: '0.7rem', color: '#94A3B8', marginLeft: '6px' }}>({tx.categoryType === 'income' ? 'Sales' : 'Purchase'})</span>
-                                                    </td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 600 }}>₹{tx.amount.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>{tx.gstRate}%</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 700, color: tx.categoryType === 'income' ? '#059669' : '#EF4444' }}>
-                                                        ₹{tx.gstAmount.toLocaleString('en-IN')}
-                                                    </td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 800 }}>₹{tx.totalAmount.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'center', color: '#64748B' }}>{tx.date}</td>
-                                                </tr>
-                                            ))
-                                        )}
-                                        {gstTransactions.length > 0 && (
-                                            <tr style={{ background: '#F8FAFC', borderTop: '2px solid #E2E8F0', fontWeight: 900, color: '#0F172A' }}>
-                                                <td colSpan="2" style={{ padding: '1rem', textAlign: 'left' }}>TOTALS</td>
-                                                <td style={{ padding: '1rem', textAlign: 'right' }}>₹{gstTransactions.reduce((acc, x) => acc + x.amount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                <td style={{ padding: '1rem', textAlign: 'center' }}>—</td>
-                                                <td style={{ padding: '1rem', textAlign: 'right', color: '#1B6B3A' }}>₹{gstTransactions.reduce((acc, x) => acc + x.gstAmount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                <td style={{ padding: '1rem', textAlign: 'right' }}>₹{gstTransactions.reduce((acc, x) => acc + x.totalAmount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                <td style={{ padding: '1rem' }}></td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* View 5: GST Settings */}
-                    {activeGstTab === 'settings' && (
-                        <div>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: 850, color: '#0F172A', marginTop: 0, marginBottom: '1.5rem' }}>GST & Tax Settings</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', maxWidth: '800px' }}>
-                                <div>
-                                    <label style={lbl}>Business / Legal Name</label>
-                                    <input
-                                        type="text"
-                                        style={inp}
-                                        value={gstSettings.businessName}
-                                        onChange={e => setGstSettings(p => ({ ...p, businessName: e.target.value }))}
-                                        placeholder="e.g. CLIKS Enterprises"
-                                    />
-                                </div>
-                                <div>
-                                    <label style={lbl}>Business GST Number</label>
-                                    <input
-                                        type="text"
-                                        style={inp}
-                                        value={gstSettings.businessGstNumber}
-                                        onChange={e => setGstSettings(p => ({ ...p, businessGstNumber: e.target.value }))}
-                                        placeholder="GSTIN"
-                                    />
-                                </div>
-                                <div>
-                                    <label style={lbl}>State</label>
-                                    <input
-                                        type="text"
-                                        style={inp}
-                                        value={gstSettings.state}
-                                        onChange={e => setGstSettings(p => ({ ...p, state: e.target.value }))}
-                                        placeholder="e.g. Karnataka"
-                                    />
-                                </div>
-                                <div>
-                                    <label style={lbl}>Country</label>
-                                    <input
-                                        type="text"
-                                        style={inp}
-                                        value={gstSettings.country}
-                                        onChange={e => setGstSettings(p => ({ ...p, country: e.target.value }))}
-                                        placeholder="e.g. India"
-                                    />
-                                </div>
-                                <div>
-                                    <label style={lbl}>Default GST Rate (%)</label>
-                                    <select
-                                        style={inp}
-                                        value={gstSettings.defaultGstRate}
-                                        onChange={e => setGstSettings(p => ({ ...p, defaultGstRate: e.target.value }))}
-                                    >
-                                        <option value="5">5%</option>
-                                        <option value="12">12%</option>
-                                        <option value="18">18%</option>
-                                        <option value="28">28%</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={lbl}>Tax Calculation Method</label>
-                                    <select
-                                        style={inp}
-                                        value={gstSettings.taxCalculationMethod}
-                                        onChange={e => setGstSettings(p => ({ ...p, taxCalculationMethod: e.target.value }))}
-                                    >
-                                        <option value="Exclusive">Exclusive (Tax added on top of base amount)</option>
-                                        <option value="Inclusive">Inclusive (Tax is built into total amount)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={lbl}>Invoice Prefix</label>
-                                    <input
-                                        type="text"
-                                        style={inp}
-                                        value={gstSettings.invoicePrefix}
-                                        onChange={e => setGstSettings(p => ({ ...p, invoicePrefix: e.target.value }))}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={lbl}>Invoice Starting Number</label>
-                                    <input
-                                        type="number"
-                                        style={inp}
-                                        value={gstSettings.invoiceStartingNumber}
-                                        onChange={e => setGstSettings(p => ({ ...p, invoiceStartingNumber: e.target.value }))}
-                                    />
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    localStorage.setItem(`cliks_gst_settings_${uid}`, JSON.stringify(gstSettings));
-                                    alert('Settings saved successfully!');
-                                }}
-                                style={{ ...saveBtn, marginTop: '2rem' }}
-                            >
-                                Save Settings
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* GST Transaction Detail Modal */}
-            {selectedGstTx && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-                    <div style={{ width: '95%', maxWidth: '500px', background: '#fff', borderRadius: '24px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', position: 'relative' }}>
-                        <button onClick={() => setSelectedGstTx(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', padding: '0.5rem', cursor: 'pointer', color: '#64748B' }}><X size={20} /></button>
-                        
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#064E3B', marginBottom: '0.5rem' }}>Transaction Details</h2>
-                        <p style={{ color: '#64748B', fontSize: '0.875rem', marginBottom: '2rem', fontWeight: 500 }}>Full invoice/bill tax breakdown.</p>
-                        
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.75rem' }}>
-                                <div>
-                                    <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Name</span>
-                                    <span style={{ fontWeight: 700, color: '#1E293B' }}>{selectedGstTx.name}</span>
-                                </div>
-                                <div>
-                                    <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Reference</span>
-                                    <span style={{ fontWeight: 700, color: '#1E293B' }}>{selectedGstTx.invoiceNumber || 'No Ref'}</span>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.75rem' }}>
-                                <div>
-                                    <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Entity (Customer/Vendor)</span>
-                                    <span style={{ fontWeight: 600, color: '#475569' }}>{selectedGstTx.customerVendorName || '—'}</span>
-                                </div>
-                                <div>
-                                    <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Entity GSTIN</span>
-                                    <span style={{ fontWeight: 600, color: '#475569' }}>{selectedGstTx.gstNumber || '—'}</span>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.75rem' }}>
-                                <div>
-                                    <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Date & Time</span>
-                                    <span style={{ color: '#475569' }}>{selectedGstTx.date} at {selectedGstTx.time || '—'}</span>
-                                </div>
-                                <div>
-                                    <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>GST Category</span>
-                                    <span style={{ color: '#475569' }}>{selectedGstTx.gstType} ({selectedGstTx.gstRate}%)</span>
-                                </div>
-                            </div>
-
-                            <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '12px', border: '1px solid #E2E8F0', marginTop: '0.5rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#475569' }}>
-                                    <span>Taxable Amount (Base):</span>
-                                    <span style={{ fontWeight: 600 }}>₹{selectedGstTx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#475569' }}>
-                                    <span>GST amount ({selectedGstTx.gstRate}%):</span>
-                                    <span style={{ fontWeight: 700, color: selectedGstTx.categoryType === 'income' ? '#059669' : '#EF4444' }}>
-                                        ₹{selectedGstTx.gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                    </span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '6px', marginTop: '6px', fontWeight: 800, fontSize: '1rem', color: '#0F172A' }}>
-                                    <span>Grand Total:</span>
-                                    <span style={{ color: '#064E3B' }}>₹{selectedGstTx.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
