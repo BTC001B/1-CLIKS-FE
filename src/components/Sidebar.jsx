@@ -378,31 +378,53 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
 
                         {/* Beta Club */}
                         <button
-                            className={`sidebar-item sidebar-item-dark-bg ${activeItem === 'Beta Club' ? 'active' : ''}`}
+                            className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
                             onClick={() => handleItemClick('Beta Club', '/social/beta-club')}
                             style={{
                                 width: '100%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 padding: '0.5rem 0',
-                                background: 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)',
+                                background: 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #E5E5E5 100%)',
                                 color: '#FFFFFF',
-                                border: 'none',
+                                border: '1px solid rgba(255, 255, 255, 0.4)',
                                 cursor: 'pointer',
                                 fontWeight: '750',
                                 fontSize: '0.85rem',
                                 borderRadius: '12px',
-                                boxShadow: '0 4px 12px rgba(30, 58, 138, 0.25)',
-                                transition: 'all 0.2s ease',
+                                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12)',
+                                transition: 'all 0.3s ease',
                                 minHeight: '52px',
                                 justifyContent: 'center',
-                                gap: isOpen ? '0.75rem' : '0'
+                                gap: isOpen ? '0.75rem' : '0',
+                                position: 'relative',
+                                overflow: 'hidden'
                             }}
-                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #E5E5E5 0%, #FFFFFF 50%, #E5E5E5 100%)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 1), 0 6px 16px rgba(0, 0, 0, 0.18)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #E5E5E5 100%)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12)';
+                            }}
                         >
-                            <Rocket size={20} className="sidebar-icon-white" style={{ color: '#FFFFFF', flexShrink: 0 }} />
-                            <span className="sidebar-label" style={{ fontWeight: '750', margin: 0 }}>Beta Club</span>
+                            {/* Metallic Reflective Highlight */}
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: '-100%',
+                                width: '60%',
+                                height: '100%',
+                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                                transform: 'skewX(-20deg)',
+                                pointerEvents: 'none'
+                            }} />
+
+                            <Rocket size={20} style={{ color: '#FFFFFF', flexShrink: 0, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))' }} />
+                            <span className="sidebar-label" style={{ fontWeight: '750', margin: 0, color: '#FFFFFF', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>Beta Club</span>
                         </button>
                     </>
                 )}
