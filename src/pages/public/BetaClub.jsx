@@ -206,14 +206,14 @@ export default function BetaClub() {
             {/* Slim, Beautiful Modern Header */}
             <div style={{
                 flexShrink: 0,
-                background: 'linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%)',
+                background: 'linear-gradient(135deg, #FDE2E2 0%, #F9B4B4 100%)',
                 borderRadius: '20px',
                 padding: '1.5rem 2rem',
-                color: 'white',
+                color: '#7F1D1D',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                boxShadow: '0 10px 25px -5px rgba(14, 165, 233, 0.25)',
+                boxShadow: '0 10px 25px -5px rgba(249, 180, 180, 0.25)',
                 marginBottom: '1.25rem',
                 position: 'relative',
                 overflow: 'hidden'
@@ -224,15 +224,15 @@ export default function BetaClub() {
                         alignItems: 'center',
                         gap: '0.4rem',
                         padding: '0.35rem 0.75rem',
-                        background: 'rgba(255, 255, 255, 0.08)',
+                        background: 'rgba(127, 29, 29, 0.08)',
                         borderRadius: '999px',
                         backdropFilter: 'blur(8px)',
                         marginBottom: '0.5rem',
                         fontSize: '0.75rem',
                         fontWeight: '700',
                         letterSpacing: '0.05em',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        color: '#F0F9FF'
+                        border: '1px solid rgba(127, 29, 29, 0.15)',
+                        color: '#7F1D1D'
                     }}>
                         <TrendingUp size={13} />
                         <span>VENTURE CONNECT</span>
@@ -240,7 +240,7 @@ export default function BetaClub() {
                     <h1 style={{ fontSize: '1.75rem', fontWeight: '850', marginBottom: '0.25rem', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
                         BETA Club Deal Marketplace
                     </h1>
-                    <p style={{ fontSize: '0.9rem', color: '#E0F2FE', maxWidth: '500px', margin: 0, opacity: 0.85 }}>
+                    <p style={{ fontSize: '0.9rem', color: '#991B1B', maxWidth: '500px', margin: 0, opacity: 0.85 }}>
                         Connect directly with verified founders, review pitches, and contact owners instantly.
                     </p>
                     
@@ -248,13 +248,13 @@ export default function BetaClub() {
                         <button 
                             onClick={() => setIsLocationMenuOpen(!isLocationMenuOpen)}
                             style={{
-                                background: 'rgba(255, 255, 255, 0.12)',
-                                border: '1px solid rgba(255, 255, 255, 0.22)',
+                                background: 'rgba(127, 29, 29, 0.08)',
+                                border: '1px solid rgba(127, 29, 29, 0.22)',
                                 padding: '0.35rem 0.75rem',
                                 borderRadius: '8px',
                                 fontSize: '0.72rem',
                                 fontWeight: '800',
-                                color: 'white',
+                                color: '#7F1D1D',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '6px',
@@ -263,15 +263,15 @@ export default function BetaClub() {
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
                             }}
                             onMouseOver={e => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.22)';
+                                e.currentTarget.style.background = 'rgba(127, 29, 29, 0.15)';
                                 e.currentTarget.style.transform = 'translateY(-1px)';
                             }}
                             onMouseOut={e => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+                                e.currentTarget.style.background = 'rgba(127, 29, 29, 0.08)';
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
-                            <MapPin size={13} color="#E0F2FE" />
+                            <MapPin size={13} color="#7F1D1D" />
                             <span>
                                 {gpsState ? (
                                     `${cityName ? `${cityName}, ` : ''}${gpsState}${pincode ? `, Pincode: ${pincode}` : ''}`
