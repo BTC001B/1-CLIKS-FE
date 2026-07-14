@@ -302,46 +302,46 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 margin: '0.4rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '12px 16px',
-                                background: 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #E5E5E5 100%)',
-                                color: '#1A1A1A',
-                                border: '1px solid rgba(255, 255, 255, 0.4)',
+                                padding: '12px 20px',
+                                background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)',
+                                color: '#000000',
+                                border: '1px solid #B8860B',
                                 cursor: 'pointer',
                                 fontWeight: '800',
-                                fontSize: '1rem',
-                                borderRadius: '20px',
-                                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12)',
-                                transition: 'all 0.3s ease',
+                                fontSize: '0.95rem',
+                                borderRadius: '24px',
+                                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 justifyContent: 'center',
-                                gap: '10px',
+                                gap: '12px',
                                 position: 'relative',
                                 overflow: 'hidden'
                             }}
                             onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-1px)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #E5E5E5 0%, #FFFFFF 50%, #E5E5E5 100%)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 1), 0 6px 16px rgba(0, 0, 0, 0.18)';
+                                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #F7E27E 50%, #FFD700 100%)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 3px rgba(255, 255, 255, 0.8), 0 8px 20px rgba(184, 134, 11, 0.35)';
                             }}
                             onMouseOut={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #E5E5E5 100%)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12)';
+                                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)';
                             }}
                         >
-                            {/* Subtle Metallic Reflection Overlay */}
+                            {/* Luxurious Glossy Highlight Overlay */}
                             <div style={{
                                 position: 'absolute',
                                 top: 0,
                                 left: '-100%',
                                 width: '60%',
                                 height: '100%',
-                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                                transform: 'skewX(-20deg)',
+                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
+                                transform: 'skewX(-25deg)',
                                 transition: '0.5s',
                                 pointerEvents: 'none'
                             }} />
-                            <Gift size={24} style={{ color: '#1A1A1A', flexShrink: 0 }} />
-                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#1A1A1A', fontSize: '1.1rem' }}>FIN-PRO</span>
+                            <Gift size={22} style={{ color: '#000000', flexShrink: 0, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))' }} />
+                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#000000', letterSpacing: '0.4px', textShadow: '0 0.5px 0 rgba(255,255,255,0.3)' }}>FIN-PRO</span>
                         </button>
                     </>
                 )}
@@ -382,46 +382,47 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 margin: '0.4rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '12px 16px',
-                                background: 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #E5E5E5 100%)',
-                                color: '#1A1A1A',
-                                border: '1px solid rgba(255, 255, 255, 0.4)',
+                                padding: '12px 20px',
+                                background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)',
+                                color: '#000000',
+                                border: '1px solid #B8860B',
                                 cursor: 'pointer',
                                 fontWeight: '800',
-                                fontSize: '1rem',
-                                borderRadius: '20px',
-                                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12)',
-                                transition: 'all 0.3s ease',
+                                fontSize: '0.95rem',
+                                borderRadius: '24px',
+                                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 justifyContent: 'center',
-                                gap: '10px',
+                                gap: '12px',
                                 position: 'relative',
                                 overflow: 'hidden'
                             }}
                             onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-1px)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #E5E5E5 0%, #FFFFFF 50%, #E5E5E5 100%)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 1), 0 6px 16px rgba(0, 0, 0, 0.18)';
+                                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #F7E27E 50%, #FFD700 100%)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 3px rgba(255, 255, 255, 0.8), 0 8px 20px rgba(184, 134, 11, 0.35)';
                             }}
                             onMouseOut={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #E5E5E5 100%)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12)';
+                                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)';
                             }}
                         >
-                            {/* Metallic Reflective Highlight */}
+                            {/* Luxurious Glossy Highlight Overlay */}
                             <div style={{
                                 position: 'absolute',
                                 top: 0,
                                 left: '-100%',
                                 width: '60%',
                                 height: '100%',
-                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                                transform: 'skewX(-20deg)',
+                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
+                                transform: 'skewX(-25deg)',
+                                transition: '0.5s',
                                 pointerEvents: 'none'
                             }} />
 
-                            <Rocket size={24} style={{ color: '#1A1A1A', flexShrink: 0 }} />
-                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#1A1A1A', fontSize: '1.1rem' }}>Beta Club</span>
+                            <Rocket size={22} style={{ color: '#000000', flexShrink: 0, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))' }} />
+                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#000000', letterSpacing: '0.4px', textShadow: '0 0.5px 0 rgba(255,255,255,0.3)' }}>Beta Club</span>
                         </button>
                     </>
                 )}
