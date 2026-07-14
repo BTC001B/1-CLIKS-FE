@@ -298,11 +298,12 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             className={`sidebar-item ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
                             onClick={() => handleItemClick('FIN-PRO', '/ca')}
                             style={{
-                                width: 'fit-content',
+                                width: '170px',
+                                height: '50px',
                                 margin: '0.4rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '12px 20px',
+                                padding: '0 22px',
                                 background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)',
                                 color: '#000000',
                                 border: '1px solid #B8860B',
@@ -313,7 +314,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 justifyContent: 'center',
-                                gap: '12px',
+                                gap: '11px',
                                 position: 'relative',
                                 overflow: 'hidden'
                             }}
@@ -378,11 +379,12 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
                             onClick={() => handleItemClick('Beta Club', '/social/beta-club')}
                             style={{
-                                width: 'fit-content',
+                                width: '170px',
+                                height: '50px',
                                 margin: '0.4rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '12px 20px',
+                                padding: '0 22px',
                                 background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)',
                                 color: '#000000',
                                 border: '1px solid #B8860B',
@@ -393,7 +395,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 justifyContent: 'center',
-                                gap: '12px',
+                                gap: '11px',
                                 position: 'relative',
                                 overflow: 'hidden'
                             }}
