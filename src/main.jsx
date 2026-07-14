@@ -2,6 +2,25 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './context/AuthContext'
+
+// Auto-reload page when dynamic imports fail due to code updates
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', (event) => {
+    console.warn('Vite preload error detected, reloading page...', event);
+    window.location.reload();
+  });
+
+  window.addEventListener('error', (event) => {
+    if (event.message && (
+      event.message.includes('Failed to fetch dynamically imported module') || 
+      event.message.includes('Loading chunk') ||
+      event.message.includes('dynamically imported module')
+    )) {
+      console.warn('Dynamic import error caught globally, reloading page...');
+      window.location.reload();
+    }
+  }, true);
+}
 import { CurrencyProvider } from './context/CurrencyContext'
 import './styles/tokens.css'
 import './index.css'

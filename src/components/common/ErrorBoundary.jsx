@@ -13,8 +13,17 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // You can also log the error to an error reporting service
     console.error("Uncaught error:", error, errorInfo);
+    const isChunkError = 
+      error?.message?.includes("Failed to fetch dynamically imported module") ||
+      error?.message?.includes("Loading chunk") ||
+      error?.message?.includes("dynamically imported module");
+      
+    if (isChunkError) {
+      console.warn("Dynamic import chunk load error detected in ErrorBoundary. Reloading page...");
+      window.location.reload();
+      return;
+    }
     this.setState({ errorInfo });
   }
 
@@ -25,6 +34,16 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      const isChunkError = 
+        this.state.error?.message?.includes("Failed to fetch dynamically imported module") ||
+        this.state.error?.message?.includes("Loading chunk") ||
+        this.state.error?.message?.includes("dynamically imported module");
+
+      if (isChunkError) {
+        window.location.reload();
+        return null;
+      }
+
       if (this.props.fallback) {
         return this.props.fallback;
       }

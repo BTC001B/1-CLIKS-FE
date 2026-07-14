@@ -998,6 +998,13 @@ const FinancePage = () => {
     return (
         <div style={{ padding: '1.5rem 2rem', maxWidth: 1200, margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
             <style>{`
+                body:not([data-theme='dark']), 
+                .app-root:not([data-theme='dark']), 
+                .app-body:not([data-theme='dark']), 
+                .main-content-area:not([data-theme='dark']), 
+                .content-scrollable:not([data-theme='dark']) {
+                    background-color: #ffffff !important;
+                }
                 .finance-premium-container { display: flex; gap: 2rem; }
                 .finance-panel-left, .finance-panel-right {
                     width: 450px;
