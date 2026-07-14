@@ -4,6 +4,14 @@ import { useAuth } from '../../context';
 import { transactionsService } from '../../services';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 
+import MyWallet from './components/MyWallet';
+import BudgetPlanner from './components/BudgetPlanner';
+import BillsReminders from './components/BillsReminders';
+import SavingsGoals from './components/SavingsGoals';
+import FinanceAnalytics from './components/FinanceAnalytics';
+import FinanceReports from './components/FinanceReports';
+import FinanceSettings from './components/FinanceSettings';
+
 /* ─── Storage keys scoped per user ────────────────────────────── */
 const incomeKey = (uid) => `cliks_finance_income_v2_${uid}`;
 const expensesKey = (uid) => `cliks_finance_expenses_${uid}`;
@@ -53,7 +61,9 @@ const BLANK_INCOME = {
     date: '', 
     time: '', 
     schedule: 'Monthly', 
-    amount: ''
+    amount: '',
+    category: 'Other',
+    walletId: ''
 };
 const BLANK_EXPENSE = { 
     name: '', 
@@ -61,7 +71,9 @@ const BLANK_EXPENSE = {
     date: '', 
     time: '', 
     schedule: 'Monthly', 
-    amount: ''
+    amount: '',
+    category: 'Other',
+    walletId: ''
 };
 
 const getOrdinal = (d) => {
@@ -130,6 +142,137 @@ const FinancePage = () => {
         try { return JSON.parse(localStorage.getItem(additionalExpensesKey(uid))) || []; }
         catch { return []; }
     });
+
+    /* ─── NEW EXTENDED STATE & HELPERS ───────────────────────── */
+    const walletsKey = (uid) => `cliks_finance_wallets_${uid}`;
+    const [wallets, setWallets] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem(walletsKey(uid))) || [
+                { id: 'wallet-cash', name: 'Cash Wallet', type: 'Cash', balance: 5000 },
+                { id: 'wallet-bank', name: 'HDFC Corporate Account', type: 'Bank Account', balance: 50000 },
+                { id: 'wallet-upi', name: 'GPay / UPI Portal', type: 'UPI', balance: 15000 },
+                { id: 'wallet-credit', name: 'SBI Credit Card', type: 'Credit Card', balance: -2000 },
+            ];
+        } catch {
+            return [
+                { id: 'wallet-cash', name: 'Cash Wallet', type: 'Cash', balance: 5000 },
+                { id: 'wallet-bank', name: 'HDFC Corporate Account', type: 'Bank Account', balance: 50000 },
+                { id: 'wallet-upi', name: 'GPay / UPI Portal', type: 'UPI', balance: 15000 },
+                { id: 'wallet-credit', name: 'SBI Credit Card', type: 'Credit Card', balance: -2000 },
+            ];
+        }
+    });
+
+    const handleUpdateWallets = (updatedList) => {
+        setWallets(updatedList);
+        localStorage.setItem(walletsKey(uid), JSON.stringify(updatedList));
+    };
+
+    const settingsKey = (uid) => `cliks_finance_settings_${uid}`;
+    const [settings, setSettings] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem(settingsKey(uid))) || {
+                currency: 'INR',
+                dateFormat: 'DD MMM YYYY',
+                theme: 'Default Slate',
+                exportFormat: 'CSV'
+            };
+        } catch {
+            return {
+                currency: 'INR',
+                dateFormat: 'DD MMM YYYY',
+                theme: 'Default Slate',
+                exportFormat: 'CSV'
+            };
+        }
+    });
+
+    const handleUpdateSettings = (newSettings) => {
+        setSettings(newSettings);
+        localStorage.setItem(settingsKey(uid), JSON.stringify(newSettings));
+    };
+
+    const currencySymbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+    const currencySymbol = currencySymbols[settings.currency] || '₹';
+
+    const billsKey = (uid) => `cliks_finance_bills_${uid}`;
+    const [bills, setBills] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(billsKey(uid))) || []; }
+        catch { return []; }
+    });
+    const handleUpdateBills = (updated) => {
+        setBills(updated);
+        localStorage.setItem(billsKey(uid), JSON.stringify(updated));
+    };
+
+    const savingsKey = (uid) => `cliks_finance_savings_${uid}`;
+    const [goals, setGoals] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(savingsKey(uid))) || []; }
+        catch { return []; }
+    });
+    const handleUpdateGoals = (updated) => {
+        setGoals(updated);
+        localStorage.setItem(savingsKey(uid), JSON.stringify(updated));
+    };
+
+    const budgetKey = (uid) => `cliks_finance_budget_${uid}`;
+    const [budget, setBudget] = useState(() => {
+        try { return parseFloat(localStorage.getItem(budgetKey(uid))) || 20000; }
+        catch { return 20000; }
+    });
+    const handleUpdateBudget = (value) => {
+        setBudget(value);
+        localStorage.setItem(budgetKey(uid), value.toString());
+    };
+
+    // Wallet adjustment helpers
+    const adjustWalletBalance = (walletId, amount, isIncome) => {
+        if (!walletId) return;
+        setWallets(prev => {
+            const updated = prev.map(w => {
+                if (w.id === walletId) {
+                    const change = isIncome ? amount : -amount;
+                    return { ...w, balance: w.balance + change };
+                }
+                return w;
+            });
+            localStorage.setItem(walletsKey(uid), JSON.stringify(updated));
+            return updated;
+        });
+    };
+
+    const handleUpdateWalletOnEdit = (oldWalletId, oldAmount, newWalletId, newAmount, isIncome) => {
+        setWallets(prev => {
+            const updated = prev.map(w => {
+                let bal = w.balance;
+                if (w.id === oldWalletId) {
+                    bal = bal + (isIncome ? -oldAmount : oldAmount);
+                }
+                if (w.id === newWalletId) {
+                    bal = bal + (isIncome ? newAmount : -newAmount);
+                }
+                return { ...w, balance: bal };
+            });
+            localStorage.setItem(walletsKey(uid), JSON.stringify(updated));
+            return updated;
+        });
+    };
+
+    const handleUpdateWalletOnDelete = (walletId, amount, isIncome) => {
+        if (!walletId) return;
+        setWallets(prev => {
+            const updated = prev.map(w => {
+                if (w.id === walletId) {
+                    const change = isIncome ? -amount : amount;
+                    return { ...w, balance: w.balance + change };
+                }
+                return w;
+            });
+            localStorage.setItem(walletsKey(uid), JSON.stringify(updated));
+            return updated;
+        });
+    };
+
     // Form states
     const [newIncome, setNewIncome] = useState(BLANK_INCOME);
     const [editingIncomeId, setEditingIncomeId] = useState(null);
@@ -399,7 +542,9 @@ const FinancePage = () => {
                 amount: parseFloat(tx.amount) || 0,
                 date: tx.date || '',
                 time: tx.time || tx.scheduledTime || '',
-                schedule: tx.schedule || tx.notes || 'Monthly',
+                schedule: tx.schedule || 'Monthly',
+                category: tx.category || 'Other',
+                walletId: tx.notes && tx.notes.startsWith('wallet-') ? tx.notes : '',
             };
         };
 
@@ -435,6 +580,44 @@ const FinancePage = () => {
 
     const remaining = monthlyIncome - (fixedExpenses + dailyExpenses);
 
+    const currentMonthExpenses = useMemo(() => {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonthIdx = today.getMonth(); // 0-11
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const currentMonthName = months[currentMonthIdx];
+
+        const allExpenses = [...expenses, ...additionalExpenses];
+        return allExpenses.reduce((sum, e) => {
+            if (!e.date) return sum;
+            let match = false;
+            if (e.date.includes('-')) {
+                const parts = e.date.split('-'); // YYYY-MM-DD
+                const yr = parseInt(parts[0]);
+                const mo = parseInt(parts[1]);
+                match = (yr === currentYear && mo === (currentMonthIdx + 1));
+            } else {
+                const parts = e.date.split(' ');
+                if (parts.length === 3) {
+                    match = (parts[1] === currentMonthName && parts[2] === String(currentYear));
+                }
+            }
+            return match ? sum + (parseFloat(e.amount) || 0) : sum;
+        }, 0);
+    }, [expenses, additionalExpenses]);
+
+    const budgetRemaining = Math.max(0, budget - currentMonthExpenses);
+
+    const allTransactions = useMemo(() => {
+        const list = [];
+        incomeSources.forEach(i => list.push({ ...i, type: 'Income' }));
+        expenses.forEach(e => list.push({ ...e, type: 'Expense' }));
+        additionalIncomeSources.forEach(i => list.push({ ...i, type: 'Income' }));
+        additionalExpenses.forEach(e => list.push({ ...e, type: 'Expense' }));
+        return list;
+    }, [incomeSources, expenses, additionalIncomeSources, additionalExpenses]);
+
+    // Handlers
     // Handlers
     const handleAddIncomeSource = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
@@ -445,11 +628,13 @@ const FinancePage = () => {
         const defaultTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
         if (editingIncomeId) {
+            const oldEntry = incomeSources.find(i => i.id === editingIncomeId);
             entry = {
-                ...incomeSources.find(i => i.id === editingIncomeId),
+                ...oldEntry,
                 ...newIncome,
                 amount: parseFloat(newIncome.amount) || 0
             };
+            handleUpdateWalletOnEdit(oldEntry.walletId, oldEntry.amount, entry.walletId, entry.amount, true);
             setIncomeSources(prev => prev.map(i => i.id === editingIncomeId ? entry : i));
             setEditingIncomeId(null);
         } else {
@@ -460,6 +645,7 @@ const FinancePage = () => {
                 time: newIncome.time || defaultTime,
                 amount: parseFloat(newIncome.amount) || 0
             };
+            adjustWalletBalance(entry.walletId, entry.amount, true);
             setIncomeSources(prev => [...prev, entry]);
         }
         setNewIncome(BLANK_INCOME);
@@ -470,12 +656,12 @@ const FinancePage = () => {
                 title: entry.name, 
                 name: entry.name,
                 description: entry.description || '',
-                category: mapCategory(entry.name), 
+                category: entry.category || mapCategory(entry.name), 
                 amount: entry.amount, 
                 date: formatAPIDate(entry.date), 
                 time: entry.time || '',
                 schedule: entry.schedule || 'Monthly',
-                notes: entry.schedule || 'Monthly', 
+                notes: entry.walletId || entry.schedule || 'Monthly', 
                 status: 'Completed'
             };
             if (entry.transactionId) {
@@ -492,11 +678,14 @@ const FinancePage = () => {
 
     const handleDeleteIncomeSource = async (id) => {
         const entry = incomeSources.find(i => i.id === id);
-        if (entry && entry.transactionId) {
-            try {
-                await transactionsService.deleteTransaction(entry.transactionId);
-                queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            } catch (err) { console.error(err); }
+        if (entry) {
+            handleUpdateWalletOnDelete(entry.walletId, entry.amount, true);
+            if (entry.transactionId) {
+                try {
+                    await transactionsService.deleteTransaction(entry.transactionId);
+                    queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                } catch (err) { console.error(err); }
+            }
         }
         setIncomeSources(prev => prev.filter(i => i.id !== id));
     };
@@ -519,11 +708,13 @@ const FinancePage = () => {
         const defaultTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
         if (editingId) {
+            const oldEntry = expenses.find(e => e.id === editingId);
             entry = { 
-                ...expenses.find(e => e.id === editingId), 
+                ...oldEntry, 
                 ...expense, 
                 amount: parseFloat(expense.amount) || 0
             };
+            handleUpdateWalletOnEdit(oldEntry.walletId, oldEntry.amount, entry.walletId, entry.amount, false);
             setExpenses(prev => prev.map(e => e.id === editingId ? entry : e));
             setEditingId(null);
         } else {
@@ -534,6 +725,7 @@ const FinancePage = () => {
                 time: expense.time || defaultTime, 
                 amount: parseFloat(expense.amount) || 0
             };
+            adjustWalletBalance(entry.walletId, entry.amount, false);
             setExpenses(prev => [entry, ...prev]);
         }
         setExpense(BLANK_EXPENSE);
@@ -544,12 +736,12 @@ const FinancePage = () => {
                 title: entry.name, 
                 name: entry.name,
                 description: entry.description || '',
-                category: mapCategory(entry.name), 
+                category: entry.category || mapCategory(entry.name), 
                 amount: entry.amount, 
                 date: formatAPIDate(entry.date), 
                 time: entry.time || '',
                 schedule: entry.schedule || 'Monthly',
-                notes: entry.schedule || 'Monthly', 
+                notes: entry.walletId || entry.schedule || 'Monthly', 
                 status: 'Completed'
             };
             if (entry.transactionId) {
@@ -566,11 +758,14 @@ const FinancePage = () => {
 
     const handleDeleteExpense = async (id) => {
         const entry = expenses.find(e => e.id === id);
-        if (entry && entry.transactionId) {
-            try {
-                await transactionsService.deleteTransaction(entry.transactionId);
-                queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            } catch (err) { console.error(err); }
+        if (entry) {
+            handleUpdateWalletOnDelete(entry.walletId, entry.amount, false);
+            if (entry.transactionId) {
+                try {
+                    await transactionsService.deleteTransaction(entry.transactionId);
+                    queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                } catch (err) { console.error(err); }
+            }
         }
         setExpenses(prev => prev.filter(e => e.id !== id));
     };
@@ -593,11 +788,13 @@ const FinancePage = () => {
         const defaultTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
         if (editingAdditionalIncomeId) {
+            const oldEntry = additionalIncomeSources.find(i => i.id === editingAdditionalIncomeId);
             entry = {
-                ...additionalIncomeSources.find(i => i.id === editingAdditionalIncomeId),
+                ...oldEntry,
                 ...newAdditionalIncome,
                 amount: parseFloat(newAdditionalIncome.amount) || 0
             };
+            handleUpdateWalletOnEdit(oldEntry.walletId, oldEntry.amount, entry.walletId, entry.amount, true);
             setAdditionalIncomeSources(prev => prev.map(i => i.id === editingAdditionalIncomeId ? entry : i));
             setEditingAdditionalIncomeId(null);
         } else {
@@ -608,6 +805,7 @@ const FinancePage = () => {
                 time: newAdditionalIncome.time || defaultTime,
                 amount: parseFloat(newAdditionalIncome.amount) || 0
             };
+            adjustWalletBalance(entry.walletId, entry.amount, true);
             setAdditionalIncomeSources(prev => [...prev, entry]);
         }
         setNewAdditionalIncome(BLANK_INCOME);
@@ -618,12 +816,12 @@ const FinancePage = () => {
                 title: `[Add] ${entry.name}`, 
                 name: `[Add] ${entry.name}`, 
                 description: entry.description || '',
-                category: mapCategory(entry.name), 
+                category: entry.category || mapCategory(entry.name), 
                 amount: entry.amount, 
                 date: formatAPIDate(entry.date), 
                 time: entry.time || '',
                 schedule: entry.schedule || 'Monthly',
-                notes: entry.schedule || 'Monthly', 
+                notes: entry.walletId || entry.schedule || 'Monthly', 
                 status: 'Completed'
             };
             if (entry.transactionId) {
@@ -640,11 +838,14 @@ const FinancePage = () => {
 
     const handleDeleteAddIncomeSource = async (id) => {
         const entry = additionalIncomeSources.find(i => i.id === id);
-        if (entry && entry.transactionId) {
-            try {
-                await transactionsService.deleteTransaction(entry.transactionId);
-                queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            } catch (err) { console.error(err); }
+        if (entry) {
+            handleUpdateWalletOnDelete(entry.walletId, entry.amount, true);
+            if (entry.transactionId) {
+                try {
+                    await transactionsService.deleteTransaction(entry.transactionId);
+                    queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                } catch (err) { console.error(err); }
+            }
         }
         setAdditionalIncomeSources(prev => prev.filter(i => i.id !== id));
     };
@@ -667,11 +868,13 @@ const FinancePage = () => {
         const defaultTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
         if (editingAdditionalId) {
+            const oldEntry = additionalExpenses.find(e => e.id === editingAdditionalId);
             entry = { 
-                ...additionalExpenses.find(e => e.id === editingAdditionalId), 
+                ...oldEntry, 
                 ...additionalExpense, 
                 amount: parseFloat(additionalExpense.amount) || 0
             };
+            handleUpdateWalletOnEdit(oldEntry.walletId, oldEntry.amount, entry.walletId, entry.amount, false);
             setAdditionalExpenses(prev => prev.map(e => e.id === editingAdditionalId ? entry : e));
             setEditingAdditionalId(null);
         } else {
@@ -682,6 +885,7 @@ const FinancePage = () => {
                 time: additionalExpense.time || defaultTime, 
                 amount: parseFloat(additionalExpense.amount) || 0
             };
+            adjustWalletBalance(entry.walletId, entry.amount, false);
             setAdditionalExpenses(prev => [entry, ...prev]);
         }
         setAdditionalExpense(BLANK_EXPENSE);
@@ -692,12 +896,12 @@ const FinancePage = () => {
                 title: `[Add] ${entry.name}`, 
                 name: `[Add] ${entry.name}`, 
                 description: entry.description || '',
-                category: mapCategory(entry.name), 
+                category: entry.category || mapCategory(entry.name), 
                 amount: entry.amount, 
                 date: formatAPIDate(entry.date), 
                 time: entry.time || '',
                 schedule: entry.schedule || 'Monthly',
-                notes: entry.schedule || 'Monthly', 
+                notes: entry.walletId || entry.schedule || 'Monthly', 
                 status: 'Completed'
             };
             if (entry.transactionId) {
@@ -714,11 +918,14 @@ const FinancePage = () => {
 
     const handleDeleteAddExpense = async (id) => {
         const entry = additionalExpenses.find(e => e.id === id);
-        if (entry && entry.transactionId) {
-            try {
-                await transactionsService.deleteTransaction(entry.transactionId);
-                queryClient.invalidateQueries({ queryKey: ['transactions'] });
-            } catch (err) { console.error(err); }
+        if (entry) {
+            handleUpdateWalletOnDelete(entry.walletId, entry.amount, false);
+            if (entry.transactionId) {
+                try {
+                    await transactionsService.deleteTransaction(entry.transactionId);
+                    queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                } catch (err) { console.error(err); }
+            }
         }
         setAdditionalExpenses(prev => prev.filter(e => e.id !== id));
     };
@@ -846,18 +1053,36 @@ const FinancePage = () => {
             <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
                         {[
-                            { label: 'Monthly Income', value: monthlyIncome, color: '#059669', bg: '#ECFDF5' },
-                            { label: 'Fixed Expenses', value: fixedExpenses, color: '#D97706', bg: '#FFFBEB' },
-                            { label: 'Daily Expenses', value: dailyExpenses, color: '#7C3AED', bg: '#F5F3FF' },
-                            { label: 'Remaining Balance', value: remaining, color: remaining >= 0 ? '#059669' : '#EF4444', bg: remaining >= 0 ? '#ECFDF5' : '#FEF2F2' },
+                            { label: 'Total Income', value: monthlyIncome, color: '#059669', bg: '#ECFDF5' },
+                            { label: 'Total Expenses', value: fixedExpenses + dailyExpenses, color: '#D97706', bg: '#FFFBEB' },
+                            { label: 'Monthly Savings', value: remaining, color: remaining >= 0 ? '#7C3AED' : '#EF4444', bg: remaining >= 0 ? '#F5F3FF' : '#FEF2F2' },
+                            { label: 'Monthly Budget Remaining', value: budgetRemaining, color: '#2563EB', bg: '#EFF6FF' },
+                            { label: 'Active Savings Goals', value: goals.length, color: '#EC4899', bg: '#FDF2F8', isCount: true },
                         ].map(item => (
                             <div key={item.label} style={{ background: item.bg, borderRadius: '14px', padding: '1.1rem 1.25rem', border: `1px solid ${item.color}22` }}>
                                 <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.3rem' }}>{item.label}</div>
-                                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: item.color }}>₹{item.value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: item.color }}>
+                                    {item.isCount ? item.value : `${currencySymbol}${item.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                </div>
                             </div>
                         ))}
                     </div>
 
+
+            {/* NEW SECTIONS: WALLET AND BUDGET */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                <MyWallet 
+                    wallets={wallets} 
+                    onUpdateWallets={handleUpdateWallets} 
+                    currencySymbol={currencySymbol} 
+                />
+                <BudgetPlanner 
+                    budget={budget} 
+                    onUpdateBudget={handleUpdateBudget} 
+                    currentSpent={currentMonthExpenses} 
+                    currencySymbol={currencySymbol} 
+                />
+            </div>
 
             {/* SECTION: ADDITIONAL SOURCE */}
             <div style={{ marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
@@ -932,8 +1157,27 @@ const FinancePage = () => {
                                             <input type="time" style={inp} value={newAdditionalIncome.time} onChange={e => setNewAdditionalIncome(p => ({ ...p, time: e.target.value }))} />
                                         </div>
                                     </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Category</label>
+                                            <select style={inp} value={newAdditionalIncome.category || 'Other'} onChange={e => setNewAdditionalIncome(p => ({ ...p, category: e.target.value }))}>
+                                                {['Freelance', 'Interest', 'Stocks', 'Mutual Funds', 'Cashback', 'Bonus', 'Referral Earnings', 'Other'].map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Associated Wallet</label>
+                                            <select style={inp} value={newAdditionalIncome.walletId || ''} onChange={e => setNewAdditionalIncome(p => ({ ...p, walletId: e.target.value }))}>
+                                                <option value="">No Wallet</option>
+                                                {wallets.map(w => (
+                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString()})</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
                                     <div>
-                                        <label style={lbl}>Amount (₹)</label>
+                                        <label style={lbl}>Amount ({currencySymbol})</label>
                                         <input type="number" style={inp} placeholder="0.00" value={newAdditionalIncome.amount} onChange={e => setNewAdditionalIncome(p => ({ ...p, amount: e.target.value }))} />
                                     </div>
                                 </div>
@@ -967,7 +1211,7 @@ const FinancePage = () => {
                                         <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#10B981', textAlign: 'center' }}>{i.name}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{i.date}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>₹{parseFloat(i.amount).toLocaleString('en-IN')}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>{currencySymbol}{parseFloat(i.amount).toLocaleString()}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                                                     <button onClick={() => handleEditAddIncomeSource(i)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
@@ -1048,8 +1292,27 @@ const FinancePage = () => {
                                             <input type="time" style={inp} value={additionalExpense.time} onChange={e => setAdditionalExpense(p => ({ ...p, time: e.target.value }))} />
                                         </div>
                                     </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Category</label>
+                                            <select style={inp} value={additionalExpense.category || 'Other'} onChange={e => setAdditionalExpense(p => ({ ...p, category: e.target.value }))}>
+                                                {['Emergency', 'Medical', 'Office Supplies', 'Maintenance', 'Unexpected Expenses', 'Other'].map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Associated Wallet</label>
+                                            <select style={inp} value={additionalExpense.walletId || ''} onChange={e => setAdditionalExpense(p => ({ ...p, walletId: e.target.value }))}>
+                                                <option value="">No Wallet</option>
+                                                {wallets.map(w => (
+                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString()})</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
                                     <div>
-                                        <label style={lbl}>Amount (₹)</label>
+                                        <label style={lbl}>Amount ({currencySymbol})</label>
                                         <input type="number" style={inp} placeholder="0.00" value={additionalExpense.amount} onChange={e => setAdditionalExpense(p => ({ ...p, amount: e.target.value }))} />
                                     </div>
                                 </div>
@@ -1083,7 +1346,7 @@ const FinancePage = () => {
                                         <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#EF4444', textAlign: 'center' }}>{e.name}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{e.date}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>₹{parseFloat(e.amount).toLocaleString('en-IN')}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>{currencySymbol}{parseFloat(e.amount).toLocaleString()}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                                                     <button onClick={() => handleEditAddExpense(e)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
@@ -1101,6 +1364,20 @@ const FinancePage = () => {
                         </table>
                     </div>
                 </div>
+            </div>
+
+            {/* NEW SECTIONS: BILLS & REMINDERS AND SAVINGS GOALS */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+                <BillsReminders 
+                    bills={bills} 
+                    onUpdateBills={handleUpdateBills} 
+                    currencySymbol={currencySymbol} 
+                />
+                <SavingsGoals 
+                    goals={goals} 
+                    onUpdateGoals={handleUpdateGoals} 
+                    currencySymbol={currencySymbol} 
+                />
             </div>
 
             {/* SECTION: FIXED SOURCE */}
@@ -1174,7 +1451,7 @@ const FinancePage = () => {
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                         <div>
-                                            <label style={lbl}>Amount (₹)</label>
+                                            <label style={lbl}>Amount ({currencySymbol})</label>
                                             <input type="number" style={inp} placeholder="0.00" value={newIncome.amount} onChange={e => setNewIncome(p => ({ ...p, amount: e.target.value }))} />
                                         </div>
                                         <div>
@@ -1184,6 +1461,25 @@ const FinancePage = () => {
                                                 <option value="Weekly">Weekly</option>
                                                 <option value="Monthly">Monthly</option>
                                                 <option value="Yearly">Yearly</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Category</label>
+                                            <select style={inp} value={newIncome.category || 'Other'} onChange={e => setNewIncome(p => ({ ...p, category: e.target.value }))}>
+                                                {['Salary', 'Business', 'Freelance', 'Investment', 'Rental', 'Bonus', 'Scholarship', 'Other'].map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Associated Wallet</label>
+                                            <select style={inp} value={newIncome.walletId || ''} onChange={e => setNewIncome(p => ({ ...p, walletId: e.target.value }))}>
+                                                <option value="">No Wallet</option>
+                                                {wallets.map(w => (
+                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString()})</option>
+                                                ))}
                                             </select>
                                         </div>
                                     </div>
@@ -1251,7 +1547,7 @@ const FinancePage = () => {
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{i.date || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{i.time || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{i.schedule || 'Monthly'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#10B981', textAlign: 'center' }}>₹{(parseFloat(i.amount) || 0).toLocaleString('en-IN')}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#10B981', textAlign: 'center' }}>{currencySymbol}{(parseFloat(i.amount) || 0).toLocaleString()}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                                                     <button onClick={() => handleEditIncomeSource(i)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
@@ -1328,7 +1624,7 @@ const FinancePage = () => {
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                         <div>
-                                            <label style={lbl}>Amount (₹)</label>
+                                            <label style={lbl}>Amount ({currencySymbol})</label>
                                             <input type="number" style={inp} placeholder="0.00" value={expense.amount} onChange={e => setExpense(p => ({ ...p, amount: e.target.value }))} />
                                         </div>
                                         <div>
@@ -1338,6 +1634,25 @@ const FinancePage = () => {
                                                 <option value="Weekly">Weekly</option>
                                                 <option value="Monthly">Monthly</option>
                                                 <option value="Yearly">Yearly</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={lbl}>Category</label>
+                                            <select style={inp} value={expense.category || 'Other'} onChange={e => setExpense(p => ({ ...p, category: e.target.value }))}>
+                                                {['Food', 'Travel', 'Shopping', 'Rent', 'Education', 'Medical', 'Entertainment', 'Fuel', 'Bills', 'Other'].map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style={lbl}>Associated Wallet</label>
+                                            <select style={inp} value={expense.walletId || ''} onChange={e => setExpense(p => ({ ...p, walletId: e.target.value }))}>
+                                                <option value="">No Wallet</option>
+                                                {wallets.map(w => (
+                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString()})</option>
+                                                ))}
                                             </select>
                                         </div>
                                     </div>
@@ -1400,7 +1715,7 @@ const FinancePage = () => {
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{e.date || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{e.time || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{e.schedule || 'Monthly'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#EF4444', textAlign: 'center' }}>₹{(parseFloat(e.amount) || 0).toLocaleString('en-IN')}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#EF4444', textAlign: 'center' }}>{currencySymbol}{(parseFloat(e.amount) || 0).toLocaleString()}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                                                     <button onClick={() => handleEditExpense(e)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
@@ -1418,6 +1733,22 @@ const FinancePage = () => {
                         </table>
                     </div>
                 </div>
+            </div>
+            {/* NEW SECTIONS: ANALYTICS, REPORTS, SETTINGS */}
+            <div style={{ marginTop: '3rem' }}>
+                <FinanceAnalytics 
+                    transactions={allTransactions} 
+                    currencySymbol={currencySymbol} 
+                />
+                <FinanceReports 
+                    transactions={allTransactions} 
+                    budget={budget} 
+                    currencySymbol={currencySymbol} 
+                />
+                <FinanceSettings 
+                    settings={settings} 
+                    onUpdateSettings={handleUpdateSettings} 
+                />
             </div>
             </>
         </div>
