@@ -784,9 +784,9 @@ const Meetup = () => {
                                                 disabled={joinMutation.isPending}
                                                 style={{
                                                     padding: '0.55rem 1rem', borderRadius: '8px', border: 'none',
-                                                    background: 'linear-gradient(135deg, #A78BFA 0%, #7C3AED 100%)',
+                                                    background: '#1F2937',
                                                     color: 'white', fontWeight: '850', cursor: 'pointer', fontSize: '0.78rem',
-                                                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.15)', display: 'flex', alignItems: 'center', gap: '4px',
+                                                    boxShadow: '0 4px 12px rgba(31, 41, 55, 0.15)', display: 'flex', alignItems: 'center', gap: '4px',
                                                     transition: 'all 0.2s ease'
                                                 }}
                                                 onMouseOver={e => e.currentTarget.style.transform = 'translateY(-1px)'}
