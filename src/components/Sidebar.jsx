@@ -302,16 +302,14 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 padding: '0.5rem 0',
-                                background: activeItem === 'FIN-PRO'
-                                    ? 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%)'
-                                    : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
-                                color: '#1e293b',
+                                background: 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #E5E5E5 100%)',
+                                color: '#1A1A1A',
                                 border: '1px solid rgba(255, 255, 255, 0.4)',
                                 cursor: 'pointer',
                                 fontWeight: '800',
-                                fontSize: '0.85rem',
-                                borderRadius: '12px',
-                                boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(148, 163, 184, 0.25)',
+                                fontSize: '1rem',
+                                borderRadius: '20px',
+                                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12)',
                                 transition: 'all 0.3s ease',
                                 minHeight: '52px',
                                 justifyContent: 'center',
@@ -321,15 +319,13 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             }}
                             onMouseOver={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-1px)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(148, 163, 184, 0.35)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #E5E5E5 0%, #FFFFFF 50%, #E5E5E5 100%)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 1), 0 6px 16px rgba(0, 0, 0, 0.18)';
                             }}
                             onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(148, 163, 184, 0.25)';
-                                e.currentTarget.style.background = activeItem === 'FIN-PRO'
-                                    ? 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%)'
-                                    : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #E5E5E5 100%)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12)';
                             }}
                         >
                             {/* Subtle Metallic Reflection Overlay */}
@@ -337,14 +333,15 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 position: 'absolute',
                                 top: 0,
                                 left: '-100%',
-                                width: '50%',
+                                width: '60%',
                                 height: '100%',
                                 background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                                transform: 'skewX(-25deg)',
+                                transform: 'skewX(-20deg)',
                                 transition: '0.5s',
+                                pointerEvents: 'none'
                             }} />
-                            <Gift size={20} style={{ color: '#1e293b', flexShrink: 0, filter: 'drop-shadow(0 1px 1px rgba(255,255,255,0.5))' }} />
-                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#1e293b', letterSpacing: '0.3px', textShadow: '0 1px 0 rgba(255,255,255,0.5)' }}>FIN-PRO</span>
+                            <Gift size={24} style={{ color: '#1A1A1A', flexShrink: 0 }} />
+                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#1A1A1A', fontSize: '1.1rem' }}>FIN-PRO</span>
                         </button>
                     </>
                 )}
@@ -386,12 +383,12 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 alignItems: 'center',
                                 padding: '0.5rem 0',
                                 background: 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #E5E5E5 100%)',
-                                color: '#FFFFFF',
+                                color: '#1A1A1A',
                                 border: '1px solid rgba(255, 255, 255, 0.4)',
                                 cursor: 'pointer',
-                                fontWeight: '750',
-                                fontSize: '0.85rem',
-                                borderRadius: '12px',
+                                fontWeight: '800',
+                                fontSize: '1rem',
+                                borderRadius: '20px',
                                 boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12)',
                                 transition: 'all 0.3s ease',
                                 minHeight: '52px',
@@ -423,8 +420,8 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 pointerEvents: 'none'
                             }} />
 
-                            <Rocket size={20} style={{ color: '#FFFFFF', flexShrink: 0, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))' }} />
-                            <span className="sidebar-label" style={{ fontWeight: '750', margin: 0, color: '#FFFFFF', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>Beta Club</span>
+                            <Rocket size={24} style={{ color: '#1A1A1A', flexShrink: 0 }} />
+                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#1A1A1A', fontSize: '1.1rem' }}>Beta Club</span>
                         </button>
                     </>
                 )}
