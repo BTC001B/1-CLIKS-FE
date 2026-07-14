@@ -298,12 +298,12 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             className={`sidebar-item ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
                             onClick={() => handleItemClick('FIN-PRO', '/ca')}
                             style={{
-                                width: '170px',
-                                height: '50px',
+                                width: '160px',
+                                height: '48px',
                                 margin: '0.4rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '0 22px',
+                                padding: '0 18px',
                                 background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)',
                                 color: '#000000',
                                 border: '1px solid #B8860B',
@@ -379,12 +379,12 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
                             onClick={() => handleItemClick('Beta Club', '/social/beta-club')}
                             style={{
-                                width: '170px',
-                                height: '50px',
+                                width: '160px',
+                                height: '48px',
                                 margin: '0.4rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '0 22px',
+                                padding: '0 18px',
                                 background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #F7E27E 100%)',
                                 color: '#000000',
                                 border: '1px solid #B8860B',
