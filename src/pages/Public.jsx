@@ -1087,6 +1087,15 @@ export default function Public() {
 
     return (
         <>
+            <style>{`
+                body:not([data-theme='dark']), 
+                .app-root:not([data-theme='dark']), 
+                .app-body:not([data-theme='dark']), 
+                .main-content-area:not([data-theme='dark']), 
+                .content-scrollable:not([data-theme='dark']) {
+                    background-color: #ffffff !important;
+                }
+            `}</style>
             <div className="content-wrapper">
                 {renderPage()}
             </div>
