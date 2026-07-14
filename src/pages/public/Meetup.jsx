@@ -341,19 +341,19 @@ const Meetup = () => {
                 </div>
             )}
 
-            {/* Header Presentation Board (Violet Gradient Rebranded) */}
+            {/* Header Presentation Board (Solid Blue Rebranded) */}
             <div style={{
-                background: 'linear-gradient(135deg, #A78BFA 0%, #7C3AED 100%)',
+                background: '#1E3A8A',
                 borderRadius: '16px',
                 padding: '1.25rem 1.75rem',
                 color: 'white',
                 position: 'relative',
                 overflow: 'visible',
-                boxShadow: '0 8px 24px rgba(124, 58, 237, 0.08)',
+                boxShadow: '0 8px 24px rgba(30, 58, 138, 0.1)',
                 marginBottom: '1.25rem'
             }}>
-                {/* Animated Background Accents */}
-                <div style={{ position: 'absolute', top: '-40%', right: '-10%', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(124, 58, 237, 0.15)', filter: 'blur(70px)', pointerEvents: 'none' }} />
+                {/* Subtle Background Accents */}
+                <div style={{ position: 'absolute', top: '-40%', right: '-10%', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.03)', filter: 'blur(70px)', pointerEvents: 'none' }} />
 
                 <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -371,7 +371,7 @@ const Meetup = () => {
                                 alignItems: 'center',
                                 gap: '0.4rem',
                                 border: '1px solid rgba(255, 255, 255, 0.1)',
-                                color: '#EDE9FE'
+                                color: '#E0E7FF'
                             }}>
                                 <Globe size={12} /> Personal Networking Hub
                             </span>
@@ -484,7 +484,7 @@ const Meetup = () => {
                                                 }}
                                                 onMouseOver={e => {
                                                     e.currentTarget.style.background = '#F1F5F9';
-                                                    e.currentTarget.style.color = '#7C3AED';
+                                                    e.currentTarget.style.color = '#1E3A8A';
                                                 }}
                                                 onMouseOut={e => {
                                                     e.currentTarget.style.background = 'transparent';
@@ -506,7 +506,7 @@ const Meetup = () => {
                         onClick={() => setIsCreateModalOpen(true)}
                         style={{
                             background: 'white',
-                            color: '#7C3AED',
+                            color: '#1E3A8A',
                             border: 'none',
                             padding: '0.75rem 1.25rem',
                             borderRadius: '10px',
