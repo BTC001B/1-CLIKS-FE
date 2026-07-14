@@ -295,31 +295,56 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
 
                         {/* 6. FIN-PRO */}
                         <button
-                            className={`sidebar-item sidebar-item-dark-bg ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
+                            className={`sidebar-item ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
                             onClick={() => handleItemClick('FIN-PRO', '/ca')}
                             style={{
                                 width: '100%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 padding: '0.5rem 0',
-                                background: 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)',
-                                color: '#FFFFFF',
-                                border: 'none',
+                                background: activeItem === 'FIN-PRO'
+                                    ? 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%)'
+                                    : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
+                                color: '#1e293b',
+                                border: '1px solid rgba(255, 255, 255, 0.4)',
                                 cursor: 'pointer',
-                                fontWeight: '750',
+                                fontWeight: '800',
                                 fontSize: '0.85rem',
                                 borderRadius: '12px',
-                                boxShadow: '0 4px 12px rgba(30, 58, 138, 0.25)',
-                                transition: 'all 0.2s ease',
+                                boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(148, 163, 184, 0.25)',
+                                transition: 'all 0.3s ease',
                                 minHeight: '52px',
                                 justifyContent: 'center',
-                                gap: isOpen ? '0.75rem' : '0'
+                                gap: isOpen ? '0.75rem' : '0',
+                                position: 'relative',
+                                overflow: 'hidden'
                             }}
-                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(148, 163, 184, 0.35)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(148, 163, 184, 0.25)';
+                                e.currentTarget.style.background = activeItem === 'FIN-PRO'
+                                    ? 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%)'
+                                    : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)';
+                            }}
                         >
-                            <Briefcase size={20} className="sidebar-icon-white" style={{ color: '#FFFFFF', flexShrink: 0 }} />
-                            <span className="sidebar-label" style={{ fontWeight: '750', margin: 0 }}>FIN-PRO</span>
+                            {/* Subtle Metallic Reflection Overlay */}
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: '-100%',
+                                width: '50%',
+                                height: '100%',
+                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                                transform: 'skewX(-25deg)',
+                                transition: '0.5s',
+                            }} />
+                            <Gift size={20} style={{ color: '#1e293b', flexShrink: 0, filter: 'drop-shadow(0 1px 1px rgba(255,255,255,0.5))' }} />
+                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#1e293b', letterSpacing: '0.3px', textShadow: '0 1px 0 rgba(255,255,255,0.5)' }}>FIN-PRO</span>
                         </button>
                     </>
                 )}
