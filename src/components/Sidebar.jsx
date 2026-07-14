@@ -301,7 +301,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 width: '100%',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: isOpen ? '0.5rem 1.25rem' : '0.5rem 0',
+                                padding: '0.5rem 0',
                                 background: 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)',
                                 color: '#FFFFFF',
                                 border: 'none',
@@ -313,15 +313,13 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 transition: 'all 0.2s ease',
                                 minHeight: '52px',
                                 justifyContent: 'center',
-                                gap: '0.75rem'
+                                gap: isOpen ? '0.75rem' : '0'
                             }}
                             onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
                             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: isOpen ? '0.75rem' : '0', width: '100%' }}>
-                                <Briefcase size={20} className="sidebar-icon-white" style={{ color: '#FFFFFF', flexShrink: 0 }} />
-                                <span className="sidebar-label" style={{ fontWeight: '750' }}>FIN-PRO</span>
-                            </div>
+                            <Briefcase size={20} className="sidebar-icon-white" style={{ color: '#FFFFFF', flexShrink: 0 }} />
+                            <span className="sidebar-label" style={{ fontWeight: '750', margin: 0 }}>FIN-PRO</span>
                         </button>
                     </>
                 )}
@@ -361,7 +359,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 width: '100%',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: isOpen ? '0.5rem 1.25rem' : '0.5rem 0',
+                                padding: '0.5rem 0',
                                 background: 'linear-gradient(135deg, #1E3A8A 0%, #172554 100%)',
                                 color: '#FFFFFF',
                                 border: 'none',
@@ -373,15 +371,13 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 transition: 'all 0.2s ease',
                                 minHeight: '52px',
                                 justifyContent: 'center',
-                                gap: '0.75rem'
+                                gap: isOpen ? '0.75rem' : '0'
                             }}
                             onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
                             onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: isOpen ? '0.75rem' : '0', width: '100%' }}>
-                                <Rocket size={20} className="sidebar-icon-white" style={{ color: '#FFFFFF', flexShrink: 0 }} />
-                                <span className="sidebar-label" style={{ fontWeight: '750' }}>Beta Club</span>
-                            </div>
+                            <Rocket size={20} className="sidebar-icon-white" style={{ color: '#FFFFFF', flexShrink: 0 }} />
+                            <span className="sidebar-label" style={{ fontWeight: '750', margin: 0 }}>Beta Club</span>
                         </button>
                     </>
                 )}
