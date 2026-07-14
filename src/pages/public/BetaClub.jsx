@@ -615,8 +615,8 @@ export default function BetaClub() {
                                                     <span style={{
                                                         padding: '0.25rem 0.6rem',
                                                         borderRadius: '6px',
-                                                        background: '#ecfdf5',
-                                                        color: '#065f46',
+                                                        background: '#FEE2E2',
+                                                        color: '#000000',
                                                         fontSize: '0.7rem',
                                                         fontWeight: '800',
                                                         textTransform: 'uppercase',

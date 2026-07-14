@@ -29,17 +29,17 @@ import { QRCodeCanvas } from 'qrcode.react';
 import '../../App.css';
 
 const CATEGORY_THEMES = {
-    'Finance': { bg: '#1E3A8A', badge: '#152C5B', light: '#DBEAFE' },
-    'Technology': { bg: '#6D28D9', badge: '#4C1D95', light: '#F3E8FF' },
-    'Networking': { bg: '#059669', badge: '#064E3B', light: '#D1FAE5' },
-    'Workshop': { bg: '#EA580C', badge: '#9A3412', light: '#FFEDD5' },
-    'Webinar': { bg: '#4338CA', badge: '#312E81', light: '#E0E7FF' },
-    'Science': { bg: '#0F766E', badge: '#134E4A', light: '#CCFBF1' },
-    'Business': { bg: '#9F1239', badge: '#881337', light: '#FFE4E6' },
-    'Startup': { bg: '#0284C7', badge: '#075985', light: '#E0F2FE' },
-    'Social': { bg: '#DB2777', badge: '#831843', light: '#FCE7F3' },
-    'Masterclass': { bg: '#0F172A', badge: '#000000', light: '#F1F5F9' },
-    'default': { bg: '#64748B', badge: '#334155', light: '#F1F5F9' }
+    'Finance': { bg: '#1E3A8A', badge: '#FEE2E2', light: '#DBEAFE' },
+    'Technology': { bg: '#6D28D9', badge: '#FEE2E2', light: '#F3E8FF' },
+    'Networking': { bg: '#059669', badge: '#FEE2E2', light: '#D1FAE5' },
+    'Workshop': { bg: '#EA580C', badge: '#FEE2E2', light: '#FFEDD5' },
+    'Webinar': { bg: '#4338CA', badge: '#FEE2E2', light: '#E0E7FF' },
+    'Science': { bg: '#0F766E', badge: '#FEE2E2', light: '#CCFBF1' },
+    'Business': { bg: '#9F1239', badge: '#FEE2E2', light: '#FFE4E6' },
+    'Startup': { bg: '#0284C7', badge: '#FEE2E2', light: '#E0F2FE' },
+    'Social': { bg: '#DB2777', badge: '#FEE2E2', light: '#FCE7F3' },
+    'Masterclass': { bg: '#0F172A', badge: '#FEE2E2', light: '#F1F5F9' },
+    'default': { bg: '#64748B', badge: '#FEE2E2', light: '#F1F5F9' }
 };
 
 const Meetup = () => {
@@ -646,7 +646,7 @@ const Meetup = () => {
                                     )}
                                     
                                     {/* Category Label */}
-                                    <div style={{ position: 'absolute', top: '0.75rem', left: '1rem', background: theme.badge, padding: '0.3rem 0.6rem', borderRadius: '6px', backdropFilter: 'blur(4px)', fontSize: '0.62rem', fontWeight: '850', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    <div style={{ position: 'absolute', top: '0.75rem', left: '1rem', background: theme.badge, color: '#000000', padding: '0.3rem 0.6rem', borderRadius: '6px', backdropFilter: 'blur(4px)', fontSize: '0.62rem', fontWeight: '850', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         {category}
                                     </div>
 

@@ -390,10 +390,11 @@ const Income = () => {
 
                 .category-pill {
                     padding: 0.25rem 0.75rem;
-                    background: #F0FDF4;
+                    background: #FEE2E2;
                     border-radius: 6px;
                     font-size: 0.85rem;
-                    color: var(--text-muted);
+                    color: #000000;
+                    font-weight: 700;
                 }
 
                 .text-success { color: #16A34A; }

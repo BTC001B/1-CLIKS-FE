@@ -397,7 +397,7 @@ const premiumStyles = `
     .person-box span { font-weight: 700; color: #1E293B; }
 
     .desc-text { display: block; font-weight: 700; color: #334155; margin-bottom: 4px; }
-    .cat-tag { font-size: 0.75rem; color: #94A3B8; font-weight: 600; background: #F0FDF4; padding: 2px 8px; border-radius: 6px; }
+    .cat-tag { font-size: 0.75rem; color: #000000; font-weight: 700; background: #FEE2E2; padding: 2px 8px; border-radius: 6px; }
 
     .type-badge { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 10px; border-radius: 6px; }
     .type-badge.lent { background: #DCFCE7; color: #16A34A; }

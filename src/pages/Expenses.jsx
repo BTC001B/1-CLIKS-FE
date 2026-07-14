@@ -265,7 +265,7 @@ const Expenses = () => {
                 .expense-table tr:hover td { background: #F8FAFC; }
 
                 .table-icon-bg { width: 36px; height: 36px; background: #F0FDF4; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
-                .category-pill { padding: 0.25rem 0.75rem; background: #F0FDF4; border-radius: 6px; font-size: 0.85rem; color: var(--text-muted); }
+                .category-pill { padding: 0.25rem 0.75rem; background: #FEE2E2; border-radius: 6px; font-size: 0.85rem; color: #000000; fontWeight: 700; }
                 
                 .text-danger { color: #EF4444; }
                 .text-main { color: var(--text-main); }
