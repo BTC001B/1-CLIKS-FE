@@ -9,7 +9,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MyWallet from './components/MyWallet';
 import BudgetPlanner from './components/BudgetPlanner';
 import BillsReminders from './components/BillsReminders';
-import SavingsGoals from './components/SavingsGoals';
 import FinancialGoals from './components/FinancialGoals';
 import SalaryManager from './components/SalaryManager';
 import PropertyManager from './components/PropertyManager';
@@ -235,10 +234,6 @@ const FinancePage = () => {
     const handleUpdateBills = (updated) => {
         setBills(updated);
         localStorage.setItem(billsKey(uid), JSON.stringify(updated));
-    };
-
-    const handleUpdateGoals = (updated) => {
-        // Redundant with new mutation based system but kept for local state if needed
     };
 
     // Wallet adjustment helpers (Local Rollbacks / Optimistic UI can be added here if needed)
@@ -1498,17 +1493,12 @@ const FinancePage = () => {
                 </div>
             </div>
 
-            {/* NEW SECTIONS: BILLS & REMINDERS AND SAVINGS GOALS */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+            {/* BILLS & REMINDERS SECTION */}
+            <div style={{ marginBottom: '2.5rem' }}>
                 <BillsReminders 
                     bills={bills} 
                     onUpdateBills={handleUpdateBills} 
-                    currencySymbol={currencySymbol} 
-                />
-                <SavingsGoals 
-                    goals={goals} 
-                    onUpdateGoals={handleUpdateGoals} 
-                    currencySymbol={currencySymbol} 
+                    currencySymbol={currencySymbol}
                 />
             </div>
 
