@@ -5,10 +5,12 @@ import { apiClient } from '../api/client';
  */
 export const homeService = {
     getHomeStats: async () => {
-        return await apiClient.get('/home');
+        const res = await apiClient.get('/home');
+        return res.data;
     },
     getBooksDashboardData: async () => {
-        return await apiClient.get('/home/books');
+        const res = await apiClient.get('/home/books');
+        return res.data;
     }
 };
 

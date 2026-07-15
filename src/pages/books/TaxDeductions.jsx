@@ -38,6 +38,7 @@ const TaxDeductions = () => {
     mutationFn: (data) => financePlusService.saveTaxRecord(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['tax-records']);
+      queryClient.invalidateQueries(['finance-dashboard-enhanced']);
       alert('Tax records successfully updated!');
     }
   });

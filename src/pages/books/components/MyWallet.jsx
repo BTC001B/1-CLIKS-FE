@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CreditCard, Wallet, Landmark, Smartphone, Edit2, Check, X } from 'lucide-react';
 
-const MyWallet = ({ wallets = [], onUpdateWallets, currencySymbol = '₹' }) => {
+const MyWallet = ({ wallets = [], onUpdateBalance, currencySymbol = '₹' }) => {
     const [editingId, setEditingId] = useState(null);
     const [editBalance, setEditBalance] = useState('');
 
@@ -15,8 +15,7 @@ const MyWallet = ({ wallets = [], onUpdateWallets, currencySymbol = '₹' }) => 
     const handleSaveBalance = (id) => {
         const parsed = parseFloat(editBalance);
         if (isNaN(parsed)) return;
-        const updated = wallets.map(w => w.id === id ? { ...w, balance: parsed } : w);
-        onUpdateWallets(updated);
+        onUpdateBalance(id, parsed);
         setEditingId(null);
     };
 

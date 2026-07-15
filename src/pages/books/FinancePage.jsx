@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { DollarSign, Trash2, Pencil, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc, TrendingUp, TrendingDown, PieChart, ShieldCheck, Bell, Home, Heart, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '../../context';
-import { transactionsService, homeService, financePlusService } from '../../services';
+import { transactionsService, homeService, financePlusService, investmentsService, accountsService } from '../../services';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -129,7 +129,7 @@ const FinancePage = () => {
     // 1. Enhanced Dashboard Data
     const { data: dashboardData } = useQuery({
         queryKey: ['finance-dashboard-enhanced'],
-        queryFn: () => homeService.getDashboard(),
+        queryFn: () => homeService.getHomeStats(),
         enabled: !!uid && uid !== 'guest',
     });
 
@@ -148,12 +148,21 @@ const FinancePage = () => {
     });
 
     // ── Mutations ───────────────────────────────────────────────────────────
-    const goalMutation = useMutation({ mutationFn: (data) => financePlusService.createGoal(data), onSuccess: () => queryClient.invalidateQueries(['finance-goals']) });
-    const salaryMutation = useMutation({ mutationFn: (data) => financePlusService.createSalaryRecord(data), onSuccess: () => { queryClient.invalidateQueries(['salary-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); } });
+    const goalCreateMutation = useMutation({ mutationFn: (data) => financePlusService.createGoal(data), onSuccess: () => queryClient.invalidateQueries(['finance-goals']) });
+    const goalUpdateMutation = useMutation({ mutationFn: ({ id, data }) => financePlusService.updateGoal(id, data), onSuccess: () => queryClient.invalidateQueries(['finance-goals']) });
+    const goalDeleteMutation = useMutation({ mutationFn: (id) => financePlusService.deleteGoal(id), onSuccess: () => queryClient.invalidateQueries(['finance-goals']) });
+
+    const salaryMutation = useMutation({ mutationFn: (data) => financePlusService.createSalaryRecord(data), onSuccess: () => { queryClient.invalidateQueries(['salary-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); queryClient.invalidateQueries(['transactions']); } });
     const propertyMutation = useMutation({ mutationFn: (data) => financePlusService.createProperty(data), onSuccess: () => queryClient.invalidateQueries(['property-records']) });
-    const rentMutation = useMutation({ mutationFn: ({ id, ...data }) => financePlusService.recordRent(id, data), onSuccess: () => { queryClient.invalidateQueries(['property-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); } });
-    const pensionMutation = useMutation({ mutationFn: (data) => financePlusService.recordPension(data), onSuccess: () => { queryClient.invalidateQueries(['pension-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); } });
-    const incomeSourceMutation = useMutation({ mutationFn: (source) => financePlusService.updateIncomeSource(source), onSuccess: () => queryClient.invalidateQueries(['finance-dashboard-enhanced']) });
+    const rentMutation = useMutation({ mutationFn: ({ id, ...data }) => financePlusService.recordRent(id, data), onSuccess: () => { queryClient.invalidateQueries(['property-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); queryClient.invalidateQueries(['transactions']); } });
+    const pensionMutation = useMutation({ mutationFn: (data) => financePlusService.recordPension(data), onSuccess: () => { queryClient.invalidateQueries(['pension-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); queryClient.invalidateQueries(['transactions']); } });
+
+    const investmentCreateMutation = useMutation({ mutationFn: (data) => investmentsService.createInvestment(data), onSuccess: () => queryClient.invalidateQueries(['finance-dashboard-enhanced']) });
+    const investmentDeleteMutation = useMutation({ mutationFn: (id) => investmentsService.deleteInvestment(id), onSuccess: () => queryClient.invalidateQueries(['finance-dashboard-enhanced']) });
+
+    const accountUpdateMutation = useMutation({ mutationFn: ({ id, data }) => accountsService.updateAccount(id, data), onSuccess: () => { queryClient.invalidateQueries(['finance-dashboard-enhanced']); queryClient.invalidateQueries(['transactions']); } });
+
+    const budgetMutation = useMutation({ mutationFn: (val) => financePlusService.updateSettings({ global_budget: val }), onSuccess: () => queryClient.invalidateQueries(['finance-dashboard-enhanced']) });
 
     const [isSynced, setIsSynced] = useState(false);
     const [showOnboarding, setShowOnboarding] = useState(false);
@@ -165,46 +174,30 @@ const FinancePage = () => {
     }, [dashboardData, uid]);
 
     // Data states for legacy/local sync
-    const [incomeSources, setIncomeSources] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(incomeKey(uid))) || []; }
-        catch { return []; }
-    });
-    const [expenses, setExpenses] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(expensesKey(uid))) || []; }
-        catch { return []; }
-    });
-    const [additionalIncomeSources, setAdditionalIncomeSources] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(additionalIncomeKey(uid))) || []; }
-        catch { return []; }
-    });
-    const [additionalExpenses, setAdditionalExpenses] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(additionalExpensesKey(uid))) || []; }
-        catch { return []; }
-    });
+    const [incomeSources, setIncomeSources] = useState([]);
+    const [expenses, setExpenses] = useState([]);
+    const [additionalIncomeSources, setAdditionalIncomeSources] = useState([]);
+    const [additionalExpenses, setAdditionalExpenses] = useState([]);
 
     /* ─── NEW EXTENDED STATE & HELPERS ───────────────────────── */
-    const walletsKey = (uid) => `cliks_finance_wallets_${uid}`;
-    const [wallets, setWallets] = useState(() => {
-        try {
-            return JSON.parse(localStorage.getItem(walletsKey(uid))) || [
-                { id: 'wallet-cash', name: 'Cash Wallet', type: 'Cash', balance: 5000 },
-                { id: 'wallet-bank', name: 'HDFC Corporate Account', type: 'Bank Account', balance: 50000 },
-                { id: 'wallet-upi', name: 'GPay / UPI Portal', type: 'UPI', balance: 15000 },
-                { id: 'wallet-credit', name: 'SBI Credit Card', type: 'Credit Card', balance: -2000 },
-            ];
-        } catch {
-            return [
-                { id: 'wallet-cash', name: 'Cash Wallet', type: 'Cash', balance: 5000 },
-                { id: 'wallet-bank', name: 'HDFC Corporate Account', type: 'Bank Account', balance: 50000 },
-                { id: 'wallet-upi', name: 'GPay / UPI Portal', type: 'UPI', balance: 15000 },
-                { id: 'wallet-credit', name: 'SBI Credit Card', type: 'Credit Card', balance: -2000 },
-            ];
-        }
-    });
+    const [wallets, setWallets] = useState([]);
+    const [budget, setBudget] = useState(20000);
 
-    const handleUpdateWallets = (updatedList) => {
-        setWallets(updatedList);
-        localStorage.setItem(walletsKey(uid), JSON.stringify(updatedList));
+    useEffect(() => {
+        if (dashboardData) {
+            if (dashboardData.accounts) setWallets(dashboardData.accounts);
+            if (dashboardData.globalBudget !== undefined) setBudget(dashboardData.globalBudget);
+        }
+    }, [dashboardData]);
+
+    const handleUpdateBalance = async (id, newBalance) => {
+        const wallet = wallets.find(w => w.id === id);
+        if (!wallet) return;
+        accountUpdateMutation.mutate({ id, data: { ...wallet, balance: newBalance } });
+    };
+
+    const handleUpdateBudget = (value) => {
+        budgetMutation.mutate(value);
     };
 
     const settingsKey = (uid) => `cliks_finance_settings_${uid}`;
@@ -244,72 +237,24 @@ const FinancePage = () => {
         localStorage.setItem(billsKey(uid), JSON.stringify(updated));
     };
 
-    const savingsKey = (uid) => `cliks_finance_savings_${uid}`;
-    const [goals, setGoals] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(savingsKey(uid))) || []; }
-        catch { return []; }
-    });
     const handleUpdateGoals = (updated) => {
-        setGoals(updated);
-        localStorage.setItem(savingsKey(uid), JSON.stringify(updated));
+        // Redundant with new mutation based system but kept for local state if needed
     };
 
-    const budgetKey = (uid) => `cliks_finance_budget_${uid}`;
-    const [budget, setBudget] = useState(() => {
-        try { return parseFloat(localStorage.getItem(budgetKey(uid))) || 20000; }
-        catch { return 20000; }
-    });
-    const handleUpdateBudget = (value) => {
-        setBudget(value);
-        localStorage.setItem(budgetKey(uid), value.toString());
-    };
-
-    // Wallet adjustment helpers
+    // Wallet adjustment helpers (Local Rollbacks / Optimistic UI can be added here if needed)
     const adjustWalletBalance = (walletId, amount, isIncome) => {
-        if (!walletId) return;
-        setWallets(prev => {
-            const updated = prev.map(w => {
-                if (w.id === walletId) {
-                    const change = isIncome ? amount : -amount;
-                    return { ...w, balance: w.balance + change };
-                }
-                return w;
-            });
-            localStorage.setItem(walletsKey(uid), JSON.stringify(updated));
-            return updated;
-        });
+        // Now handled by backend automation
+        queryClient.invalidateQueries(['finance-dashboard-enhanced']);
     };
 
     const handleUpdateWalletOnEdit = (oldWalletId, oldAmount, newWalletId, newAmount, isIncome) => {
-        setWallets(prev => {
-            const updated = prev.map(w => {
-                let bal = w.balance;
-                if (w.id === oldWalletId) {
-                    bal = bal + (isIncome ? -oldAmount : oldAmount);
-                }
-                if (w.id === newWalletId) {
-                    bal = bal + (isIncome ? newAmount : -newAmount);
-                }
-                return { ...w, balance: bal };
-            });
-            localStorage.setItem(walletsKey(uid), JSON.stringify(updated));
-            return updated;
-        });
+        // Now handled by backend automation
+        queryClient.invalidateQueries(['finance-dashboard-enhanced']);
     };
 
     const handleUpdateWalletOnDelete = (walletId, amount, isIncome) => {
-        if (!walletId) return;
-        setWallets(prev => {
-            const updated = prev.map(w => {
-                if (w.id === walletId) {
-                    const change = isIncome ? -amount : amount;
-                    return { ...w, balance: w.balance + change };
-                }
-                return w;
-            });
-            localStorage.setItem(walletsKey(uid), JSON.stringify(updated));
-            return updated;
-        });
+        // Now handled by backend automation
+        queryClient.invalidateQueries(['finance-dashboard-enhanced']);
     };
 
     // Form states
@@ -712,6 +657,7 @@ const FinancePage = () => {
                 setIncomeSources(prev => prev.map(i => i.id === entry.id ? { ...i, transactionId: txId } : i));
             }
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['finance-dashboard-enhanced'] });
         } catch (err) { console.error(err); }
     };
 
@@ -723,6 +669,7 @@ const FinancePage = () => {
                 try {
                     await transactionsService.deleteTransaction(entry.transactionId);
                     queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                    queryClient.invalidateQueries({ queryKey: ['finance-dashboard-enhanced'] });
                 } catch (err) { console.error(err); }
             }
         }
@@ -792,6 +739,7 @@ const FinancePage = () => {
                 setExpenses(prev => prev.map(e => e.id === entry.id ? { ...e, transactionId: txId } : e));
             }
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['finance-dashboard-enhanced'] });
         } catch (err) { console.error(err); }
     };
 
@@ -803,6 +751,7 @@ const FinancePage = () => {
                 try {
                     await transactionsService.deleteTransaction(entry.transactionId);
                     queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                    queryClient.invalidateQueries({ queryKey: ['finance-dashboard-enhanced'] });
                 } catch (err) { console.error(err); }
             }
         }
@@ -872,6 +821,7 @@ const FinancePage = () => {
                 setAdditionalIncomeSources(prev => prev.map(i => i.id === entry.id ? { ...i, transactionId: txId } : i));
             }
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['finance-dashboard-enhanced'] });
         } catch (err) { console.error(err); }
     };
 
@@ -883,6 +833,7 @@ const FinancePage = () => {
                 try {
                     await transactionsService.deleteTransaction(entry.transactionId);
                     queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                    queryClient.invalidateQueries({ queryKey: ['finance-dashboard-enhanced'] });
                 } catch (err) { console.error(err); }
             }
         }
@@ -952,6 +903,7 @@ const FinancePage = () => {
                 setAdditionalExpenses(prev => prev.map(e => e.id === entry.id ? { ...e, transactionId: txId } : e));
             }
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['finance-dashboard-enhanced'] });
         } catch (err) { console.error(err); }
     };
 
@@ -963,6 +915,7 @@ const FinancePage = () => {
                 try {
                     await transactionsService.deleteTransaction(entry.transactionId);
                     queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                    queryClient.invalidateQueries({ queryKey: ['finance-dashboard-enhanced'] });
                 } catch (err) { console.error(err); }
             }
         }
@@ -1002,6 +955,7 @@ const FinancePage = () => {
             }));
             setSaved(true); setTimeout(() => setSaved(false), 2000);
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['finance-dashboard-enhanced'] });
         } catch (err) { alert(err.message); }
     };
 
@@ -1214,15 +1168,15 @@ const FinancePage = () => {
 
             {/* NEW SECTIONS: WALLET AND BUDGET */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                <MyWallet 
-                    wallets={wallets} 
-                    onUpdateWallets={handleUpdateWallets} 
-                    currencySymbol={currencySymbol} 
+                <MyWallet
+                    wallets={wallets}
+                    onUpdateBalance={handleUpdateBalance}
+                    currencySymbol={currencySymbol}
                 />
-                <BudgetPlanner 
-                    budget={budget} 
-                    onUpdateBudget={handleUpdateBudget} 
-                    currentSpent={currentMonthExpenses} 
+                <BudgetPlanner
+                    budget={budget}
+                    onUpdateBudget={handleUpdateBudget}
+                    currentSpent={currentMonthExpenses}
                     currencySymbol={currencySymbol}
                 />
             </div>
@@ -1231,12 +1185,9 @@ const FinancePage = () => {
             <div style={{ marginBottom: '3rem' }}>
                 <FinancialGoals
                     goals={goalsList}
-                    onUpdateGoals={(updated) => {
-                        // For simplicity, we create/delete as bulk or individual in real app
-                        // Here we just proxy to the mutation
-                        console.log('Update goals requested', updated);
-                        queryClient.invalidateQueries(['finance-goals']);
-                    }}
+                    onCreate={data => goalCreateMutation.mutate(data)}
+                    onUpdate={(id, data) => goalUpdateMutation.mutate({ id, data })}
+                    onDelete={id => goalDeleteMutation.mutate(id)}
                     currencySymbol={currencySymbol}
                 />
             </div>
@@ -1949,10 +1900,8 @@ const FinancePage = () => {
             <div style={{ marginBottom: '4rem' }}>
                 <InvestmentPortfolio
                     investments={dashboardData?.investmentStats?.list || []}
-                    onAddInvestment={data => {
-                        // Assuming investmentsService handles create
-                        queryClient.invalidateQueries(['finance-dashboard-enhanced']);
-                    }}
+                    onAddInvestment={data => investmentCreateMutation.mutate(data)}
+                    onDeleteInvestment={id => investmentDeleteMutation.mutate(id)}
                     currencySymbol={currencySymbol}
                 />
             </div>

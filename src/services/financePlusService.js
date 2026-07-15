@@ -28,7 +28,8 @@ export const financePlusService = {
   getNotifications: () => apiClient.get('/finance-plus/notifications').then(res => res.data),
   markRead: (id) => apiClient.put(`/finance-plus/notifications/${id}/read`).then(res => res.data),
 
-  // Profile Role
+  // Profile Role & Budget
+  updateSettings: (data) => apiClient.put('/finance-plus/settings', data).then(res => res.data),
   updateIncomeSource: (source) => apiClient.put('/finance-plus/primary-income', { source }).then(res => res.data)
 };
 

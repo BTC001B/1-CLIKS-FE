@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PieChart, Plus, TrendingUp, TrendingDown, ArrowUpRight, BarChart3, Trash2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const InvestmentPortfolio = ({ investments = [], onAddInvestment, currencySymbol }) => {
+const InvestmentPortfolio = ({ investments = [], onAddInvestment, onDeleteInvestment, currencySymbol }) => {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', category: 'Stocks', amount: '', purchase_date: '', current_value: '' });
 
@@ -68,7 +68,10 @@ const InvestmentPortfolio = ({ investments = [], onAddInvestment, currencySymbol
             <div key={inv.id} style={{ padding: '1.25rem', border: '1px solid #F1F5F9', borderRadius: '20px', background: '#fff', position: 'relative' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 800, background: '#EFF6FF', color: '#1D4ED8', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>{inv.type}</span>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: profit >= 0 ? '#059669' : '#DC2626' }}>{ret.toFixed(1)}%</span>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: profit >= 0 ? '#059669' : '#DC2626' }}>{ret.toFixed(1)}%</span>
+                    <button onClick={() => onDeleteInvestment(inv.id)} style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', padding: 0 }}><Trash2 size={14} /></button>
+                </div>
               </div>
               <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#1E293B', margin: '0 0 1rem 0' }}>{inv.name}</h4>
 
