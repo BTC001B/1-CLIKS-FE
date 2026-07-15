@@ -1,11 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Calculator, FileText, IndianRupee, PieChart, Plus, Trash2, X, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { financePlusService } from '../../services';
 
 const TaxDeductions = () => {
+  const queryClient = useQueryClient();
   const [taxYear, setTaxYear] = useState('2024-25');
   const [taxData, setTaxData] = useState({
     income_tax: 0, tds_paid: 0, epf: 0, esi: 0, prof_tax: 0, advance_tax: 0, tax_savings: 0, notes: ''
+  });
+
+  const { data: records = [] } = useQuery({
+    queryKey: ['tax-records'],
+    queryFn: financePlusService.getTaxRecords
+  });
+
+  useEffect(() => {
+    const current = records.find(r => r.tax_year === taxYear);
+    if (current) {
+      setTaxData({
+        income_tax: current.income_tax || 0,
+        tds_paid: current.tds_paid || 0,
+        epf: current.epf || 0,
+        esi: current.esi || 0,
+        prof_tax: current.prof_tax || 0,
+        advance_tax: current.advance_tax || 0,
+        tax_savings: current.tax_savings || 0,
+        notes: current.notes || ''
+      });
+    } else {
+      setTaxData({ income_tax: 0, tds_paid: 0, epf: 0, esi: 0, prof_tax: 0, advance_tax: 0, tax_savings: 0, notes: '' });
+    }
+  }, [records, taxYear]);
+
+  const taxMutation = useMutation({
+    mutationFn: (data) => financePlusService.saveTaxRecord(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['tax-records']);
+      alert('Tax records successfully updated!');
+    }
   });
 
   const totalDeductions = Number(taxData.epf) + Number(taxData.esi) + Number(taxData.prof_tax) + Number(taxData.tax_savings);
@@ -14,7 +48,7 @@ const TaxDeductions = () => {
   const refund = Math.max(0, totalTaxPaid - Number(taxData.income_tax));
 
   const handleSave = () => {
-    alert('Tax summary updated for ' + taxYear);
+    taxMutation.mutate({ ...taxData, tax_year: taxYear });
   };
 
   return (
