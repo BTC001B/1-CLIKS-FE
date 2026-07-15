@@ -1347,11 +1347,11 @@ const FinancePage = () => {
                 {/* Expense panel */}
                 <div className="finance-panel-right">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Fixed Source</h2>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Additional Source</h2>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                         <div style={{ textAlign: 'left' }}>
-                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>FIXED EXPENSE</h3>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDITIONAL EXPENSE</h3>
                         </div>
 
                         <div style={{ position: 'relative', width: '130px' }}>
@@ -1360,7 +1360,7 @@ const FinancePage = () => {
                                 type="text"
                                 value={addExpenseSearch}
                                 onChange={(e) => setAddExpenseSearch(e.target.value)}
-                                placeholder="Search expense..."
+                                placeholder="Search additional expenses..."
                                 style={{
                                     width: '100%',
                                     padding: '0.6rem 1rem 0.6rem 2.5rem',
@@ -1375,6 +1375,7 @@ const FinancePage = () => {
 
                         <div style={{ textAlign: 'right' }}>
                             <button
+                                title="Add Additional Expense"
                                 onClick={() => {
                                     setShowAddExpenseForm(true);
                                     setEditingAdditionalId(null);
@@ -1465,7 +1466,7 @@ const FinancePage = () => {
                             </thead>
                             <tbody>
                                 {filteredAdditionalExpenses.length === 0 ? (
-                                    <tr><td colSpan="6" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No expenses added yet</td></tr>
+                                    <tr><td colSpan="6" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No additional expenses added yet.</td></tr>
                                 ) : (
                                     filteredAdditionalExpenses.map(e => (
                                         <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
@@ -1690,11 +1691,11 @@ const FinancePage = () => {
                 {/* Expense panel */}
                 <div className="finance-panel-right">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Fixed Source</h2>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Additional Source</h2>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                         <div style={{ textAlign: 'left' }}>
-                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>FIXED EXPENSE</h3>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDITIONAL EXPENSE</h3>
                         </div>
 
                         <div style={{ position: 'relative', width: '130px' }}>
