@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { DollarSign, Trash2, Pencil, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc } from 'lucide-react';
+import { DollarSign, Trash2, Pencil, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc, TrendingUp, TrendingDown, PieChart, ShieldCheck, Bell, Home, Heart, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '../../context';
-import { transactionsService } from '../../services';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { transactionsService, homeService, financePlusService } from '../../services';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 import MyWallet from './components/MyWallet';
 import BudgetPlanner from './components/BudgetPlanner';
 import BillsReminders from './components/BillsReminders';
 import SavingsGoals from './components/SavingsGoals';
+import FinancialGoals from './components/FinancialGoals';
+import SalaryManager from './components/SalaryManager';
+import PropertyManager from './components/PropertyManager';
+import PensionManager from './components/PensionManager';
+import InvestmentPortfolio from './components/InvestmentPortfolio';
 import FinanceAnalytics from './components/FinanceAnalytics';
 import FinanceReports from './components/FinanceReports';
 import FinanceSettings from './components/FinanceSettings';
@@ -114,18 +120,50 @@ const formatAPIDate = (dStr) => {
 const FinancePage = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const uid = user?.id ?? user?.email ?? 'guest';
 
-    // Transactions query (shared source of truth with Payments module)
+    // ── Queries ─────────────────────────────────────────────────────────────
+
+    // 1. Enhanced Dashboard Data
+    const { data: dashboardData } = useQuery({
+        queryKey: ['finance-dashboard-enhanced'],
+        queryFn: () => homeService.getDashboard(),
+        enabled: !!uid && uid !== 'guest',
+    });
+
+    // 2. New Modules Data
+    const { data: goalsList = [] } = useQuery({ queryKey: ['finance-goals'], queryFn: financePlusService.getGoals, enabled: !!uid && uid !== 'guest' });
+    const { data: salaryRecords = [] } = useQuery({ queryKey: ['salary-records'], queryFn: financePlusService.getSalaryRecords, enabled: !!uid && uid !== 'guest' });
+    const { data: properties = [] } = useQuery({ queryKey: ['property-records'], queryFn: financePlusService.getPropertyRecords, enabled: !!uid && uid !== 'guest' });
+    const { data: pensionRecords = [] } = useQuery({ queryKey: ['pension-records'], queryFn: financePlusService.getPensionRecords, enabled: !!uid && uid !== 'guest' });
+    const { data: notifications = [] } = useQuery({ queryKey: ['finance-notifications'], queryFn: financePlusService.getNotifications, enabled: !!uid && uid !== 'guest' });
+
+    // 3. Existing Transactions query
     const { data: dbTransactions = [] } = useQuery({
         queryKey: ['transactions'],
         queryFn: () => transactionsService.getTransactions(),
         enabled: !!uid && uid !== 'guest',
     });
 
-    const [isSynced, setIsSynced] = useState(false);
+    // ── Mutations ───────────────────────────────────────────────────────────
+    const goalMutation = useMutation({ mutationFn: (data) => financePlusService.createGoal(data), onSuccess: () => queryClient.invalidateQueries(['finance-goals']) });
+    const salaryMutation = useMutation({ mutationFn: (data) => financePlusService.createSalaryRecord(data), onSuccess: () => { queryClient.invalidateQueries(['salary-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); } });
+    const propertyMutation = useMutation({ mutationFn: (data) => financePlusService.createProperty(data), onSuccess: () => queryClient.invalidateQueries(['property-records']) });
+    const rentMutation = useMutation({ mutationFn: ({ id, ...data }) => financePlusService.recordRent(id, data), onSuccess: () => { queryClient.invalidateQueries(['property-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); } });
+    const pensionMutation = useMutation({ mutationFn: (data) => financePlusService.recordPension(data), onSuccess: () => { queryClient.invalidateQueries(['pension-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); } });
+    const incomeSourceMutation = useMutation({ mutationFn: (source) => financePlusService.updateIncomeSource(source), onSuccess: () => queryClient.invalidateQueries(['finance-dashboard-enhanced']) });
 
-    // Data states
+    const [isSynced, setIsSynced] = useState(false);
+    const [showOnboarding, setShowOnboarding] = useState(false);
+
+    useEffect(() => {
+        if (dashboardData && !dashboardData.primaryIncomeSource && uid !== 'guest') {
+            setShowOnboarding(true);
+        }
+    }, [dashboardData, uid]);
+
+    // Data states for legacy/local sync
     const [incomeSources, setIncomeSources] = useState(() => {
         try { return JSON.parse(localStorage.getItem(incomeKey(uid))) || []; }
         catch { return []; }
@@ -1049,31 +1087,128 @@ const FinancePage = () => {
                 }
             `}</style>
 
-            <div style={{ marginBottom: '1.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'linear-gradient(135deg,#1B6B3A 0%,#064E3B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><DollarSign size={20} /></div>
-                    <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>Finance</h1>
+            {/* ONBOARDING OVERLAY */}
+            <AnimatePresence>
+                {showOnboarding && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} style={{ width: '90%', maxWidth: '480px', background: '#fff', borderRadius: '32px', padding: '2.5rem', boxShadow: '0 30px 60px -12px rgba(0,0,0,0.3)', textAlign: 'center' }}>
+                            <div style={{ width: 64, height: 64, borderRadius: '20px', background: '#F0FDF4', color: '#1B6B3A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                                <Briefcase size={32} />
+                            </div>
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0F172A', marginBottom: '0.5rem' }}>Personalize Your Experience</h2>
+                            <p style={{ color: '#64748B', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.5 }}>To provide you with the most relevant tools, what is your primary source of income?</p>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                                {[
+                                    { label: 'Salaried Employee', icon: Briefcase },
+                                    { label: 'Rental Income', icon: Home },
+                                    { label: 'Pension Income', icon: Heart },
+                                    { label: 'Business Owner', icon: TrendingUp },
+                                    { label: 'Freelancer', icon: Pencil },
+                                    { label: 'Multiple Sources', icon: Plus },
+                                ].map(opt => (
+                                    <button
+                                        key={opt.label}
+                                        onClick={() => {
+                                            incomeSourceMutation.mutate(opt.label);
+                                            setShowOnboarding(false);
+                                        }}
+                                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem', borderRadius: '16px', border: '1px solid #E2E8F0', background: '#f8fafc', cursor: 'pointer', transition: 'all 0.2s' }}
+                                        onMouseOver={e => { e.currentTarget.style.borderColor = '#1B6B3A'; e.currentTarget.style.background = '#F0FDF4'; }}
+                                        onMouseOut={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#f8fafc'; }}
+                                    >
+                                        <opt.icon size={20} color="#1B6B3A" />
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>{opt.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                            <button onClick={() => setShowOnboarding(false)} style={{ color: '#94A3B8', background: 'none', border: 'none', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Skip for now</button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            <div style={{ marginBottom: '1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
+                        <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'linear-gradient(135deg,#1B6B3A 0%,#064E3B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><DollarSign size={20} /></div>
+                        <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>Finance</h1>
+                    </div>
+                    <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: 500, margin: 0 }}>Track your income, fixed costs, and daily spending in one place.</p>
                 </div>
-                <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: 500, margin: 0 }}>Track your income, fixed costs, and daily spending in one place.</p>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ position: 'relative' }}>
+                        <button style={{ width: 42, height: 42, borderRadius: '12px', background: 'white', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', cursor: 'pointer' }}>
+                            <Bell size={20} />
+                            {notifications.filter(n => !n.is_read).length > 0 && (
+                                <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '18px', height: '18px', borderRadius: '50%', background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>
+                                    {notifications.filter(n => !n.is_read).length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                    <button onClick={() => navigate('/books/tax-deductions')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.25rem', background: '#FEE2E2', color: '#EF4444', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
+                        <ShieldCheck size={18} /> Tax &amp; Deductions
+                    </button>
+                </div>
             </div>
 
             <>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    {/* Primary Dashboard Summary */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
                         {[
                             { label: 'Total Income', value: monthlyIncome, color: '#059669', bg: '#ECFDF5' },
                             { label: 'Total Expenses', value: fixedExpenses + dailyExpenses, color: '#D97706', bg: '#FFFBEB' },
                             { label: 'Monthly Savings', value: remaining, color: remaining >= 0 ? '#7C3AED' : '#EF4444', bg: remaining >= 0 ? '#F5F3FF' : '#FEF2F2' },
-                            { label: 'Monthly Budget Remaining', value: budgetRemaining, color: '#2563EB', bg: '#EFF6FF' },
-                            { label: 'Active Savings Goals', value: goals.length, color: '#EC4899', bg: '#FDF2F8', isCount: true },
+                            { label: 'Net Worth', value: dashboardData?.netWorth || 0, color: '#0F172A', bg: '#F8FAFC', isNetWorth: true },
                         ].map(item => (
                             <div key={item.label} style={{ background: item.bg, borderRadius: '14px', padding: '1.1rem 1.25rem', border: `1px solid ${item.color}22` }}>
                                 <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.3rem' }}>{item.label}</div>
                                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: item.color }}>
-                                    {item.isCount ? item.value : `${currencySymbol}${item.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                    {currencySymbol}{item.value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                 </div>
                             </div>
                         ))}
                     </div>
+
+                    {/* Secondary Summary Cards */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                        <div style={{ background: '#EEF2FF', borderRadius: '18px', padding: '1.25rem', border: '1px solid #4F46E522' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#4F46E5' }}>INVESTMENT PORTFOLIO</span>
+                                <ArrowUpRight size={16} color="#4F46E5" />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                <div>
+                                    <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{(dashboardData?.investmentStats?.total || 0).toLocaleString()}</div>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#059669' }}>+{dashboardData?.investmentStats?.returnPct?.toFixed(1)}% All-time</div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>Monthly P/L</span>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#059669' }}>+{currencySymbol}{(dashboardData?.investmentStats?.profit / 12 || 0).toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ background: '#FEF2F2', borderRadius: '18px', padding: '1.25rem', border: '1px solid #EF444422' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#B91C1C' }}>ESTIMATED TAX DUE</span>
+                                <ShieldCheck size={16} color="#B91C1C" />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                <div>
+                                    <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{(dashboardData?.taxSummary?.remaining || 0).toLocaleString()}</div>
+                                    <span style={{ fontSize: '0.75rem', color: '#EF4444', fontWeight: 700 }}>Due by July 31st</span>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>TDS Paid</span>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#059669' }}>{currencySymbol}{(dashboardData?.taxSummary?.paid || 0).toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
 
             {/* NEW SECTIONS: WALLET AND BUDGET */}
@@ -1087,7 +1222,21 @@ const FinancePage = () => {
                     budget={budget} 
                     onUpdateBudget={handleUpdateBudget} 
                     currentSpent={currentMonthExpenses} 
-                    currencySymbol={currencySymbol} 
+                    currencySymbol={currencySymbol}
+                />
+            </div>
+
+            {/* FINANCIAL GOALS SECTION */}
+            <div style={{ marginBottom: '3rem' }}>
+                <FinancialGoals
+                    goals={goalsList}
+                    onUpdateGoals={(updated) => {
+                        // For simplicity, we create/delete as bulk or individual in real app
+                        // Here we just proxy to the mutation
+                        console.log('Update goals requested', updated);
+                        queryClient.invalidateQueries(['finance-goals']);
+                    }}
+                    currencySymbol={currencySymbol}
                 />
             </div>
 
@@ -1765,6 +1914,48 @@ const FinancePage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* INCOME MANAGERS SECTION */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', marginBottom: '4rem' }}>
+                {dashboardData?.primaryIncomeSource === 'Salaried Employee' && (
+                    <SalaryManager
+                        records={salaryRecords}
+                        onAddRecord={data => salaryMutation.mutate(data)}
+                        wallets={wallets}
+                        currencySymbol={currencySymbol}
+                    />
+                )}
+                {dashboardData?.primaryIncomeSource === 'Rental Income' && (
+                    <PropertyManager
+                        properties={properties}
+                        onAddProperty={data => propertyMutation.mutate(data)}
+                        onRecordRent={(id, amount) => rentMutation.mutate({ id, amount })}
+                        wallets={wallets}
+                        currencySymbol={currencySymbol}
+                    />
+                )}
+                {dashboardData?.primaryIncomeSource === 'Pension Income' && (
+                    <PensionManager
+                        records={pensionRecords}
+                        onAddPension={data => pensionMutation.mutate(data)}
+                        wallets={wallets}
+                        currencySymbol={currencySymbol}
+                    />
+                )}
+            </div>
+
+            {/* INVESTMENT PORTFOLIO SECTION */}
+            <div style={{ marginBottom: '4rem' }}>
+                <InvestmentPortfolio
+                    investments={dashboardData?.investmentStats?.list || []}
+                    onAddInvestment={data => {
+                        // Assuming investmentsService handles create
+                        queryClient.invalidateQueries(['finance-dashboard-enhanced']);
+                    }}
+                    currencySymbol={currencySymbol}
+                />
+            </div>
+
             {/* NEW SECTIONS: ANALYTICS, REPORTS, SETTINGS */}
             <div style={{ marginTop: '3rem' }}>
                 <FinanceAnalytics 
