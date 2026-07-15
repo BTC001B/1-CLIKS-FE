@@ -1104,11 +1104,11 @@ const FinancePage = () => {
                 {/* Income panel */}
                 <div className="finance-panel-left">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Income</h2>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Additional Source</h2>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                         <div style={{ textAlign: 'left' }}>
-                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDITIONAL INCOME</h3>
                         </div>
 
                         <div style={{ position: 'relative', width: '130px' }}>
@@ -1153,6 +1153,10 @@ const FinancePage = () => {
                                     <div>
                                         <label style={lbl}>Income Name</label>
                                         <input type="text" style={inp} placeholder="e.g. Freelance project" value={newAdditionalIncome.name} onChange={e => setNewAdditionalIncome(p => ({ ...p, name: e.target.value }))} />
+                                    </div>
+                                    <div>
+                                        <label style={lbl}>Description</label>
+                                        <input type="text" style={inp} placeholder="Optional details..." value={newAdditionalIncome.description} onChange={e => setNewAdditionalIncome(p => ({ ...p, description: e.target.value }))} />
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem' }}>
                                         <div>
@@ -1205,19 +1209,27 @@ const FinancePage = () => {
                                             NAME <ColumnFilterDropdown type="addIncome" column="name" label="Name" filterState={addIncomeFilters} setFilterState={setAddIncomeFilters} />
                                         </div>
                                     </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            DESCRIPTION <ColumnFilterDropdown type="addIncome" column="description" label="Description" filterState={addIncomeFilters} setFilterState={setAddIncomeFilters} />
+                                        </div>
+                                    </th>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>DATE</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>TIME</th>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>AMOUNT</th>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredAdditionalIncome.length === 0 ? (
-                                    <tr><td colSpan="4" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No income sources added yet</td></tr>
+                                    <tr><td colSpan="6" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No income sources added yet</td></tr>
                                 ) : (
                                     filteredAdditionalIncome.map(i => (
                                         <tr key={i.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#10B981', textAlign: 'center' }}>{i.name}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{i.description || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{i.date}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{i.time || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>{currencySymbol}{parseFloat(i.amount).toLocaleString()}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
@@ -1239,11 +1251,11 @@ const FinancePage = () => {
                 {/* Expense panel */}
                 <div className="finance-panel-right">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Expense</h2>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Fixed Source</h2>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                         <div style={{ textAlign: 'left' }}>
-                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>FIXED EXPENSE</h3>
                         </div>
 
                         <div style={{ position: 'relative', width: '130px' }}>
@@ -1288,6 +1300,10 @@ const FinancePage = () => {
                                     <div>
                                         <label style={lbl}>Expense Name</label>
                                         <input type="text" style={inp} placeholder="e.g. Office supplies" value={additionalExpense.name} onChange={e => setAdditionalExpense(p => ({ ...p, name: e.target.value }))} />
+                                    </div>
+                                    <div>
+                                        <label style={lbl}>Description</label>
+                                        <input type="text" style={inp} placeholder="Optional details..." value={additionalExpense.description} onChange={e => setAdditionalExpense(p => ({ ...p, description: e.target.value }))} />
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem' }}>
                                         <div>
@@ -1340,19 +1356,27 @@ const FinancePage = () => {
                                             NAME <ColumnFilterDropdown type="addExpense" column="name" label="Name" filterState={addExpenseFilters} setFilterState={setAddExpenseFilters} />
                                         </div>
                                     </th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            DESCRIPTION <ColumnFilterDropdown type="addExpense" column="description" label="Description" filterState={addExpenseFilters} setFilterState={setAddExpenseFilters} />
+                                        </div>
+                                    </th>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>DATE</th>
+                                    <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>TIME</th>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>AMOUNT</th>
                                     <th style={{ padding: '0.8rem 0.75rem', textAlign: 'center', color: '#1E40AF', fontWeight: 900, whiteSpace: 'nowrap', verticalAlign: 'middle', minWidth: '100px' }}>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredAdditionalExpenses.length === 0 ? (
-                                    <tr><td colSpan="4" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No expenses added yet</td></tr>
+                                    <tr><td colSpan="6" style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8' }}>No expenses added yet</td></tr>
                                 ) : (
                                     filteredAdditionalExpenses.map(e => (
                                         <tr key={e.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#EF4444', textAlign: 'center' }}>{e.name}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{e.description || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{e.date}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{e.time || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>{currencySymbol}{parseFloat(e.amount).toLocaleString()}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
@@ -1400,11 +1424,11 @@ const FinancePage = () => {
                 {/* Income panel */}
                 <div className="finance-panel-left">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Income</h2>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Fixed Source</h2>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                         <div style={{ textAlign: 'left' }}>
-                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED INCOME</h3>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>FIXED INCOME</h3>
                         </div>
 
                         <div style={{ position: 'relative', width: '130px' }}>
@@ -1575,11 +1599,11 @@ const FinancePage = () => {
                 {/* Expense panel */}
                 <div className="finance-panel-right">
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Expense</h2>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 950, color: '#1E40AF', margin: 0, textTransform: 'uppercase' }}>Fixed Source</h2>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: '#F8FAFC', padding: '1rem 1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                         <div style={{ textAlign: 'left' }}>
-                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>ADDED EXPENSE</h3>
+                            <h3 style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1E40AF', margin: 0, whiteSpace: 'nowrap' }}>FIXED EXPENSE</h3>
                         </div>
 
                         <div style={{ position: 'relative', width: '130px' }}>
