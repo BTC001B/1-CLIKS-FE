@@ -93,7 +93,7 @@ const TaxDeductions = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', display: 'block', marginBottom: '0.4rem' }}>GROSS INCOME TAX</label>
+                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', display: 'block', marginBottom: '0.4rem' }}>GROSS ANNUAL INCOME</label>
                 <input type="number" value={taxData.income_tax} onChange={e => setTaxData({...taxData, income_tax: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1px solid #E2E8F0' }} />
               </div>
               <div>
