@@ -4,6 +4,7 @@ import { useAuth } from '../../context';
 import { transactionsService, homeService, financePlusService } from '../../services';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import MyWallet from './components/MyWallet';
 import BudgetPlanner from './components/BudgetPlanner';
