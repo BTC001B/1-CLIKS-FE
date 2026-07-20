@@ -319,11 +319,11 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 justifyContent: 'center',
                                 padding: '0 12px',
                                 background: '#FFCC00',
-                                border: activeItem === 'FIN-PRO' ? '2.5px solid #004aad' : 'none',
+                                border: activeItem === 'FIN-PRO' ? '2.5px solid #000000' : 'none',
                                 cursor: 'pointer',
                                 borderRadius: '50px',
                                 boxShadow: activeItem === 'FIN-PRO' 
-                                    ? '0 0 0 1px rgba(0, 74, 173, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    ? '0 0 0 1px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
                                     : '0 3px 8px rgba(0, 0, 0, 0.1)',
                                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                                 gap: '10px',
@@ -337,16 +337,16 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
                                 e.currentTarget.style.boxShadow = activeItem === 'FIN-PRO' 
-                                    ? '0 0 0 1px rgba(0, 74, 173, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    ? '0 0 0 1px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
                                     : '0 3px 8px rgba(0, 0, 0, 0.1)';
                                 e.currentTarget.style.background = '#FFCC00';
                             }}
                         >
-                            <Briefcase size={18} strokeWidth={2.5} style={{ color: '#004aad', flexShrink: 0 }} />
-                            <div style={{ width: '1.5px', height: '18px', backgroundColor: '#004aad', opacity: 0.8 }} />
+                            <Briefcase size={18} strokeWidth={2.5} style={{ color: '#000000', flexShrink: 0 }} />
+                            <div style={{ width: '1.5px', height: '18px', backgroundColor: '#000000', opacity: 0.8 }} />
                             <span style={{ 
                                 fontWeight: '900', 
-                                color: '#001529', 
+                                color: '#000000', 
                                 letterSpacing: '0.3px',
                                 textTransform: 'uppercase',
                                 fontSize: '0.82rem'
@@ -395,11 +395,11 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 justifyContent: 'center',
                                 padding: '0 12px',
                                 background: '#FFCC00',
-                                border: activeItem === 'Beta Club' ? '2.5px solid #004aad' : 'none',
+                                border: activeItem === 'Beta Club' ? '2.5px solid #000000' : 'none',
                                 cursor: 'pointer',
                                 borderRadius: '50px',
                                 boxShadow: activeItem === 'Beta Club' 
-                                    ? '0 0 0 1px rgba(0, 74, 173, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    ? '0 0 0 1px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
                                     : '0 3px 8px rgba(0, 0, 0, 0.1)',
                                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                                 gap: '10px',
@@ -413,16 +413,16 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
                                 e.currentTarget.style.boxShadow = activeItem === 'Beta Club' 
-                                    ? '0 0 0 1px rgba(0, 74, 173, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    ? '0 0 0 1px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
                                     : '0 3px 8px rgba(0, 0, 0, 0.1)';
                                 e.currentTarget.style.background = '#FFCC00';
                             }}
                         >
-                            <Rocket size={18} strokeWidth={2.5} style={{ color: '#004aad', flexShrink: 0 }} />
-                            <div style={{ width: '1.5px', height: '18px', backgroundColor: '#004aad', opacity: 0.8 }} />
+                            <Rocket size={18} strokeWidth={2.5} style={{ color: '#000000', flexShrink: 0 }} />
+                            <div style={{ width: '1.5px', height: '18px', backgroundColor: '#000000', opacity: 0.8 }} />
                             <span style={{ 
                                 fontWeight: '900', 
-                                color: '#001529', 
+                                color: '#000000', 
                                 letterSpacing: '0.3px',
                                 textTransform: 'uppercase',
                                 fontSize: '0.82rem'
