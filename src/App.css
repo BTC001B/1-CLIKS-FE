@@ -2604,6 +2604,11 @@ div[style*="background-color: '#F0F9F4'"] {
     color: #10B981;
 }
 
+.rightpanel-icon.icon-launcher {
+    background-color: #EEF2FF;
+    color: #6366F1;
+}
+
 .rightpanel-icon.icon-contact {
     background-color: #EFF6FF;
     color: #3B82F6;

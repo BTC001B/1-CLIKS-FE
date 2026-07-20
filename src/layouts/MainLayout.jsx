@@ -40,7 +40,6 @@ const MainLayout = ({ children }) => {
                     if (!isToolbarOpen) setIsToolbarOpen(true);
                     setIsCalcOpen(true);
                 }}
-                onOpenProductLauncher={() => setIsLauncherOpen(true)}
             />
             <div className="app-body">
                 <Sidebar 
@@ -82,6 +81,7 @@ const MainLayout = ({ children }) => {
                 onCalcToggle={() => setIsCalcOpen(prev => !prev)}
                 onCalcClose={() => setIsCalcOpen(false)}
                 onToolbarClose={() => setIsToolbarOpen(false)}
+                onLauncherToggle={() => setIsLauncherOpen(prev => !prev)}
             />
 
             <ReferralModal isOpen={isReferralOpen} onClose={() => setIsReferralOpen(false)} />

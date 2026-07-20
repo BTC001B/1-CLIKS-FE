@@ -18,6 +18,7 @@ import {
     ChevronRight,
     RotateCcw,
     Delete,
+    Sparkles,
     Share2,
     Trash2,
     Hash,
@@ -92,7 +93,7 @@ const CalcPanel = ({ onClose }) => {
 };
 
 /* ─── Right Sidebar ───────────────────────────────────────────────── */
-const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onCalcClose, onToolbarClose }) => {
+const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onCalcClose, onToolbarClose, onLauncherToggle }) => {
     const navigate = useNavigate();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -126,6 +127,13 @@ const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onC
             iconClass: 'icon-calendar',
             icon: <Calendar size={20} />,
             action: () => { if (onCalcClose) onCalcClose(); navigate('/books/dashboard'); },
+        },
+        {
+            id: 'launcher',
+            title: 'Product Launcher',
+            iconClass: 'icon-launcher',
+            icon: <Sparkles size={20} />,
+            action: onLauncherToggle,
         },
         {
             id: 'calculator',
@@ -183,7 +191,6 @@ const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onC
                 className={`rightpanel${isVisible ? '' : ' rightpanel--hidden'}`}
                 aria-label="Quick actions"
                 aria-hidden={!isVisible}
-                style={{ top: '116px', height: 'calc(100vh - 116px)' }}
             >
                 {/* Top icons */}
                 <div className="rightpanel-section">
