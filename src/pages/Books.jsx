@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     TrendingUp,
     User,
@@ -8,6 +8,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 import AnalyticsSection from '../components/AnalyticsSection';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../context';
+import { transactionsService, homeService } from '../services';
+import FinanceReports from './books/components/FinanceReports';
 
 const OverviewCard = (props) => {
     const { title, icon: Icon, color, path, stats, children } = props;
@@ -51,6 +55,73 @@ const OverviewCard = (props) => {
 };
 
 const Books = () => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const uid = user?.id ?? user?.email ?? 'guest';
+
+    // Queries
+    const { data: dbTransactions = [] } = useQuery({
+        queryKey: ['transactions'],
+        queryFn: () => transactionsService.getTransactions(),
+        enabled: !!uid && uid !== 'guest',
+    });
+
+    const { data: dashboardData } = useQuery({
+        queryKey: ['finance-dashboard-enhanced'],
+        queryFn: () => homeService.getHomeStats(),
+        enabled: !!uid && uid !== 'guest',
+    });
+
+    // Settings
+    const settingsKey = (uid) => `cliks_finance_settings_${uid}`;
+    const [settings] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem(settingsKey(uid))) || {
+                currency: 'INR',
+                dateFormat: 'DD MMM YYYY',
+                theme: 'Default Slate',
+                exportFormat: 'CSV'
+            };
+        } catch {
+            return {
+                currency: 'INR',
+                dateFormat: 'DD MMM YYYY',
+                theme: 'Default Slate',
+                exportFormat: 'CSV'
+            };
+        }
+    });
+
+    const currencySymbols = { INR: '₹', USD: '₹', EUR: '€', GBP: '£' };
+    const currencySymbol = currencySymbols[settings.currency] || '₹';
+
+    const [budget, setBudget] = useState(20000);
+    useEffect(() => {
+        if (dashboardData) {
+            if (dashboardData.globalBudget !== undefined) setBudget(dashboardData.globalBudget);
+        }
+    }, [dashboardData]);
+
+    const allTransactions = useMemo(() => {
+        return dbTransactions.map(tx => {
+            let type = tx.type || '';
+            if (type.toLowerCase() === 'income') type = 'Income';
+            if (type.toLowerCase() === 'expense') type = 'Expense';
+            
+            let name = tx.name || tx.incomeName || tx.expenseName || tx.sourceName || tx.title || '';
+            if (name.startsWith('[Add] ')) {
+                name = name.slice(6);
+            }
+
+            return {
+                ...tx,
+                type,
+                name,
+                amount: parseFloat(tx.amount) || 0
+            };
+        });
+    }, [dbTransactions]);
+
     return (
         <>
             <div className="dashboard-header">
@@ -114,6 +185,15 @@ const Books = () => {
                         ]}
                     />
 
+                </div>
+                
+                {/* Reports Engine Section */}
+                <div style={{ marginTop: '3rem', paddingBottom: '3rem' }}>
+                    <FinanceReports 
+                        transactions={allTransactions} 
+                        budget={budget} 
+                        currencySymbol={currencySymbol} 
+                    />
                 </div>
             </div>
 

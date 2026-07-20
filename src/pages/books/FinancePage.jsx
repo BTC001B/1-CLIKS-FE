@@ -15,7 +15,6 @@ import PropertyManager from './components/PropertyManager';
 import PensionManager from './components/PensionManager';
 import InvestmentPortfolio from './components/InvestmentPortfolio';
 import FinanceAnalytics from './components/FinanceAnalytics';
-import FinanceReports from './components/FinanceReports';
 import FinanceSettings from './components/FinanceSettings';
 
 /* ─── Storage keys scoped per user ────────────────────────────── */
@@ -1901,11 +1900,6 @@ const FinancePage = () => {
             <div style={{ marginTop: '3rem' }}>
                 <FinanceAnalytics 
                     transactions={allTransactions} 
-                    currencySymbol={currencySymbol} 
-                />
-                <FinanceReports 
-                    transactions={allTransactions} 
-                    budget={budget} 
                     currencySymbol={currencySymbol} 
                 />
                 <FinanceSettings 
