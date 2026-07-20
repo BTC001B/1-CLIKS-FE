@@ -12,7 +12,6 @@ import BillsReminders from './components/BillsReminders';
 import SalaryManager from './components/SalaryManager';
 import PropertyManager from './components/PropertyManager';
 import PensionManager from './components/PensionManager';
-import InvestmentPortfolio from './components/InvestmentPortfolio';
 
 /* ─── Storage keys scoped per user ────────────────────────────── */
 const incomeKey = (uid) => `cliks_finance_income_v2_${uid}`;
@@ -1869,15 +1868,6 @@ const FinancePage = () => {
                 )}
             </div>
 
-            {/* INVESTMENT PORTFOLIO SECTION */}
-            <div style={{ marginBottom: '4rem' }}>
-                <InvestmentPortfolio
-                    investments={dashboardData?.investmentStats?.list || []}
-                    onAddInvestment={data => investmentCreateMutation.mutate(data)}
-                    onDeleteInvestment={id => investmentDeleteMutation.mutate(id)}
-                    currencySymbol={currencySymbol}
-                />
-            </div>
 
             </>
         </div>
