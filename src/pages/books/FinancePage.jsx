@@ -13,7 +13,6 @@ import SalaryManager from './components/SalaryManager';
 import PropertyManager from './components/PropertyManager';
 import PensionManager from './components/PensionManager';
 import InvestmentPortfolio from './components/InvestmentPortfolio';
-import FinanceSettings from './components/FinanceSettings';
 
 /* ─── Storage keys scoped per user ────────────────────────────── */
 const incomeKey = (uid) => `cliks_finance_income_v2_${uid}`;
@@ -1880,13 +1879,6 @@ const FinancePage = () => {
                 />
             </div>
 
-            {/* NEW SECTIONS: ANALYTICS, REPORTS, SETTINGS */}
-            <div style={{ marginTop: '3rem' }}>
-                <FinanceSettings 
-                    settings={settings} 
-                    onUpdateSettings={handleUpdateSettings} 
-                />
-            </div>
             </>
         </div>
     );
