@@ -13,7 +13,6 @@ import SalaryManager from './components/SalaryManager';
 import PropertyManager from './components/PropertyManager';
 import PensionManager from './components/PensionManager';
 import InvestmentPortfolio from './components/InvestmentPortfolio';
-import FinanceAnalytics from './components/FinanceAnalytics';
 import FinanceSettings from './components/FinanceSettings';
 
 /* ─── Storage keys scoped per user ────────────────────────────── */
@@ -1883,10 +1882,6 @@ const FinancePage = () => {
 
             {/* NEW SECTIONS: ANALYTICS, REPORTS, SETTINGS */}
             <div style={{ marginTop: '3rem' }}>
-                <FinanceAnalytics 
-                    transactions={allTransactions} 
-                    currencySymbol={currencySymbol} 
-                />
                 <FinanceSettings 
                     settings={settings} 
                     onUpdateSettings={handleUpdateSettings} 
