@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context';
 import { transactionsService, homeService } from '../services';
 import FinanceReports from './books/components/FinanceReports';
+import FinanceAnalytics from './books/components/FinanceAnalytics';
 
 const OverviewCard = (props) => {
     const { title, icon: Icon, color, path, stats, children } = props;
@@ -186,7 +187,14 @@ const Books = () => {
                     />
 
                 </div>
-                
+                {/* Interactive Analytics Section */}
+                <div style={{ marginTop: '3rem' }}>
+                    <FinanceAnalytics 
+                        transactions={allTransactions} 
+                        currencySymbol={currencySymbol} 
+                    />
+                </div>
+
                 {/* Reports Engine Section */}
                 <div style={{ marginTop: '3rem', paddingBottom: '3rem' }}>
                     <FinanceReports 
