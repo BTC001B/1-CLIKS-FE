@@ -214,7 +214,7 @@ const FinancePage = () => {
         localStorage.setItem(settingsKey(uid), JSON.stringify(newSettings));
     };
 
-    const currencySymbols = { INR: '₹', USD: '₹', EUR: '€', GBP: '£' };
+    const currencySymbols = { INR: '₹', USD: '₹', EUR: '€', GBP: '₹' };
     const currencySymbol = currencySymbols[settings.currency] || '₹';
 
     const billsKey = (uid) => `cliks_finance_bills_${uid}`;
