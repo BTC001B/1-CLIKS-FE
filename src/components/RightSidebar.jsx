@@ -18,7 +18,7 @@ import {
     ChevronRight,
     RotateCcw,
     Delete,
-    Sparkles,
+    Grid3X3,
     Share2,
     Trash2,
     Hash,
@@ -138,19 +138,19 @@ const RightSidebar = ({
             mobileOnly: true
         },
         {
+            id: 'launcher',
+            title: 'Product Launcher',
+            iconClass: 'icon-launcher',
+            icon: <Grid3X3 size={20} />,
+            action: onLauncherToggle,
+            active: isLauncherOpen,
+        },
+        {
             id: 'calendar',
             title: 'Dashboard',
             iconClass: 'icon-calendar',
             icon: <Calendar size={20} />,
             action: () => { if (onCalcClose) onCalcClose(); navigate('/books/dashboard'); },
-        },
-        {
-            id: 'launcher',
-            title: 'Product Launcher',
-            iconClass: 'icon-launcher',
-            icon: <Sparkles size={20} />,
-            action: onLauncherToggle,
-            active: isLauncherOpen,
         },
         {
             id: 'calculator',
