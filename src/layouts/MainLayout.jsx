@@ -4,6 +4,7 @@ import Topbar from '../components/Topbar';
 import AuditPanel from '../components/AuditPanel';
 import ReferralModal from '../components/ReferralModal';
 import RightSidebar from '../components/RightSidebar';
+import ProductLauncher from '../components/ProductLauncher';
 import '../App.css';
 
 // Width constants — must match App.css
@@ -16,6 +17,7 @@ const MainLayout = ({ children }) => {
     const [isReferralOpen, setIsReferralOpen] = useState(false);
     const [isToolbarOpen, setIsToolbarOpen] = useState(false);
     const [isCalcOpen,    setIsCalcOpen]    = useState(false); // lifted here
+    const [isLauncherOpen, setIsLauncherOpen] = useState(false);
 
     const toggleSidebar  = () => setIsSidebarOpen(prev => !prev);
     const toggleAudit    = () => setIsAuditOpen(prev => !prev);
@@ -43,6 +45,7 @@ const MainLayout = ({ children }) => {
                 <Sidebar 
                     isOpen={isSidebarOpen} 
                     onReferralClick={() => setIsReferralOpen(true)} 
+                    onLogoClick={() => setIsLauncherOpen(true)}
                     onItemClick={() => {
                         if (window.innerWidth <= 768) {
                             setIsSidebarOpen(false);
@@ -82,6 +85,8 @@ const MainLayout = ({ children }) => {
             />
 
             <ReferralModal isOpen={isReferralOpen} onClose={() => setIsReferralOpen(false)} />
+            
+            <ProductLauncher isOpen={isLauncherOpen} onClose={() => setIsLauncherOpen(false)} />
         </div>
     );
 };
