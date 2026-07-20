@@ -929,15 +929,6 @@ const MoneyTracker = () => {
                 <p style={{ fontSize: '0.95rem', color: '#64748B', marginTop: '0.35rem' }}>Track customized budgets, travel expenses, photos, timelines, and locations.</p>
               </div>
 
-              {/* Dynamic Seeding when no data exists */}
-              {trackers.length === 0 && !loading && (
-                <button 
-                  onClick={handleSeedDemos} 
-                  style={{ border: 'none', background: 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '12px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 16px rgba(124,58,237,0.15)', display: 'flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <Sparkles size={16} /> Load Demo Trackers
-                </button>
-              )}
             </div>
 
             {/* Dashboard Recent Activity & Search Row */}
