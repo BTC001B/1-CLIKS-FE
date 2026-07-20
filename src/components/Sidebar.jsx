@@ -308,54 +308,49 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
 
                         {/* 6. FIN-PRO */}
                         <button
-                            className={`sidebar-item ${activeItem === 'FIN-PRO' ? 'active' : ''}`}
+                            className="sidebar-custom-yellow-btn"
                             onClick={() => handleItemClick('FIN-PRO', '/ca')}
                             style={{
-                                width: '120px',
-                                height: '34px',
-                                margin: '0.4rem auto',
+                                width: '136px',
+                                height: '38px',
+                                margin: '0.5rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '0 12px',
-                                background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)',
-                                color: '#000000',
-                                border: '1px solid #B8860B',
-                                cursor: 'pointer',
-                                fontWeight: '800',
-                                fontSize: '0.78rem',
-                                borderRadius: '24px',
-                                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 justifyContent: 'center',
-                                gap: '6px',
-                                position: 'relative',
-                                overflow: 'hidden'
+                                padding: '0 12px',
+                                background: '#FFCC00',
+                                border: activeItem === 'FIN-PRO' ? '2.5px solid #004aad' : 'none',
+                                cursor: 'pointer',
+                                borderRadius: '50px',
+                                boxShadow: activeItem === 'FIN-PRO' 
+                                    ? '0 0 0 1px rgba(0, 74, 173, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    : '0 3px 8px rgba(0, 0, 0, 0.1)',
+                                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                gap: '10px',
+                                outline: 'none'
                             }}
                             onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #D4AF37 100%)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 3px rgba(255, 255, 255, 0.8), 0 8px 20px rgba(184, 134, 11, 0.35)';
+                                e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.15)';
+                                e.currentTarget.style.background = '#FFD300';
                             }}
                             onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)';
+                                e.currentTarget.style.boxShadow = activeItem === 'FIN-PRO' 
+                                    ? '0 0 0 1px rgba(0, 74, 173, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    : '0 3px 8px rgba(0, 0, 0, 0.1)';
+                                e.currentTarget.style.background = '#FFCC00';
                             }}
                         >
-                            {/* Luxurious Glossy Highlight Overlay */}
-                            <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: '-100%',
-                                width: '60%',
-                                height: '100%',
-                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
-                                transform: 'skewX(-25deg)',
-                                transition: '0.5s',
-                                pointerEvents: 'none'
-                            }} />
-                            <Gift size={14} style={{ color: '#000000', flexShrink: 0, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))' }} />
-                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#000000', letterSpacing: '0.2px', textShadow: '0 0.5px 0 rgba(255,255,255,0.3)' }}>FIN-PRO</span>
+                            <Briefcase size={18} strokeWidth={2.5} style={{ color: '#004aad', flexShrink: 0 }} />
+                            <div style={{ width: '1.5px', height: '18px', backgroundColor: '#004aad', opacity: 0.8 }} />
+                            <span style={{ 
+                                fontWeight: '900', 
+                                color: '#001529', 
+                                letterSpacing: '0.3px',
+                                textTransform: 'uppercase',
+                                fontSize: '0.82rem'
+                            }}>FIN-PRO</span>
                         </button>
                     </>
                 )}
@@ -389,55 +384,49 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
 
                         {/* Beta Club */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Beta Club' ? 'active' : ''}`}
+                            className="sidebar-custom-yellow-btn"
                             onClick={() => handleItemClick('Beta Club', '/social/beta-club')}
                             style={{
-                                width: '120px',
-                                height: '34px',
-                                margin: '0.4rem auto',
+                                width: '145px',
+                                height: '38px',
+                                margin: '0.5rem auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '0 12px',
-                                background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)',
-                                color: '#000000',
-                                border: '1px solid #B8860B',
-                                cursor: 'pointer',
-                                fontWeight: '800',
-                                fontSize: '0.78rem',
-                                borderRadius: '24px',
-                                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 justifyContent: 'center',
-                                gap: '6px',
-                                position: 'relative',
-                                overflow: 'hidden'
+                                padding: '0 12px',
+                                background: '#FFCC00',
+                                border: activeItem === 'Beta Club' ? '2.5px solid #004aad' : 'none',
+                                cursor: 'pointer',
+                                borderRadius: '50px',
+                                boxShadow: activeItem === 'Beta Club' 
+                                    ? '0 0 0 1px rgba(0, 74, 173, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    : '0 3px 8px rgba(0, 0, 0, 0.1)',
+                                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                gap: '10px',
+                                outline: 'none'
                             }}
                             onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #D4AF37 100%)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 3px rgba(255, 255, 255, 0.8), 0 8px 20px rgba(184, 134, 11, 0.35)';
+                                e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.15)';
+                                e.currentTarget.style.background = '#FFD300';
                             }}
                             onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                                e.currentTarget.style.background = 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)';
-                                e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15)';
+                                e.currentTarget.style.boxShadow = activeItem === 'Beta Club' 
+                                    ? '0 0 0 1px rgba(0, 74, 173, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    : '0 3px 8px rgba(0, 0, 0, 0.1)';
+                                e.currentTarget.style.background = '#FFCC00';
                             }}
                         >
-                            {/* Luxurious Glossy Highlight Overlay */}
-                            <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: '-100%',
-                                width: '60%',
-                                height: '100%',
-                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
-                                transform: 'skewX(-25deg)',
-                                transition: '0.5s',
-                                pointerEvents: 'none'
-                            }} />
-
-                            <Rocket size={14} style={{ color: '#000000', flexShrink: 0, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))' }} />
-                            <span className="sidebar-label" style={{ fontWeight: '800', margin: 0, color: '#000000', letterSpacing: '0.2px', textShadow: '0 0.5px 0 rgba(255,255,255,0.3)' }}>Beta Club</span>
+                            <Rocket size={18} strokeWidth={2.5} style={{ color: '#004aad', flexShrink: 0 }} />
+                            <div style={{ width: '1.5px', height: '18px', backgroundColor: '#004aad', opacity: 0.8 }} />
+                            <span style={{ 
+                                fontWeight: '900', 
+                                color: '#001529', 
+                                letterSpacing: '0.3px',
+                                textTransform: 'uppercase',
+                                fontSize: '0.82rem'
+                            }}>Beta Club</span>
                         </button>
                     </>
                 )}
