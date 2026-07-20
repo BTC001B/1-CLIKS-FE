@@ -319,11 +319,11 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 justifyContent: 'center',
                                 padding: '0 12px',
                                 background: '#FFCC00',
-                                border: activeItem === 'FIN-PRO' ? '2.5px solid #000000' : 'none',
+                                border: activeItem === 'FIN-PRO' ? '2.5px solid #E5B800' : 'none',
                                 cursor: 'pointer',
                                 borderRadius: '50px',
                                 boxShadow: activeItem === 'FIN-PRO' 
-                                    ? '0 0 0 1px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    ? '0 0 0 1px rgba(229, 184, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
                                     : '0 3px 8px rgba(0, 0, 0, 0.1)',
                                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                                 gap: '10px',
@@ -337,7 +337,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
                                 e.currentTarget.style.boxShadow = activeItem === 'FIN-PRO' 
-                                    ? '0 0 0 1px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    ? '0 0 0 1px rgba(229, 184, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
                                     : '0 3px 8px rgba(0, 0, 0, 0.1)';
                                 e.currentTarget.style.background = '#FFCC00';
                             }}
@@ -395,11 +395,11 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                                 justifyContent: 'center',
                                 padding: '0 12px',
                                 background: '#FFCC00',
-                                border: activeItem === 'Beta Club' ? '2.5px solid #000000' : 'none',
+                                border: activeItem === 'Beta Club' ? '2.5px solid #E5B800' : 'none',
                                 cursor: 'pointer',
                                 borderRadius: '50px',
                                 boxShadow: activeItem === 'Beta Club' 
-                                    ? '0 0 0 1px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    ? '0 0 0 1px rgba(229, 184, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
                                     : '0 3px 8px rgba(0, 0, 0, 0.1)',
                                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                                 gap: '10px',
@@ -413,7 +413,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
                                 e.currentTarget.style.boxShadow = activeItem === 'Beta Club' 
-                                    ? '0 0 0 1px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
+                                    ? '0 0 0 1px rgba(229, 184, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
                                     : '0 3px 8px rgba(0, 0, 0, 0.1)';
                                 e.currentTarget.style.background = '#FFCC00';
                             }}
