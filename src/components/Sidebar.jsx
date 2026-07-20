@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Tooltip } from './common';
 import {
     Home,
+    Compass,
     LayoutDashboard,
     BarChart3,
     TrendingUp,
@@ -78,6 +79,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
         if (path.includes('/books/people')) return 'People';
         if (path.includes('/books/finance')) return 'Finance';
         if (path === '/books' || path === '/books/') return 'Report';
+        if (path.includes('/books/money-tracker')) return 'Money Tracker';
         if (path.includes('/books/settings')) return 'Settings';
         if (path.includes('/books/faq')) return 'Help & Support';
         if (path.includes('/ca')) return 'FIN-PRO';
@@ -288,6 +290,17 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
                             <div className="flex items-center gap-3">
                                 <BarChart3 size={20} style={{ color: activeItem === 'Report' ? '#ffffff' : '#1B6B3A' }} />
                                 <span className="sidebar-label">Report</span>
+                            </div>
+                        </button>
+
+                        {/* 5b. Money Tracker */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Money Tracker' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Money Tracker', '/books/money-tracker')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Compass size={20} style={{ color: activeItem === 'Money Tracker' ? '#ffffff' : '#1B6B3A' }} />
+                                <span className="sidebar-label">Money Tracker</span>
                             </div>
                         </button>
 

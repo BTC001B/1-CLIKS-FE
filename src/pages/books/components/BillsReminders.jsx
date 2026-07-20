@@ -207,7 +207,7 @@ const BillsReminders = ({ bills = [], onUpdateBills, currencySymbol = '₹' }) =
                                 return (
                                     <tr key={bill.id} style={{ borderBottom: '1px solid #F8FAFC', fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
                                         <td style={{ padding: '0.75rem 1rem' }}>{bill.name}</td>
-                                        <td style={{ padding: '0.75rem 1rem', color: '#0F172A', fontWeight: 750 }}>{currencySymbol}{bill.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                        <td style={{ padding: '0.75rem 1rem', color: '#0F172A', fontWeight: 750 }}>{currencySymbol}{bill.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                         <td style={{ padding: '0.75rem 1rem', color: currentStatus === 'Overdue' ? '#EF4444' : '#475569' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 <Calendar size={13} /> {bill.dueDate}

@@ -36,7 +36,7 @@ const FinanceSettings = ({ settings = {}, onUpdateSettings }) => {
                         style={{ width: '100%', padding: '0.55rem', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontSize: '0.85rem', fontWeight: 600 }}
                     >
                         <option value="INR">Indian Rupee (₹)</option>
-                        <option value="USD">US Dollar ($)</option>
+                        <option value="USD">US Dollar (₹)</option>
                         <option value="EUR">Euro (€)</option>
                         <option value="GBP">British Pound (£)</option>
                     </select>

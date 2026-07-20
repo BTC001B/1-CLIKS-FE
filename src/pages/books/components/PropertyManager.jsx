@@ -51,7 +51,7 @@ const PropertyManager = ({ properties = [], onAddProperty, onRecordRent, wallets
                 <Users size={14} color="#64748B" />
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1E293B' }}>{p.tenant_name}</span>
               </div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#059669' }}>{currencySymbol}{Number(p.monthly_rent).toLocaleString()} /mo</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#059669' }}>{currencySymbol}{Number(p.monthly_rent).toLocaleString('en-IN')} /mo</div>
             </div>
 
             <button

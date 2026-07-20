@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { DollarSign, Trash2, Pencil, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc, TrendingUp, TrendingDown, PieChart, ShieldCheck, Bell, Home, Heart, ArrowUpRight } from 'lucide-react';
+import { IndianRupee, Trash2, Pencil, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc, TrendingUp, TrendingDown, PieChart, ShieldCheck, Bell, Home, Heart, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '../../context';
 import { transactionsService, homeService, financePlusService, investmentsService, accountsService } from '../../services';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
@@ -223,7 +223,7 @@ const FinancePage = () => {
         localStorage.setItem(settingsKey(uid), JSON.stringify(newSettings));
     };
 
-    const currencySymbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+    const currencySymbols = { INR: '₹', USD: '₹', EUR: '€', GBP: '£' };
     const currencySymbol = currencySymbols[settings.currency] || '₹';
 
     const billsKey = (uid) => `cliks_finance_bills_${uid}`;
@@ -1081,7 +1081,7 @@ const FinancePage = () => {
             <div style={{ marginBottom: '1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
-                        <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'linear-gradient(135deg,#1B6B3A 0%,#064E3B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><DollarSign size={20} /></div>
+                        <div style={{ width: 40, height: 40, borderRadius: '12px', background: 'linear-gradient(135deg,#1B6B3A 0%,#064E3B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><IndianRupee size={20} /></div>
                         <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>Finance</h1>
                     </div>
                     <p style={{ color: '#64748B', fontSize: '0.9rem', fontWeight: 500, margin: 0 }}>Track your income, fixed costs, and daily spending in one place.</p>
@@ -1116,7 +1116,7 @@ const FinancePage = () => {
                             <div key={item.label} style={{ background: item.bg, borderRadius: '14px', padding: '1.1rem 1.25rem', border: `1px solid ${item.color}22` }}>
                                 <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.3rem' }}>{item.label}</div>
                                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: item.color }}>
-                                    {currencySymbol}{item.value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    {currencySymbol}{item.value.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                 </div>
                             </div>
                         ))}
@@ -1131,12 +1131,12 @@ const FinancePage = () => {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                                 <div>
-                                    <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{(dashboardData?.investmentStats?.total || 0).toLocaleString()}</div>
+                                    <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{(dashboardData?.investmentStats?.total || 0).toLocaleString('en-IN')}</div>
                                     <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#059669' }}>+{dashboardData?.investmentStats?.returnPct?.toFixed(1)}% All-time</div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                     <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>Monthly P/L</span>
-                                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#059669' }}>+{currencySymbol}{(dashboardData?.investmentStats?.profit / 12 || 0).toLocaleString()}</div>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#059669' }}>+{currencySymbol}{(dashboardData?.investmentStats?.profit / 12 || 0).toLocaleString('en-IN')}</div>
                                 </div>
                             </div>
                         </div>
@@ -1148,12 +1148,12 @@ const FinancePage = () => {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                                 <div>
-                                    <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{(dashboardData?.taxSummary?.remaining || 0).toLocaleString()}</div>
+                                    <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{(dashboardData?.taxSummary?.remaining || 0).toLocaleString('en-IN')}</div>
                                     <span style={{ fontSize: '0.75rem', color: '#EF4444', fontWeight: 700 }}>Due by July 31st</span>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                     <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>TDS Paid</span>
-                                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#059669' }}>{currencySymbol}{(dashboardData?.taxSummary?.paid || 0).toLocaleString()}</div>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#059669' }}>{currencySymbol}{(dashboardData?.taxSummary?.paid || 0).toLocaleString('en-IN')}</div>
                                 </div>
                             </div>
                         </div>
@@ -1278,7 +1278,7 @@ const FinancePage = () => {
                                             <select style={inp} value={newAdditionalIncome.walletId || ''} onChange={e => setNewAdditionalIncome(p => ({ ...p, walletId: e.target.value }))}>
                                                 <option value="">No Wallet</option>
                                                 {wallets.map(w => (
-                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString()})</option>
+                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString('en-IN')})</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -1326,7 +1326,7 @@ const FinancePage = () => {
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{i.description || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{i.date}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{i.time || '—'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>{currencySymbol}{parseFloat(i.amount).toLocaleString()}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>{currencySymbol}{parseFloat(i.amount).toLocaleString('en-IN')}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                                                     <button onClick={() => handleEditAddIncomeSource(i)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
@@ -1426,7 +1426,7 @@ const FinancePage = () => {
                                             <select style={inp} value={additionalExpense.walletId || ''} onChange={e => setAdditionalExpense(p => ({ ...p, walletId: e.target.value }))}>
                                                 <option value="">No Wallet</option>
                                                 {wallets.map(w => (
-                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString()})</option>
+                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString('en-IN')})</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -1474,7 +1474,7 @@ const FinancePage = () => {
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{e.description || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{e.date}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>{e.time || '—'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>{currencySymbol}{parseFloat(e.amount).toLocaleString()}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, textAlign: 'center' }}>{currencySymbol}{parseFloat(e.amount).toLocaleString('en-IN')}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                                                     <button onClick={() => handleEditAddExpense(e)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
@@ -1601,7 +1601,7 @@ const FinancePage = () => {
                                             <select style={inp} value={newIncome.walletId || ''} onChange={e => setNewIncome(p => ({ ...p, walletId: e.target.value }))}>
                                                 <option value="">No Wallet</option>
                                                 {wallets.map(w => (
-                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString()})</option>
+                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString('en-IN')})</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -1670,7 +1670,7 @@ const FinancePage = () => {
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{i.date || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{i.time || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{i.schedule || 'Monthly'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#10B981', textAlign: 'center' }}>{currencySymbol}{(parseFloat(i.amount) || 0).toLocaleString()}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#10B981', textAlign: 'center' }}>{currencySymbol}{(parseFloat(i.amount) || 0).toLocaleString('en-IN')}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                                                     <button onClick={() => handleEditIncomeSource(i)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>
@@ -1774,7 +1774,7 @@ const FinancePage = () => {
                                             <select style={inp} value={expense.walletId || ''} onChange={e => setExpense(p => ({ ...p, walletId: e.target.value }))}>
                                                 <option value="">No Wallet</option>
                                                 {wallets.map(w => (
-                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString()})</option>
+                                                    <option key={w.id} value={w.id}>{w.name} ({currencySymbol}{w.balance.toLocaleString('en-IN')})</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -1838,7 +1838,7 @@ const FinancePage = () => {
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{e.date || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#1E293B', fontWeight: 500, textAlign: 'center' }}>{e.time || '—'}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', color: '#64748B', textAlign: 'center' }}>{e.schedule || 'Monthly'}</td>
-                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#EF4444', textAlign: 'center' }}>{currencySymbol}{(parseFloat(e.amount) || 0).toLocaleString()}</td>
+                                            <td style={{ padding: '0.6rem 0.75rem', fontWeight: 800, color: '#EF4444', textAlign: 'center' }}>{currencySymbol}{(parseFloat(e.amount) || 0).toLocaleString('en-IN')}</td>
                                             <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center' }}>
                                                 <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                                                     <button onClick={() => handleEditExpense(e)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '4px', cursor: 'pointer', color: '#2563EB' }}>

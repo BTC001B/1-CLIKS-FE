@@ -43,15 +43,15 @@ const InvestmentPortfolio = ({ investments = [], onAddInvestment, onDeleteInvest
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div style={{ padding: '1.25rem', background: '#F8FAFC', borderRadius: '20px', border: '1px solid #F1F5F9' }}>
           <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Market Value</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1E293B', margin: '4px 0' }}>{currencySymbol}{totalCurrent.toLocaleString()}</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1E293B', margin: '4px 0' }}>{currencySymbol}{totalCurrent.toLocaleString('en-IN')}</div>
           <div style={{ fontSize: '0.8rem', fontWeight: 700, color: totalProfit >= 0 ? '#059669' : '#DC2626', display: 'flex', alignItems: 'center', gap: '4px' }}>
             {totalProfit >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            {totalReturn.toFixed(2)}% ({totalProfit >= 0 ? '+' : ''}{currencySymbol}{Math.abs(totalProfit).toLocaleString()})
+            {totalReturn.toFixed(2)}% ({totalProfit >= 0 ? '+' : ''}{currencySymbol}{Math.abs(totalProfit).toLocaleString('en-IN')})
           </div>
         </div>
         <div style={{ padding: '1.25rem', background: '#F8FAFC', borderRadius: '20px', border: '1px solid #F1F5F9' }}>
           <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Cost Basis</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#64748B', margin: '4px 0' }}>{currencySymbol}{totalInvested.toLocaleString()}</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#64748B', margin: '4px 0' }}>{currencySymbol}{totalInvested.toLocaleString('en-IN')}</div>
           <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontWeight: 600 }}>Total Principal Invested</span>
         </div>
       </div>
@@ -78,11 +78,11 @@ const InvestmentPortfolio = ({ investments = [], onAddInvestment, onDeleteInvest
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
                   <div style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Current Value</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{Number(inv.current_value).toLocaleString()}</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{Number(inv.current_value).toLocaleString('en-IN')}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Invested</div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748B' }}>{currencySymbol}{Number(inv.amount_invested).toLocaleString()}</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748B' }}>{currencySymbol}{Number(inv.amount_invested).toLocaleString('en-IN')}</div>
                 </div>
               </div>
             </div>

@@ -57,7 +57,7 @@ const FinanceReports = ({ transactions = [], budget = 0, currencySymbol = '₹' 
             t.name,
             t.description || '',
             t.category || '',
-            t.amount
+            `${currencySymbol}${parseFloat(t.amount || 0).toLocaleString('en-IN')}`
         ]);
 
         const content = [headers, ...rows].map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -146,20 +146,20 @@ const FinanceReports = ({ transactions = [], budget = 0, currencySymbol = '₹' 
                 }}>
                     <div style={{ background: 'white', border: '1px solid #E2E8F0', padding: '0.85rem', borderRadius: '8px' }}>
                         <span style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 750, textTransform: 'uppercase' }}>Income Summary</span>
-                        <h5 style={{ margin: '0.25rem 0 0 0', fontSize: '1.1rem', fontWeight: 850, color: '#10B981' }}>{currencySymbol}{incomeSum.toLocaleString()}</h5>
+                        <h5 style={{ margin: '0.25rem 0 0 0', fontSize: '1.1rem', fontWeight: 850, color: '#10B981' }}>{currencySymbol}{incomeSum.toLocaleString('en-IN')}</h5>
                     </div>
                     <div style={{ background: 'white', border: '1px solid #E2E8F0', padding: '0.85rem', borderRadius: '8px' }}>
                         <span style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 750, textTransform: 'uppercase' }}>Expense Summary</span>
-                        <h5 style={{ margin: '0.25rem 0 0 0', fontSize: '1.1rem', fontWeight: 850, color: '#EF4444' }}>{currencySymbol}{expenseSum.toLocaleString()}</h5>
+                        <h5 style={{ margin: '0.25rem 0 0 0', fontSize: '1.1rem', fontWeight: 850, color: '#EF4444' }}>{currencySymbol}{expenseSum.toLocaleString('en-IN')}</h5>
                     </div>
                     <div style={{ background: 'white', border: '1px solid #E2E8F0', padding: '0.85rem', borderRadius: '8px' }}>
                         <span style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 750, textTransform: 'uppercase' }}>Savings Summary</span>
-                        <h5 style={{ margin: '0.25rem 0 0 0', fontSize: '1.1rem', fontWeight: 850, color: '#7C3AED' }}>{currencySymbol}{netSavings.toLocaleString()}</h5>
+                        <h5 style={{ margin: '0.25rem 0 0 0', fontSize: '1.1rem', fontWeight: 850, color: '#7C3AED' }}>{currencySymbol}{netSavings.toLocaleString('en-IN')}</h5>
                     </div>
                     <div style={{ background: 'white', border: '1px solid #E2E8F0', padding: '0.85rem', borderRadius: '8px' }}>
                         <span style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 750, textTransform: 'uppercase' }}>Budget Summary</span>
                         <h5 style={{ margin: '0.25rem 0 0 0', fontSize: '1.1rem', fontWeight: 850, color: '#475569' }}>
-                            {reportType === 'Monthly' ? `${currencySymbol}${budget.toLocaleString()}` : 'N/A'}
+                            {reportType === 'Monthly' ? `${currencySymbol}${budget.toLocaleString('en-IN')}` : 'N/A'}
                         </h5>
                     </div>
                 </div>
@@ -186,7 +186,7 @@ const FinanceReports = ({ transactions = [], budget = 0, currencySymbol = '₹' 
                                         <td style={{ padding: '0.5rem', color: (t.type || '').toLowerCase() === 'income' ? '#10B981' : '#EF4444' }}>{t.type}</td>
                                         <td style={{ padding: '0.5rem', color: '#0F172A', fontWeight: 700 }}>{t.name}</td>
                                         <td style={{ padding: '0.5rem' }}>{t.category || 'Other'}</td>
-                                        <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 750 }}>{currencySymbol}{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                        <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 750 }}>{currencySymbol}{t.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                     </tr>
                                 ))}
                             </tbody>

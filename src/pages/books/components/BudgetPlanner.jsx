@@ -67,7 +67,7 @@ const BudgetPlanner = ({ budget = 0, currentMonthExpenses = 0, onUpdateBudget, c
                     ) : (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <span style={{ fontSize: '1.5rem', fontWeight: 850, color: '#0F172A' }}>
-                                {currencySymbol}{budget.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                {currencySymbol}{budget.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                             </span>
                             <button 
                                 onClick={() => {
@@ -87,14 +87,14 @@ const BudgetPlanner = ({ budget = 0, currentMonthExpenses = 0, onUpdateBudget, c
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Expenses</span>
                         <span style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0F172A' }}>
-                            {currencySymbol}{currentMonthExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            {currencySymbol}{currentMonthExpenses.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </span>
                     </div>
                     
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Remaining</span>
                         <span style={{ fontSize: '1.3rem', fontWeight: 800, color: remainingBudget <= 0 ? '#EF4444' : '#10B981' }}>
-                            {currencySymbol}{remainingBudget.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            {currencySymbol}{remainingBudget.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </span>
                     </div>
                 </div>

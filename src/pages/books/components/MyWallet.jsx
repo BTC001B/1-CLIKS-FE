@@ -89,7 +89,7 @@ const MyWallet = ({ wallets = [], onUpdateBalance, currencySymbol = '₹' }) => 
                             ) : (
                                 <>
                                     <span style={{ fontSize: '1.25rem', fontWeight: 850, color: wallet.balance < 0 ? '#EF4444' : '#0F172A' }}>
-                                        {currencySymbol}{wallet.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        {currencySymbol}{wallet.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                     <button 
                                         onClick={() => {

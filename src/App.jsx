@@ -48,6 +48,7 @@ const FAQ = React.lazy(() => import('./pages/FAQ'));
 const Subscription = React.lazy(() => import('./pages/Subscription'));
 const FinancePage = React.lazy(() => import('./pages/books/FinancePage'));
 const TaxDeductions = React.lazy(() => import('./pages/books/TaxDeductions'));
+const MoneyTracker = React.lazy(() => import('./pages/books/MoneyTracker'));
 
 
 import './App.css';
@@ -136,6 +137,7 @@ function AppContent() {
                     <Route path="/books/people/records" element={<PeopleRecords />} />
                     <Route path="/books/settings" element={<Settings />} />
                     <Route path="/books/faq" element={<FAQ />} />
+                    <Route path="/books/money-tracker" element={<MoneyTracker />} />
 
                     {/* Public / Social Section */}
                     <Route path="/public" element={<Public />} />

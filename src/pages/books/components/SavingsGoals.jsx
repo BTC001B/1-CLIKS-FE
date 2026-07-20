@@ -188,7 +188,7 @@ const SavingsGoals = ({ goals = [], onUpdateGoals, currencySymbol = '₹' }) => 
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                                     <span style={{ fontSize: '1.2rem', fontWeight: 850, color: '#0F172A' }}>
-                                        {currencySymbol}{goal.current.toLocaleString()} <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748B' }}>/ {currencySymbol}{goal.target.toLocaleString()}</span>
+                                        {currencySymbol}{goal.current.toLocaleString('en-IN')} <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748B' }}>/ {currencySymbol}{goal.target.toLocaleString('en-IN')}</span>
                                     </span>
                                     <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#7C3AED' }}>{progress}%</span>
                                 </div>
@@ -199,7 +199,7 @@ const SavingsGoals = ({ goals = [], onUpdateGoals, currencySymbol = '₹' }) => 
                                 </div>
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#64748B', borderTop: '1px solid #E2E8F0', paddingTop: '0.75rem' }}>
-                                    <span>Remaining: {currencySymbol}{remaining.toLocaleString()}</span>
+                                    <span>Remaining: {currencySymbol}{remaining.toLocaleString('en-IN')}</span>
                                     
                                     {editingGoalId === goal.id ? (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>

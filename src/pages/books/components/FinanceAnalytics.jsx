@@ -99,7 +99,7 @@ const FinanceAnalytics = ({ transactions = [], currencySymbol = '₹' }) => {
                                 transition: 'height 0.3s ease'
                             }} />
                             <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B' }}>Income</span>
-                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0F172A' }}>{currencySymbol}{incomeTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0F172A' }}>{currencySymbol}{incomeTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
@@ -111,7 +111,7 @@ const FinanceAnalytics = ({ transactions = [], currencySymbol = '₹' }) => {
                                 transition: 'height 0.3s ease'
                             }} />
                             <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B' }}>Expense</span>
-                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0F172A' }}>{currencySymbol}{expenseTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0F172A' }}>{currencySymbol}{expenseTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                         </div>
                     </div>
                 </div>
@@ -136,7 +136,7 @@ const FinanceAnalytics = ({ transactions = [], currencySymbol = '₹' }) => {
                                                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: colors[idx % colors.length] }} />
                                                 {item.name}
                                             </span>
-                                            <span>{currencySymbol}{item.value.toLocaleString()} ({pct}%)</span>
+                                            <span>{currencySymbol}{item.value.toLocaleString('en-IN')} ({pct}%)</span>
                                         </div>
                                         <div style={{ width: '100%', height: '5px', background: '#E2E8F0', borderRadius: '999px', overflow: 'hidden' }}>
                                             <div style={{ width: `${pct}%`, height: '100%', background: colors[idx % colors.length] }} />
@@ -173,7 +173,7 @@ const FinanceAnalytics = ({ transactions = [], currencySymbol = '₹' }) => {
                                 }}>
                                     <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase' }}>{d.month}</span>
                                     <span style={{ fontSize: '0.85rem', fontWeight: 800, color: d.savings < 0 ? '#EF4444' : '#10B981' }}>
-                                        {d.savings >= 0 ? '+' : ''}{currencySymbol}{d.savings.toLocaleString()}
+                                        {d.savings >= 0 ? '+' : ''}{currencySymbol}{d.savings.toLocaleString('en-IN')}
                                     </span>
                                 </div>
                             ))}

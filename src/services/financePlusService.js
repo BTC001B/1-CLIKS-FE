@@ -30,7 +30,14 @@ export const financePlusService = {
 
   // Profile Role & Budget
   updateSettings: (data) => apiClient.put('/finance-plus/settings', data).then(res => res.data),
-  updateIncomeSource: (source) => apiClient.put('/finance-plus/primary-income', { source }).then(res => res.data)
+  updateIncomeSource: (source) => apiClient.put('/finance-plus/primary-income', { source }).then(res => res.data),
+
+  // Money Trackers
+  getMoneyTrackers: (params) => apiClient.get('/finance-plus/money-trackers', { params }).then(res => res.data),
+  createMoneyTracker: (data) => apiClient.post('/finance-plus/money-trackers', data).then(res => res.data),
+  getMoneyTrackerById: (id) => apiClient.get(`/finance-plus/money-trackers/${id}`).then(res => res.data),
+  updateMoneyTracker: (id, data) => apiClient.put(`/finance-plus/money-trackers/${id}`, data).then(res => res.data),
+  deleteMoneyTracker: (id) => apiClient.delete(`/finance-plus/money-trackers/${id}`).then(res => res.data)
 };
 
 export default financePlusService;

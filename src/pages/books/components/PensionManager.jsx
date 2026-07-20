@@ -49,7 +49,7 @@ const PensionManager = ({ records = [], onAddPension, wallets = [], currencySymb
                     {r.is_family_pension ? 'Family' : 'Service'}
                   </span>
                 </td>
-                <td style={{ padding: '1rem', fontWeight: 900, color: '#059669' }}>{currencySymbol}{Number(r.monthly_amount).toLocaleString()}</td>
+                <td style={{ padding: '1rem', fontWeight: 900, color: '#059669' }}>{currencySymbol}{Number(r.monthly_amount).toLocaleString('en-IN')}</td>
               </tr>
             ))}
           </tbody>

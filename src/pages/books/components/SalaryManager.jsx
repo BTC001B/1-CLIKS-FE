@@ -58,8 +58,8 @@ const SalaryManager = ({ records = [], onAddRecord, wallets = [], currencySymbol
               <tr key={r.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                 <td style={{ padding: '1rem', fontWeight: 600 }}>{r.salary_date}</td>
                 <td style={{ padding: '1rem' }}>{r.company_name}</td>
-                <td style={{ padding: '1rem', fontWeight: 700 }}>{currencySymbol}{Number(r.gross_salary).toLocaleString()}</td>
-                <td style={{ padding: '1rem', fontWeight: 800, color: '#059669' }}>{currencySymbol}{Number(r.net_salary).toLocaleString()}</td>
+                <td style={{ padding: '1rem', fontWeight: 700 }}>{currencySymbol}{Number(r.gross_salary).toLocaleString('en-IN')}</td>
+                <td style={{ padding: '1rem', fontWeight: 800, color: '#059669' }}>{currencySymbol}{Number(r.net_salary).toLocaleString('en-IN')}</td>
                 <td style={{ padding: '1rem' }}>
                   <button style={{ background: 'transparent', border: 'none', color: '#1E40AF', cursor: 'pointer' }}><Download size={16} /></button>
                 </td>
@@ -112,7 +112,7 @@ const SalaryManager = ({ records = [], onAddRecord, wallets = [], currencySymbol
 
               <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '16px', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontWeight: 700, color: '#64748B' }}>Gross Total:</span>
-                <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{calculateGross().toLocaleString()}</span>
+                <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#1E293B' }}>{currencySymbol}{calculateGross().toLocaleString('en-IN')}</span>
               </div>
 
               <button onClick={handleSave} style={{ width: '100%', padding: '1rem', borderRadius: '12px', background: '#1E40AF', color: 'white', border: 'none', fontWeight: 800, cursor: 'pointer' }}>

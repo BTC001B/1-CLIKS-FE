@@ -82,7 +82,7 @@ const TaxDeductions = () => {
         ].map(card => (
           <div key={card.label} style={{ background: 'white', padding: '1.25rem', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
             <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>{card.label}</span>
-            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: card.color, marginTop: '4px' }}>₹{Number(card.val).toLocaleString()}</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: card.color, marginTop: '4px' }}>₹{Number(card.val).toLocaleString('en-IN')}</div>
           </div>
         ))}
       </div>
@@ -137,7 +137,7 @@ const TaxDeductions = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ padding: '1rem', background: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                     <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, marginBottom: '4px' }}>Taxable Base</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A' }}>₹{(Number(taxData.income_tax) - totalDeductions).toLocaleString()}</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A' }}>₹{(Number(taxData.income_tax) - totalDeductions).toLocaleString('en-IN')}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#059669', fontSize: '0.85rem', fontWeight: 700 }}>
                     <PieChart size={18} />

@@ -79,8 +79,8 @@ const FinancialGoals = ({ goals = [], onCreate, onUpdate, onDelete, currencySymb
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginBottom: '0.5rem' }}>
-                <span>{currencySymbol}{Number(g.current_savings).toLocaleString()} <span style={{ fontWeight: 500, color: '#94A3B8' }}>saved</span></span>
-                <span>{currencySymbol}{Number(g.target_amount).toLocaleString()} <span style={{ fontWeight: 500, color: '#94A3B8' }}>goal</span></span>
+                <span>{currencySymbol}{Number(g.current_savings).toLocaleString('en-IN')} <span style={{ fontWeight: 500, color: '#94A3B8' }}>saved</span></span>
+                <span>{currencySymbol}{Number(g.target_amount).toLocaleString('en-IN')} <span style={{ fontWeight: 500, color: '#94A3B8' }}>goal</span></span>
               </div>
 
               <div style={{ height: '8px', background: '#E2E8F0', borderRadius: '999px', overflow: 'hidden', position: 'relative' }}>
