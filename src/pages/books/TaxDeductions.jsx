@@ -3,10 +3,12 @@ import { ShieldCheck, Calculator, FileText, IndianRupee, PieChart, Plus, Trash2,
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { financePlusService } from '../../services';
+import Itr1Modal from './components/Itr1Modal';
 
 const TaxDeductions = () => {
   const queryClient = useQueryClient();
   const [taxYear, setTaxYear] = useState('2024-25');
+  const [isItrModalOpen, setIsItrModalOpen] = useState(false);
   const [taxData, setTaxData] = useState({
     income_tax: 0, tds_paid: 0, epf: 0, esi: 0, prof_tax: 0, advance_tax: 0, tax_savings: 0, notes: ''
   });
@@ -152,12 +154,37 @@ const TaxDeductions = () => {
               Ensure all your TDS certificates (Form 16/16A) are collected and verified against Form 26AS for smooth filing.
             </p>
             <div style={{ marginTop: '1rem', display: 'flex', gap: '8px' }}>
-                <span style={{ fontSize: '0.65rem', fontWeight: 800, padding: '0.3rem 0.6rem', borderRadius: '6px', background: 'rgba(255,255,255,0.1)' }}>ITR-1</span>
+                <span 
+                    onClick={() => setIsItrModalOpen(true)}
+                    style={{ 
+                        fontSize: '0.65rem', 
+                        fontWeight: 800, 
+                        padding: '0.3rem 0.6rem', 
+                        borderRadius: '6px', 
+                        background: 'rgba(255,255,255,0.1)',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s',
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                    onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                    title="Click to calculate detailed ITR-1"
+                >
+                    ITR-1 ⚡ Click to Calculate
+                </span>
                 <span style={{ fontSize: '0.65rem', fontWeight: 800, padding: '0.3rem 0.6rem', borderRadius: '6px', background: 'rgba(255,255,255,0.1)' }}>AY 2024</span>
             </div>
           </div>
         </div>
       </div>
+      <Itr1Modal
+        isOpen={isItrModalOpen}
+        onClose={() => setIsItrModalOpen(false)}
+        currentYear={taxYear}
+        initialNotes={taxData.notes}
+        onSaveCalculation={(calcData) => {
+          taxMutation.mutate({ ...calcData, tax_year: taxYear });
+        }}
+      />
     </div>
   );
 };
