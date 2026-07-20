@@ -60,7 +60,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
 import logoPng from '../assets/cliks.png'; // Final branding
 
-const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
+const Sidebar = ({ isOpen, onReferralClick, onItemClick }) => {
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -131,34 +131,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
     return (
         <aside className={`sidebar ${isOpen ? 'open' : 'collapsed'}`}>
             <div className="sidebar-header">
-                <div 
-                    className="brand-logo" 
-                    onClick={onLogoClick}
-                    role="button"
-                    tabIndex={0}
-                    aria-label="Open Product Launcher"
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            if (onLogoClick) onLogoClick();
-                        }
-                    }}
-                    style={{ 
-                        background: '#f0fdf4', 
-                        padding: '1px', 
-                        borderRadius: '6px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        width: '28px', 
-                        height: '28px', 
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-                        cursor: 'pointer',
-                        transition: 'transform 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
+                <div className="brand-logo" style={{ background: '#f0fdf4', padding: '1px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', boxShadow: '0 2px 6px rgba(0,0,0,0.05)' }}>
                     <img src={logoPng} alt="CLIKS Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
                 <h2 className="app-title">CLIKS</h2>

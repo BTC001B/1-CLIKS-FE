@@ -183,6 +183,7 @@ const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onC
                 className={`rightpanel${isVisible ? '' : ' rightpanel--hidden'}`}
                 aria-label="Quick actions"
                 aria-hidden={!isVisible}
+                style={{ top: '116px', height: 'calc(100vh - 116px)' }}
             >
                 {/* Top icons */}
                 <div className="rightpanel-section">

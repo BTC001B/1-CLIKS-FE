@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Wallet, BookOpen, Users, SlidersHorizontal, Bell } from 'lucide-react';
+import { Wallet, BookOpen, Users, SlidersHorizontal, Bell, Sparkles } from 'lucide-react';
 import '../App.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context';
@@ -8,7 +8,7 @@ import logoPng from '../assets/logo_new.png'; // Final branding
 import { ProfileDropdown } from './ProfileDropdown';
 import SearchBox from './SearchBox';
 
-const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalculator }) => {
+const Topbar = ({ onToggleSidebar, onToggleAudit, onToggleToolbar, isToolbarOpen, onOpenCalculator, onOpenProductLauncher }) => {
     const { logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
@@ -201,7 +201,7 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                 />
 
                 {/* Sub-flexbox to align divider and sliders button exactly to the 72px right sidebar */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginLeft: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginLeft: '4px', position: 'relative' }}>
                     {/* Vertical divider */}
                     <div style={{
                         width: '1px',
@@ -210,41 +210,88 @@ const Topbar = ({ onToggleSidebar, onToggleToolbar, isToolbarOpen, onOpenCalcula
                         flexShrink: 0,
                     }} />
 
-                    {/* Sliders / filter icon — far right, toggles the quick-access toolbar */}
-                    <button
-                        onClick={onToggleToolbar}
-                        title={isToolbarOpen ? 'Hide toolbar' : 'Show toolbar'}
-                        aria-pressed={isToolbarOpen}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '44px',
-                            height: '44px',
-                            borderRadius: '12px',
-                            background: isToolbarOpen
-                                ? 'rgba(255,255,255,0.22)'
-                                : 'rgba(255,255,255,0.08)',
-                            border: isToolbarOpen
-                                ? '1px solid rgba(255,255,255,0.35)'
-                                : '1px solid rgba(255,255,255,0.12)',
-                            color: '#ffffff',
-                            cursor: 'pointer',
-                            flexShrink: 0,
-                            transition: 'all 0.2s ease',
-                            outline: 'none',
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!isToolbarOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.16)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = isToolbarOpen
-                                ? 'rgba(255,255,255,0.22)'
-                                : 'rgba(255,255,255,0.08)';
-                        }}
-                    >
-                        <SlidersHorizontal size={18} />
-                    </button>
+                    {/* Vertical stack to form top of right column navigation */}
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        position: 'absolute',
+                        top: '-18px',
+                        right: '0',
+                        zIndex: 250
+                    }}>
+                        {/* 🆕 New Box (Product Launcher) */}
+                        <button
+                            onClick={onOpenProductLauncher}
+                            title="Product Launcher"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '44px',
+                                height: '44px',
+                                borderRadius: '12px',
+                                background: 'rgba(255, 255, 255, 0.08)',
+                                border: '1px solid rgba(255, 255, 255, 0.12)',
+                                color: '#ffffff',
+                                cursor: 'pointer',
+                                flexShrink: 0,
+                                transition: 'all 0.2s ease',
+                                outline: 'none',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.16)';
+                                e.currentTarget.style.transform = 'scale(1.08)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                                e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                        >
+                            <Sparkles size={18} />
+                        </button>
+
+                        {/* ⚙ Existing (Sliders/Settings) */}
+                        <button
+                            onClick={onToggleToolbar}
+                            title={isToolbarOpen ? 'Hide toolbar' : 'Show toolbar'}
+                            aria-pressed={isToolbarOpen}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '44px',
+                                height: '44px',
+                                borderRadius: '12px',
+                                background: isToolbarOpen
+                                    ? 'rgba(255,255,255,0.22)'
+                                    : 'rgba(255,255,255,0.08)',
+                                border: isToolbarOpen
+                                    ? '1px solid rgba(255,255,255,0.35)'
+                                    : '1px solid rgba(255,255,255,0.12)',
+                                color: '#ffffff',
+                                cursor: 'pointer',
+                                flexShrink: 0,
+                                transition: 'all 0.2s ease',
+                                outline: 'none',
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!isToolbarOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.16)';
+                                e.currentTarget.style.transform = 'scale(1.08)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = isToolbarOpen
+                                    ? 'rgba(255,255,255,0.22)'
+                                    : 'rgba(255,255,255,0.08)';
+                                e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                        >
+                            <SlidersHorizontal size={18} />
+                        </button>
+                    </div>
+
+                    {/* Spacer to maintain Topbar right flex element spacing */}
+                    <div style={{ width: '44px', height: '44px' }} />
                 </div>
             </div>
         </header>
