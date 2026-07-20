@@ -29,6 +29,7 @@ import {
     Percent,
 } from 'lucide-react';
 import { CalcPopover } from './common/CalcPopover';
+import ProductLauncher from './ProductLauncher';
 
 /* ─── Settings Drawer ─────────────────────────────────────────────── */
 const SettingsDrawer = ({ isOpen, onClose }) => {
@@ -93,7 +94,16 @@ const CalcPanel = ({ onClose }) => {
 };
 
 /* ─── Right Sidebar ───────────────────────────────────────────────── */
-const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onCalcClose, onToolbarClose, onLauncherToggle }) => {
+const RightSidebar = ({ 
+    isVisible = false, 
+    isCalcOpen = false, 
+    onCalcToggle, 
+    onCalcClose, 
+    onToolbarClose, 
+    onLauncherToggle, 
+    isLauncherOpen = false, 
+    onLauncherClose 
+}) => {
     const navigate = useNavigate();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -101,16 +111,22 @@ const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onC
     useEffect(() => {
         if (!isVisible) {
             if (onCalcClose) onCalcClose();
+            if (onLauncherClose) onLauncherClose();
             setIsSettingsOpen(false);
         }
     }, [isVisible]);
 
-    // Escape key closes calc panel
+    // Escape key closes calc or launcher panel
     useEffect(() => {
-        const handler = (e) => { if (e.key === 'Escape' && isCalcOpen && onCalcClose) onCalcClose(); };
+        const handler = (e) => { 
+            if (e.key === 'Escape') {
+                if (isCalcOpen && onCalcClose) onCalcClose();
+                if (isLauncherOpen && onLauncherClose) onLauncherClose();
+            }
+        };
         document.addEventListener('keydown', handler);
         return () => document.removeEventListener('keydown', handler);
-    }, [isCalcOpen, onCalcClose]);
+    }, [isCalcOpen, onCalcClose, isLauncherOpen, onLauncherClose]);
 
     const topIcons = [
         {
@@ -134,6 +150,7 @@ const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onC
             iconClass: 'icon-launcher',
             icon: <Sparkles size={20} />,
             action: onLauncherToggle,
+            active: isLauncherOpen,
         },
         {
             id: 'calculator',
@@ -246,6 +263,21 @@ const RightSidebar = ({ isVisible = false, isCalcOpen = false, onCalcToggle, onC
                         aria-hidden="true"
                     />
                     <CalcPanel onClose={onCalcClose} />
+                </>
+            )}
+
+            {/* Product Launcher panel — slides in to the left of the toolbar */}
+            {isVisible && isLauncherOpen && (
+                <>
+                    {/* Dark overlay: covers main content + left sidebar, NOT the header/toolbar */}
+                    <div
+                        className="calc-overlay"
+                        onClick={onLauncherClose}
+                        aria-hidden="true"
+                    />
+                    <div className="calc-panel">
+                        <ProductLauncher onClose={onLauncherClose} />
+                    </div>
                 </>
             )}
 

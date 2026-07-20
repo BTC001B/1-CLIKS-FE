@@ -4,7 +4,6 @@ import Topbar from '../components/Topbar';
 import AuditPanel from '../components/AuditPanel';
 import ReferralModal from '../components/ReferralModal';
 import RightSidebar from '../components/RightSidebar';
-import ProductLauncher from '../components/ProductLauncher';
 import '../App.css';
 
 // Width constants — must match App.css
@@ -26,7 +25,7 @@ const MainLayout = ({ children }) => {
     // Right margin grows as panels open, making every page shrink automatically
     const rightOffset =
         (isToolbarOpen ? TOOLBAR_W : 0) +
-        (isToolbarOpen && isCalcOpen ? CALC_W : 0);
+        (isToolbarOpen && (isCalcOpen || isLauncherOpen) ? CALC_W : 0);
 
     return (
         <div className={`app-root select-none ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
@@ -78,15 +77,25 @@ const MainLayout = ({ children }) => {
             <RightSidebar
                 isVisible={isToolbarOpen}
                 isCalcOpen={isCalcOpen}
-                onCalcToggle={() => setIsCalcOpen(prev => !prev)}
+                onCalcToggle={() => {
+                    setIsCalcOpen(prev => !prev);
+                    setIsLauncherOpen(false);
+                }}
                 onCalcClose={() => setIsCalcOpen(false)}
-                onToolbarClose={() => setIsToolbarOpen(false)}
-                onLauncherToggle={() => setIsLauncherOpen(prev => !prev)}
+                onToolbarClose={() => {
+                    setIsToolbarOpen(false);
+                    setIsCalcOpen(false);
+                    setIsLauncherOpen(false);
+                }}
+                onLauncherToggle={() => {
+                    setIsLauncherOpen(prev => !prev);
+                    setIsCalcOpen(false);
+                }}
+                isLauncherOpen={isLauncherOpen}
+                onLauncherClose={() => setIsLauncherOpen(false)}
             />
 
             <ReferralModal isOpen={isReferralOpen} onClose={() => setIsReferralOpen(false)} />
-            
-            <ProductLauncher isOpen={isLauncherOpen} onClose={() => setIsLauncherOpen(false)} />
         </div>
     );
 };

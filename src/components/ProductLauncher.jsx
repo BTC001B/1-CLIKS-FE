@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
     X, 
     Mail, 
@@ -9,32 +9,8 @@ import {
     Sparkles 
 } from 'lucide-react';
 
-const ProductLauncher = ({ isOpen, onClose }) => {
+const ProductLauncher = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState('PUBLIC'); // 'PUBLIC' or 'BUSINESS'
-    const modalRef = useRef(null);
-
-    // Keyboard accessibility: ESC key closes launcher
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.key === 'Escape' && isOpen) {
-                onClose();
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]);
-
-    // Prevent background scroll when launcher is open
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => { document.body.style.overflow = 'unset'; };
-    }, [isOpen]);
-
-    if (!isOpen) return null;
 
     const publicProducts = [
         {
@@ -79,191 +55,139 @@ const ProductLauncher = ({ isOpen, onClose }) => {
     const currentProducts = activeTab === 'PUBLIC' ? publicProducts : businessProducts;
 
     return (
-        <div 
-            className="launcher-overlay" 
-            onClick={onClose}
-            aria-modal="true"
-            role="dialog"
-            aria-labelledby="launcher-title"
-        >
-            <div 
-                className="launcher-container" 
-                onClick={(e) => e.stopPropagation()}
-                ref={modalRef}
-            >
-                {/* Header */}
-                <div className="launcher-header">
-                    <div>
-                        <h2 id="launcher-title" className="launcher-title">
-                            <Sparkles size={20} className="launcher-title-icon" />
-                            Products
-                        </h2>
-                        <p className="launcher-subtitle">Quick access to all CLIKS products</p>
-                    </div>
-                    <button 
-                        className="launcher-close-btn" 
-                        onClick={onClose}
-                        aria-label="Close launcher panel"
+        <div className="launcher-panel-content" role="dialog" aria-labelledby="launcher-title">
+            {/* Header */}
+            <div className="launcher-header">
+                <div>
+                    <h2 id="launcher-title" className="launcher-title">
+                        <Sparkles size={18} className="launcher-title-icon" />
+                        Products
+                    </h2>
+                    <p className="launcher-subtitle">Quick access to all CLIKS products</p>
+                </div>
+                <button 
+                    className="launcher-close-btn" 
+                    onClick={onClose}
+                    aria-label="Close launcher panel"
+                >
+                    <X size={18} />
+                </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="launcher-tabs-wrapper">
+                <div className="launcher-tabs" role="tablist">
+                    <button
+                        role="tab"
+                        aria-selected={activeTab === 'PUBLIC'}
+                        className={`launcher-tab ${activeTab === 'PUBLIC' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('PUBLIC')}
                     >
-                        <X size={20} />
+                        PUBLIC
                     </button>
-                </div>
-
-                {/* Tabs */}
-                <div className="launcher-tabs-wrapper">
-                    <div className="launcher-tabs" role="tablist">
-                        <button
-                            role="tab"
-                            aria-selected={activeTab === 'PUBLIC'}
-                            className={`launcher-tab ${activeTab === 'PUBLIC' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('PUBLIC')}
-                        >
-                            PUBLIC
-                        </button>
-                        <button
-                            role="tab"
-                            aria-selected={activeTab === 'BUSINESS'}
-                            className={`launcher-tab ${activeTab === 'BUSINESS' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('BUSINESS')}
-                        >
-                            BUSINESS
-                        </button>
-                    </div>
-                </div>
-
-                {/* Grid Content */}
-                <div className="launcher-grid-wrapper">
-                    <div className="launcher-grid">
-                        {currentProducts.map((prod) => {
-                            const IconComponent = prod.icon;
-                            return (
-                                <div
-                                    key={prod.name}
-                                    className="launcher-card"
-                                    onClick={() => handleProductClick(prod.name)}
-                                    role="button"
-                                    tabIndex={0}
-                                    aria-label={`Open ${prod.name}`}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault();
-                                            handleProductClick(prod.name);
-                                        }
-                                    }}
-                                >
-                                    <div 
-                                        className="launcher-card-icon-container"
-                                        style={{ backgroundColor: `${prod.color}15`, color: prod.color }}
-                                    >
-                                        <IconComponent size={24} strokeWidth={2} />
-                                    </div>
-                                    <div className="launcher-card-content">
-                                        <h4 className="launcher-card-name">{prod.name}</h4>
-                                        <p className="launcher-card-desc">{prod.description}</p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="launcher-footer">
-                    <span>Powered by CLIKS Platform</span>
-                    <span className="launcher-footer-divider">•</span>
-                    <span>Future Ready</span>
+                    <button
+                        role="tab"
+                        aria-selected={activeTab === 'BUSINESS'}
+                        className={`launcher-tab ${activeTab === 'BUSINESS' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('BUSINESS')}
+                    >
+                        BUSINESS
+                    </button>
                 </div>
             </div>
 
-            {/* Embedded styles to maintain self-containment */}
-            <style>{`
-                .launcher-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background-color: rgba(15, 23, 42, 0.4);
-                    backdrop-filter: blur(8px);
-                    -webkit-backdrop-filter: blur(8px);
-                    display: flex;
-                    align-items: center;
-                    justifyContent: center;
-                    z-index: 9999;
-                    animation: launcherFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                }
+            {/* Grid Content */}
+            <div className="launcher-grid-wrapper">
+                <div className="launcher-grid">
+                    {currentProducts.map((prod) => {
+                        const IconComponent = prod.icon;
+                        return (
+                            <div
+                                key={prod.name}
+                                className="launcher-card"
+                                onClick={() => handleProductClick(prod.name)}
+                                role="button"
+                                tabIndex={0}
+                                aria-label={`Open ${prod.name}`}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        handleProductClick(prod.name);
+                                    }
+                                }}
+                            >
+                                <div 
+                                    className="launcher-card-icon-container"
+                                    style={{ backgroundColor: `${prod.color}12`, color: prod.color }}
+                                >
+                                    <IconComponent size={22} strokeWidth={2} />
+                                </div>
+                                <div className="launcher-card-content">
+                                    <h4 className="launcher-card-name">{prod.name}</h4>
+                                    <p className="launcher-card-desc">{prod.description}</p>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
 
-                .launcher-container {
-                    background: #ffffff;
-                    width: 90%;
-                    max-width: 580px;
-                    border-radius: 24px;
-                    border: 1px solid rgba(226, 232, 240, 0.8);
-                    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15), 
-                                0 0 0 1px rgba(15, 23, 42, 0.02);
+            {/* Footer */}
+            <div className="launcher-footer">
+                <span>Powered by CLIKS Platform</span>
+                <span className="launcher-footer-divider">•</span>
+                <span>Future Ready</span>
+            </div>
+
+            {/* Embedded styles updated for calc-panel alignment */}
+            <style>{`
+                .launcher-panel-content {
                     display: flex;
                     flex-direction: column;
-                    overflow: hidden;
-                    animation: launcherScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                    max-height: 85vh;
-                }
-
-                @keyframes launcherFadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-
-                @keyframes launcherScaleIn {
-                    from { 
-                        opacity: 0; 
-                        transform: scale(0.95) translateY(10px); 
-                    }
-                    to { 
-                        opacity: 1; 
-                        transform: scale(1) translateY(0); 
-                    }
+                    height: 100%;
+                    background: #ffffff;
                 }
 
                 .launcher-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: flex-start;
-                    padding: 1.75rem 2rem 1.25rem;
+                    padding: 1.25rem 1.5rem;
                     border-bottom: 1px solid #f1f5f9;
                 }
 
                 .launcher-title {
-                    font-size: 1.35rem;
-                    fontWeight: 900;
+                    font-size: 1.15rem;
+                    font-weight: 800;
                     color: #0f172a;
                     margin: 0;
                     letter-spacing: -0.5px;
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 6px;
                 }
 
                 .launcher-title-icon {
-                    color: #4f46e5;
+                    color: #6366F1;
                 }
 
                 .launcher-subtitle {
-                    font-size: 0.875rem;
+                    font-size: 0.8rem;
                     color: #64748b;
-                    margin: 0.25rem 0 0 0;
-                    fontWeight: 500;
+                    margin: 0.2rem 0 0 0;
+                    font-weight: 500;
                 }
 
                 .launcher-close-btn {
                     border: none;
                     background: #f8fafc;
                     color: #64748b;
-                    width: 36px;
-                    height: 36px;
+                    width: 32px;
+                    height: 32px;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
-                    justifyContent: center;
+                    justify-content: center;
                     cursor: pointer;
                     transition: all 0.2s ease;
                 }
@@ -275,10 +199,10 @@ const ProductLauncher = ({ isOpen, onClose }) => {
                 }
 
                 .launcher-tabs-wrapper {
-                    padding: 1rem 2rem 0;
+                    padding: 0.75rem 1.5rem 0.5rem;
                     display: flex;
                     justify-content: center;
-                    background: #fafafa;
+                    background: #ffffff;
                     border-bottom: 1px solid #f1f5f9;
                 }
 
@@ -289,16 +213,14 @@ const ProductLauncher = ({ isOpen, onClose }) => {
                     border-radius: 12px;
                     gap: 4px;
                     width: 100%;
-                    max-width: 320px;
-                    margin-bottom: 1rem;
                 }
 
                 .launcher-tab {
                     flex: 1;
                     border: none;
                     background: transparent;
-                    padding: 0.5rem 1rem;
-                    font-size: 0.78rem;
+                    padding: 0.5rem;
+                    font-size: 0.75rem;
                     font-weight: 800;
                     color: #64748b;
                     border-radius: 9px;
@@ -315,51 +237,36 @@ const ProductLauncher = ({ isOpen, onClose }) => {
                 }
 
                 .launcher-grid-wrapper {
-                    padding: 2rem;
+                    padding: 1.25rem 1.5rem;
                     overflow-y: auto;
                     flex: 1;
                     background: #ffffff;
                 }
 
                 .launcher-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 1.25rem;
-                }
-
-                @media (max-width: 640px) {
-                    .launcher-grid {
-                        grid-template-columns: 1fr;
-                    }
-                    .launcher-container {
-                        width: 95%;
-                    }
-                    .launcher-header, .launcher-grid-wrapper {
-                        padding: 1.5rem;
-                    }
-                    .launcher-tabs-wrapper {
-                        padding: 0.75rem 1.5rem 0;
-                    }
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
                 }
 
                 .launcher-card {
                     display: flex;
                     align-items: flex-start;
-                    gap: 1rem;
-                    padding: 1.15rem;
-                    border-radius: 18px;
+                    gap: 0.85rem;
+                    padding: 1rem;
+                    border-radius: 16px;
                     border: 1px solid #f1f5f9;
                     cursor: pointer;
                     background: #ffffff;
-                    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                     outline: none;
                 }
 
                 .launcher-card:hover, .launcher-card:focus-visible {
                     transform: translateY(-2px);
-                    border-color: rgba(79, 70, 229, 0.3);
-                    box-shadow: 0 10px 20px -10px rgba(79, 70, 229, 0.15),
-                                0 0 0 2px rgba(79, 70, 229, 0.05);
+                    border-color: rgba(99, 102, 241, 0.3);
+                    box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.15),
+                                0 0 0 2px rgba(99, 102, 241, 0.05);
                 }
 
                 .launcher-card:active {
@@ -367,14 +274,14 @@ const ProductLauncher = ({ isOpen, onClose }) => {
                 }
 
                 .launcher-card-icon-container {
-                    width: 44px;
-                    height: 44px;
-                    border-radius: 12px;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 10px;
                     display: flex;
                     align-items: center;
                     justifyContent: center;
                     flex-shrink: 0;
-                    transition: transform 0.25s ease;
+                    transition: transform 0.2s ease;
                 }
 
                 .launcher-card:hover .launcher-card-icon-container {
@@ -384,33 +291,33 @@ const ProductLauncher = ({ isOpen, onClose }) => {
                 .launcher-card-content {
                     display: flex;
                     flex-direction: column;
-                    gap: 0.2rem;
+                    gap: 0.15rem;
                 }
 
                 .launcher-card-name {
-                    font-size: 0.95rem;
+                    font-size: 0.9rem;
                     font-weight: 800;
                     color: #0f172a;
                     margin: 0;
                 }
 
                 .launcher-card-desc {
-                    font-size: 0.78rem;
+                    font-size: 0.75rem;
                     color: #64748b;
                     margin: 0;
-                    line-height: 1.35;
+                    line-height: 1.3;
                     font-weight: 500;
                 }
 
                 .launcher-footer {
-                    padding: 1.25rem 2rem;
+                    padding: 1rem 1.5rem;
                     background: #f8fafc;
                     border-top: 1px solid #f1f5f9;
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    gap: 8px;
-                    font-size: 0.72rem;
+                    gap: 6px;
+                    font-size: 0.68rem;
                     color: #94a3b8;
                     font-weight: 700;
                     text-transform: uppercase;
