@@ -19,10 +19,11 @@ import {
     MoreVertical,
     Edit2
 } from 'lucide-react';
-import { goalWalletService } from '../services';
+import { goalWalletService, financePlusService } from '../services';
 import '../App.css';
 import { customConfirm } from '../utils/customConfirm';
-import { useCurrency } from '../context';
+import { useCurrency, useAuth } from '../context';
+import FinancialGoals from './books/components/FinancialGoals';
 
 const Segregation = () => {
     const { currency, formatCurrency } = useCurrency();
@@ -32,6 +33,30 @@ const Segregation = () => {
         </span>
     );
     const queryClient = useQueryClient();
+    const { user } = useAuth();
+    const uid = user?.id ?? user?.email ?? 'guest';
+
+    // Financial Goals Queries & Mutations
+    const { data: goalsList = [] } = useQuery({ 
+        queryKey: ['finance-goals'], 
+        queryFn: financePlusService.getGoals, 
+        enabled: !!uid && uid !== 'guest' 
+    });
+
+    const goalCreateMutation = useMutation({ 
+        mutationFn: (data) => financePlusService.createGoal(data), 
+        onSuccess: () => queryClient.invalidateQueries(['finance-goals']) 
+    });
+    
+    const goalUpdateMutation = useMutation({ 
+        mutationFn: ({ id, data }) => financePlusService.updateGoal(id, data), 
+        onSuccess: () => queryClient.invalidateQueries(['finance-goals']) 
+    });
+    
+    const goalDeleteMutation = useMutation({ 
+        mutationFn: (id) => financePlusService.deleteGoal(id), 
+        onSuccess: () => queryClient.invalidateQueries(['finance-goals']) 
+    });
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isAddMoneyModalOpen, setIsAddMoneyModalOpen] = useState(false);
     const [selectedWallet, setSelectedWallet] = useState(null);
@@ -647,6 +672,17 @@ const Segregation = () => {
                     })}
                 </div>
             )}
+
+            {/* Financial Goals Section */}
+            <div style={{ marginTop: '3rem' }}>
+                <FinancialGoals
+                    goals={goalsList}
+                    onCreate={data => goalCreateMutation.mutate(data)}
+                    onUpdate={(id, data) => goalUpdateMutation.mutate({ id, data })}
+                    onDelete={id => goalDeleteMutation.mutate(id)}
+                    currencySymbol={currency.symbol}
+                />
+            </div>
             </div>
 
             {/* SETUP NEW WALLET MODAL */}
