@@ -79,7 +79,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
         if (path.includes('/books/people')) return 'People';
         if (path.includes('/books/finance')) return 'Finance';
         if (path === '/books' || path === '/books/') return 'Report';
-        if (path.includes('/books/money-tracker')) return 'Money Tracker';
+        if (path.includes('/books/money-tracker')) return 'Track';
         if (path.includes('/books/settings')) return 'Settings';
         if (path.includes('/books/faq')) return 'Help & Support';
         if (path.includes('/ca')) return 'FIN-PRO';
@@ -320,14 +320,14 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                             </div>
                         </button>
 
-                        {/* 5b. Money Tracker */}
+                        {/* 5b. Track */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Money Tracker' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Money Tracker', '/books/money-tracker')}
+                            className={`sidebar-item ${activeItem === 'Track' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Track', '/books/money-tracker')}
                         >
                             <div className="flex items-center gap-3">
-                                <Compass size={20} style={{ color: activeItem === 'Money Tracker' ? '#ffffff' : '#1B6B3A' }} />
-                                <span className="sidebar-label">Money Tracker</span>
+                                <Compass size={20} style={{ color: activeItem === 'Track' ? '#ffffff' : '#1B6B3A' }} />
+                                <span className="sidebar-label">Track</span>
                             </div>
                         </button>
 
