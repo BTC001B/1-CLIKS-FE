@@ -184,19 +184,23 @@ const ProductLauncher = ({ onClose }) => {
                 {/* Favorites & Recent View Toggle Container */}
                 <div className="launcher-toggle-container">
                     <div className="launcher-toggle-header">
-                        <button
-                            className={`launcher-toggle-tab ${selectedTab === 'FAVORITES' ? 'active' : ''}`}
-                            onClick={() => setSelectedTab('FAVORITES')}
-                        >
-                            Favorites
-                        </button>
+                        <div className="launcher-toggle-half left">
+                            <button
+                                className={`launcher-toggle-tab ${selectedTab === 'FAVORITES' ? 'active' : ''}`}
+                                onClick={() => setSelectedTab('FAVORITES')}
+                            >
+                                Favorites
+                            </button>
+                        </div>
                         <span className="launcher-toggle-divider">|</span>
-                        <button
-                            className={`launcher-toggle-tab ${selectedTab === 'RECENTS' ? 'active' : ''}`}
-                            onClick={() => setSelectedTab('RECENTS')}
-                        >
-                            Recent
-                        </button>
+                        <div className="launcher-toggle-half right">
+                            <button
+                                className={`launcher-toggle-tab ${selectedTab === 'RECENTS' ? 'active' : ''}`}
+                                onClick={() => setSelectedTab('RECENTS')}
+                            >
+                                Recent
+                            </button>
+                        </div>
                     </div>
 
                     <div className="launcher-toggle-content-wrapper">
@@ -568,10 +572,20 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-toggle-header {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
-                    gap: 0.5rem;
                     border-bottom: 1px solid #e2e8f0;
                     padding-bottom: 0.4rem;
+                    width: 100%;
+                }
+                .launcher-toggle-half {
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                }
+                .launcher-toggle-half.left {
+                    justify-content: center;
+                }
+                .launcher-toggle-half.right {
+                    justify-content: center;
                 }
                 .launcher-toggle-tab {
                     font-size: 0.72rem;
