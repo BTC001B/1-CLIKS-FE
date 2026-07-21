@@ -692,7 +692,7 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-mini-name {
                     font-size: 0.62rem;
                     font-weight: 800;
-                    color: #64748b;
+                    color: #000000 !important;
                     text-align: center;
                     white-space: nowrap;
                     overflow: hidden;
@@ -816,7 +816,7 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-all-name {
                     font-size: 0.62rem;
                     font-weight: 800;
-                    color: #64748b;
+                    color: #000000 !important;
                     text-align: center;
                     white-space: nowrap;
                     overflow: hidden;
