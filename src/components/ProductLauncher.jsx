@@ -404,14 +404,9 @@ const ProductLauncher = ({ onClose }) => {
 
             {/* Footer */}
             <div className="launcher-footer">
-                <div className="launcher-footer-title">
-                    <span className="launcher-footer-sparkle">✦</span>
-                    <span>BETA ECOSYSTEM PLATFORM</span>
-                    <span className="launcher-footer-sparkle">✦</span>
-                </div>
-                <div className="launcher-footer-tagline">
-                    Innovate • Build • Grow
-                </div>
+                <span>Beta Ecosystem Platform</span>
+                <span className="launcher-footer-divider">•</span>
+                <span>Future Ready</span>
             </div>
 
             {/* Premium Styles */}
@@ -1010,37 +1005,23 @@ const ProductLauncher = ({ onClose }) => {
 
                 /* Footer */
                 .launcher-footer {
-                    padding: 0.85rem 1.5rem;
+                    padding: 1rem 1.5rem;
                     background: #f8fafc;
                     border-top: 1px solid #f1f5f9;
                     display: flex;
-                    flex-direction: column;
                     justify-content: center;
                     align-items: center;
-                    gap: 3px;
+                    gap: 6px;
+                    font-size: 0.68rem;
+                    color: #94a3b8;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                     width: 100%;
                     flex-shrink: 0;
                 }
-                .launcher-footer-title {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    font-size: 0.68rem;
-                    color: #94a3b8;
-                    font-weight: 750;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                }
-                .launcher-footer-sparkle {
-                    color: #6366f1;
-                    font-size: 0.75rem;
-                }
-                .launcher-footer-tagline {
-                    font-size: 0.58rem;
+                .launcher-footer-divider {
                     color: #cbd5e1;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 1.5px;
                 }
             `}</style>
         </div>
