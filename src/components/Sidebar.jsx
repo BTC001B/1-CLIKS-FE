@@ -54,7 +54,8 @@ import {
     Bitcoin,
     Bot,
     Briefcase,
-    Package
+    Package,
+    Grid3X3
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
@@ -159,7 +160,7 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                    <img src={logoPng} alt="CLIKS Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <Grid3X3 size={18} style={{ color: '#1B6B3A' }} />
                 </div>
                 <h2 className="app-title">CLIKS</h2>
             </div>

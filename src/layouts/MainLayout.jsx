@@ -44,6 +44,11 @@ const MainLayout = ({ children }) => {
                 <Sidebar 
                     isOpen={isSidebarOpen} 
                     onReferralClick={() => setIsReferralOpen(true)} 
+                    onLogoClick={() => {
+                        if (!isToolbarOpen) setIsToolbarOpen(true);
+                        setIsLauncherOpen(prev => !prev);
+                        setIsCalcOpen(false);
+                    }}
                     onItemClick={() => {
                         if (window.innerWidth <= 768) {
                             setIsSidebarOpen(false);
