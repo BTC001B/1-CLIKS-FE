@@ -214,7 +214,7 @@ const ProductLauncher = ({ onClose }) => {
                                             return (
                                                 <div
                                                     key={prod.name}
-                                                    className={`launcher-mini-card ${isEditMode ? 'edit-mode' : ''}`}
+                                                    className="launcher-mini-item-wrapper"
                                                     onClick={() => handleProductClick(prod.name)}
                                                     role="button"
                                                     tabIndex={0}
@@ -225,28 +225,30 @@ const ProductLauncher = ({ onClose }) => {
                                                         }
                                                     }}
                                                 >
-                                                    {isEditMode && (
-                                                        <button
-                                                            className="launcher-mini-remove-btn"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                toggleFavorite(prod.name);
-                                                            }}
-                                                            aria-label={`Remove ${prod.name} from favorites`}
-                                                        >
-                                                            <X size={8} strokeWidth={3} />
-                                                        </button>
-                                                    )}
-                                                    <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        {typeof IconComponent === 'string' ? (
-                                                             <img 
-                                                                 src={IconComponent} 
-                                                                 alt={prod.name} 
-                                                                 className="launcher-mini-img-icon"
-                                                             />
-                                                         ) : (
-                                                             <IconComponent size={20} strokeWidth={2.5} />
-                                                         )}
+                                                    <div className={`launcher-mini-card ${isEditMode ? 'edit-mode' : ''}`}>
+                                                        {isEditMode && (
+                                                            <button
+                                                                className="launcher-mini-remove-btn"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleFavorite(prod.name);
+                                                                }}
+                                                                aria-label={`Remove ${prod.name} from favorites`}
+                                                            >
+                                                                <X size={8} strokeWidth={3} />
+                                                            </button>
+                                                        )}
+                                                        <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            {typeof IconComponent === 'string' ? (
+                                                                 <img 
+                                                                     src={IconComponent} 
+                                                                     alt={prod.name} 
+                                                                     className="launcher-mini-img-icon"
+                                                                 />
+                                                             ) : (
+                                                                 <IconComponent size={20} strokeWidth={2.5} />
+                                                             )}
+                                                        </div>
                                                     </div>
                                                     <span className="launcher-mini-name">{prod.name}</span>
                                                 </div>
@@ -270,7 +272,7 @@ const ProductLauncher = ({ onClose }) => {
                                             return (
                                                 <div
                                                     key={prod.name}
-                                                    className="launcher-mini-card"
+                                                    className="launcher-mini-item-wrapper"
                                                     onClick={() => handleProductClick(prod.name)}
                                                     role="button"
                                                     tabIndex={0}
@@ -281,6 +283,7 @@ const ProductLauncher = ({ onClose }) => {
                                                         }
                                                     }}
                                                 >
+                                                    <div className="launcher-mini-card">
                                                     <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         {typeof IconComponent === 'string' ? (
                                                              <img 
@@ -291,6 +294,7 @@ const ProductLauncher = ({ onClose }) => {
                                                          ) : (
                                                              <IconComponent size={20} strokeWidth={2.5} />
                                                          )}
+                                                    </div>
                                                     </div>
                                                     <span className="launcher-mini-name">{prod.name}</span>
                                                 </div>
@@ -661,29 +665,33 @@ const ProductLauncher = ({ onClose }) => {
                     grid-template-columns: repeat(4, 1fr);
                     gap: 0.5rem;
                 }
-                .launcher-mini-card {
-                    position: relative;
+                .launcher-mini-item-wrapper {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    justify-content: center;
-                    gap: 4px;
-                    padding: 0.5rem 0.25rem;
-                    border-radius: 10px;
-                    background: #ffffff;
-                    border: 1px solid #e2e8f0;
+                    gap: 6px;
                     cursor: pointer;
                     width: 100%;
-                    min-height: 58px;
+                }
+                .launcher-mini-card {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 58px;
+                    height: 58px;
+                    border-radius: 16px;
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
                     transition: all 0.2s ease;
                     user-select: none;
                 }
-                .launcher-mini-card:hover {
-                    transform: translateY(-1px);
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+                .launcher-mini-item-wrapper:hover .launcher-mini-card {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
                     border-color: #cbd5e1;
                 }
-                .launcher-mini-card:active {
+                .launcher-mini-item-wrapper:active .launcher-mini-card {
                     transform: scale(0.96);
                 }
                 .launcher-mini-card.edit-mode {
@@ -691,7 +699,7 @@ const ProductLauncher = ({ onClose }) => {
                 }
                 .launcher-mini-name {
                     font-size: 0.62rem;
-                    font-weight: 800;
+                    font-weight: 850;
                     color: #000000 !important;
                     text-align: center;
                     white-space: nowrap;
