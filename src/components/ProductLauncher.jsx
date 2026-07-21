@@ -277,12 +277,25 @@ const ProductLauncher = ({ onClose }) => {
 
             {/* Premium Styles */}
             <style>{`
+                .calc-panel {
+                    overflow-x: hidden !important;
+                }
+
                 .launcher-panel-content {
                     display: flex;
                     flex-direction: column;
                     height: 100%;
+                    width: 100%;
+                    max-width: 100%;
                     background: #ffffff;
                     font-family: 'Outfit', 'Inter', sans-serif;
+                    overflow-x: hidden;
+                    box-sizing: border-box;
+                }
+
+                .launcher-panel-content,
+                .launcher-panel-content * {
+                    box-sizing: border-box;
                 }
 
                 /* Header Styling */
@@ -292,10 +305,13 @@ const ProductLauncher = ({ onClose }) => {
                     align-items: center;
                     padding: 1.25rem 1.5rem;
                     border-bottom: 1px solid #f1f5f9;
+                    width: 100%;
+                    flex-wrap: nowrap;
                 }
                 .launcher-header-left {
                     display: flex;
                     flex-direction: column;
+                    min-width: 0;
                 }
                 .launcher-title {
                     font-size: 1.15rem;
@@ -315,11 +331,16 @@ const ProductLauncher = ({ onClose }) => {
                     color: #64748b;
                     margin: 0.2rem 0 0 0;
                     font-weight: 500;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    width: 100%;
                 }
                 .launcher-actions {
                     display: flex;
                     align-items: center;
                     gap: 0.5rem;
+                    flex-shrink: 0;
                 }
                 .launcher-edit-btn {
                     border: 1px solid #e2e8f0;
@@ -369,10 +390,12 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-scrollable {
                     padding: 1.25rem 1.5rem;
                     overflow-y: auto;
+                    overflow-x: hidden;
                     flex: 1;
                     display: flex;
                     flex-direction: column;
                     gap: 1.5rem;
+                    width: 100%;
                 }
                 
                 /* Custom Scrollbar for modern feel */
@@ -395,6 +418,7 @@ const ProductLauncher = ({ onClose }) => {
                     display: flex;
                     flex-direction: column;
                     gap: 0.75rem;
+                    width: 100%;
                 }
                 .launcher-section-title {
                     font-size: 0.8rem;
@@ -421,6 +445,7 @@ const ProductLauncher = ({ onClose }) => {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
                     gap: 0.75rem;
+                    width: 100%;
                 }
                 .launcher-fav-card {
                     position: relative;
@@ -435,6 +460,8 @@ const ProductLauncher = ({ onClose }) => {
                     cursor: pointer;
                     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                     user-select: none;
+                    width: 100%;
+                    overflow: hidden;
                 }
                 .launcher-fav-card:hover {
                     transform: translateY(-2px);
@@ -462,6 +489,7 @@ const ProductLauncher = ({ onClose }) => {
                     align-items: center;
                     justify-content: center;
                     transition: transform 0.2s ease;
+                    flex-shrink: 0;
                 }
                 .launcher-fav-card:hover .launcher-fav-icon-container {
                     transform: scale(1.08);
@@ -512,6 +540,7 @@ const ProductLauncher = ({ onClose }) => {
                     font-size: 0.8rem;
                     font-weight: 600;
                     background: #f8fafc;
+                    width: 100%;
                 }
                 .launcher-no-favorites p {
                     margin: 0;
@@ -529,6 +558,7 @@ const ProductLauncher = ({ onClose }) => {
                     grid-template-columns: repeat(2, 1fr);
                     gap: 0.75rem;
                     margin-bottom: 0.5rem;
+                    width: 100%;
                 }
                 .launcher-all-card {
                     position: relative;
@@ -543,6 +573,8 @@ const ProductLauncher = ({ onClose }) => {
                     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                     outline: none;
                     user-select: none;
+                    width: 100%;
+                    overflow: hidden;
                 }
                 .launcher-all-card:hover {
                     transform: translateY(-2px);
@@ -571,12 +603,17 @@ const ProductLauncher = ({ onClose }) => {
                     gap: 0.15rem;
                     padding-right: 1.25rem; /* Space for edit star button */
                     overflow: hidden;
+                    min-width: 0; /* Enable flex-truncation */
+                    flex: 1;
                 }
                 .launcher-all-name {
                     font-size: 0.8rem;
                     font-weight: 700;
                     color: #0f172a;
                     margin: 0;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
                 .launcher-all-desc {
                     font-size: 0.68rem;
@@ -602,6 +639,7 @@ const ProductLauncher = ({ onClose }) => {
                     justify-content: center;
                     transition: all 0.2s ease;
                     z-index: 10;
+                    flex-shrink: 0;
                 }
                 .launcher-star-btn:hover {
                     background: #f1f5f9;
@@ -629,6 +667,8 @@ const ProductLauncher = ({ onClose }) => {
                     font-weight: 700;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
+                    width: 100%;
+                    flex-shrink: 0;
                 }
                 .launcher-footer-divider {
                     color: #cbd5e1;
