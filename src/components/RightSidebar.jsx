@@ -269,9 +269,9 @@ const RightSidebar = ({
             {/* Product Launcher panel — slides in to the left of the toolbar */}
             {isVisible && isLauncherOpen && (
                 <>
-                    {/* Dark overlay: covers main content + left sidebar, NOT the header/toolbar */}
+                    {/* Transparent overlay to catch clicks without dimming page */}
                     <div
-                        className="calc-overlay"
+                        className="launcher-overlay"
                         onClick={onLauncherClose}
                         aria-hidden="true"
                     />

@@ -2662,6 +2662,17 @@ div[style*="background-color: '#F0F9F4'"] {
     animation: calcOverlayIn 0.22s ease;
 }
 
+.launcher-overlay {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 72px;
+    bottom: 0;
+    background: transparent;
+    z-index: 198;
+    cursor: pointer;
+}
+
 @keyframes calcOverlayIn {
     from { opacity: 0; }
     to   { opacity: 1; }
