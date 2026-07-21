@@ -151,6 +151,11 @@ const ProductLauncher = ({ onClose }) => {
             <div className="launcher-header-wrapper">
                 <div className="launcher-header-left">
                     <img 
+                        src="/beta_wordmark.png" 
+                        alt="BETA Wordmark" 
+                        className="launcher-beta-wordmark-img" 
+                    />
+                    <img 
                         src="/beta_logo.png" 
                         alt="Beta Logo" 
                         className="launcher-beta-logo-img" 
@@ -453,6 +458,11 @@ const ProductLauncher = ({ onClose }) => {
                     height: 28px;
                     object-fit: contain;
                     border-radius: 6px;
+                }
+                .launcher-beta-wordmark-img {
+                    height: 28px;
+                    width: auto;
+                    object-fit: contain;
                 }
                 .launcher-title {
                     font-size: 1.2rem;
