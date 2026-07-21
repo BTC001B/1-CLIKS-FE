@@ -8,55 +8,97 @@ import {
     Wrench, 
     DollarSign, 
     Briefcase,
-    Sparkles,
     Edit2,
     Star,
-    Check
+    Check,
+    Users,
+    Database,
+    UserCheck,
+    Landmark,
+    Rocket,
+    History,
+    Activity,
+    Bot
 } from 'lucide-react';
 
 // Extensible products definition
 const ALL_PRODUCTS = [
+    // Public Apps
     {
         name: 'Cliks',
         category: 'Public',
-        description: 'Make your Money',
         icon: DollarSign,
         color: '#6366F1' // Indigo
     },
     {
         name: 'BNXmail',
         category: 'Public',
-        description: 'Real-time mail, always in sync.',
         icon: Mail,
         color: '#3B82F6' // Blue
     },
     {
         name: 'Bit-Tool',
         category: 'Public',
-        description: 'User\'s daily utility assistant',
         icon: Wrench,
         color: '#F59E0B' // Amber
     },
     {
         name: 'B2Auth',
         category: 'Public',
-        description: 'MFA & SSO Gateway',
         icon: KeyRound,
         color: '#10B981' // Emerald
     },
+    // Business Apps
     {
         name: 'CliksBusiness',
         category: 'Business',
-        description: 'Work together, faster',
         icon: Briefcase,
         color: '#EC4899' // Pink
+    },
+    {
+        name: 'CRM',
+        category: 'Business',
+        icon: Users,
+        color: '#8B5CF6' // Purple
+    },
+    {
+        name: 'ERP',
+        category: 'Business',
+        icon: Database,
+        color: '#EF4444' // Red
+    },
+    {
+        name: 'HRMS',
+        category: 'Business',
+        icon: UserCheck,
+        color: '#06B6D4' // Cyan
     }
+];
+
+// Coming Soon Products definition
+const COMING_SOON_PRODUCTS = [
+    { name: 'FIN-PRO', icon: Landmark, color: '#10B981' },
+    { name: 'Beta Club', icon: Rocket, color: '#F59E0B' },
+    { name: 'Payroll', icon: History, color: '#EF4444' },
+    { name: 'Analytics', icon: Activity, color: '#3B82F6' },
+    { name: 'AI Assistant', icon: Bot, color: '#8B5CF6' }
 ];
 
 const ProductLauncher = ({ onClose }) => {
     const queryClient = useQueryClient();
     const [isEditMode, setIsEditMode] = useState(false);
     const [activeTab, setActiveTab] = useState('PUBLIC'); // 'PUBLIC' or 'BUSINESS'
+
+    // Fetch recents from localStorage, default to empty array
+    const [recents, setRecents] = useState(() => {
+        try {
+            const saved = localStorage.getItem('launcher_recents');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.error('Error loading recents:', e);
+            return [];
+        }
+    });
 
     // Fetch user profile to retrieve favorite products configuration
     const { data: user = {} } = useQuery({
@@ -91,6 +133,20 @@ const ProductLauncher = ({ onClose }) => {
         }
     });
 
+    // Append to recents list
+    const recordRecent = (name) => {
+        setRecents(prev => {
+            const filtered = prev.filter(r => r !== name);
+            const updated = [name, ...filtered].slice(0, 4);
+            try {
+                localStorage.setItem('launcher_recents', JSON.stringify(updated));
+            } catch (e) {
+                console.error('Error saving recents:', e);
+            }
+            return updated;
+        });
+    };
+
     // Toggle product favorite status
     const toggleFavorite = (name) => {
         let updatedFavorites;
@@ -108,6 +164,7 @@ const ProductLauncher = ({ onClose }) => {
             toggleFavorite(name);
         } else {
             console.log(`Opening ${name}`);
+            recordRecent(name);
         }
     };
 
@@ -116,11 +173,12 @@ const ProductLauncher = ({ onClose }) => {
             {/* Header */}
             <div className="launcher-header-wrapper">
                 <div className="launcher-header-left">
+                    <div className="launcher-beta-logo">
+                        <Rocket size={18} strokeWidth={2.5} />
+                    </div>
                     <h2 id="launcher-title" className="launcher-title">
-                        <Sparkles size={18} className="launcher-title-icon" />
-                        Beta Products
+                        Beta
                     </h2>
-                    <p className="launcher-subtitle">Quick access to all Beta applications</p>
                 </div>
                 <div className="launcher-actions">
                     <button 
@@ -143,84 +201,116 @@ const ProductLauncher = ({ onClose }) => {
 
             {/* Scrollable Container */}
             <div className="launcher-scrollable">
-                {/* Favorites Section */}
-                <div className="launcher-section">
-                    <h3 className="launcher-section-title">
-                        Your Favorites
-                    </h3>
-                    
-                    {favorites.length === 0 ? (
-                        <div className="launcher-no-favorites">
-                            <p>No favorite products yet.</p>
-                            <p className="no-fav-sub">Click Edit to add your favorite applications.</p>
-                        </div>
-                    ) : (
-                        <div className="launcher-favorites-grid">
-                            {favorites.map(favName => {
-                                const prod = ALL_PRODUCTS.find(p => p.name === favName);
-                                if (!prod) return null;
-                                const IconComponent = prod.icon;
-                                return (
-                                    <div 
-                                        key={prod.name} 
-                                        className={`launcher-fav-card ${isEditMode ? 'edit-mode' : ''}`}
-                                        onClick={() => handleProductClick(prod.name)}
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-label={`Open favorite ${prod.name}`}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                handleProductClick(prod.name);
-                                            }
-                                        }}
-                                    >
-                                        {isEditMode && (
-                                            <button 
-                                                className="launcher-fav-remove-btn" 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleFavorite(prod.name);
-                                                }}
-                                                aria-label={`Remove ${prod.name} from favorites`}
-                                            >
-                                                <X size={10} strokeWidth={3} />
-                                            </button>
-                                        )}
+                
+                {/* Favorites & Recent View Split Container */}
+                <div className="launcher-split-container">
+                    {/* Left Section: Favorites */}
+                    <div className="launcher-split-pane">
+                        <span className="launcher-split-subtitle">Favorites</span>
+                        {favorites.length === 0 ? (
+                            <div className="launcher-split-empty">
+                                No favorites
+                            </div>
+                        ) : (
+                            <div className="launcher-split-grid">
+                                {favorites.slice(0, 4).map(favName => {
+                                    const prod = ALL_PRODUCTS.find(p => p.name === favName);
+                                    if (!prod) return null;
+                                    const IconComponent = prod.icon;
+                                    return (
                                         <div 
-                                            className="launcher-fav-icon-container"
-                                            style={{ color: prod.color }}
+                                            key={prod.name} 
+                                            className={`launcher-mini-card ${isEditMode ? 'edit-mode' : ''}`}
+                                            onClick={() => handleProductClick(prod.name)}
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    handleProductClick(prod.name);
+                                                }
+                                            }}
                                         >
-                                            <IconComponent size={22} strokeWidth={2.5} />
+                                            {isEditMode && (
+                                                <button 
+                                                    className="launcher-mini-remove-btn" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleFavorite(prod.name);
+                                                    }}
+                                                    aria-label={`Remove ${prod.name} from favorites`}
+                                                >
+                                                    <X size={8} strokeWidth={3} />
+                                                </button>
+                                            )}
+                                            <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <IconComponent size={20} strokeWidth={2.5} />
+                                            </div>
+                                            <span className="launcher-mini-name">{prod.name}</span>
                                         </div>
-                                        <span className="launcher-fav-name">{prod.name}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="launcher-split-divider" />
+
+                    {/* Right Section: Recent View */}
+                    <div className="launcher-split-pane">
+                        <span className="launcher-split-subtitle">Recent View</span>
+                        {recents.length === 0 ? (
+                            <div className="launcher-split-empty">
+                                No recents
+                            </div>
+                        ) : (
+                            <div className="launcher-split-grid">
+                                {recents.map(recentName => {
+                                    const prod = ALL_PRODUCTS.find(p => p.name === recentName);
+                                    if (!prod) return null;
+                                    const IconComponent = prod.icon;
+                                    return (
+                                        <div 
+                                            key={prod.name} 
+                                            className="launcher-mini-card"
+                                            onClick={() => handleProductClick(prod.name)}
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    handleProductClick(prod.name);
+                                                }
+                                            }}
+                                        >
+                                            <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <IconComponent size={20} strokeWidth={2.5} />
+                                            </div>
+                                            <span className="launcher-mini-name">{prod.name}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                <div className="launcher-divider" />
-
-                {/* Categories Tabs below Favorites */}
-                <div className="launcher-tabs-wrapper">
-                    <div className="launcher-tabs" role="tablist">
+                {/* Base Section Header & Tabs */}
+                <div className="launcher-base-header">
+                    <span className="launcher-base-title">BASE</span>
+                    <div className="launcher-base-tabs">
                         <button
-                            role="tab"
-                            aria-selected={activeTab === 'PUBLIC'}
-                            className={`launcher-tab ${activeTab === 'PUBLIC' ? 'active' : ''}`}
+                            className={`launcher-base-tab ${activeTab === 'PUBLIC' ? 'active' : ''}`}
                             onClick={() => setActiveTab('PUBLIC')}
                         >
-                            PUBLIC
+                            Public
                         </button>
                         <button
-                            role="tab"
-                            aria-selected={activeTab === 'BUSINESS'}
-                            className={`launcher-tab ${activeTab === 'BUSINESS' ? 'active' : ''}`}
+                            className={`launcher-base-tab ${activeTab === 'BUSINESS' ? 'active' : ''}`}
                             onClick={() => setActiveTab('BUSINESS')}
                         >
-                            BUSINESS
+                            Business
                         </button>
                     </div>
                 </div>
@@ -240,7 +330,7 @@ const ProductLauncher = ({ onClose }) => {
                                     role="button"
                                     tabIndex={0}
                                     data-tooltip={prod.name}
-                                    title={prod.name} /* Browser tooltip fallback */
+                                    title={prod.name}
                                     aria-label={`Open ${prod.name}`}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
@@ -269,6 +359,29 @@ const ProductLauncher = ({ onClose }) => {
                                             />
                                         </button>
                                     )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="launcher-divider" />
+
+                {/* Coming Soon Section */}
+                <div className="launcher-section" style={{ gap: '0.75rem', marginBottom: '0.5rem' }}>
+                    <h3 className="launcher-section-title">Coming Soon</h3>
+                    <div className="launcher-main-grid">
+                        {COMING_SOON_PRODUCTS.map(prod => {
+                            const IconComponent = prod.icon;
+                            return (
+                                <div
+                                    key={prod.name}
+                                    className="launcher-all-card coming-soon"
+                                    style={{ backgroundColor: `${prod.color}12`, color: prod.color }}
+                                    data-tooltip={`${prod.name}`}
+                                    title={`${prod.name}`}
+                                >
+                                    <IconComponent size={28} strokeWidth={2.2} />
                                 </div>
                             );
                         })}
@@ -318,31 +431,26 @@ const ProductLauncher = ({ onClose }) => {
                 }
                 .launcher-header-left {
                     display: flex;
-                    flex-direction: column;
+                    align-items: center;
+                    gap: 8px;
                     min-width: 0;
                 }
+                .launcher-beta-logo {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #e0e7ff;
+                    color: #6366f1;
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 8px;
+                }
                 .launcher-title {
-                    font-size: 1.15rem;
-                    font-weight: 800;
+                    font-size: 1.2rem;
+                    font-weight: 850;
                     color: #0f172a;
                     margin: 0;
                     letter-spacing: -0.5px;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                }
-                .launcher-title-icon {
-                    color: #6366F1;
-                }
-                .launcher-subtitle {
-                    font-size: 0.8rem;
-                    color: #64748b;
-                    margin: 0.2rem 0 0 0;
-                    font-weight: 500;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    width: 100%;
                 }
                 .launcher-actions {
                     display: flex;
@@ -439,85 +547,88 @@ const ProductLauncher = ({ onClose }) => {
                     align-items: center;
                     gap: 6px;
                 }
-                .launcher-category-title {
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    color: #94a3b8;
-                    margin: 0.5rem 0 0.25rem 0;
+
+                /* Favorites & Recent Split Container */
+                .launcher-split-container {
+                    display: flex;
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 16px;
+                    padding: 0.85rem;
+                    width: 100%;
+                    gap: 0.85rem;
+                    align-items: stretch;
+                }
+                .launcher-split-pane {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                    min-width: 0;
+                }
+                .launcher-split-subtitle {
+                    font-size: 0.72rem;
+                    font-weight: 850;
+                    color: #475569;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
+                    margin-bottom: 0.2rem;
                 }
-
-                /* Favorites Grid (4 columns) */
-                /* Favorites Horizontal Grid */
-                .launcher-favorites-grid {
+                .launcher-split-divider {
+                    width: 1px;
+                    background: #e2e8f0;
+                    align-self: stretch;
+                }
+                .launcher-split-empty {
                     display: flex;
-                    flex-direction: row;
-                    flex-wrap: nowrap;
-                    gap: 0.75rem;
-                    width: 100%;
-                    overflow-x: auto;
-                    overflow-y: hidden;
-                    padding: 0.25rem 0.25rem 0.5rem 0.25rem;
-                    -ms-overflow-style: none;  /* IE and Edge */
-                    scrollbar-width: none;  /* Firefox */
+                    align-items: center;
+                    justify-content: center;
+                    height: 100%;
+                    border: 1px dashed #cbd5e1;
+                    border-radius: 10px;
+                    font-size: 0.68rem;
+                    color: #94a3b8;
+                    font-weight: 600;
+                    padding: 1rem;
+                    text-align: center;
                 }
-                .launcher-favorites-grid::-webkit-scrollbar {
-                    display: none; /* Hide scrollbar for Chrome, Safari, Opera */
+                .launcher-split-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 0.5rem;
                 }
-                .launcher-fav-card {
+                .launcher-mini-card {
                     position: relative;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
-                    gap: 0.25rem;
-                    padding: 0.5rem;
-                    border-radius: 12px;
-                    border: 1px solid #f1f5f9;
-                    background: #f8fafc;
-                    cursor: pointer;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                    user-select: none;
-                    width: 76px;
-                    height: 76px;
-                    flex-shrink: 0;
-                    overflow: hidden;
-                }
-                .launcher-fav-card:hover {
-                    transform: translateY(-2px);
+                    gap: 4px;
+                    padding: 0.5rem 0.25rem;
+                    border-radius: 10px;
                     background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    cursor: pointer;
+                    width: 100%;
+                    min-height: 58px;
+                    transition: all 0.2s ease;
+                    user-select: none;
+                }
+                .launcher-mini-card:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
                     border-color: #cbd5e1;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
                 }
-                .launcher-fav-card:active {
-                    transform: scale(0.95);
+                .launcher-mini-card:active {
+                    transform: scale(0.96);
                 }
-                .launcher-fav-card.edit-mode {
+                .launcher-mini-card.edit-mode {
                     animation: launcher-shake 0.3s ease-in-out infinite alternate;
                 }
-
-                @keyframes launcher-shake {
-                    0% { transform: rotate(-0.5deg) translateY(0px); }
-                    100% { transform: rotate(0.5deg) translateY(-0.5px); }
-                }
-
-                .launcher-fav-icon-container {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: transform 0.2s ease;
-                    flex-shrink: 0;
-                    width: 24px;
-                    height: 24px;
-                }
-                .launcher-fav-card:hover .launcher-fav-icon-container {
-                    transform: scale(1.08);
-                }
-                .launcher-fav-name {
-                    font-size: 0.68rem;
-                    font-weight: 700;
-                    color: #475569;
+                .launcher-mini-name {
+                    font-size: 0.62rem;
+                    font-weight: 800;
+                    color: #64748b;
                     text-align: center;
                     white-space: nowrap;
                     overflow: hidden;
@@ -525,87 +636,70 @@ const ProductLauncher = ({ onClose }) => {
                     width: 100%;
                     padding: 0 2px;
                 }
-                .launcher-fav-remove-btn {
+                .launcher-mini-remove-btn {
                     position: absolute;
-                    top: -5px;
-                    right: -5px;
+                    top: -3px;
+                    right: -3px;
                     background: #ef4444;
                     color: #ffffff;
                     border: none;
                     border-radius: 50%;
-                    width: 16px;
-                    height: 16px;
+                    width: 14px;
+                    height: 14px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     cursor: pointer;
-                    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+                    box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
                     transition: transform 0.1s ease;
                     z-index: 10;
+                    padding: 0;
                 }
-                .launcher-fav-remove-btn:hover {
+                .launcher-mini-remove-btn:hover {
                     transform: scale(1.15);
                 }
 
-                /* Empty State Favorites */
-                .launcher-no-favorites {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 1.5rem;
-                    border: 2px dashed #e2e8f0;
-                    border-radius: 12px;
-                    text-align: center;
-                    color: #64748b;
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    background: #f8fafc;
-                    width: 100%;
-                }
-                .launcher-no-favorites p {
-                    margin: 0;
-                }
-                .no-fav-sub {
-                    font-size: 0.7rem;
-                    color: #94a3b8;
-                    margin-top: 0.25rem !important;
-                    font-weight: 500;
+                @keyframes launcher-shake {
+                    0% { transform: rotate(-0.5deg) translateY(0px); }
+                    100% { transform: rotate(0.5deg) translateY(-0.5px); }
                 }
 
-                /* Tabs Styling */
-                .launcher-tabs-wrapper {
-                    padding: 0.25rem 0;
+                /* Base Header with tab alignments */
+                .launcher-base-header {
                     display: flex;
-                    justify-content: center;
+                    justify-content: space-between;
+                    align-items: center;
                     width: 100%;
+                    padding-top: 0.25rem;
                 }
-                .launcher-tabs {
+                .launcher-base-title {
+                    font-size: 0.8rem;
+                    font-weight: 850;
+                    color: #475569;
+                    letter-spacing: 0.75px;
+                }
+                .launcher-base-tabs {
                     display: flex;
                     background: #f1f5f9;
-                    padding: 4px;
-                    border-radius: 12px;
-                    gap: 4px;
-                    width: 100%;
+                    padding: 3px;
+                    border-radius: 9px;
+                    gap: 3px;
                 }
-                .launcher-tab {
-                    flex: 1;
+                .launcher-base-tab {
                     border: none;
                     background: transparent;
-                    padding: 0.5rem;
-                    font-size: 0.75rem;
+                    padding: 0.3rem 0.65rem;
+                    font-size: 0.7rem;
                     font-weight: 800;
                     color: #64748b;
-                    border-radius: 9px;
+                    border-radius: 7px;
                     cursor: pointer;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                    text-align: center;
+                    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
                 }
-                .launcher-tab.active {
+                .launcher-base-tab.active {
                     background: #ffffff;
                     color: #0f172a;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 
-                                0 2px 4px -1px rgba(0, 0, 0, 0.03);
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
                 }
 
                 /* Main Launcher App Grid */
@@ -670,6 +764,17 @@ const ProductLauncher = ({ onClose }) => {
                 }
                 .launcher-grid-star-btn:hover {
                     transform: scale(1.15);
+                }
+
+                /* Coming soon translucent styles */
+                .launcher-all-card.coming-soon {
+                    opacity: 0.55;
+                    cursor: not-allowed;
+                }
+                .launcher-all-card.coming-soon:hover {
+                    transform: none;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+                    border-color: #f1f5f9;
                 }
 
                 /* Premium Tooltips */
