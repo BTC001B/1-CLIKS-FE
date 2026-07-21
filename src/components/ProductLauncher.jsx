@@ -189,9 +189,9 @@ const ProductLauncher = ({ onClose }) => {
                                         )}
                                         <div 
                                             className="launcher-fav-icon-container"
-                                            style={{ backgroundColor: `${prod.color}12`, color: prod.color }}
+                                            style={{ color: prod.color }}
                                         >
-                                            <IconComponent size={20} strokeWidth={2.5} />
+                                            <IconComponent size={22} strokeWidth={2.5} />
                                         </div>
                                         <span className="launcher-fav-name">{prod.name}</span>
                                     </div>
@@ -449,26 +449,39 @@ const ProductLauncher = ({ onClose }) => {
                 }
 
                 /* Favorites Grid (4 columns) */
+                /* Favorites Horizontal Grid */
                 .launcher-favorites-grid {
-                    display: grid;
-                    grid-template-columns: repeat(4, 1fr);
+                    display: flex;
+                    flex-direction: row;
+                    flex-wrap: nowrap;
                     gap: 0.75rem;
                     width: 100%;
+                    overflow-x: auto;
+                    overflow-y: hidden;
+                    padding: 0.25rem 0.25rem 0.5rem 0.25rem;
+                    -ms-overflow-style: none;  /* IE and Edge */
+                    scrollbar-width: none;  /* Firefox */
+                }
+                .launcher-favorites-grid::-webkit-scrollbar {
+                    display: none; /* Hide scrollbar for Chrome, Safari, Opera */
                 }
                 .launcher-fav-card {
                     position: relative;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.75rem 0.5rem;
+                    justify-content: center;
+                    gap: 0.25rem;
+                    padding: 0.5rem;
                     border-radius: 12px;
                     border: 1px solid #f1f5f9;
                     background: #f8fafc;
                     cursor: pointer;
                     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                     user-select: none;
-                    width: 100%;
+                    width: 76px;
+                    height: 76px;
+                    flex-shrink: 0;
                     overflow: hidden;
                 }
                 .launcher-fav-card:hover {
@@ -490,27 +503,27 @@ const ProductLauncher = ({ onClose }) => {
                 }
 
                 .launcher-fav-icon-container {
-                    width: 38px;
-                    height: 38px;
-                    border-radius: 8px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     transition: transform 0.2s ease;
                     flex-shrink: 0;
+                    width: 24px;
+                    height: 24px;
                 }
                 .launcher-fav-card:hover .launcher-fav-icon-container {
                     transform: scale(1.08);
                 }
                 .launcher-fav-name {
-                    font-size: 0.75rem;
+                    font-size: 0.68rem;
                     font-weight: 700;
-                    color: #334155;
+                    color: #475569;
                     text-align: center;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     width: 100%;
+                    padding: 0 2px;
                 }
                 .launcher-fav-remove-btn {
                     position: absolute;
