@@ -141,7 +141,13 @@ const RightSidebar = ({
             id: 'launcher',
             title: 'Product Launcher',
             iconClass: 'icon-launcher',
-            icon: <Grid3X3 size={20} />,
+            icon: (
+                <img 
+                    src="/beta_logo.png" 
+                    alt="Beta Logo" 
+                    className="sidebar-beta-logo-img"
+                />
+            ),
             action: onLauncherToggle,
             active: isLauncherOpen,
         },

@@ -2594,6 +2594,12 @@ div[style*="background-color: '#F0F9F4'"] {
     transition: box-shadow 0.15s ease;
 }
 
+.sidebar-beta-logo-img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
 .rightpanel-icon.icon-calendar {
     background-color: #FEF3C7;
     color: #F59E0B;

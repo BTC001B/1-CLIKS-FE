@@ -150,11 +150,6 @@ const ProductLauncher = ({ onClose }) => {
             {/* Header */}
             <div className="launcher-header-wrapper">
                 <div className="launcher-header-left">
-                    <img 
-                        src="/beta_logo.png" 
-                        alt="Beta Logo" 
-                        className="launcher-beta-logo-img" 
-                    />
                     <h2 id="launcher-title" className="launcher-brand-title">
                         BETA
                     </h2>
@@ -447,14 +442,7 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-header-left {
                     display: flex;
                     align-items: center;
-                    gap: 11px;
                     min-width: 0;
-                }
-                .launcher-beta-logo-img {
-                    width: 28px;
-                    height: 28px;
-                    object-fit: contain;
-                    border-radius: 6px;
                 }
                 .launcher-brand-title {
                     font-family: 'League Spartan', 'Anton', sans-serif;
@@ -468,7 +456,6 @@ const ProductLauncher = ({ onClose }) => {
                     padding: 0;
                     display: flex;
                     align-items: center;
-                    transform: translateY(1.5px);
                 }
                 .launcher-title {
                     font-size: 1.2rem;
