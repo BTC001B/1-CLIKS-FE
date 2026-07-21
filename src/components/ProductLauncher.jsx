@@ -448,7 +448,7 @@ const ProductLauncher = ({ onClose }) => {
                     font-size: 28px;
                     color: #004aad;
                     text-transform: uppercase;
-                    letter-spacing: -1.5px;
+                    letter-spacing: 2px;
                     line-height: 1;
                     margin: 0;
                     padding: 0;
