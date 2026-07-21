@@ -54,29 +54,14 @@ const ALL_PRODUCTS = [
         category: 'Business',
         icon: Briefcase,
         color: '#EC4899' // Pink
-    },
-    {
-        name: 'CRM',
-        category: 'Business',
-        icon: Users,
-        color: '#8B5CF6' // Purple
-    },
-    {
-        name: 'ERP',
-        category: 'Business',
-        icon: Database,
-        color: '#EF4444' // Red
-    },
-    {
-        name: 'HRMS',
-        category: 'Business',
-        icon: UserCheck,
-        color: '#06B6D4' // Cyan
     }
 ];
 
 // Coming Soon Products definition
 const COMING_SOON_PRODUCTS = [
+    { name: 'CRM', icon: Users, color: '#8B5CF6' },
+    { name: 'ERP', icon: Database, color: '#EF4444' },
+    { name: 'HRMS', icon: UserCheck, color: '#06B6D4' },
     { name: 'FIN-PRO', icon: Landmark, color: '#10B981' },
     { name: 'Beta Club', icon: Rocket, color: '#F59E0B' },
     { name: 'Payroll', icon: History, color: '#EF4444' },
