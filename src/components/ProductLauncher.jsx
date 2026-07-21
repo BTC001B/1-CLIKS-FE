@@ -406,8 +406,6 @@ const ProductLauncher = ({ onClose }) => {
 
             {/* Premium Styles */}
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Saira+Stencil+One&display=swap');
-
                 .calc-panel {
                     overflow-x: hidden !important;
                 }
