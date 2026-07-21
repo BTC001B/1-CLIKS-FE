@@ -151,18 +151,16 @@ const ProductLauncher = ({ onClose }) => {
             <div className="launcher-header-wrapper">
                 <div className="launcher-header-left">
                     <img 
-                        src="/beta_wordmark.png" 
-                        alt="BETA Wordmark" 
-                        className="launcher-beta-wordmark-img" 
-                    />
-                    <img 
                         src="/beta_logo.png" 
                         alt="Beta Logo" 
                         className="launcher-beta-logo-img" 
                     />
-                    <h2 id="launcher-title" className="launcher-title">
-                        Beta
-                    </h2>
+                    <img 
+                        id="launcher-title"
+                        src="/beta_wordmark.png" 
+                        alt="BETA Wordmark" 
+                        className="launcher-beta-wordmark-img" 
+                    />
                 </div>
                 <div className="launcher-actions">
                     <button 
