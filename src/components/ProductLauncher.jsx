@@ -28,33 +28,33 @@ const ALL_PRODUCTS = [
     {
         name: 'Cliks',
         category: 'Public',
-        icon: DollarSign,
-        color: '#6366F1' // Indigo
+        icon: '/cliks_logo.png',
+        color: '#10B981' // Green
     },
     {
         name: 'BNXmail',
         category: 'Public',
-        icon: Mail,
-        color: '#3B82F6' // Blue
+        icon: '/bnxmail_logo.png',
+        color: '#004aad' // Blue
     },
     {
         name: 'Bit-Tool',
         category: 'Public',
-        icon: Wrench,
-        color: '#F59E0B' // Amber
+        icon: '/bit_tool_logo.png',
+        color: '#2563eb' // Blue
     },
     {
         name: 'B2Auth',
         category: 'Public',
-        icon: KeyRound,
-        color: '#10B981' // Emerald
+        icon: '/b2auth_logo.png',
+        color: '#1e293b' // Slate
     },
     // Business Apps
     {
         name: 'CliksBusiness',
         category: 'Business',
-        icon: Briefcase,
-        color: '#EC4899' // Pink
+        icon: '/cliksbusiness_logo.png',
+        color: '#047857' // Dark Green
     }
 ];
 
@@ -238,7 +238,15 @@ const ProductLauncher = ({ onClose }) => {
                                                         </button>
                                                     )}
                                                     <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <IconComponent size={20} strokeWidth={2.5} />
+                                                        {typeof IconComponent === 'string' ? (
+                                                             <img 
+                                                                 src={IconComponent} 
+                                                                 alt={prod.name} 
+                                                                 className="launcher-mini-img-icon"
+                                                             />
+                                                         ) : (
+                                                             <IconComponent size={20} strokeWidth={2.5} />
+                                                         )}
                                                     </div>
                                                     <span className="launcher-mini-name">{prod.name}</span>
                                                 </div>
@@ -274,7 +282,15 @@ const ProductLauncher = ({ onClose }) => {
                                                     }}
                                                 >
                                                     <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <IconComponent size={20} strokeWidth={2.5} />
+                                                        {typeof IconComponent === 'string' ? (
+                                                             <img 
+                                                                 src={IconComponent} 
+                                                                 alt={prod.name} 
+                                                                 className="launcher-mini-img-icon"
+                                                             />
+                                                         ) : (
+                                                             <IconComponent size={20} strokeWidth={2.5} />
+                                                         )}
                                                     </div>
                                                     <span className="launcher-mini-name">{prod.name}</span>
                                                 </div>
@@ -338,7 +354,15 @@ const ProductLauncher = ({ onClose }) => {
                                     }}
                                 >
                                     <div className="launcher-all-icon-wrapper">
-                                        <IconComponent size={24} strokeWidth={2.2} />
+                                        {typeof IconComponent === 'string' ? (
+                                            <img 
+                                                src={IconComponent} 
+                                                alt={prod.name} 
+                                                className="launcher-grid-img-icon"
+                                            />
+                                        ) : (
+                                            <IconComponent size={24} strokeWidth={2.2} />
+                                        )}
                                     </div>
                                     <span className="launcher-all-name">{prod.name}</span>
 
@@ -807,6 +831,16 @@ const ProductLauncher = ({ onClose }) => {
                     flex-shrink: 0;
                     width: 24px;
                     height: 24px;
+                }
+                .launcher-grid-img-icon {
+                    width: 24px;
+                    height: 24px;
+                    object-fit: contain;
+                }
+                .launcher-mini-img-icon {
+                    width: 20px;
+                    height: 20px;
+                    object-fit: contain;
                 }
                 .launcher-all-card:hover {
                     transform: scale(1.08);
