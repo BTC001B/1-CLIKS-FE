@@ -298,15 +298,14 @@ const ProductLauncher = ({ onClose }) => {
 
                 {/* Base Section Header & Tabs */}
                 <div className="launcher-base-header">
-                    <span className="launcher-base-title">BASE</span>
+                    <button
+                        className="launcher-base-title"
+                        onClick={() => setActiveTab('BASE')}
+                        aria-label="Show all products"
+                    >
+                        BASE
+                    </button>
                     <div className="launcher-base-nav">
-                        <button
-                            className="launcher-base-link static-base"
-                            onClick={() => setActiveTab('BASE')}
-                        >
-                            BASE
-                        </button>
-                        <span className="launcher-nav-divider">|</span>
                         <button
                             className={`launcher-base-link ${activeTab === 'PUBLIC' ? 'active' : ''}`}
                             onClick={() => setActiveTab('PUBLIC')}
@@ -685,6 +684,13 @@ const ProductLauncher = ({ onClose }) => {
                     font-weight: 850;
                     color: #475569;
                     letter-spacing: 0.75px;
+                    border: none;
+                    background: transparent;
+                    padding: 0;
+                    margin: 0;
+                    cursor: pointer;
+                    font-family: inherit;
+                    user-select: none;
                 }
                 .launcher-base-nav {
                     display: flex;
