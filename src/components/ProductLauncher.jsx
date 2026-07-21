@@ -87,7 +87,7 @@ const COMING_SOON_PRODUCTS = [
 const ProductLauncher = ({ onClose }) => {
     const queryClient = useQueryClient();
     const [isEditMode, setIsEditMode] = useState(false);
-    const [activeTab, setActiveTab] = useState('PUBLIC'); // 'PUBLIC' or 'BUSINESS'
+    const [activeTab, setActiveTab] = useState('PUBLIC'); // 'BASE', 'PUBLIC' or 'BUSINESS'
 
     // Fetch recents from localStorage, default to empty array
     const [recents, setRecents] = useState(() => {
@@ -299,15 +299,23 @@ const ProductLauncher = ({ onClose }) => {
                 {/* Base Section Header & Tabs */}
                 <div className="launcher-base-header">
                     <span className="launcher-base-title">BASE</span>
-                    <div className="launcher-base-tabs">
+                    <div className="launcher-base-nav">
                         <button
-                            className={`launcher-base-tab ${activeTab === 'PUBLIC' ? 'active' : ''}`}
+                            className={`launcher-base-link ${activeTab === 'BASE' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('BASE')}
+                        >
+                            BASE
+                        </button>
+                        <span className="launcher-nav-divider">|</span>
+                        <button
+                            className={`launcher-base-link ${activeTab === 'PUBLIC' ? 'active' : ''}`}
                             onClick={() => setActiveTab('PUBLIC')}
                         >
                             Public
                         </button>
+                        <span className="launcher-nav-divider">|</span>
                         <button
-                            className={`launcher-base-tab ${activeTab === 'BUSINESS' ? 'active' : ''}`}
+                            className={`launcher-base-link ${activeTab === 'BUSINESS' ? 'active' : ''}`}
                             onClick={() => setActiveTab('BUSINESS')}
                         >
                             Business
@@ -318,7 +326,7 @@ const ProductLauncher = ({ onClose }) => {
                 {/* Main Product Grid showing only large app icons */}
                 <div className="launcher-section" style={{ gap: '1rem' }}>
                     <div className="launcher-main-grid">
-                        {ALL_PRODUCTS.filter(p => p.category.toUpperCase() === activeTab).map(prod => {
+                        {(activeTab === 'BASE' ? ALL_PRODUCTS : ALL_PRODUCTS.filter(p => p.category.toUpperCase() === activeTab)).map(prod => {
                             const IconComponent = prod.icon;
                             const isFav = favorites.includes(prod.name);
                             return (
@@ -678,28 +686,34 @@ const ProductLauncher = ({ onClose }) => {
                     color: #475569;
                     letter-spacing: 0.75px;
                 }
-                .launcher-base-tabs {
+                .launcher-base-nav {
                     display: flex;
-                    background: #f1f5f9;
-                    padding: 3px;
-                    border-radius: 9px;
-                    gap: 3px;
+                    align-items: center;
+                    gap: 6px;
                 }
-                .launcher-base-tab {
+                .launcher-base-link {
                     border: none;
                     background: transparent;
-                    padding: 0.3rem 0.65rem;
-                    font-size: 0.7rem;
+                    padding: 2px 4px;
+                    font-size: 0.72rem;
                     font-weight: 800;
-                    color: #64748b;
-                    border-radius: 7px;
+                    color: #94a3b8;
                     cursor: pointer;
-                    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+                    transition: all 0.15s ease;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
-                .launcher-base-tab.active {
-                    background: #ffffff;
-                    color: #0f172a;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                .launcher-base-link:hover {
+                    color: #475569;
+                }
+                .launcher-base-link.active {
+                    color: #6366F1;
+                    border-bottom: 2px solid #6366F1;
+                }
+                .launcher-nav-divider {
+                    color: #cbd5e1;
+                    font-size: 0.7rem;
+                    user-select: none;
                 }
 
                 /* Main Launcher App Grid */
