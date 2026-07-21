@@ -63,7 +63,7 @@ const ALL_PRODUCTS = [
 const ProductLauncher = ({ onClose }) => {
     const queryClient = useQueryClient();
     const [isEditMode, setIsEditMode] = useState(false);
-    const [activeTab, setActiveTab] = useState('PUBLIC'); // 'BASE', 'PUBLIC' or 'BUSINESS'
+    const [activeTab, setActiveTab] = useState('BASE'); // 'BASE', 'PUBLIC' or 'BUSINESS'
 
     // Fetch recents from localStorage, default to empty array
     const [recents, setRecents] = useState(() => {
@@ -495,13 +495,13 @@ const ProductLauncher = ({ onClose }) => {
 
                 /* Scrollable Container */
                 .launcher-scrollable {
-                    padding: 1.25rem 1.5rem;
+                    padding: 1rem 1.25rem;
                     overflow-y: auto;
                     overflow-x: hidden;
                     flex: 1;
                     display: flex;
                     flex-direction: column;
-                    gap: 1.25rem;
+                    gap: 0.85rem;
                     width: 100%;
                 }
                 
@@ -545,9 +545,9 @@ const ProductLauncher = ({ onClose }) => {
                     background: #f8fafc;
                     border: 1px solid #e2e8f0;
                     border-radius: 16px;
-                    padding: 0.85rem;
+                    padding: 0.65rem;
                     width: 100%;
-                    gap: 0.85rem;
+                    gap: 0.65rem;
                     align-items: stretch;
                 }
                 .launcher-split-pane {
@@ -710,7 +710,7 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-main-grid {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
-                    gap: 1.25rem 0.75rem;
+                    gap: 0.75rem 0.5rem;
                     width: 100%;
                     justify-items: center;
                     align-items: center;
@@ -811,7 +811,7 @@ const ProductLauncher = ({ onClose }) => {
                     align-items: center;
                     justify-content: center;
                     text-align: center;
-                    padding: 2.25rem 1.5rem;
+                    padding: 1.25rem 1rem;
                     background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(248, 250, 252, 0.85) 100%);
                     border: 1px solid rgba(226, 232, 240, 0.8);
                     border-radius: 20px;
@@ -821,7 +821,7 @@ const ProductLauncher = ({ onClose }) => {
                     backdrop-filter: blur(12px);
                     margin-bottom: 0.5rem;
                     width: 100%;
-                    gap: 0.75rem;
+                    gap: 0.5rem;
                 }
                 .launcher-labs-glow {
                     position: absolute;
@@ -844,8 +844,8 @@ const ProductLauncher = ({ onClose }) => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    width: 44px;
-                    height: 44px;
+                    width: 38px;
+                    height: 38px;
                     background: #ffffff;
                     border: 1px solid #e2e8f0;
                     border-radius: 50%;
@@ -868,11 +868,11 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-labs-badge {
                     display: inline-flex;
                     align-items: center;
-                    padding: 0.25rem 0.65rem;
+                    padding: 0.2rem 0.55rem;
                     background: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%);
                     border: 1px solid rgba(99, 102, 241, 0.15);
                     border-radius: 100px;
-                    font-size: 0.58rem;
+                    font-size: 0.56rem;
                     font-weight: 850;
                     color: #4f46e5;
                     letter-spacing: 0.75px;
@@ -880,9 +880,9 @@ const ProductLauncher = ({ onClose }) => {
                     box-shadow: 0 2px 4px rgba(99, 102, 241, 0.02);
                 }
                 .launcher-labs-title {
-                    font-size: 1.15rem;
+                    font-size: 1.05rem;
                     font-weight: 900;
-                    margin: 0.2rem 0 0 0;
+                    margin: 0.1rem 0 0 0;
                     letter-spacing: 1.5px;
                     background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #db2777 100%);
                     -webkit-background-clip: text;
@@ -890,9 +890,9 @@ const ProductLauncher = ({ onClose }) => {
                     z-index: 1;
                 }
                 .launcher-labs-description {
-                    font-size: 0.72rem;
+                    font-size: 0.7rem;
                     color: #475569;
-                    line-height: 1.5;
+                    line-height: 1.4;
                     margin: 0;
                     font-weight: 550;
                     max-width: 250px;
