@@ -56,6 +56,7 @@ const ALL_PRODUCTS = [
 const ProductLauncher = ({ onClose }) => {
     const queryClient = useQueryClient();
     const [isEditMode, setIsEditMode] = useState(false);
+    const [activeTab, setActiveTab] = useState('PUBLIC'); // 'PUBLIC' or 'BUSINESS'
 
     // Fetch user profile to retrieve favorite products configuration
     const { data: user = {} } = useQuery({
@@ -202,68 +203,76 @@ const ProductLauncher = ({ onClose }) => {
 
                 <div className="launcher-divider" />
 
-                {/* All Products Section */}
-                <div className="launcher-section">
-                    <h3 className="launcher-section-title">
-                        All Products
-                    </h3>
-                    
-                    {['Public', 'Business'].map(cat => (
-                        <div key={cat} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                            <h4 className="launcher-category-title">{cat}</h4>
-                            <div className="launcher-all-grid">
-                                {ALL_PRODUCTS.filter(p => p.category === cat).map(prod => {
-                                    const IconComponent = prod.icon;
-                                    const isFav = favorites.includes(prod.name);
-                                    return (
-                                        <div
-                                            key={prod.name}
-                                            className={`launcher-all-card ${isEditMode ? 'edit-mode' : ''}`}
-                                            onClick={() => handleProductClick(prod.name)}
-                                            role="button"
-                                            tabIndex={0}
-                                            aria-label={`Open ${prod.name}`}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' || e.key === ' ') {
-                                                    e.preventDefault();
-                                                    handleProductClick(prod.name);
-                                                }
-                                            }}
-                                        >
-                                            <div 
-                                                className="launcher-all-icon-container"
-                                                style={{ backgroundColor: `${prod.color}12`, color: prod.color }}
-                                            >
-                                                <IconComponent size={20} strokeWidth={2} />
-                                            </div>
-                                            <div className="launcher-all-content">
-                                                <h4 className="launcher-all-name">{prod.name}</h4>
-                                            </div>
+                {/* Categories Tabs below Favorites */}
+                <div className="launcher-tabs-wrapper">
+                    <div className="launcher-tabs" role="tablist">
+                        <button
+                            role="tab"
+                            aria-selected={activeTab === 'PUBLIC'}
+                            className={`launcher-tab ${activeTab === 'PUBLIC' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('PUBLIC')}
+                        >
+                            PUBLIC
+                        </button>
+                        <button
+                            role="tab"
+                            aria-selected={activeTab === 'BUSINESS'}
+                            className={`launcher-tab ${activeTab === 'BUSINESS' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('BUSINESS')}
+                        >
+                            BUSINESS
+                        </button>
+                    </div>
+                </div>
 
-                                            {/* Star Toggle shown in Edit Mode or if favorited */}
-                                            {isEditMode && (
-                                                <button 
-                                                    className="launcher-star-btn"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleFavorite(prod.name);
-                                                    }}
-                                                    aria-label={isFav ? `Remove ${prod.name} from favorites` : `Add ${prod.name} to favorites`}
-                                                >
-                                                    <Star 
-                                                        size={15} 
-                                                        fill={isFav ? "#F59E0B" : "none"} 
-                                                        stroke={isFav ? "#F59E0B" : "#94a3b8"} 
-                                                        strokeWidth={2} 
-                                                    />
-                                                </button>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ))}
+                {/* Main Product Grid showing only large app icons */}
+                <div className="launcher-section" style={{ gap: '1rem' }}>
+                    <div className="launcher-main-grid">
+                        {ALL_PRODUCTS.filter(p => p.category.toUpperCase() === activeTab).map(prod => {
+                            const IconComponent = prod.icon;
+                            const isFav = favorites.includes(prod.name);
+                            return (
+                                <div
+                                    key={prod.name}
+                                    className={`launcher-all-card ${isEditMode ? 'edit-mode' : ''}`}
+                                    style={{ backgroundColor: `${prod.color}12`, color: prod.color }}
+                                    onClick={() => handleProductClick(prod.name)}
+                                    role="button"
+                                    tabIndex={0}
+                                    data-tooltip={prod.name}
+                                    title={prod.name} /* Browser tooltip fallback */
+                                    aria-label={`Open ${prod.name}`}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            handleProductClick(prod.name);
+                                        }
+                                    }}
+                                >
+                                    <IconComponent size={28} strokeWidth={2.2} />
+
+                                    {/* Star Toggle shown in Edit Mode */}
+                                    {isEditMode && (
+                                        <button 
+                                            className="launcher-grid-star-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleFavorite(prod.name);
+                                            }}
+                                            aria-label={isFav ? `Remove ${prod.name} from favorites` : `Add ${prod.name} to favorites`}
+                                        >
+                                            <Star 
+                                                size={12} 
+                                                fill={isFav ? "#F59E0B" : "none"} 
+                                                stroke={isFav ? "#F59E0B" : "#94a3b8"} 
+                                                strokeWidth={2} 
+                                            />
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 
@@ -393,7 +402,7 @@ const ProductLauncher = ({ onClose }) => {
                     flex: 1;
                     display: flex;
                     flex-direction: column;
-                    gap: 1.5rem;
+                    gap: 1.25rem;
                     width: 100%;
                 }
                 
@@ -551,98 +560,133 @@ const ProductLauncher = ({ onClose }) => {
                     font-weight: 500;
                 }
 
-                /* All Products Grid */
-                .launcher-all-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 0.75rem;
-                    margin-bottom: 0.5rem;
+                /* Tabs Styling */
+                .launcher-tabs-wrapper {
+                    padding: 0.25rem 0;
+                    display: flex;
+                    justify-content: center;
                     width: 100%;
                 }
+                .launcher-tabs {
+                    display: flex;
+                    background: #f1f5f9;
+                    padding: 4px;
+                    border-radius: 12px;
+                    gap: 4px;
+                    width: 100%;
+                }
+                .launcher-tab {
+                    flex: 1;
+                    border: none;
+                    background: transparent;
+                    padding: 0.5rem;
+                    font-size: 0.75rem;
+                    font-weight: 800;
+                    color: #64748b;
+                    border-radius: 9px;
+                    cursor: pointer;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                    text-align: center;
+                }
+                .launcher-tab.active {
+                    background: #ffffff;
+                    color: #0f172a;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+                                0 2px 4px -1px rgba(0, 0, 0, 0.03);
+                }
+
+                /* Main Launcher App Grid */
+                .launcher-main-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 1.25rem 0.75rem;
+                    width: 100%;
+                    justify-items: center;
+                    align-items: center;
+                }
+                
+                @media (max-width: 480px) {
+                    .launcher-main-grid {
+                        grid-template-columns: repeat(3, 1fr);
+                    }
+                }
+
                 .launcher-all-card {
                     position: relative;
                     display: flex;
                     align-items: center;
-                    gap: 0.75rem;
-                    padding: 0.75rem;
-                    border-radius: 12px;
-                    border: 1px solid #f1f5f9;
-                    background: #ffffff;
+                    justify-content: center;
+                    width: 68px;
+                    height: 68px;
+                    border-radius: 16px;
                     cursor: pointer;
                     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                     outline: none;
                     user-select: none;
-                    width: 100%;
-                    overflow: hidden;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+                    border: 1px solid #f1f5f9;
                 }
                 .launcher-all-card:hover {
-                    transform: translateY(-2px);
-                    border-color: rgba(99, 102, 241, 0.3);
-                    box-shadow: 0 6px 15px -5px rgba(99, 102, 241, 0.15);
+                    transform: scale(1.08);
+                    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+                    border-color: #e2e8f0;
                 }
                 .launcher-all-card:active {
                     transform: scale(0.97);
                 }
-                .launcher-all-icon-container {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                    transition: transform 0.2s ease;
+                .launcher-all-card.edit-mode {
+                    animation: launcher-shake 0.3s ease-in-out infinite alternate;
                 }
-                .launcher-all-card:hover .launcher-all-icon-container {
-                    transform: scale(1.05);
-                }
-                .launcher-all-content {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.15rem;
-                    padding-right: 1.25rem; /* Space for edit star button */
-                    overflow: hidden;
-                    min-width: 0; /* Enable flex-truncation */
-                    flex: 1;
-                }
-                .launcher-all-name {
-                    font-size: 0.8rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                    margin: 0;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-                .launcher-all-desc {
-                    font-size: 0.68rem;
-                    color: #64748b;
-                    margin: 0;
-                    line-height: 1.3;
-                    font-weight: 500;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-                .launcher-star-btn {
+                .launcher-grid-star-btn {
                     position: absolute;
-                    top: 6px;
-                    right: 6px;
-                    background: transparent;
-                    border: none;
-                    cursor: pointer;
-                    padding: 4px;
+                    top: -4px;
+                    right: -4px;
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
                     border-radius: 50%;
+                    width: 20px;
+                    height: 20px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    transition: all 0.2s ease;
+                    cursor: pointer;
+                    transition: transform 0.1s ease;
                     z-index: 10;
-                    flex-shrink: 0;
+                    padding: 0;
                 }
-                .launcher-star-btn:hover {
-                    background: #f1f5f9;
-                    transform: scale(1.1);
+                .launcher-grid-star-btn:hover {
+                    transform: scale(1.15);
+                }
+
+                /* Premium Tooltips */
+                [data-tooltip] {
+                    position: relative;
+                }
+                [data-tooltip]::after {
+                    content: attr(data-tooltip);
+                    position: absolute;
+                    bottom: 115%;
+                    left: 50%;
+                    transform: translateX(-50%) scale(0.95);
+                    background: #0f172a;
+                    color: #ffffff;
+                    padding: 0.35rem 0.6rem;
+                    border-radius: 6px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    opacity: 0;
+                    visibility: hidden;
+                    pointer-events: none;
+                    transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    z-index: 100;
+                }
+                [data-tooltip]:hover::after {
+                    opacity: 1;
+                    visibility: visible;
+                    transform: translateX(-50%) scale(1);
                 }
 
                 /* Divider */
