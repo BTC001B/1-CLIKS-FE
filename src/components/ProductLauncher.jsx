@@ -117,9 +117,9 @@ const ProductLauncher = ({ onClose }) => {
                 <div className="launcher-header-left">
                     <h2 id="launcher-title" className="launcher-title">
                         <Sparkles size={18} className="launcher-title-icon" />
-                        Products
+                        Beta Products
                     </h2>
-                    <p className="launcher-subtitle">Quick access to all CLIKS products</p>
+                    <p className="launcher-subtitle">Quick access to all Beta applications</p>
                 </div>
                 <div className="launcher-actions">
                     <button 
@@ -238,7 +238,6 @@ const ProductLauncher = ({ onClose }) => {
                                             </div>
                                             <div className="launcher-all-content">
                                                 <h4 className="launcher-all-name">{prod.name}</h4>
-                                                <p className="launcher-all-desc">{prod.description}</p>
                                             </div>
 
                                             {/* Star Toggle shown in Edit Mode or if favorited */}
@@ -563,7 +562,7 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-all-card {
                     position: relative;
                     display: flex;
-                    align-items: flex-start;
+                    align-items: center;
                     gap: 0.75rem;
                     padding: 0.75rem;
                     border-radius: 12px;
