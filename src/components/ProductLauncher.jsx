@@ -406,7 +406,7 @@ const ProductLauncher = ({ onClose }) => {
 
             {/* Premium Styles */}
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@900&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Saira+Stencil+One&display=swap');
 
                 .calc-panel {
                     overflow-x: hidden !important;
@@ -445,7 +445,7 @@ const ProductLauncher = ({ onClose }) => {
                     min-width: 0;
                 }
                 .launcher-brand-title {
-                    font-family: 'League Spartan', 'Anton', sans-serif;
+                    font-family: 'Saira Stencil One', 'Anton', sans-serif;
                     font-weight: 900;
                     font-size: 28px;
                     color: #000000;
