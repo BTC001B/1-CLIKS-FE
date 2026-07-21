@@ -399,7 +399,7 @@ const ProductLauncher = ({ onClose }) => {
 
             {/* Footer */}
             <div className="launcher-footer">
-                <span>Beta Ecosystem Platform</span>
+                <span>Beta Ecosystem</span>
                 <span className="launcher-footer-divider">•</span>
                 <span>Future Ready</span>
             </div>
