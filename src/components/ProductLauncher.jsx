@@ -18,7 +18,8 @@ import {
     Rocket,
     History,
     Activity,
-    Bot
+    Bot,
+    Sparkles
 } from 'lucide-react';
 
 // Extensible products definition
