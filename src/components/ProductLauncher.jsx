@@ -829,17 +829,17 @@ const ProductLauncher = ({ onClose }) => {
                     align-items: center;
                     justify-content: center;
                     flex-shrink: 0;
-                    width: 24px;
-                    height: 24px;
+                    width: 34px;
+                    height: 34px;
                 }
                 .launcher-grid-img-icon {
-                    width: 24px;
-                    height: 24px;
+                    width: 34px;
+                    height: 34px;
                     object-fit: contain;
                 }
                 .launcher-mini-img-icon {
-                    width: 20px;
-                    height: 20px;
+                    width: 26px;
+                    height: 26px;
                     object-fit: contain;
                 }
                 .launcher-all-card:hover {
