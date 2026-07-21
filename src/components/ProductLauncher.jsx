@@ -301,17 +301,24 @@ const ProductLauncher = ({ onClose }) => {
                     <span className="launcher-base-title">BASE</span>
                     <div className="launcher-base-nav">
                         <button
+                            className="launcher-base-link static-base"
+                            onClick={() => setActiveTab('BASE')}
+                        >
+                            BASE
+                        </button>
+                        <span className="launcher-nav-divider">|</span>
+                        <button
                             className={`launcher-base-link ${activeTab === 'PUBLIC' ? 'active' : ''}`}
                             onClick={() => setActiveTab('PUBLIC')}
                         >
-                            Public
+                            PUBLIC
                         </button>
                         <span className="launcher-nav-divider">|</span>
                         <button
                             className={`launcher-base-link ${activeTab === 'BUSINESS' ? 'active' : ''}`}
                             onClick={() => setActiveTab('BUSINESS')}
                         >
-                            Business
+                            BUSINESS
                         </button>
                     </div>
                 </div>
@@ -319,7 +326,7 @@ const ProductLauncher = ({ onClose }) => {
                 {/* Main Product Grid showing only large app icons */}
                 <div className="launcher-section" style={{ gap: '1rem' }}>
                     <div className="launcher-main-grid">
-                        {ALL_PRODUCTS.filter(p => p.category.toUpperCase() === activeTab).map(prod => {
+                        {(activeTab === 'BASE' ? ALL_PRODUCTS : ALL_PRODUCTS.filter(p => p.category.toUpperCase() === activeTab)).map(prod => {
                             const IconComponent = prod.icon;
                             const isFav = favorites.includes(prod.name);
                             return (
