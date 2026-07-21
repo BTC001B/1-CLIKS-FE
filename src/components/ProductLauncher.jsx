@@ -57,17 +57,7 @@ const ALL_PRODUCTS = [
     }
 ];
 
-// Coming Soon Products definition
-const COMING_SOON_PRODUCTS = [
-    { name: 'CRM', icon: Users, color: '#8B5CF6' },
-    { name: 'ERP', icon: Database, color: '#EF4444' },
-    { name: 'HRMS', icon: UserCheck, color: '#06B6D4' },
-    { name: 'FIN-PRO', icon: Landmark, color: '#10B981' },
-    { name: 'Beta Club', icon: Rocket, color: '#F59E0B' },
-    { name: 'Payroll', icon: History, color: '#EF4444' },
-    { name: 'Analytics', icon: Activity, color: '#3B82F6' },
-    { name: 'AI Assistant', icon: Bot, color: '#8B5CF6' }
-];
+// Coming Soon section has been upgraded to the Premium Beta Labs Showcase
 
 const ProductLauncher = ({ onClose }) => {
     const queryClient = useQueryClient();
@@ -333,7 +323,10 @@ const ProductLauncher = ({ onClose }) => {
                                         }
                                     }}
                                 >
-                                    <IconComponent size={28} strokeWidth={2.2} />
+                                    <div className="launcher-all-icon-wrapper">
+                                        <IconComponent size={24} strokeWidth={2.2} />
+                                    </div>
+                                    <span className="launcher-all-name">{prod.name}</span>
 
                                     {/* Star Toggle shown in Edit Mode */}
                                     {isEditMode && (
@@ -361,24 +354,31 @@ const ProductLauncher = ({ onClose }) => {
 
                 <div className="launcher-divider" />
 
-                {/* Coming Soon Section */}
-                <div className="launcher-section" style={{ gap: '0.75rem', marginBottom: '0.5rem' }}>
-                    <h3 className="launcher-section-title">Coming Soon</h3>
-                    <div className="launcher-main-grid">
-                        {COMING_SOON_PRODUCTS.map(prod => {
-                            const IconComponent = prod.icon;
-                            return (
-                                <div
-                                    key={prod.name}
-                                    className="launcher-all-card coming-soon"
-                                    style={{ backgroundColor: `${prod.color}12`, color: prod.color }}
-                                    data-tooltip={`${prod.name}`}
-                                    title={`${prod.name}`}
-                                >
-                                    <IconComponent size={28} strokeWidth={2.2} />
-                                </div>
-                            );
-                        })}
+                {/* Coming Soon Section - Beta Labs Showcase */}
+                <div className="launcher-labs-container">
+                    <div className="launcher-labs-glow" />
+                    
+                    <div className="launcher-labs-icon-wrapper">
+                        <Sparkles size={22} className="launcher-labs-sparkles-icon" />
+                    </div>
+
+                    <div className="launcher-labs-badge">
+                        <span>BETA LABS RELEASE</span>
+                    </div>
+
+                    <h3 className="launcher-labs-title">
+                        COMING SOON
+                    </h3>
+
+                    <p className="launcher-labs-description">
+                        Building the next generation of Beta applications for productivity, finance, and business.
+                    </p>
+
+                    <div className="launcher-labs-divider" />
+
+                    <div className="launcher-labs-status">
+                        <span className="launcher-labs-status-icon">🚀</span>
+                        <span>New innovations arriving soon</span>
                     </div>
                 </div>
             </div>
@@ -724,10 +724,12 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-all-card {
                     position: relative;
                     display: flex;
+                    flex-direction: column;
                     align-items: center;
                     justify-content: center;
-                    width: 68px;
-                    height: 68px;
+                    gap: 4px;
+                    width: 74px;
+                    height: 74px;
                     border-radius: 16px;
                     cursor: pointer;
                     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -735,6 +737,26 @@ const ProductLauncher = ({ onClose }) => {
                     user-select: none;
                     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
                     border: 1px solid #f1f5f9;
+                    padding: 0.5rem 0.25rem;
+                }
+                .launcher-all-name {
+                    font-size: 0.62rem;
+                    font-weight: 800;
+                    color: #64748b;
+                    text-align: center;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    width: 100%;
+                    padding: 0 2px;
+                }
+                .launcher-all-icon-wrapper {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    width: 24px;
+                    height: 24px;
                 }
                 .launcher-all-card:hover {
                     transform: scale(1.08);
@@ -778,6 +800,121 @@ const ProductLauncher = ({ onClose }) => {
                     transform: none;
                     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
                     border-color: #f1f5f9;
+                }
+
+                /* Beta Labs Showcase Styling */
+                .launcher-labs-container {
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    padding: 2.25rem 1.5rem;
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(248, 250, 252, 0.85) 100%);
+                    border: 1px solid rgba(226, 232, 240, 0.8);
+                    border-radius: 20px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.05),
+                                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+                    backdrop-filter: blur(12px);
+                    margin-bottom: 0.5rem;
+                    width: 100%;
+                    gap: 0.75rem;
+                }
+                .launcher-labs-glow {
+                    position: absolute;
+                    top: -20%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 140px;
+                    height: 140px;
+                    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+                    pointer-events: none;
+                    z-index: 0;
+                    animation: labs-pulse 4s ease-in-out infinite alternate;
+                }
+                @keyframes labs-pulse {
+                    0% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+                    100% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+                }
+                .launcher-labs-icon-wrapper {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 44px;
+                    height: 44px;
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 50%;
+                    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+                    z-index: 1;
+                    animation: labs-float 3s ease-in-out infinite alternate;
+                }
+                @keyframes labs-float {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-4px); }
+                }
+                .launcher-labs-sparkles-icon {
+                    color: #6366f1;
+                    animation: labs-rotate 6s linear infinite;
+                }
+                @keyframes labs-rotate {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                .launcher-labs-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    padding: 0.25rem 0.65rem;
+                    background: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%);
+                    border: 1px solid rgba(99, 102, 241, 0.15);
+                    border-radius: 100px;
+                    font-size: 0.58rem;
+                    font-weight: 850;
+                    color: #4f46e5;
+                    letter-spacing: 0.75px;
+                    z-index: 1;
+                    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.02);
+                }
+                .launcher-labs-title {
+                    font-size: 1.15rem;
+                    font-weight: 900;
+                    margin: 0.2rem 0 0 0;
+                    letter-spacing: 1.5px;
+                    background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #db2777 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    z-index: 1;
+                }
+                .launcher-labs-description {
+                    font-size: 0.72rem;
+                    color: #475569;
+                    line-height: 1.5;
+                    margin: 0;
+                    font-weight: 550;
+                    max-width: 250px;
+                    z-index: 1;
+                }
+                .launcher-labs-divider {
+                    height: 1px;
+                    background: linear-gradient(90deg, rgba(226, 232, 240, 0) 0%, rgba(226, 232, 240, 0.8) 50%, rgba(226, 232, 240, 0) 100%);
+                    width: 80%;
+                    margin: 0.25rem 0;
+                    z-index: 1;
+                }
+                .launcher-labs-status {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-size: 0.68rem;
+                    color: #64748b;
+                    font-weight: 700;
+                    z-index: 1;
+                }
+                .launcher-labs-status-icon {
+                    animation: pulse 1.5s infinite alternate;
                 }
 
                 /* Premium Tooltips */
