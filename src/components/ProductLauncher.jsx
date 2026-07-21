@@ -448,7 +448,7 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-header-left {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 10px;
                     min-width: 0;
                 }
                 .launcher-beta-logo-img {
