@@ -218,18 +218,22 @@ const RightSidebar = ({
                 {/* Top icons */}
                 <div className="rightpanel-section">
                     {topIcons.map((item) => (
-                        <button
-                            key={item.id}
-                            type="button"
-                            className={`rightpanel-btn${item.active ? ' rightpanel-btn--active' : ''}${item.mobileOnly ? ' md:hidden' : ''}`}
-                            onClick={item.action}
-                            title={item.title}
-                            aria-label={item.title}
-                        >
-                            <span className={`rightpanel-icon ${item.iconClass}`}>
-                                {item.icon}
-                            </span>
-                        </button>
+                        <React.Fragment key={item.id}>
+                            <button
+                                type="button"
+                                className={`rightpanel-btn${item.active ? ' rightpanel-btn--active' : ''}${item.mobileOnly ? ' md:hidden' : ''}`}
+                                onClick={item.action}
+                                title={item.title}
+                                aria-label={item.title}
+                            >
+                                <span className={`rightpanel-icon ${item.iconClass}`}>
+                                    {item.icon}
+                                </span>
+                            </button>
+                            {item.id === 'launcher' && (
+                                <div className="rightpanel-logo-divider" />
+                            )}
+                        </React.Fragment>
                     ))}
                 </div>
 

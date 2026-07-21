@@ -2653,6 +2653,13 @@ div[style*="background-color: '#F0F9F4'"] {
     margin: 4px 0;
 }
 
+.rightpanel-logo-divider {
+    width: 24px;
+    height: 1px;
+    background: #E5E7EB;
+    margin: 6px auto;
+}
+
 /* ================================================================
    CALCULATOR OVERLAY — dims content behind the calc panel
    Covers: main content + left sidebar
