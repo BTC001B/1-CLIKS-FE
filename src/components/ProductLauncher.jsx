@@ -568,10 +568,10 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-toggle-header {
                     display: flex;
                     align-items: center;
+                    justify-content: center;
                     gap: 0.5rem;
                     border-bottom: 1px solid #e2e8f0;
                     padding-bottom: 0.4rem;
-                    padding-left: 0.2rem;
                 }
                 .launcher-toggle-tab {
                     font-size: 0.72rem;
