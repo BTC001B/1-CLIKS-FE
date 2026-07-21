@@ -155,12 +155,9 @@ const ProductLauncher = ({ onClose }) => {
                         alt="Beta Logo" 
                         className="launcher-beta-logo-img" 
                     />
-                    <img 
-                        id="launcher-title"
-                        src="/beta_wordmark.png" 
-                        alt="BETA Wordmark" 
-                        className="launcher-beta-wordmark-img" 
-                    />
+                    <h2 id="launcher-title" className="launcher-brand-title">
+                        BETA
+                    </h2>
                 </div>
                 <div className="launcher-actions">
                     <button 
@@ -414,6 +411,8 @@ const ProductLauncher = ({ onClose }) => {
 
             {/* Premium Styles */}
             <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@900&display=swap');
+
                 .calc-panel {
                     overflow-x: hidden !important;
                 }
@@ -457,10 +456,18 @@ const ProductLauncher = ({ onClose }) => {
                     object-fit: contain;
                     border-radius: 6px;
                 }
-                .launcher-beta-wordmark-img {
-                    height: 28px;
-                    width: auto;
-                    object-fit: contain;
+                .launcher-brand-title {
+                    font-family: 'League Spartan', 'Anton', sans-serif;
+                    font-weight: 900;
+                    font-size: 28px;
+                    color: #000000;
+                    text-transform: uppercase;
+                    letter-spacing: -1.5px;
+                    line-height: 1;
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    align-items: center;
                 }
                 .launcher-title {
                     font-size: 1.2rem;
