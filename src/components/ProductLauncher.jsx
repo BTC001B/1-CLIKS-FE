@@ -64,6 +64,7 @@ const ProductLauncher = ({ onClose }) => {
     const queryClient = useQueryClient();
     const [isEditMode, setIsEditMode] = useState(false);
     const [activeTab, setActiveTab] = useState('BASE'); // 'BASE', 'PUBLIC' or 'BUSINESS'
+    const [selectedTab, setSelectedTab] = useState('FAVORITES'); // 'FAVORITES' or 'RECENTS'
 
     // Fetch recents from localStorage, default to empty array
     const [recents, setRecents] = useState(() => {
@@ -180,95 +181,108 @@ const ProductLauncher = ({ onClose }) => {
             {/* Scrollable Container */}
             <div className="launcher-scrollable">
                 
-                {/* Favorites & Recent View Split Container */}
-                <div className="launcher-split-container">
-                    {/* Left Section: Favorites */}
-                    <div className="launcher-split-pane">
-                        <span className="launcher-split-subtitle">Favorites</span>
-                        {favorites.length === 0 ? (
-                            <div className="launcher-split-empty">
-                                No favorites
-                            </div>
-                        ) : (
-                            <div className="launcher-split-grid">
-                                {favorites.slice(0, 4).map(favName => {
-                                    const prod = ALL_PRODUCTS.find(p => p.name === favName);
-                                    if (!prod) return null;
-                                    const IconComponent = prod.icon;
-                                    return (
-                                        <div 
-                                            key={prod.name} 
-                                            className={`launcher-mini-card ${isEditMode ? 'edit-mode' : ''}`}
-                                            onClick={() => handleProductClick(prod.name)}
-                                            role="button"
-                                            tabIndex={0}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' || e.key === ' ') {
-                                                    e.preventDefault();
-                                                    handleProductClick(prod.name);
-                                                }
-                                            }}
-                                        >
-                                            {isEditMode && (
-                                                <button 
-                                                    className="launcher-mini-remove-btn" 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleFavorite(prod.name);
-                                                    }}
-                                                    aria-label={`Remove ${prod.name} from favorites`}
-                                                >
-                                                    <X size={8} strokeWidth={3} />
-                                                </button>
-                                            )}
-                                            <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <IconComponent size={20} strokeWidth={2.5} />
-                                            </div>
-                                            <span className="launcher-mini-name">{prod.name}</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
+                {/* Favorites & Recent View Toggle Container */}
+                <div className="launcher-toggle-container">
+                    <div className="launcher-toggle-header">
+                        <button
+                            className={`launcher-toggle-tab ${selectedTab === 'FAVORITES' ? 'active' : ''}`}
+                            onClick={() => setSelectedTab('FAVORITES')}
+                        >
+                            Favorites
+                        </button>
+                        <span className="launcher-toggle-divider">|</span>
+                        <button
+                            className={`launcher-toggle-tab ${selectedTab === 'RECENTS' ? 'active' : ''}`}
+                            onClick={() => setSelectedTab('RECENTS')}
+                        >
+                            Recent
+                        </button>
                     </div>
 
-                    {/* Divider */}
-                    <div className="launcher-split-divider" />
-
-                    {/* Right Section: Recent View */}
-                    <div className="launcher-split-pane">
-                        <span className="launcher-split-subtitle">Recent View</span>
-                        {recents.length === 0 ? (
-                            <div className="launcher-split-empty">
-                                No recents
+                    <div className="launcher-toggle-content-wrapper">
+                        {selectedTab === 'FAVORITES' ? (
+                            <div className="launcher-toggle-pane">
+                                {favorites.length === 0 ? (
+                                    <div className="launcher-split-empty">
+                                        No favorites
+                                    </div>
+                                ) : (
+                                    <div className="launcher-split-grid">
+                                        {favorites.slice(0, 4).map(favName => {
+                                            const prod = ALL_PRODUCTS.find(p => p.name === favName);
+                                            if (!prod) return null;
+                                            const IconComponent = prod.icon;
+                                            return (
+                                                <div 
+                                                    key={prod.name} 
+                                                    className={`launcher-mini-card ${isEditMode ? 'edit-mode' : ''}`}
+                                                    onClick={() => handleProductClick(prod.name)}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                            e.preventDefault();
+                                                            handleProductClick(prod.name);
+                                                        }
+                                                    }}
+                                                >
+                                                    {isEditMode && (
+                                                        <button 
+                                                            className="launcher-mini-remove-btn" 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleFavorite(prod.name);
+                                                            }}
+                                                            aria-label={`Remove ${prod.name} from favorites`}
+                                                        >
+                                                            <X size={8} strokeWidth={3} />
+                                                        </button>
+                                                    )}
+                                                    <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <IconComponent size={20} strokeWidth={2.5} />
+                                                    </div>
+                                                    <span className="launcher-mini-name">{prod.name}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         ) : (
-                            <div className="launcher-split-grid">
-                                {recents.map(recentName => {
-                                    const prod = ALL_PRODUCTS.find(p => p.name === recentName);
-                                    if (!prod) return null;
-                                    const IconComponent = prod.icon;
-                                    return (
-                                        <div 
-                                            key={prod.name} 
-                                            className="launcher-mini-card"
-                                            onClick={() => handleProductClick(prod.name)}
-                                            role="button"
-                                            tabIndex={0}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' || e.key === ' ') {
-                                                    e.preventDefault();
-                                                    handleProductClick(prod.name);
-                                                }
-                                            }}
-                                        >
-                                            <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <IconComponent size={20} strokeWidth={2.5} />
-                                            </div>
-                                            <span className="launcher-mini-name">{prod.name}</span>
-                                        </div>
-                                    );
-                                })}
+                            <div className="launcher-toggle-pane">
+                                {recents.length === 0 ? (
+                                    <div className="launcher-split-empty">
+                                        No recents
+                                    </div>
+                                ) : (
+                                    <div className="launcher-split-grid">
+                                        {recents.map(recentName => {
+                                            const prod = ALL_PRODUCTS.find(p => p.name === recentName);
+                                            if (!prod) return null;
+                                            const IconComponent = prod.icon;
+                                            return (
+                                                <div 
+                                                    key={prod.name} 
+                                                    className="launcher-mini-card"
+                                                    onClick={() => handleProductClick(prod.name)}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                            e.preventDefault();
+                                                            handleProductClick(prod.name);
+                                                        }
+                                                    }}
+                                                >
+                                                    <div style={{ color: prod.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <IconComponent size={20} strokeWidth={2.5} />
+                                                    </div>
+                                                    <span className="launcher-mini-name">{prod.name}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -539,9 +553,10 @@ const ProductLauncher = ({ onClose }) => {
                     gap: 6px;
                 }
 
-                /* Favorites & Recent Split Container */
-                .launcher-split-container {
+                /* Favorites & Recent Toggle Container */
+                .launcher-toggle-container {
                     display: flex;
+                    flex-direction: column;
                     background: #f8fafc;
                     border: 1px solid #e2e8f0;
                     border-radius: 16px;
@@ -550,31 +565,49 @@ const ProductLauncher = ({ onClose }) => {
                     gap: 0.65rem;
                     align-items: stretch;
                 }
-                .launcher-split-pane {
-                    flex: 1;
+                .launcher-toggle-header {
                     display: flex;
-                    flex-direction: column;
+                    align-items: center;
                     gap: 0.5rem;
-                    min-width: 0;
+                    border-bottom: 1px solid #e2e8f0;
+                    padding-bottom: 0.4rem;
+                    padding-left: 0.2rem;
                 }
-                .launcher-split-subtitle {
+                .launcher-toggle-tab {
                     font-size: 0.72rem;
                     font-weight: 850;
-                    color: #475569;
+                    color: #94a3b8;
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                    padding: 0.2rem 0;
+                    transition: all 0.2s ease;
+                    border-bottom: 2px solid transparent;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
-                    margin-bottom: 0.2rem;
+                    font-family: inherit;
                 }
-                .launcher-split-divider {
-                    width: 1px;
-                    background: #e2e8f0;
-                    align-self: stretch;
+                .launcher-toggle-tab:hover {
+                    color: #475569;
+                }
+                .launcher-toggle-tab.active {
+                    color: #6366F1;
+                    border-bottom: 2px solid #6366F1;
+                }
+                .launcher-toggle-divider {
+                    color: #cbd5e1;
+                    font-size: 0.7rem;
+                    user-select: none;
+                }
+                .launcher-toggle-pane {
+                    animation: labs-fade-in 0.25s ease-out forwards;
+                    width: 100%;
                 }
                 .launcher-split-empty {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    height: 100%;
+                    min-height: 58px;
                     border: 1px dashed #cbd5e1;
                     border-radius: 10px;
                     font-size: 0.68rem;
@@ -582,10 +615,11 @@ const ProductLauncher = ({ onClose }) => {
                     font-weight: 600;
                     padding: 1rem;
                     text-align: center;
+                    width: 100%;
                 }
                 .launcher-split-grid {
                     display: grid;
-                    grid-template-columns: repeat(2, 1fr);
+                    grid-template-columns: repeat(4, 1fr);
                     gap: 0.5rem;
                 }
                 .launcher-mini-card {
