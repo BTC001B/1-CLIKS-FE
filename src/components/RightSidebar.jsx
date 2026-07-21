@@ -43,13 +43,13 @@ const SettingsDrawer = ({ isOpen, onClose }) => {
     }, [isOpen, onClose]);
 
     const sections = [
-        { icon: <Sliders size={18} />,  label: 'General',       description: 'App preferences & defaults',    action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <Palette size={18} />,  label: 'Appearance',    description: 'Theme, colors, display',         action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <Bell size={18} />,     label: 'Notifications', description: 'Alerts, reminders, push',        action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <User size={18} />,     label: 'Account',       description: 'Profile & personal info',        action: () => { navigate('/books/profile');  onClose(); } },
-        { icon: <Lock size={18} />,     label: 'Security',      description: 'Password, 2FA, sessions',        action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <Sliders size={18} />,  label: 'Preferences',   description: 'Language, currency, region',     action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <Info size={18} />,     label: 'About',         description: 'Version, licenses, updates',     action: () => { navigate('/books/faq');      onClose(); } },
+        { icon: <Sliders size={18} />, label: 'General', description: 'App preferences & defaults', action: () => { navigate('/books/settings'); onClose(); } },
+        { icon: <Palette size={18} />, label: 'Appearance', description: 'Theme, colors, display', action: () => { navigate('/books/settings'); onClose(); } },
+        { icon: <Bell size={18} />, label: 'Notifications', description: 'Alerts, reminders, push', action: () => { navigate('/books/settings'); onClose(); } },
+        { icon: <User size={18} />, label: 'Account', description: 'Profile & personal info', action: () => { navigate('/books/profile'); onClose(); } },
+        { icon: <Lock size={18} />, label: 'Security', description: 'Password, 2FA, sessions', action: () => { navigate('/books/settings'); onClose(); } },
+        { icon: <Sliders size={18} />, label: 'Preferences', description: 'Language, currency, region', action: () => { navigate('/books/settings'); onClose(); } },
+        { icon: <Info size={18} />, label: 'About', description: 'Version, licenses, updates', action: () => { navigate('/books/faq'); onClose(); } },
     ];
 
     return (
@@ -94,15 +94,15 @@ const CalcPanel = ({ onClose }) => {
 };
 
 /* ─── Right Sidebar ───────────────────────────────────────────────── */
-const RightSidebar = ({ 
-    isVisible = false, 
-    isCalcOpen = false, 
-    onCalcToggle, 
-    onCalcClose, 
-    onToolbarClose, 
-    onLauncherToggle, 
-    isLauncherOpen = false, 
-    onLauncherClose 
+const RightSidebar = ({
+    isVisible = false,
+    isCalcOpen = false,
+    onCalcToggle,
+    onCalcClose,
+    onToolbarClose,
+    onLauncherToggle,
+    isLauncherOpen = false,
+    onLauncherClose
 }) => {
     const navigate = useNavigate();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -118,7 +118,7 @@ const RightSidebar = ({
 
     // Escape key closes calc or launcher panel
     useEffect(() => {
-        const handler = (e) => { 
+        const handler = (e) => {
             if (e.key === 'Escape') {
                 if (isCalcOpen && onCalcClose) onCalcClose();
                 if (isLauncherOpen && onLauncherClose) onLauncherClose();
@@ -142,9 +142,9 @@ const RightSidebar = ({
             title: 'Product Launcher',
             iconClass: 'icon-launcher',
             icon: (
-                <img 
-                    src="/beta_logo.png" 
-                    alt="Beta Logo" 
+                <img
+                    src="/beta_logo.png"
+                    alt="Beta Logo"
                     className="sidebar-beta-logo-img"
                 />
             ),

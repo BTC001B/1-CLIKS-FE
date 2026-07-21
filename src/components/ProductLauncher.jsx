@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { profileService } from '../services';
-import { 
-    X, 
-    Mail, 
-    KeyRound, 
-    Wrench, 
-    DollarSign, 
+import {
+    X,
+    Mail,
+    KeyRound,
+    Wrench,
+    DollarSign,
     Briefcase,
     Edit2,
     Star,
@@ -101,8 +101,8 @@ const ProductLauncher = ({ onClose }) => {
     // Mutation to persist user's favorite products configuration in the database
     const mutation = useMutation({
         mutationFn: async (newFavorites) => {
-            return await profileService.updateProfile({ 
-                favorite_products: JSON.stringify(newFavorites) 
+            return await profileService.updateProfile({
+                favorite_products: JSON.stringify(newFavorites)
             });
         },
         onSuccess: () => {
@@ -155,7 +155,7 @@ const ProductLauncher = ({ onClose }) => {
                     </h2>
                 </div>
                 <div className="launcher-actions">
-                    <button 
+                    <button
                         className={`launcher-edit-btn ${isEditMode ? 'active' : ''}`}
                         onClick={() => setIsEditMode(prev => !prev)}
                         aria-label={isEditMode ? "Exit edit mode" : "Enter edit favorites mode"}
@@ -163,8 +163,8 @@ const ProductLauncher = ({ onClose }) => {
                         {isEditMode ? <Check size={14} /> : <Edit2 size={14} />}
                         {isEditMode ? 'Done' : 'Edit'}
                     </button>
-                    <button 
-                        className="launcher-close-btn" 
+                    <button
+                        className="launcher-close-btn"
                         onClick={onClose}
                         aria-label="Close launcher panel"
                     >
@@ -175,7 +175,7 @@ const ProductLauncher = ({ onClose }) => {
 
             {/* Scrollable Container */}
             <div className="launcher-scrollable">
-                
+
                 {/* Favorites & Recent View Toggle Container */}
                 <div className="launcher-toggle-container">
                     <div className="launcher-toggle-header">
@@ -212,8 +212,8 @@ const ProductLauncher = ({ onClose }) => {
                                             if (!prod) return null;
                                             const IconComponent = prod.icon;
                                             return (
-                                                <div 
-                                                    key={prod.name} 
+                                                <div
+                                                    key={prod.name}
                                                     className={`launcher-mini-card ${isEditMode ? 'edit-mode' : ''}`}
                                                     onClick={() => handleProductClick(prod.name)}
                                                     role="button"
@@ -226,8 +226,8 @@ const ProductLauncher = ({ onClose }) => {
                                                     }}
                                                 >
                                                     {isEditMode && (
-                                                        <button 
-                                                            className="launcher-mini-remove-btn" 
+                                                        <button
+                                                            className="launcher-mini-remove-btn"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 toggleFavorite(prod.name);
@@ -260,8 +260,8 @@ const ProductLauncher = ({ onClose }) => {
                                             if (!prod) return null;
                                             const IconComponent = prod.icon;
                                             return (
-                                                <div 
-                                                    key={prod.name} 
+                                                <div
+                                                    key={prod.name}
                                                     className="launcher-mini-card"
                                                     onClick={() => handleProductClick(prod.name)}
                                                     role="button"
@@ -344,7 +344,7 @@ const ProductLauncher = ({ onClose }) => {
 
                                     {/* Star Toggle shown in Edit Mode */}
                                     {isEditMode && (
-                                        <button 
+                                        <button
                                             className="launcher-grid-star-btn"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -352,11 +352,11 @@ const ProductLauncher = ({ onClose }) => {
                                             }}
                                             aria-label={isFav ? `Remove ${prod.name} from favorites` : `Add ${prod.name} to favorites`}
                                         >
-                                            <Star 
-                                                size={12} 
-                                                fill={isFav ? "#F59E0B" : "none"} 
-                                                stroke={isFav ? "#F59E0B" : "#94a3b8"} 
-                                                strokeWidth={2} 
+                                            <Star
+                                                size={12}
+                                                fill={isFav ? "#F59E0B" : "none"}
+                                                stroke={isFav ? "#F59E0B" : "#94a3b8"}
+                                                strokeWidth={2}
                                             />
                                         </button>
                                     )}
@@ -371,7 +371,7 @@ const ProductLauncher = ({ onClose }) => {
                 {/* Coming Soon Section - Beta Labs Showcase */}
                 <div className="launcher-labs-container">
                     <div className="launcher-labs-glow" />
-                    
+
                     <div className="launcher-labs-icon-wrapper">
                         <Sparkles size={22} className="launcher-labs-sparkles-icon" />
                     </div>
@@ -446,7 +446,7 @@ const ProductLauncher = ({ onClose }) => {
                     font-family: 'Saira Stencil One', 'Anton', sans-serif;
                     font-weight: 900;
                     font-size: 28px;
-                    color: #000000;
+                    color: #004aad;
                     text-transform: uppercase;
                     letter-spacing: -1.5px;
                     line-height: 1;

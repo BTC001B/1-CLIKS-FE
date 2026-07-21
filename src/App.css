@@ -2191,22 +2191,29 @@ th {
     color: #0284c7;
     font-weight: 700;
 }
+
 /* Print-Specific Styles */
 @media print {
     body {
         background: white !important;
         color: #0f172a !important;
     }
+
     body * {
         visibility: hidden;
     }
-    #invoice-print-area, #invoice-print-area * {
+
+    #invoice-print-area,
+    #invoice-print-area * {
         visibility: visible;
     }
-    #invoice-print-area .no-print, #invoice-print-area .no-print * {
+
+    #invoice-print-area .no-print,
+    #invoice-print-area .no-print * {
         display: none !important;
         visibility: hidden !important;
     }
+
     #invoice-print-area {
         position: absolute !important;
         left: 0 !important;
@@ -2224,6 +2231,7 @@ th {
         overflow: visible !important;
         display: block !important;
     }
+
     .ledger-modal-scrollbar {
         max-height: none !important;
         height: auto !important;
@@ -2232,23 +2240,28 @@ th {
         border: none !important;
         border-radius: 0 !important;
     }
+
     table {
         width: 100% !important;
         border-collapse: collapse !important;
     }
+
     th {
         background-color: #f1f5f9 !important;
         color: #0f172a !important;
         border-bottom: 2px solid #cbd5e1 !important;
         font-weight: 800 !important;
     }
+
     td {
         border-bottom: 1px solid #e2e8f0 !important;
         color: #334155 !important;
     }
+
     tr {
         page-break-inside: avoid !important;
     }
+
     @page {
         size: A4 portrait;
         margin: 15mm;
@@ -2415,23 +2428,23 @@ div[style*="background-color: '#F0F9F4'"] {
         align-items: flex-start;
         gap: 1rem;
     }
-    
+
     .dashboard-header-actions {
         width: 100%;
         justify-content: flex-start;
         flex-wrap: wrap;
         gap: 0.75rem;
     }
-    
+
     .dashboard-search-wrapper {
         flex: 1;
         min-width: 200px;
     }
-    
+
     .dashboard-search-input {
         width: 100%;
     }
-    
+
     .inventory-health-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
@@ -2452,7 +2465,7 @@ div[style*="background-color: '#F0F9F4'"] {
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
-    
+
     .dashboard-stat-card:nth-child(3) {
         grid-column: span 2;
     }
@@ -2460,31 +2473,31 @@ div[style*="background-color: '#F0F9F4'"] {
     .dashboard-stat-card {
         padding: 1.25rem;
     }
-    
+
     .dashboard-chart-card {
         padding: 1.25rem;
     }
-    
+
     .dashboard-chart-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .dashboard-chart-bars-container {
         gap: 0.5rem;
         padding: 0;
     }
-    
+
     .dashboard-goal-card {
         padding: 1.5rem;
     }
-    
+
     .dashboard-ops-card {
         padding: 1.5rem;
     }
-    
+
     .breadcrumbs-container {
         padding: 0 1rem;
         padding-top: 1rem;
@@ -2504,17 +2517,24 @@ div[style*="background-color: '#F0F9F4'"] {
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(6, 78, 59, 0.4); /* soft emerald translucent shade to match cliks branding! */
+        background-color: rgba(6, 78, 59, 0.4);
+        /* soft emerald translucent shade to match cliks branding! */
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
-        z-index: 25; /* sits behind sidebar (30) but in front of content */
+        z-index: 25;
+        /* sits behind sidebar (30) but in front of content */
         animation: fadeInBackdrop 0.2s ease-out;
     }
 }
 
 @keyframes fadeInBackdrop {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 
@@ -2524,7 +2544,8 @@ div[style*="background-color: '#F0F9F4'"] {
    ================================================================ */
 .rightpanel {
     position: fixed;
-    top: 64px;                   /* directly below the 64px header */
+    top: 64px;
+    /* directly below the 64px header */
     right: 0;
     bottom: 0;
     width: 72px;
@@ -2667,12 +2688,15 @@ div[style*="background-color: '#F0F9F4'"] {
    ================================================================ */
 .calc-overlay {
     position: fixed;
-    top: 64px;         /* below the header */
+    top: 64px;
+    /* below the header */
     left: 0;
-    right: 72px;       /* stops before the right toolbar */
+    right: 72px;
+    /* stops before the right toolbar */
     bottom: 0;
     background: rgba(0, 0, 0, 0.35);
-    z-index: 198;      /* above content, below calc-panel (199) and rightpanel (200) */
+    z-index: 198;
+    /* above content, below calc-panel (199) and rightpanel (200) */
     cursor: pointer;
     animation: calcOverlayIn 0.22s ease;
 }
@@ -2689,8 +2713,13 @@ div[style*="background-color: '#F0F9F4'"] {
 }
 
 @keyframes calcOverlayIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* ================================================================
@@ -2700,7 +2729,8 @@ div[style*="background-color: '#F0F9F4'"] {
 .calc-panel {
     position: fixed;
     top: 64px;
-    right: 72px;                 /* left edge of toolbar */
+    right: 72px;
+    /* left edge of toolbar */
     bottom: 0;
     width: 400px;
     max-width: calc(100vw - 80px);
@@ -2715,8 +2745,15 @@ div[style*="background-color: '#F0F9F4'"] {
 }
 
 @keyframes calcPanelIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 /* ================================================================
@@ -2877,12 +2914,15 @@ div[style*="background-color: '#F0F9F4'"] {
 /* Responsive — show toolbar when toggled on very small screens */
 @media (max-width: 640px) {
     .rightpanel {
-        z-index: 250; /* ensure it stays on top of content when toggled */
+        z-index: 250;
+        /* ensure it stays on top of content when toggled */
     }
+
     .calc-panel {
         right: 0;
         width: 100vw;
     }
+
     .rs-drawer {
         width: 100vw;
     }
@@ -2912,7 +2952,7 @@ div[style*="background-color: '#F0F9F4'"] {
     background: white;
     border: 1px solid #E2E8F0;
     cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     color: #1E293B;
 }
