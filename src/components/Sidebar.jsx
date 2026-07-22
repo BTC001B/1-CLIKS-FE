@@ -63,6 +63,58 @@ import logoPng from '../assets/cliks.png'; // Final branding
 
 const SHOW_BETA_CLUB_UI = true;
 
+const CrownIcon = ({ active }) => {
+    const canvasRef = React.useRef(null);
+
+    React.useEffect(() => {
+        const img = new Image();
+        img.src = '/crown_icon.png';
+        img.onload = () => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            try {
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imgData.data;
+                const targetColor = active ? { r: 255, g: 255, b: 255 } : { r: 27, g: 107, b: 58 };
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    
+                    if (r > 150 && g > 150 && b > 150) {
+                        data[i + 3] = 0;
+                    } else {
+                        data[i] = targetColor.r;
+                        data[i + 1] = targetColor.g;
+                        data[i + 2] = targetColor.b;
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+            } catch (e) {
+                console.error(e);
+            }
+        };
+    }, [active]);
+
+    return (
+        <canvas
+            ref={canvasRef}
+            style={{
+                width: '20px',
+                height: '20px',
+                objectFit: 'contain',
+                display: 'block'
+            }}
+        />
+    );
+};
+
 const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
 
     const location = useLocation();
@@ -393,7 +445,11 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                             onClick={() => handleItemClick(SHOW_BETA_CLUB_UI ? 'Beta Club Page' : 'Meetup', '/social/meetup')}
                         >
                             <div className="flex items-center gap-3">
-                                <Handshake size={20} style={{ color: (activeItem === (SHOW_BETA_CLUB_UI ? 'Beta Club Page' : 'Meetup')) ? '#ffffff' : '#1B6B3A' }} />
+                                {SHOW_BETA_CLUB_UI ? (
+                                    <CrownIcon active={activeItem === 'Beta Club Page'} />
+                                ) : (
+                                    <Handshake size={20} style={{ color: activeItem === 'Meetup' ? '#ffffff' : '#1B6B3A' }} />
+                                )}
                                 <span className="sidebar-label">{SHOW_BETA_CLUB_UI ? 'Beta Club' : 'Meetup'}</span>
                             </div>
                         </button>
