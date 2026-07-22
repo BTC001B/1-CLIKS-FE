@@ -285,7 +285,7 @@ const RightSidebar = ({
                         onClick={onLauncherClose}
                         aria-hidden="true"
                     />
-                    <div className="calc-panel">
+                    <div className="calc-panel launcher-panel">
                         <ProductLauncher onClose={onLauncherClose} />
                     </div>
                 </>

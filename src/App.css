@@ -2750,6 +2750,16 @@ div[style*="background-color: '#F0F9F4'"] {
     animation: calcPanelIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.launcher-panel {
+    top: calc(50vh - 275px) !important;
+    height: 550px !important;
+    right: 80px !important;
+    max-width: calc(100vw - 90px) !important;
+    border: 2px solid #7A5A3A !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+}
+
 @keyframes calcPanelIn {
     from {
         transform: translateX(100%);
