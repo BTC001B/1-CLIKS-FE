@@ -2636,7 +2636,7 @@ div[style*="background-color: '#F0F9F4'"] {
 .rightpanel-icon.icon-launcher {
     background-color: #ffffff;
     color: #6366F1;
-    border: 2px solid rgba(16, 185, 129, 0.5);
+    border: 2px solid #A0A0A0;
     box-sizing: border-box;
 }
 
@@ -2737,8 +2737,8 @@ div[style*="background-color: '#F0F9F4'"] {
     width: 400px;
     max-width: calc(100vw - 80px);
     background: #ffffff;
-    border-left: 1px solid #E2E8F0;
-    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.09);
+    border-left: 1px solid #D8F3E5;
+    box-shadow: none;
     z-index: 199;
     display: flex;
     flex-direction: column;
