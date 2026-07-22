@@ -34,7 +34,7 @@ const ALL_PRODUCTS = [
     {
         name: 'BNXmail',
         category: 'Public',
-        icon: '/bnxmail_logo.png',
+        icon: '/bnxmail_logo.jpg',
         color: '#004aad' // Blue
     },
     {
@@ -540,7 +540,6 @@ const ProductLauncher = ({ onClose }) => {
                     transform: rotate(90deg);
                 }
 
-                /* Scrollable Container */
                 .launcher-scrollable {
                     padding: 0.65rem 1rem;
                     overflow-y: auto;
@@ -550,6 +549,7 @@ const ProductLauncher = ({ onClose }) => {
                     flex-direction: column;
                     gap: 0.5rem;
                     width: 100%;
+                    zoom: 0.88;
                 }
                 
                 /* Custom Scrollbar for modern feel */
