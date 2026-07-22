@@ -2618,8 +2618,8 @@ div[style*="background-color: '#F0F9F4'"] {
 }
 
 .sidebar-beta-logo-img {
-    width: 27px;
-    height: 27px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
 }
 
@@ -2636,6 +2636,8 @@ div[style*="background-color: '#F0F9F4'"] {
 .rightpanel-icon.icon-launcher {
     background-color: #ffffff;
     color: #6366F1;
+    border: 2px solid rgba(16, 185, 129, 0.5);
+    box-sizing: border-box;
 }
 
 .rightpanel-icon.icon-contact {
