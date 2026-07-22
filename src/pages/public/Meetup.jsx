@@ -22,13 +22,15 @@ import {
     Building,
     Mail,
     QrCode,
-    ArrowRight
+    ArrowRight,
+    BadgeCheck
 } from 'lucide-react';
 import { meetupsService, profileService } from '../../services';
 import { QRCodeCanvas } from 'qrcode.react';
 import '../../App.css';
 
 const SHOW_BETA_CLUB_UI = true;
+const SHOW_DEAL_MARKETPLACE = true;
 const uiText = (meetupText, betaClubText) => SHOW_BETA_CLUB_UI ? betaClubText : meetupText;
 
 const CATEGORY_UI_LABELS = {
@@ -71,7 +73,7 @@ const CATEGORY_THEMES = {
 
 const Meetup = () => {
     const queryClient = useQueryClient();
-    const [filter, setFilter] = useState('All Events');
+    const [filter, setFilter] = useState(SHOW_DEAL_MARKETPLACE ? 'Active Deals' : 'All Events');
     const [searchTerm, setSearchTerm] = useState('');
     
     // Modals & Navigation
@@ -234,21 +236,27 @@ const Meetup = () => {
         const now = new Date();
         const evtDate = new Date(event.date);
 
-        if (filter === 'Upcoming') {
-            if (evtDate < now && event.date) return false;
-        } else if (filter === 'Technology') {
-            if (event.category !== 'Technology') return false;
-        } else if (filter === 'Science') {
-            if (event.category !== 'Science') return false;
-        } else if (filter === 'Finance') {
-            if (event.category !== 'Finance') return false;
-        } else if (filter === 'Workshops') {
-            if (event.category !== 'Workshop') return false;
-        } else if (filter === 'Webinars') {
-            if (event.category !== 'Webinar') return false;
-        } else if (filter === 'My Events') {
-            // Filter logic: events where current user is host OR has joined
-            if (event.user_id !== currentUser.id && event.has_joined !== 1) return false;
+        if (SHOW_DEAL_MARKETPLACE) {
+            if (filter === 'My Studio') {
+                if (event.user_id !== currentUser.id && event.has_joined !== 1) return false;
+            }
+        } else {
+            if (filter === 'Upcoming') {
+                if (evtDate < now && event.date) return false;
+            } else if (filter === 'Technology') {
+                if (event.category !== 'Technology') return false;
+            } else if (filter === 'Science') {
+                if (event.category !== 'Science') return false;
+            } else if (filter === 'Finance') {
+                if (event.category !== 'Finance') return false;
+            } else if (filter === 'Workshops') {
+                if (event.category !== 'Workshop') return false;
+            } else if (filter === 'Webinars') {
+                if (event.category !== 'Webinar') return false;
+            } else if (filter === 'My Events') {
+                // Filter logic: events where current user is host OR has joined
+                if (event.user_id !== currentUser.id && event.has_joined !== 1) return false;
+            }
         }
 
         if (searchTerm.trim()) {
@@ -318,6 +326,610 @@ const Meetup = () => {
             return dateStr;
         }
     };
+
+    if (SHOW_DEAL_MARKETPLACE) {
+        return (
+            <div style={{ padding: '1rem 1.75rem', background: '#F8FAFC', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                
+                {/* Scrollable Main Content Wrapper */}
+                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: '1.5rem' }}>
+
+                    {locationPermissionDenied && (
+                        <div style={{
+                            background: '#FEF2F2',
+                            border: '1px solid #FCA5A5',
+                            color: '#991B1B',
+                            padding: '0.85rem 1.25rem',
+                            borderRadius: '12px',
+                            marginBottom: '1.25rem',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            fontSize: '0.82rem',
+                            fontWeight: '750',
+                            boxShadow: '0 4px 12px rgba(220, 38, 38, 0.03)'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <MapPin size={16} color="#DC2626" />
+                                <span>Location services are disabled or blocked. Enable location permissions in your browser to unlock real-time OLC Plus Code matchmaking.</span>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    setLocationPermissionDenied(false);
+                                    requestLocation();
+                                }}
+                                style={{
+                                    background: '#DC2626',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.4rem 0.85rem',
+                                    borderRadius: '8px',
+                                    fontWeight: '800',
+                                    fontSize: '0.78rem',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Enable Location
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Header Presentation Board (Solid Chocolate Brown Rebranded) */}
+                    <div style={{
+                        background: '#3A231C',
+                        borderRadius: '16px',
+                        padding: '1.5rem 2rem',
+                        color: 'white',
+                        position: 'relative',
+                        overflow: 'visible',
+                        boxShadow: '0 8px 24px rgba(58, 35, 28, 0.15)',
+                        marginBottom: '1.25rem'
+                    }}>
+                        <div style={{ position: 'absolute', top: '-40%', right: '-10%', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.02)', filter: 'blur(70px)', pointerEvents: 'none' }} />
+
+                        <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                                    <span style={{
+                                        background: 'rgba(255, 255, 255, 0.1)',
+                                        backdropFilter: 'blur(10px)',
+                                        padding: '0.35rem 0.75rem',
+                                        borderRadius: '8px',
+                                        fontSize: '0.65rem',
+                                        fontWeight: '800',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.06em',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.4rem',
+                                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                                        color: '#E0E7FF'
+                                    }}>
+                                        <TrendingUp size={12} /> VENTURE CONNECT
+                                    </span>
+                                </div>
+                                <h1 style={{ fontSize: '1.8rem', fontWeight: '950', letterSpacing: '-0.02em', lineHeight: 1.2, margin: 0 }}>
+                                    BETA Club Deal Marketplace
+                                </h1>
+                                <p style={{ margin: '0.4rem 0 0.8rem 0', fontSize: '0.85rem', color: '#D7CCC8', fontWeight: '600', maxWidth: '550px', lineHeight: 1.4 }}>
+                                    Connect directly with verified founders, review pitches, and contact owners instantly.
+                                </p>
+                                <div style={{ position: 'relative', display: 'inline-block' }}>
+                                    <button 
+                                        onClick={() => setIsLocationMenuOpen(!isLocationMenuOpen)}
+                                        style={{
+                                            background: 'rgba(255, 255, 255, 0.12)',
+                                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                                            padding: '0.35rem 0.75rem',
+                                            borderRadius: '8px',
+                                            fontSize: '0.72rem',
+                                            fontWeight: '800',
+                                            color: 'white',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                        onMouseOver={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
+                                        onMouseOut={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'}
+                                    >
+                                        <MapPin size={13} color="#DDB892" />
+                                        <span>
+                                            {gpsState ? (
+                                                `${cityName ? `${cityName}, ` : ''}${gpsState}`
+                                            ) : (
+                                                'Tiruvallur, Tamil Nadu'
+                                            )}
+                                        </span>
+                                        <span style={{ fontSize: '0.55rem', opacity: 0.8, marginLeft: '2px' }}>▼</span>
+                                    </button>
+
+                                    {isLocationMenuOpen && (
+                                        <>
+                                            <div 
+                                                onClick={() => setIsLocationMenuOpen(false)}
+                                                style={{ position: 'fixed', inset: 0, zIndex: 998, background: 'transparent' }} 
+                                            />
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '110%',
+                                                left: 0,
+                                                background: 'white',
+                                                borderRadius: '12px',
+                                                boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                                                border: '1px solid #E2E8F0',
+                                                padding: '0.4rem',
+                                                minWidth: '220px',
+                                                zIndex: 999,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '2px'
+                                            }}>
+                                                <div style={{ fontSize: '0.62rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', padding: '0.3rem 0.5rem', borderBottom: '1px solid #F1F5F9', marginBottom: '0.2rem' }}>
+                                                    Select Matching Region
+                                                </div>
+                                                {[
+                                                    { label: '📍 Tiruvallur, Tamil Nadu', city: 'Tiruvallur', state: 'Tamil Nadu' },
+                                                    { label: '📍 Chennai, Tamil Nadu', city: 'Chennai', state: 'Tamil Nadu' },
+                                                    { label: '📍 Trichy, Tamil Nadu', city: 'Trichy', state: 'Tamil Nadu' },
+                                                    { label: '📍 Mumbai, Maharashtra', city: 'Mumbai', state: 'Maharashtra' },
+                                                    { label: '📍 Bengaluru, Karnataka', city: 'Bengaluru', state: 'Karnataka' },
+                                                    { label: '📍 Delhi NCR', city: 'Delhi NCR', state: 'Delhi' }
+                                                ].map((opt) => (
+                                                    <button
+                                                        key={opt.label}
+                                                        onClick={() => {
+                                                            setCityName(opt.city);
+                                                            setGpsState(opt.state);
+                                                            setLocationPermissionDenied(false);
+                                                            setIsLocationMenuOpen(false);
+                                                        }}
+                                                        style={{
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            textAlign: 'left',
+                                                            padding: '0.5rem 0.6rem',
+                                                            fontSize: '0.78rem',
+                                                            fontWeight: '750',
+                                                            color: '#334155',
+                                                            borderRadius: '8px',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.15s ease',
+                                                            width: '100%'
+                                                        }}
+                                                        onMouseOver={e => {
+                                                            e.currentTarget.style.background = '#F1F5F9';
+                                                            e.currentTarget.style.color = '#3A231C';
+                                                        }}
+                                                        onMouseOut={e => {
+                                                            e.currentTarget.style.background = 'transparent';
+                                                            e.currentTarget.style.color = '#334155';
+                                                        }}
+                                                    >
+                                                        {opt.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsCreateModalOpen(true)}
+                                style={{
+                                    background: '#DDB892',
+                                    color: '#3A231C',
+                                    border: 'none',
+                                    padding: '0.75rem 1.5rem',
+                                    borderRadius: '10px',
+                                    fontWeight: '900',
+                                    fontSize: '0.88rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                                    transition: 'transform 0.2s ease'
+                                }}
+                                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.02)'}
+                                onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                                <Plus size={16} strokeWidth={3} /> List Your Venture
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Search and Navigation Panel */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+                        <div style={{ display: 'flex', gap: '0.35rem', background: '#E2E8F0', padding: '0.3rem', borderRadius: '12px', border: '1px solid #CBD5E1', boxShadow: '0 2px 6px rgba(0,0,0,0.01)' }}>
+                            {['Active Deals', 'My Studio'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setFilter(tab)}
+                                    style={{
+                                        padding: '0.45rem 1.25rem',
+                                        borderRadius: '8px',
+                                        fontSize: '0.78rem',
+                                        fontWeight: '800',
+                                        cursor: 'pointer',
+                                        border: 'none',
+                                        background: filter === tab ? 'white' : 'transparent',
+                                        color: '#1E293B',
+                                        boxShadow: filter === tab ? '0 2px 6px rgba(0,0,0,0.08)' : 'none',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div style={{ position: 'relative', flex: 1, maxWidth: '300px' }}>
+                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                            <input 
+                                type="text"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                placeholder="Search deals..."
+                                style={{
+                                    width: '100%',
+                                    padding: '0.55rem 1rem 0.55rem 2.3rem',
+                                    borderRadius: '10px',
+                                    border: '1px solid #E2E8F0',
+                                    outline: 'none',
+                                    fontSize: '0.82rem',
+                                    fontWeight: '600',
+                                    color: '#1E293B',
+                                    boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Deals List Workspace */}
+                    {isLoading ? (
+                        <div style={{ textAlign: 'center', padding: '6rem' }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid #E0C097', borderTopColor: '#3A231C', animation: 'spin 0.8s linear infinite', margin: '0 auto 1rem' }} />
+                            <p style={{ color: '#64748B', fontWeight: '700' }}>Fetching active deals...</p>
+                        </div>
+                    ) : sortedEvents.length === 0 ? (
+                        <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #E2E8F0', padding: '6rem 2rem', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+                            <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: '#EDE9FE', color: '#3A231C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                                <Briefcase size={32} />
+                            </div>
+                            <h3 style={{ fontSize: '1.4rem', fontWeight: '850', color: '#1E293B', marginBottom: '0.5rem' }}>No active deals found</h3>
+                            <p style={{ color: '#64748B', maxWidth: '400px', margin: '0 auto', fontSize: '0.95rem', fontWeight: '500', lineHeight: 1.5 }}>
+                                {searchTerm ? "We couldn't locate any deals matching your search criteria." : "There are no deals currently listed. Click 'List Your Venture' to list the first one!"}
+                            </p>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+                            {sortedEvents.map((event) => {
+                                const isHost = event.user_id === currentUser.id;
+                                const hasJoined = event.has_joined === 1;
+                                const category = event.category || 'Technology';
+                                
+                                return (
+                                    <div key={event.id} style={{
+                                        background: 'white',
+                                        borderRadius: '16px',
+                                        overflow: 'hidden',
+                                        border: '1px solid #E2E8F0',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                        padding: '1.5rem',
+                                        cursor: 'default'
+                                    }}
+                                    onMouseOver={e => {
+                                        e.currentTarget.style.transform = 'translateY(-4px)';
+                                        e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.05)';
+                                    }}
+                                    onMouseOut={e => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.02)';
+                                    }}>
+                                        {/* Card Cover Header (Category and Verified badge) */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                            <span style={{
+                                                fontSize: '0.68rem',
+                                                fontWeight: '850',
+                                                color: '#A13F3F',
+                                                background: '#FFF0F0',
+                                                padding: '0.3rem 0.6rem',
+                                                borderRadius: '6px',
+                                                letterSpacing: '0.03em',
+                                                textTransform: 'uppercase'
+                                            }}>
+                                                {category.toUpperCase() === 'NETWORKING' ? 'RETAIL & COMMERCE' : category.toUpperCase()}
+                                            </span>
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: '#10B981', fontSize: '0.72rem', fontWeight: '850' }}>
+                                                <BadgeCheck size={14} color="#10B981" /> VERIFIED
+                                            </span>
+                                        </div>
+
+                                        <h3 style={{ fontSize: '1.2rem', fontWeight: '900', color: '#0F172A', marginBottom: '0.4rem', letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+                                            {event.title}
+                                        </h3>
+
+                                        <p style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '1rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontWeight: '500', lineHeight: 1.45, minHeight: '40px' }}>
+                                            {event.description}
+                                        </p>
+
+                                        {/* Location */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#64748B', fontWeight: '650', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
+                                            <MapPin size={13} style={{ color: '#94A3B8', flexShrink: 0 }} />
+                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.location || 'Chennai, Tamil Nadu'}</span>
+                                        </div>
+
+                                        {/* Goal & Equity details */}
+                                        <div style={{ 
+                                            background: '#F8FAFC', 
+                                            padding: '0.75rem 1rem', 
+                                            borderRadius: '12px', 
+                                            border: '1px solid #F1F5F9', 
+                                            display: 'grid', 
+                                            gridTemplateColumns: '1fr 1fr', 
+                                            gap: '0.5rem', 
+                                            marginBottom: '1.25rem' 
+                                        }}>
+                                            <div>
+                                                <span style={{ display: 'block', fontSize: '0.65rem', color: '#94A3B8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GOAL</span>
+                                                <span style={{ fontSize: '0.95rem', fontWeight: '850', color: '#1E293B' }}>{(!event.price || event.price === 'Free') ? '₹5,00,000' : event.price}</span>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <span style={{ display: 'block', fontSize: '0.65rem', color: '#94A3B8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>EQUITY</span>
+                                                <span style={{ fontSize: '0.95rem', fontWeight: '850', color: '#10B981' }}>{(event.time && event.time.includes('%')) ? event.time : '5%'}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Connect action */}
+                                        <div style={{ marginTop: 'auto' }}>
+                                            {isHost ? (
+                                                <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                                                    <div style={{ flex: 1, padding: '0.65rem', borderRadius: '10px', background: '#FEF3C7', color: '#D97706', fontWeight: '850', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                                        <Crown size={14} /> My Venture
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => { setRosterMeetupId(event.id); setIsRosterModalOpen(true); }}
+                                                        style={{ border: '1px solid #E2E8F0', padding: '0.65rem', borderRadius: '10px', background: 'white', color: '#1F2937', fontSize: '0.78rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                                                    >
+                                                        <Eye size={13} /> Connections
+                                                    </button>
+                                                </div>
+                                            ) : hasJoined ? (
+                                                <button 
+                                                    disabled
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.75rem',
+                                                        borderRadius: '10px',
+                                                        border: 'none',
+                                                        background: '#E2E8F0',
+                                                        color: '#64748B',
+                                                        fontWeight: '850',
+                                                        fontSize: '0.82rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: '4px'
+                                                    }}
+                                                >
+                                                    <BadgeCheck size={14} color="#10B981" /> Connected
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => joinMutation.mutate(event.id)}
+                                                    disabled={joinMutation.isPending}
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.75rem',
+                                                        borderRadius: '10px',
+                                                        border: 'none',
+                                                        background: '#0F172A',
+                                                        color: 'white',
+                                                        fontWeight: '850',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.82rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: '6px',
+                                                        boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)'
+                                                    }}
+                                                >
+                                                    <span>Connect</span>
+                                                    <ArrowRight size={14} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* ── MODAL: Host Connections Registry ── */}
+                <AnimatePresence>
+                    {isRosterModalOpen && (
+                        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(62, 39, 35, 0.4)', backdropFilter: 'blur(8px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                            <Motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                                style={{ background: 'white', borderRadius: '24px', width: '100%', maxWidth: '480px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', position: 'relative' }}
+                            >
+                                <button onClick={() => { setIsRosterModalOpen(false); setRosterMeetupId(null); }} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}><X size={16} /></button>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#3A231C', marginBottom: '0.5rem' }}>
+                                    <BadgeCheck size={20} color="#3A231C" />
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: '900', margin: 0 }}>Venture Connections</h3>
+                                </div>
+                                <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#64748B', fontWeight: '600' }}>Interested partners in: <span style={{ color: '#1E293B', fontWeight: '800' }}>{activeRosterEvent.title}</span></p>
+
+                                {isRosterLoading ? (
+                                    <div style={{ textAlign: 'center', padding: '3rem' }}>
+                                        <div style={{ width: '24px', height: '24px', border: '2px solid #DDB892', borderTopColor: '#3A231C', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 0.5rem' }} />
+                                        <p style={{ color: '#64748B', fontSize: '0.8rem', fontWeight: '700' }}>Loading connections records...</p>
+                                    </div>
+                                ) : attendeesList.length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94A3B8', border: '2px dashed #F1F5F9', borderRadius: '16px' }}>
+                                        <Users size={32} style={{ marginBottom: '0.5rem', opacity: 0.6 }} />
+                                        <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '700' }}>No connections listed yet.</p>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '320px', overflowY: 'auto', paddingRight: '4px' }}>
+                                        {attendeesList.map((att, index) => (
+                                            <div key={att.id || index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1rem', border: '1px solid #E2E8F0', borderRadius: '14px', background: '#F8FAFC' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#3A231C', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '0.85rem' }}>
+                                                        {att.username?.charAt(0).toUpperCase() || 'U'}
+                                                    </div>
+                                                    <div>
+                                                        <h5 style={{ margin: 0, fontSize: '0.88rem', fontWeight: '850', color: '#1F2937' }}>{att.username}</h5>
+                                                        <div style={{ display: 'flex', gap: '8px', marginTop: '0.15rem' }}>
+                                                            {att.business_name && <span style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.7rem', color: '#64748B', fontWeight: '600' }}><Building size={10} /> {att.business_name}</span>}
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.7rem', color: '#64748B', fontWeight: '600' }}><Mail size={10} /> {att.email}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </Motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
+                {/* ── MODAL: List Your Venture Modal ── */}
+                <AnimatePresence>
+                    {isCreateModalOpen && (
+                        <div style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(58, 35, 28, 0.4)', backdropFilter: 'blur(8px)',
+                            zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+                        }}>
+                            <Motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                                style={{
+                                    background: 'white', borderRadius: '28px', width: '100%', maxWidth: '520px', padding: '2.5rem',
+                                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', position: 'relative', overflowY: 'auto', maxHeight: '90vh'
+                                }}
+                            >
+                                <button onClick={() => setIsCreateModalOpen(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}>
+                                    <X size={18} />
+                                </button>
+
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: '950', color: '#3A231C', marginBottom: '1.75rem', letterSpacing: '-0.02em' }}>
+                                    List Your Venture
+                                </h2>
+
+                                <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const defaultDate = new Date().toISOString().split('T')[0];
+                                    createMutation.mutate({
+                                        ...newEvent,
+                                        date: newEvent.date || defaultDate,
+                                        price: newEvent.price || '₹5,00,000',
+                                        time: newEvent.time || '5%'
+                                    });
+                                }} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Venture Name</label>
+                                        <input
+                                            type="text" required
+                                            value={newEvent.title}
+                                            onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                                            placeholder="e.g. Beta Software"
+                                            style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.95rem', fontWeight: '600' }}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Venture Pitch Summary</label>
+                                        <textarea
+                                            required
+                                            value={newEvent.description}
+                                            onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                                            placeholder="Scaling AI-driven social engagement tools across emerging markets..."
+                                            rows={3}
+                                            style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', resize: 'none', fontFamily: 'inherit', fontSize: '0.95rem', fontWeight: '600' }}
+                                        />
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Funding Goal</label>
+                                            <input
+                                                type="text" required
+                                                value={newEvent.price === 'Free' ? '' : newEvent.price}
+                                                onChange={(e) => setNewEvent({...newEvent, price: e.target.value})}
+                                                placeholder="e.g. ₹5,00,000"
+                                                style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.95rem', fontWeight: '600' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Equity Offered</label>
+                                            <input
+                                                type="text" required
+                                                value={newEvent.time}
+                                                onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
+                                                placeholder="e.g. 5%"
+                                                style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.95rem', fontWeight: '600' }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Venture Classification</label>
+                                            <select
+                                                value={newEvent.category}
+                                                onChange={(e) => setNewEvent({...newEvent, category: e.target.value})}
+                                                style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontSize: '0.95rem', fontWeight: '600' }}
+                                            >
+                                                <option value="Technology">Technology</option>
+                                                <option value="Retail & Commerce">Retail & Commerce</option>
+                                                <option value="Finance & Fintech">Finance & Fintech</option>
+                                                <option value="Science & Innovation">Science & Innovation</option>
+                                                <option value="Education & Workshops">Education & Workshops</option>
+                                                <option value="Social & Community">Social & Community</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '800', color: '#64748B', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Venture Headquarters</label>
+                                            <input
+                                                type="text" required
+                                                value={newEvent.location}
+                                                onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+                                                placeholder="e.g. Chennai, Tamil Nadu"
+                                                style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.95rem', fontWeight: '600' }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="submit" disabled={createMutation.isPending}
+                                        style={{
+                                            marginTop: '1.25rem', width: '100%', padding: '1.1rem',
+                                            background: '#3A231C',
+                                            color: 'white', border: 'none', borderRadius: '16px',
+                                            fontWeight: '850', fontSize: '1.1rem', cursor: 'pointer',
+                                            boxShadow: '0 10px 20px rgba(58, 35, 28, 0.2)'
+                                        }}
+                                    >
+                                        {createMutation.isPending ? 'Publishing Deal...' : 'Publish Venture Deal'}
+                                    </button>
+                                </form>
+                            </Motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+            </div>
+        );
+    }
 
     return (
         <div style={{ padding: '1rem 1.75rem', background: '#F8FAFC', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
