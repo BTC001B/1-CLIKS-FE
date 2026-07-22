@@ -2606,6 +2606,10 @@ div[style*="background-color: '#F0F9F4'"] {
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
 }
 
+.rightpanel-btn--active .rightpanel-icon.icon-launcher {
+    box-shadow: none;
+}
+
 /* Colored icon squares */
 .rightpanel-icon {
     width: 44px;
