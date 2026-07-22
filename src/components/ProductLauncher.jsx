@@ -343,7 +343,7 @@ const ProductLauncher = ({ onClose }) => {
                                 <div
                                     key={prod.name}
                                     className={`launcher-all-card ${isEditMode ? 'edit-mode' : ''}`}
-                                    style={{ backgroundColor: `${prod.color}12`, color: prod.color }}
+                                    style={{ backgroundColor: '#FFFFFF', color: prod.color }}
                                     onClick={() => handleProductClick(prod.name)}
                                     role="button"
                                     tabIndex={0}
