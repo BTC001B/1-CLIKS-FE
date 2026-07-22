@@ -2,6 +2,8 @@ import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 
+const SHOW_BETA_CLUB_UI = true;
+
 const Breadcrumbs = ({ items }) => {
     const location = useLocation();
 
@@ -18,6 +20,7 @@ const Breadcrumbs = ({ items }) => {
         'home': 'Home',
         'finance': 'Finance',
         'public': 'Social',
+        'meetup': SHOW_BETA_CLUB_UI ? 'Beta Club' : 'Meetup',
         'financial-plan': 'Plan',
         'plan': 'Plan',
         'planner': 'Planner',

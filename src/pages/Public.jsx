@@ -44,6 +44,9 @@ import Meetup from './public/Meetup.jsx';
 import TradingDocs from './public/TradingDocs.jsx';
 
 
+const SHOW_BETA_CLUB_UI = true;
+const uiText = (meetupText, betaClubText) => SHOW_BETA_CLUB_UI ? betaClubText : meetupText;
+
 export default function Public() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -584,7 +587,7 @@ export default function Public() {
                             <span>Business & Startups</span>
                         </div>
                         <h1 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '1rem', lineHeight: 1.2 }}>
-                            Founders Meetup <br /> & Event Scheduler
+                            {uiText('Founders Meetup', 'Beta Club')} <br /> & {uiText('Event Scheduler', 'Community')}
                         </h1>
                         <p style={{
                             fontSize: '1.1rem',
@@ -692,8 +695,8 @@ export default function Public() {
                             <Calendar size={32} />
                         </div>
                         <div>
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1E293B', marginBottom: '0.5rem' }}>No Events Found</h3>
-                            <p style={{ color: '#64748B', maxWidth: '400px', margin: '0 auto' }}>There are no upcoming meetups scheduled right now. Click "Create Event" to schedule the first one!</p>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1E293B', marginBottom: '0.5rem' }}>{uiText('No Events Found', 'No Active Panels Found')}</h3>
+                            <p style={{ color: '#64748B', maxWidth: '400px', margin: '0 auto' }}>{uiText('There are no upcoming meetups scheduled right now. Click "Create Event" to schedule the first one!', 'There are no upcoming Beta Club events scheduled right now. Click "Create Event" to schedule the first one!')}</p>
                         </div>
                     </div>
                 ) : (

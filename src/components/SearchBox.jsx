@@ -16,6 +16,8 @@ import {
    Add entries here for every navigable destination.
    Keywords array allows partial matching on synonyms.
 ───────────────────────────────────────────────────────────────── */
+const SHOW_BETA_CLUB_UI = true;
+
 const SEARCH_INDEX = [
     // ── Books / Dashboard ──────────────────────────────────────
     { label: 'Dashboard',        path: '/books/dashboard',           icon: LayoutDashboard, category: 'Books',    keywords: ['dashboard', 'home', 'overview', 'console', 'books'] },
@@ -45,7 +47,13 @@ const SEARCH_INDEX = [
     { label: 'Planned Payments', path: '/finance/planned-payments',  icon: FileCheck,       category: 'Finance',  keywords: ['planned', 'scheduled', 'upcoming', 'recurring'] },
 
     // ── Social ─────────────────────────────────────────────────
-    { label: 'Meetup',           path: '/social/meetup',             icon: Users,           category: 'Social',   keywords: ['meetup', 'event', 'meet', 'social', 'network'] },
+    { 
+        label: SHOW_BETA_CLUB_UI ? 'Beta Club Page' : 'Meetup', 
+        path: '/social/meetup', 
+        icon: Users, 
+        category: 'Social', 
+        keywords: SHOW_BETA_CLUB_UI ? ['beta', 'club', 'meetup', 'event', 'meet', 'social', 'network'] : ['meetup', 'event', 'meet', 'social', 'network'] 
+    },
     { label: 'Trading Docs',     path: '/social/trading',            icon: LineChart,       category: 'Social',   keywords: ['trading', 'docs', 'market', 'trade'] },
     { label: 'Beta Club',        path: '/social/beta-club',          icon: Star,            category: 'Social',   keywords: ['beta', 'club', 'investor', 'founders'] },
 

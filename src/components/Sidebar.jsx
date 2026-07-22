@@ -61,6 +61,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../App.css';
 import logoPng from '../assets/cliks.png'; // Final branding
 
+const SHOW_BETA_CLUB_UI = true;
+
 const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
 
     const location = useLocation();
@@ -91,11 +93,11 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
             const qpage = params.get('page');
             // Support /social/:page path-based routing
             if (path === '/social/beta-club') return 'Beta Club';
-            if (path === '/social/meetup') return 'Meetup';
+            if (path === '/social/meetup') return SHOW_BETA_CLUB_UI ? 'Beta Club Page' : 'Meetup';
             if (path === '/social/trading') return 'Trading docs';
             // Legacy ?page= query param support
             if (qpage === 'investors') return 'Beta Club';
-            if (qpage === 'meetup') return 'Meetup';
+            if (qpage === 'meetup') return SHOW_BETA_CLUB_UI ? 'Beta Club Page' : 'Meetup';
             if (qpage === 'trading') return 'Trading docs';
         }
 
@@ -387,12 +389,12 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                     <>
                         {/* Meetup */}
                         <button
-                            className={`sidebar-item ${activeItem === 'Meetup' ? 'active' : ''}`}
-                            onClick={() => handleItemClick('Meetup', '/social/meetup')}
+                            className={`sidebar-item ${(activeItem === (SHOW_BETA_CLUB_UI ? 'Beta Club Page' : 'Meetup')) ? 'active' : ''}`}
+                            onClick={() => handleItemClick(SHOW_BETA_CLUB_UI ? 'Beta Club Page' : 'Meetup', '/social/meetup')}
                         >
                             <div className="flex items-center gap-3">
-                                <Handshake size={20} style={{ color: activeItem === 'Meetup' ? '#ffffff' : '#1B6B3A' }} />
-                                <span className="sidebar-label">Meetup</span>
+                                <Handshake size={20} style={{ color: (activeItem === (SHOW_BETA_CLUB_UI ? 'Beta Club Page' : 'Meetup')) ? '#ffffff' : '#1B6B3A' }} />
+                                <span className="sidebar-label">{SHOW_BETA_CLUB_UI ? 'Beta Club' : 'Meetup'}</span>
                             </div>
                         </button>
 

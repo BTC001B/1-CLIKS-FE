@@ -28,6 +28,33 @@ import { meetupsService, profileService } from '../../services';
 import { QRCodeCanvas } from 'qrcode.react';
 import '../../App.css';
 
+const SHOW_BETA_CLUB_UI = true;
+const uiText = (meetupText, betaClubText) => SHOW_BETA_CLUB_UI ? betaClubText : meetupText;
+
+const CATEGORY_UI_LABELS = {
+    'Networking': 'Networking Events',
+    'Technology': 'Beta Testing Programs',
+    'Science': 'Innovation Challenges',
+    'Finance': 'Product Launches',
+    'Workshop': 'Workshops',
+    'Webinar': 'Product Demos',
+    'Social': 'Community Sessions',
+    'Masterclass': 'Founder Talks',
+    'Startup': 'Beta Announcements',
+    'Business': 'Beta Club Community',
+};
+
+const TAB_UI_LABELS = {
+    'All Events': 'All Events',
+    'Upcoming': 'Beta Announcements',
+    'Technology': 'Beta Testing Programs',
+    'Science': 'Innovation Challenges',
+    'Finance': 'Product Launches',
+    'Workshops': 'Workshops',
+    'Webinars': 'Product Demos',
+    'My Events': 'My Registrations'
+};
+
 const CATEGORY_THEMES = {
     'Finance': { bg: '#1E3A8A', badge: '#FEE2E2', light: '#DBEAFE' },
     'Technology': { bg: '#6D28D9', badge: '#FEE2E2', light: '#F3E8FF' },
@@ -167,7 +194,7 @@ const Meetup = () => {
                 image_url: '',
                 max_seats: 100
             });
-            alert('✨ Executive meetup broadcast published successfully!');
+            alert(uiText('✨ Executive meetup broadcast published successfully!', '✨ Executive Beta Club community broadcast published successfully!'));
         },
         onError: (err) => {
             alert('Failed to schedule event: ' + (err?.response?.data?.message || err.message));
@@ -192,7 +219,7 @@ const Meetup = () => {
             }
         },
         onError: (err) => {
-            alert(err?.response?.data?.message || 'Error joining meetup.');
+            alert(err?.response?.data?.message || uiText('Error joining meetup.', 'Error joining Beta Club event.'));
         }
     });
 
@@ -373,11 +400,11 @@ const Meetup = () => {
                                 border: '1px solid rgba(255, 255, 255, 0.1)',
                                 color: '#E0E7FF'
                             }}>
-                                <Globe size={12} /> Personal Networking Hub
+                                <Globe size={12} /> {uiText('Personal Networking Hub', 'Beta Club Community')}
                             </span>
                         </div>
                         <h1 style={{ fontSize: '1.6rem', fontWeight: '950', letterSpacing: '-0.02em', lineHeight: 1.2, margin: 0 }}>
-                            Founders Meetup & Executive Events
+                            {uiText('Founders Meetup & Executive Events', 'Beta Club Community')}
                         </h1>
                         <div style={{ position: 'relative', marginTop: '0.5rem', display: 'inline-block' }}>
                             <button 
@@ -522,7 +549,7 @@ const Meetup = () => {
                         onMouseOver={e => e.currentTarget.style.transform = 'scale(1.02)'}
                         onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
                     >
-                        <Plus size={16} strokeWidth={3} /> Schedule Board
+                        <Plus size={16} strokeWidth={3} /> {uiText('Schedule Board', 'Schedule Event')}
                     </button>
                 </div>
             </div>
@@ -553,7 +580,7 @@ const Meetup = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            {tab}
+                            {SHOW_BETA_CLUB_UI ? (TAB_UI_LABELS[tab] || tab) : tab}
                         </button>
                     ))}
                 </div>
@@ -564,7 +591,7 @@ const Meetup = () => {
                         type="text"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="Search events..."
+                        placeholder={uiText('Search events...', 'Search Beta Club...')}
                         style={{
                             width: '100%',
                             padding: '0.55rem 1rem 0.55rem 2.3rem',
@@ -584,16 +611,16 @@ const Meetup = () => {
             {isLoading ? (
                 <div style={{ textAlign: 'center', padding: '6rem' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid #EDE9FE', borderTopColor: '#7C3AED', animation: 'spin 0.8s linear infinite', margin: '0 auto 1rem' }} />
-                    <p style={{ color: '#64748B', fontWeight: '700' }}>Aggregating regional meetups...</p>
+                    <p style={{ color: '#64748B', fontWeight: '700' }}>{uiText('Aggregating regional meetups...', 'Aggregating regional Beta Club events...')}</p>
                 </div>
             ) : sortedEvents.length === 0 ? (
                 <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #E2E8F0', padding: '6rem 2rem', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
                     <div style={{ width: '70px', height: '70px', borderRadius: '24px', background: '#EDE9FE', color: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                         <Calendar size={32} />
                     </div>
-                    <h3 style={{ fontSize: '1.4rem', fontWeight: '850', color: '#1E293B', marginBottom: '0.5rem' }}>No active panels found</h3>
+                    <h3 style={{ fontSize: '1.4rem', fontWeight: '850', color: '#1E293B', marginBottom: '0.5rem' }}>{uiText('No active panels found', 'No active Beta Club events found')}</h3>
                     <p style={{ color: '#64748B', maxWidth: '400px', margin: '0 auto', fontSize: '0.95rem', fontWeight: '500', lineHeight: 1.5 }}>
-                        {searchTerm ? "We couldn't locate any sessions matching your search criteria." : "There are no meetups currently configured. Be the catalyst and host a session today!"}
+                        {searchTerm ? "We couldn't locate any sessions matching your search criteria." : uiText("There are no meetups currently configured. Be the catalyst and host a session today!", "There are no Beta Club events currently configured. Be the catalyst and host a session today!")}
                     </p>
                 </div>
             ) : (
@@ -647,7 +674,7 @@ const Meetup = () => {
                                     
                                     {/* Category Label */}
                                     <div style={{ position: 'absolute', top: '0.75rem', left: '1rem', background: theme.badge, color: '#000000', padding: '0.3rem 0.6rem', borderRadius: '6px', backdropFilter: 'blur(4px)', fontSize: '0.62rem', fontWeight: '850', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                        {category}
+                                        {SHOW_BETA_CLUB_UI ? (CATEGORY_UI_LABELS[category] || category) : category}
                                     </div>
 
                                     {/* Price Tag */}
@@ -958,8 +985,8 @@ const Meetup = () => {
                                 <X size={18} />
                             </button>
 
-                            <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#7C3AED', marginBottom: '1.75rem', letterSpacing: '-0.02em' }}>
-                                Host New Executive Meetup
+                             <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#7C3AED', marginBottom: '1.75rem', letterSpacing: '-0.02em' }}>
+                                {uiText('Host New Executive Meetup', 'Host New Executive Beta Club Event')}
                             </h2>
 
                             <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -1017,14 +1044,14 @@ const Meetup = () => {
                                             onChange={(e) => setNewEvent({...newEvent, category: e.target.value})}
                                             style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', background: 'white', fontSize: '0.95rem', fontWeight: '600' }}
                                         >
-                                            <option value="Networking">Networking</option>
-                                            <option value="Technology">Technology</option>
-                                            <option value="Science">Science</option>
-                                            <option value="Finance">Finance</option>
-                                            <option value="Workshop">Skill Panel</option>
-                                            <option value="Webinar">Webcast/AMA</option>
-                                            <option value="Social">Mixer/Social</option>
-                                            <option value="Masterclass">Board Masterclass</option>
+                                            <option value="Networking">{uiText('Networking', 'Networking Events')}</option>
+                                            <option value="Technology">{uiText('Technology', 'Beta Testing Programs')}</option>
+                                            <option value="Science">{uiText('Science', 'Innovation Challenges')}</option>
+                                            <option value="Finance">{uiText('Finance', 'Product Launches')}</option>
+                                            <option value="Workshop">{uiText('Skill Panel', 'Workshops')}</option>
+                                            <option value="Webinar">{uiText('Webcast/AMA', 'Product Demos')}</option>
+                                            <option value="Social">{uiText('Mixer/Social', 'Community Sessions')}</option>
+                                            <option value="Masterclass">{uiText('Board Masterclass', 'Founder Talks')}</option>
                                         </select>
                                     </div>
                                     <div>
