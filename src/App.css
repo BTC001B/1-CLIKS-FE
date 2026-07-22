@@ -2757,7 +2757,7 @@ div[style*="background-color: '#F0F9F4'"] {
     max-height: calc(100vh - 100px) !important;
     right: 80px !important;
     max-width: calc(100vw - 90px) !important;
-    border: 2px solid #7A5A3A !important;
+    border: none !important;
     border-radius: 24px !important;
     box-shadow: none !important;
 }
