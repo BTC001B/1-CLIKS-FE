@@ -3040,3 +3040,7 @@ div[style*="background-color: '#F0F9F4'"] {
         display: none !important;
     }
 }
+
+.sidebar-item-beta-club-text {
+    color: #1B6B3A !important;
+}

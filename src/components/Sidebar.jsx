@@ -63,7 +63,7 @@ import logoPng from '../assets/cliks.png'; // Final branding
 
 const SHOW_BETA_CLUB_UI = true;
 
-const CrownIcon = ({ active }) => {
+const CrownIcon = () => {
     const canvasRef = React.useRef(null);
 
     React.useEffect(() => {
@@ -80,7 +80,7 @@ const CrownIcon = ({ active }) => {
             try {
                 const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imgData.data;
-                const targetColor = active ? { r: 255, g: 255, b: 255 } : { r: 27, g: 107, b: 58 };
+                const targetColor = { r: 27, g: 107, b: 58 };
                 
                 for (let i = 0; i < data.length; i += 4) {
                     const r = data[i];
@@ -100,14 +100,14 @@ const CrownIcon = ({ active }) => {
                 console.error(e);
             }
         };
-    }, [active]);
+    }, []);
 
     return (
         <canvas
             ref={canvasRef}
             style={{
-                width: '20px',
-                height: '20px',
+                width: '23px',
+                height: '23px',
                 objectFit: 'contain',
                 display: 'block'
             }}
@@ -446,11 +446,11 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                         >
                             <div className="flex items-center gap-3">
                                 {SHOW_BETA_CLUB_UI ? (
-                                    <CrownIcon active={activeItem === 'Beta Club Page'} />
+                                    <CrownIcon />
                                 ) : (
                                     <Handshake size={20} style={{ color: activeItem === 'Meetup' ? '#ffffff' : '#1B6B3A' }} />
                                 )}
-                                <span className="sidebar-label">{SHOW_BETA_CLUB_UI ? 'Beta Club' : 'Meetup'}</span>
+                                <span className="sidebar-label sidebar-item-beta-club-text">{SHOW_BETA_CLUB_UI ? 'Beta Club' : 'Meetup'}</span>
                             </div>
                         </button>
 
