@@ -408,56 +408,6 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                                 <span className="sidebar-label">Trading docs</span>
                             </div>
                         </button>
-
-                        {/* Custom divider/line between Trading Docs and Beta Club */}
-                        <div style={{ height: '1px', backgroundColor: '#E2E8F0', margin: '10px 0.75rem', opacity: 0.6 }} />
-
-                        {/* Beta Club */}
-                        <button
-                            className="sidebar-custom-yellow-btn"
-                            onClick={() => handleItemClick('Beta Club', '/social/beta-club')}
-                            style={{
-                                width: '145px',
-                                height: '38px',
-                                margin: '0.5rem auto',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '0 12px',
-                                background: '#FFCC00',
-                                border: activeItem === 'Beta Club' ? '2.5px solid #E5B800' : 'none',
-                                cursor: 'pointer',
-                                borderRadius: '50px',
-                                boxShadow: activeItem === 'Beta Club' 
-                                    ? '0 0 0 1px rgba(229, 184, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
-                                    : '0 3px 8px rgba(0, 0, 0, 0.1)',
-                                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                                gap: '10px',
-                                outline: 'none'
-                            }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
-                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.15)';
-                                e.currentTarget.style.background = '#FFD300';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                                e.currentTarget.style.boxShadow = activeItem === 'Beta Club' 
-                                    ? '0 0 0 1px rgba(229, 184, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15)' 
-                                    : '0 3px 8px rgba(0, 0, 0, 0.1)';
-                                e.currentTarget.style.background = '#FFCC00';
-                            }}
-                        >
-                            <Rocket size={18} strokeWidth={2.5} style={{ color: '#000000', flexShrink: 0 }} />
-                            <div style={{ width: '1.5px', height: '18px', backgroundColor: '#000000', opacity: 0.8 }} />
-                            <span style={{ 
-                                fontWeight: '900', 
-                                color: '#000000', 
-                                letterSpacing: '0.3px',
-                                textTransform: 'uppercase',
-                                fontSize: '0.82rem'
-                            }}>Beta Club</span>
-                        </button>
                     </>
                 )}
 
