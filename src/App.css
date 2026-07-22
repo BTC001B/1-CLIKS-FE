@@ -2752,7 +2752,8 @@ div[style*="background-color: '#F0F9F4'"] {
 
 .launcher-panel {
     top: 80px !important;
-    height: fit-content !important;
+    height: auto !important;
+    bottom: auto !important;
     max-height: calc(100vh - 100px) !important;
     right: 80px !important;
     max-width: calc(100vw - 90px) !important;

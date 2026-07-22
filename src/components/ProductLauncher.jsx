@@ -441,7 +441,7 @@ const ProductLauncher = ({ onClose }) => {
                 .launcher-panel-content {
                     display: flex;
                     flex-direction: column;
-                    height: 100%;
+                    height: auto;
                     width: 100%;
                     max-width: 100%;
                     background: #ffffff;
