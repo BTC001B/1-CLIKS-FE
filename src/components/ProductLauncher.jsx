@@ -29,32 +29,37 @@ const ALL_PRODUCTS = [
         name: 'Cliks',
         category: 'Public',
         icon: '/cliks_logo.png',
-        color: '#10B981' // Green
+        color: '#10B981', // Green
+        url: 'https://cliks.beta-softnet.com/'
     },
     {
         name: 'BNXmail',
         category: 'Public',
         icon: '/bnxmail_logo.png',
-        color: '#004aad' // Blue
+        color: '#004aad', // Blue
+        url: 'https://www.bnxmail.com/'
     },
     {
         name: 'Bit-Tool',
         category: 'Public',
         icon: '/bit_tool_logo.png',
-        color: '#2563eb' // Blue
+        color: '#2563eb', // Blue
+        url: 'https://bit-tool.beta-softnet.com/'
     },
     {
         name: 'B2Auth',
         category: 'Public',
         icon: '/b2auth_logo.png',
-        color: '#1e293b' // Slate
+        color: '#1e293b', // Slate
+        url: 'https://www.b2auth.com/'
     },
     // Business Apps
     {
         name: 'CliksBusiness',
         category: 'Business',
         icon: '/cliksbusiness_logo.png',
-        color: '#047857' // Dark Green
+        color: '#047857', // Dark Green
+        url: 'https://cliksbusiness.com/'
     }
 ];
 
@@ -142,6 +147,10 @@ const ProductLauncher = ({ onClose }) => {
         } else {
             console.log(`Opening ${name}`);
             recordRecent(name);
+            const product = ALL_PRODUCTS.find(p => p.name === name);
+            if (product && product.url) {
+                window.open(product.url, '_blank', 'noopener,noreferrer');
+            }
         }
     };
 
