@@ -125,27 +125,19 @@ const FinancePage = () => {
 
     // ── Queries ─────────────────────────────────────────────────────────────
 
-    // 1. Enhanced Dashboard Data
-    const { data: dashboardData } = useQuery({
-        queryKey: ['finance-dashboard-enhanced'],
-        queryFn: () => homeService.getHomeStats(),
-        enabled: !!uid && uid !== 'guest',
-    });
-
-    // 2. New Modules Data
+    const { data: dashboardData } = useQuery({ queryKey: ['finance-dashboard-enhanced'], queryFn: () => homeService.getHomeStats(), enabled: !!uid && uid !== 'guest' });
+    const { data: executiveGoals = [] } = useQuery({ queryKey: ['finance-goals'], queryFn: financePlusService.getGoals, enabled: !!uid && uid !== 'guest' });
     const { data: salaryRecords = [] } = useQuery({ queryKey: ['salary-records'], queryFn: financePlusService.getSalaryRecords, enabled: !!uid && uid !== 'guest' });
     const { data: properties = [] } = useQuery({ queryKey: ['property-records'], queryFn: financePlusService.getPropertyRecords, enabled: !!uid && uid !== 'guest' });
     const { data: pensionRecords = [] } = useQuery({ queryKey: ['pension-records'], queryFn: financePlusService.getPensionRecords, enabled: !!uid && uid !== 'guest' });
     const { data: notifications = [] } = useQuery({ queryKey: ['finance-notifications'], queryFn: financePlusService.getNotifications, enabled: !!uid && uid !== 'guest' });
-
-    // 3. Existing Transactions query
-    const { data: dbTransactions = [] } = useQuery({
-        queryKey: ['transactions'],
-        queryFn: () => transactionsService.getTransactions(),
-        enabled: !!uid && uid !== 'guest',
-    });
+    const { data: dbTransactions = [] } = useQuery({ queryKey: ['transactions'], queryFn: () => transactionsService.getTransactions(), enabled: !!uid && uid !== 'guest' });
 
     // ── Mutations ───────────────────────────────────────────────────────────
+
+    const goalCreateMutation = useMutation({ mutationFn: (data) => financePlusService.createGoal(data), onSuccess: () => queryClient.invalidateQueries(['finance-goals']) });
+    const goalUpdateMutation = useMutation({ mutationFn: ({ id, data }) => financePlusService.updateGoal(id, data), onSuccess: () => queryClient.invalidateQueries(['finance-goals']) });
+    const goalDeleteMutation = useMutation({ mutationFn: (id) => financePlusService.deleteGoal(id), onSuccess: () => queryClient.invalidateQueries(['finance-goals']) });
 
     const salaryMutation = useMutation({ mutationFn: (data) => financePlusService.createSalaryRecord(data), onSuccess: () => { queryClient.invalidateQueries(['salary-records']); queryClient.invalidateQueries(['finance-dashboard-enhanced']); queryClient.invalidateQueries(['transactions']); } });
     const propertyMutation = useMutation({ mutationFn: (data) => financePlusService.createProperty(data), onSuccess: () => queryClient.invalidateQueries(['property-records']) });
@@ -1175,7 +1167,7 @@ const FinancePage = () => {
             {/* FINANCIAL GOALS SECTION */}
             <div style={{ marginBottom: '3rem' }}>
                 <FinancialGoals
-                    goals={goalsList}
+                    goals={executiveGoals}
                     onCreate={data => goalCreateMutation.mutate(data)}
                     onUpdate={(id, data) => goalUpdateMutation.mutate({ id, data })}
                     onDelete={id => goalDeleteMutation.mutate(id)}
