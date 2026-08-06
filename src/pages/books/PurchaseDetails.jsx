@@ -19,10 +19,11 @@ const PurchaseDetails = () => {
         queryFn: financePlusService.getLoyaltyStats
     });
 
-    const { data: fullInvoice, isLoading: loadingInvoice } = useQuery({
+    const { data: fullInvoice, isLoading: loadingInvoice, error: invoiceError } = useQuery({
         queryKey: ['full-invoice', viewingInvoiceId],
         queryFn: () => financePlusService.getInvoiceDetails(viewingInvoiceId),
-        enabled: !!viewingInvoiceId
+        enabled: !!viewingInvoiceId,
+        retry: false
     });
 
     const groupedPurchases = useMemo(() => {
@@ -240,7 +241,10 @@ const PurchaseDetails = () => {
                                             </div>
                                             <div style={{ textAlign: 'right' }}>
                                                 <button
-                                                    onClick={() => setViewingInvoiceId(inv.invoice_id)}
+                                                    onClick={() => {
+                                                        console.log('DEBUG: Sending invoiceId to backend:', inv.invoice_id);
+                                                        setViewingInvoiceId(inv.invoice_id);
+                                                    }}
                                                     style={{ background: 'none', border: 'none', color: '#2563EB', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto' }}
                                                 >
                                                     View Items <ChevronRight size={14} />
@@ -463,7 +467,10 @@ const PurchaseDetails = () => {
                                 ) : (
                                     <div style={{ textAlign: 'center', padding: '4rem', color: '#EF4444' }}>
                                         <AlertCircle size={40} style={{ marginBottom: '1rem' }} />
-                                        <p style={{ fontWeight: 700 }}>Failed to load invoice details.</p>
+                                        <p style={{ fontWeight: 700 }}>{invoiceError?.response?.data?.error?.message || invoiceError?.message || 'Failed to load invoice details.'}</p>
+                                        <p style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '1rem' }}>
+                                            ID Trace: {viewingInvoiceId || 'NULL'}
+                                        </p>
                                     </div>
                                 )}
                             </div>
