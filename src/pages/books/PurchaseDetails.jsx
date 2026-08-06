@@ -80,7 +80,7 @@ const PurchaseDetails = () => {
                                                     </div>
                                                 </div>
                                                 <div style={{ textAlign: 'right' }}>
-                                                    <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#1E293B' }}>₹{p.grand_total.toLocaleString()}</div>
+                                                    <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#1E293B' }}>₹{(p.grand_total || 0).toLocaleString()}</div>
                                                     <span style={{
                                                         display: 'inline-block',
                                                         padding: '0.2rem 0.6rem',
@@ -91,26 +91,26 @@ const PurchaseDetails = () => {
                                                         textTransform: 'uppercase',
                                                         background: getStatusStyle(p.payment_status).bg,
                                                         color: getStatusStyle(p.payment_status).text
-                                                    }}>{p.payment_status}</span>
+                                                    }}>{p.payment_status || 'Unknown'}</span>
                                                 </div>
                                             </div>
 
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', background: '#F8FAFC', padding: '0.75rem 1rem', borderRadius: '12px' }}>
                                                 <div>
                                                     <div style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Subtotal</div>
-                                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>₹{p.amount.toLocaleString()}</div>
+                                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>₹{(p.amount || 0).toLocaleString()}</div>
                                                 </div>
                                                 <div>
                                                     <div style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Tax (GST)</div>
-                                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>₹{p.tax_amount.toLocaleString()}</div>
+                                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>₹{(p.tax_amount || 0).toLocaleString()}</div>
                                                 </div>
                                                 <div>
                                                     <div style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Discount</div>
-                                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#059669' }}>-₹{p.discount.toLocaleString()}</div>
+                                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#059669' }}>-₹{(p.discount || 0).toLocaleString()}</div>
                                                 </div>
                                                 <div>
                                                     <div style={{ fontSize: '0.65rem', color: '#7C3AED', fontWeight: 800, textTransform: 'uppercase' }}>Points Earned</div>
-                                                    <div style={{ fontSize: '0.85rem', fontWeight: 850, color: '#7C3AED' }}>+{p.points_earned}</div>
+                                                    <div style={{ fontSize: '0.85rem', fontWeight: 850, color: '#7C3AED' }}>+{(p.points_earned || 0)}</div>
                                                 </div>
                                             </div>
                                         </div>
