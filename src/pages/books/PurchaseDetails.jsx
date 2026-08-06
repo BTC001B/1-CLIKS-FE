@@ -28,35 +28,43 @@ const PurchaseDetails = () => {
 
     const groupedPurchases = useMemo(() => {
         const groups = {};
+        if (!Array.isArray(purchases)) return [];
+
         purchases.forEach(p => {
-            const id = p.merchant_business_id || p.merchant_name; // Fallback if ID missing
+            if (!p) return;
+            const id = p.merchant_business_id || p.merchant_name || 'unknown';
             if (!groups[id]) {
                 groups[id] = {
                     id,
-                    merchant_name: p.merchant_name,
+                    merchant_name: p.merchant_name || 'Business',
                     total_purchases: 0,
                     total_loyalty: 0,
                     total_spent: 0,
-                    last_purchase: p.timestamp,
+                    last_purchase: p.timestamp || new Date().toISOString(),
                     invoices: []
                 };
             }
             groups[id].total_purchases += 1;
             groups[id].total_loyalty += (p.points_earned || 0);
             groups[id].total_spent += (p.grand_total || 0);
-            if (new Date(p.timestamp) > new Date(groups[id].last_purchase)) {
+            if (p.timestamp && new Date(p.timestamp) > new Date(groups[id].last_purchase)) {
                 groups[id].last_purchase = p.timestamp;
             }
             groups[id].invoices.push(p);
         });
-        return Object.values(groups).sort((a, b) => new Date(b.last_purchase) - new Date(a.last_purchase));
+        return Object.values(groups)
+            .filter(Boolean)
+            .sort((a, b) => new Date(b.last_purchase) - new Date(a.last_purchase));
     }, [purchases]);
 
     const activeMerchants = useMemo(() => {
-        return groupedPurchases.map(g => ({
-            name: g.merchant_name,
-            status: 'CONNECTED'
-        }));
+        if (!Array.isArray(groupedPurchases)) return [];
+        return groupedPurchases
+            .filter(g => g && g.merchant_name)
+            .map(g => ({
+                name: g.merchant_name,
+                status: 'CONNECTED'
+            }));
     }, [groupedPurchases]);
 
     const handleSync = () => {
@@ -175,10 +183,10 @@ const PurchaseDetails = () => {
                                     No active business connections yet.
                                 </div>
                             ) : (
-                                activeMerchants.map(merchant => (
-                                    <div key={merchant.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
-                                        <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>{merchant.name}</span>
-                                        <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#10B981', textTransform: 'uppercase' }}>{merchant.status}</span>
+                                activeMerchants.map((merchant, idx) => (
+                                    <div key={merchant?.name || idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                                        <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>{merchant?.name || 'Unknown Business'}</span>
+                                        <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#10B981', textTransform: 'uppercase' }}>{merchant?.status || 'CONNECTED'}</span>
                                     </div>
                                 ))
                             )}
@@ -207,14 +215,14 @@ const PurchaseDetails = () => {
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} style={{ position: 'relative', width: '100%', maxWidth: '600px', maxHeight: '80vh', background: '#fff', borderRadius: '28px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                             <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 850, color: '#1E293B', margin: 0 }}>{selectedBusiness.merchant_name}</h3>
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 850, color: '#1E293B', margin: 0 }}>{selectedBusiness?.merchant_name || 'Business'}</h3>
                                     <p style={{ fontSize: '0.85rem', color: '#64748B', margin: '4px 0 0 0' }}>Purchase History & Invoices</p>
                                 </div>
                                 <button onClick={() => setSelectedBusiness(null)} style={{ width: 36, height: 36, borderRadius: '10px', background: '#F8FAFC', border: 'none', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
                             </div>
 
                             <div style={{ padding: '1.5rem 2rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {selectedBusiness.invoices.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(inv => (
+                                {(selectedBusiness?.invoices || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(inv => (
                                     <div key={inv.id} style={{ border: '1px solid #F1F5F9', borderRadius: '16px', padding: '1.25rem', background: '#fff' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                             <div>
@@ -285,7 +293,7 @@ const PurchaseDetails = () => {
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                     {fullInvoice?.invoice_status && (
-                                        <span style={{ fontSize: '0.75rem', fontWeight: 850, textTransform: 'uppercase', padding: '0.4rem 1rem', borderRadius: '10px', ...getStatusStyle(fullInvoice.invoice_status) }}>{fullInvoice.invoice_status}</span>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 850, textTransform: 'uppercase', padding: '0.4rem 1rem', borderRadius: '10px', ...getStatusStyle(fullInvoice?.invoice_status) }}>{fullInvoice?.invoice_status}</span>
                                     )}
                                     <button onClick={() => setViewingInvoiceId(null)} style={{ width: 40, height: 40, borderRadius: '12px', background: '#fff', border: '1px solid #E2E8F0', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
                                 </div>
@@ -305,9 +313,9 @@ const PurchaseDetails = () => {
                                             <div>
                                                 <h4 style={{ fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Merchant Details</h4>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice.merchant.name}</div>
-                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice.merchant.email}</div>
-                                                    {fullInvoice.billing_address && (
+                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice?.merchant?.name || 'CLIKS Merchant'}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice?.merchant?.email || 'N/A'}</div>
+                                                    {fullInvoice?.billing_address && (
                                                         <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '0.5rem', lineHeight: 1.5 }}>
                                                             {fullInvoice.billing_address}
                                                         </div>
@@ -317,13 +325,13 @@ const PurchaseDetails = () => {
                                             <div style={{ textAlign: 'right' }}>
                                                 <h4 style={{ fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Customer Details</h4>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice.customer.name}</div>
-                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice.customer.email}</div>
-                                                    {fullInvoice.customer.gstin && <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1B6B3A' }}>GSTIN: {fullInvoice.customer.gstin}</div>}
-                                                    {fullInvoice.customer.shipping_address && (
+                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice?.customer?.name || fullInvoice?.client_name || 'Customer'}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice?.customer?.email || fullInvoice?.client_email || 'N/A'}</div>
+                                                    {(fullInvoice?.customer?.gstin || fullInvoice?.client_gstin) && <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1B6B3A' }}>GSTIN: {fullInvoice?.customer?.gstin || fullInvoice?.client_gstin}</div>}
+                                                    {(fullInvoice?.customer?.shipping_address || fullInvoice?.shipping_address) && (
                                                         <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '0.5rem', lineHeight: 1.5 }}>
                                                             <strong>Shipping:</strong><br />
-                                                            {fullInvoice.customer.shipping_address}
+                                                            {fullInvoice?.customer?.shipping_address || fullInvoice?.shipping_address}
                                                         </div>
                                                     )}
                                                 </div>
@@ -334,19 +342,19 @@ const PurchaseDetails = () => {
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', padding: '1.25rem 2rem', background: '#F8FAFC', borderRadius: '20px' }}>
                                             <div>
                                                 <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Date</div>
-                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1E293B' }}>{new Date(fullInvoice.created_at).toLocaleDateString()}</div>
+                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1E293B' }}>{fullInvoice?.created_at ? new Date(fullInvoice.created_at).toLocaleDateString() : 'N/A'}</div>
                                             </div>
                                             <div>
                                                 <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Type</div>
-                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1E293B' }}>{fullInvoice.invoice_type || 'GST Invoice'}</div>
+                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1E293B' }}>{fullInvoice?.invoice_type || 'GST Invoice'}</div>
                                             </div>
                                             <div>
                                                 <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Due Date</div>
-                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#EF4444' }}>{fullInvoice.due_date || 'N/A'}</div>
+                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#EF4444' }}>{fullInvoice?.due_date || 'N/A'}</div>
                                             </div>
                                             <div>
                                                 <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Status</div>
-                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#059669' }}>{fullInvoice.status || 'Active'}</div>
+                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#059669' }}>{fullInvoice?.status || 'Active'}</div>
                                             </div>
                                         </div>
 
@@ -365,17 +373,17 @@ const PurchaseDetails = () => {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {fullInvoice.items.map((item, idx) => (
+                                                    {fullInvoice?.items?.map((item, idx) => (
                                                         <tr key={idx} style={{ borderBottom: '1px solid #F8FAFC' }}>
                                                             <td style={{ padding: '1rem 0' }}>
-                                                                <div style={{ fontWeight: 700, color: '#1E293B', fontSize: '0.9rem' }}>{item.name || item.description}</div>
-                                                                {(item.sku || item.hsn) && <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '2px' }}>SKU/HSN: {item.sku || item.hsn}</div>}
+                                                                <div style={{ fontWeight: 700, color: '#1E293B', fontSize: '0.9rem' }}>{item?.name || item?.description || 'Item'}</div>
+                                                                {(item?.sku || item?.hsn) && <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '2px' }}>SKU/HSN: {item?.sku || item?.hsn}</div>}
                                                             </td>
-                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'center', fontWeight: 600, color: '#64748B' }}>{item.quantity} {item.unit || 'pcs'}</td>
-                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600 }}>₹{(item.price || item.rate || 0).toLocaleString()}</td>
-                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600, color: '#059669' }}>{item.discount || 0}%</td>
-                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600, color: '#64748B' }}>{item.gst || item.tax_percentage || 0}%</td>
-                                                            <td style={{ padding: '1rem 0', textAlign: 'right', fontWeight: 800, color: '#1E293B' }}>₹{(item.total || item.amount || 0).toLocaleString()}</td>
+                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'center', fontWeight: 600, color: '#64748B' }}>{item?.quantity || 0} {item?.unit || 'pcs'}</td>
+                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600 }}>₹{(item?.price || item?.rate || 0).toLocaleString()}</td>
+                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600, color: '#059669' }}>{item?.discount || 0}%</td>
+                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600, color: '#64748B' }}>{item?.gst || item?.tax_percentage || 0}%</td>
+                                                            <td style={{ padding: '1rem 0', textAlign: 'right', fontWeight: 800, color: '#1E293B' }}>₹{(item?.total || item?.amount || 0).toLocaleString()}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -390,17 +398,17 @@ const PurchaseDetails = () => {
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#F0FDF4', borderRadius: '12px', border: '1px solid #DCFCE7' }}>
                                                             <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#166534' }}>Primary Mode</span>
-                                                            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#166534' }}>{fullInvoice.payment_mode || 'Cash'}</span>
+                                                            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#166534' }}>{fullInvoice?.payment_mode || 'Cash'}</span>
                                                         </div>
-                                                        {fullInvoice.payment_info.history.length > 0 ? fullInvoice.payment_info.history.map((p, i) => (
+                                                        {fullInvoice?.payment_info?.history && fullInvoice.payment_info.history.length > 0 ? fullInvoice.payment_info.history.map((p, i) => (
                                                             <div key={i} style={{ padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>{p.method}</span>
-                                                                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1E293B' }}>₹{p.amount.toLocaleString()}</span>
+                                                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>{p?.method || 'Payment'}</span>
+                                                                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1E293B' }}>₹{(p?.amount || 0).toLocaleString()}</span>
                                                                 </div>
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94A3B8' }}>
-                                                                    <span>{new Date(p.date).toLocaleDateString()}</span>
-                                                                    {p.ref && <span>Ref: {p.ref}</span>}
+                                                                    <span>{p?.date ? new Date(p.date).toLocaleDateString() : 'N/A'}</span>
+                                                                    {p?.ref && <span>Ref: {p.ref}</span>}
                                                                 </div>
                                                             </div>
                                                         )) : (
@@ -417,12 +425,12 @@ const PurchaseDetails = () => {
                                                     </div>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                                                         <div>
-                                                            <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>+{fullInvoice.loyalty.earned} Earned</div>
-                                                            {fullInvoice.loyalty.redeemed > 0 && <div style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.9 }}>-{fullInvoice.loyalty.redeemed} Redeemed</div>}
+                                                            <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>+{fullInvoice?.loyalty?.earned || 0} Earned</div>
+                                                            {fullInvoice?.loyalty?.redeemed > 0 && <div style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.9 }}>-{fullInvoice?.loyalty?.redeemed} Redeemed</div>}
                                                         </div>
                                                         <div style={{ textAlign: 'right' }}>
                                                             <div style={{ fontSize: '0.7rem', fontWeight: 800, opacity: 0.8, textTransform: 'uppercase' }}>Net Added</div>
-                                                            <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>{fullInvoice.loyalty.earned - fullInvoice.loyalty.redeemed} Pts</div>
+                                                            <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>{(fullInvoice?.loyalty?.earned || 0) - (fullInvoice?.loyalty?.redeemed || 0)} Pts</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -431,34 +439,34 @@ const PurchaseDetails = () => {
                                             <div style={{ background: '#F8FAFC', borderRadius: '24px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>
                                                     <span>Subtotal</span>
-                                                    <span>₹{(fullInvoice.amount || 0).toLocaleString()}</span>
+                                                    <span>₹{(fullInvoice?.amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#059669', fontWeight: 600 }}>
                                                     <span>Total Discount</span>
-                                                    <span>-₹{(fullInvoice.discount_amount || 0).toLocaleString()}</span>
+                                                    <span>-₹{(fullInvoice?.discount_amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>
                                                     <span>GST Amount</span>
-                                                    <span>₹{(fullInvoice.tax_amount || 0).toLocaleString()}</span>
+                                                    <span>₹{(fullInvoice?.tax_amount || 0).toLocaleString()}</span>
                                                 </div>
-                                                {fullInvoice.round_off !== 0 && (
+                                                {fullInvoice?.round_off !== 0 && (
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>
                                                         <span>Round Off</span>
-                                                        <span>₹{fullInvoice.round_off > 0 ? '+' : ''}{fullInvoice.round_off}</span>
+                                                        <span>₹{fullInvoice?.round_off > 0 ? '+' : ''}{fullInvoice?.round_off}</span>
                                                     </div>
                                                 )}
                                                 <div style={{ height: '1px', background: '#E2E8F0', margin: '0.5rem 0' }} />
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem', color: '#1E293B', fontWeight: 900 }}>
                                                     <span>Grand Total</span>
-                                                    <span>₹{(fullInvoice.total_amount || 0).toLocaleString()}</span>
+                                                    <span>₹{(fullInvoice?.total_amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 700, marginTop: '0.5rem' }}>
                                                     <span>Paid Amount</span>
-                                                    <span style={{ color: '#059669' }}>₹{(fullInvoice.paid_amount || 0).toLocaleString()}</span>
+                                                    <span style={{ color: '#059669' }}>₹{(fullInvoice?.paid_amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 700 }}>
                                                     <span>Due Amount</span>
-                                                    <span style={{ color: '#EF4444' }}>₹{(fullInvoice.due_amount || 0).toLocaleString()}</span>
+                                                    <span style={{ color: '#EF4444' }}>₹{(fullInvoice?.due_amount || 0).toLocaleString()}</span>
                                                 </div>
                                             </div>
                                         </div>

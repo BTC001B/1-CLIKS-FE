@@ -293,7 +293,7 @@ const FinancePage = () => {
         if (incomeSearch) {
             const q = incomeSearch.toLowerCase();
             result = result.filter(i =>
-                i.name.toLowerCase().includes(q) ||
+                (i.name || '').toLowerCase().includes(q) ||
                 (i.description || '').toLowerCase().includes(q) ||
                 (i.schedule || '').toLowerCase().includes(q) ||
                 (i.amount || '').toString().toLowerCase().includes(q)
@@ -317,7 +317,7 @@ const FinancePage = () => {
         if (expenseSearch) {
             const q = expenseSearch.toLowerCase();
             result = result.filter(e =>
-                e.name.toLowerCase().includes(q) ||
+                (e.name || '').toLowerCase().includes(q) ||
                 (e.description || '').toLowerCase().includes(q) ||
                 (e.schedule || '').toLowerCase().includes(q) ||
                 (e.amount || '').toString().toLowerCase().includes(q)
@@ -332,7 +332,7 @@ const FinancePage = () => {
         if (addIncomeSearch) {
             const q = addIncomeSearch.toLowerCase();
             result = result.filter(i =>
-                i.name.toLowerCase().includes(q) ||
+                (i.name || '').toLowerCase().includes(q) ||
                 (i.description || '').toLowerCase().includes(q) ||
                 (i.schedule || '').toLowerCase().includes(q) ||
                 (i.amount || '').toString().toLowerCase().includes(q)
@@ -347,7 +347,7 @@ const FinancePage = () => {
         if (addExpenseSearch) {
             const q = addExpenseSearch.toLowerCase();
             result = result.filter(e =>
-                e.name.toLowerCase().includes(q) ||
+                (e.name || '').toLowerCase().includes(q) ||
                 (e.description || '').toLowerCase().includes(q) ||
                 (e.schedule || '').toLowerCase().includes(q) ||
                 (e.amount || '').toString().toLowerCase().includes(q)
