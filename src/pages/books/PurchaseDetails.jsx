@@ -51,6 +51,13 @@ const PurchaseDetails = () => {
         return Object.values(groups).sort((a, b) => new Date(b.last_purchase) - new Date(a.last_purchase));
     }, [purchases]);
 
+    const activeMerchants = useMemo(() => {
+        return groupedPurchases.map(g => ({
+            name: g.merchant_name,
+            status: 'CONNECTED'
+        }));
+    }, [groupedPurchases]);
+
     const handleSync = () => {
         queryClient.invalidateQueries(['customer-purchases']);
         queryClient.invalidateQueries(['loyalty-stats']);
@@ -162,12 +169,18 @@ const PurchaseDetails = () => {
                     <div style={{ background: '#fff', borderRadius: '24px', padding: '1.5rem', border: '1px solid #E2E8F0' }}>
                         <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1E293B', marginBottom: '1rem' }}>Active Integrations</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {['Amazon Business', 'Flipkart Corporate', 'Local Supermarket'].map(site => (
-                                <div key={site} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
-                                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>{site}</span>
-                                    <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#10B981', textTransform: 'uppercase' }}>Connected</span>
+                            {activeMerchants.length === 0 ? (
+                                <div style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.85rem', border: '1px dashed #E2E8F0', borderRadius: '12px' }}>
+                                    No active business connections yet.
                                 </div>
-                            ))}
+                            ) : (
+                                activeMerchants.map(merchant => (
+                                    <div key={merchant.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                                        <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>{merchant.name}</span>
+                                        <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#10B981', textTransform: 'uppercase' }}>{merchant.status}</span>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
 
