@@ -125,16 +125,16 @@ const PurchaseDetails = () => {
                     <div style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #1E40AF 100%)', borderRadius: '24px', padding: '2rem', color: '#fff', position: 'relative', overflow: 'hidden', boxShadow: '0 10px 25px -5px rgba(30, 58, 138, 0.3)' }}>
                         <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.1 }}><Star size={120} fill="#fff" /></div>
                         <h3 style={{ fontSize: '1rem', fontWeight: '700', margin: 0, opacity: 0.9 }}>Loyalty Points</h3>
-                        <div style={{ fontSize: '2.5rem', fontWeight: '900', margin: '0.5rem 0' }}>{loyalty.available_points.toLocaleString()}</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: '900', margin: '0.5rem 0' }}>{(loyalty?.available_points || 0).toLocaleString()}</div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: '0.85rem', opacity: 0.8, fontWeight: 500 }}>Lifetime Earned</span>
-                                <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>{loyalty.lifetime_earned.toLocaleString()}</span>
+                                <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>{(loyalty?.lifetime_earned || 0).toLocaleString()}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: '0.85rem', opacity: 0.8, fontWeight: 500 }}>Total Redeemed</span>
-                                <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>{loyalty.total_redeemed.toLocaleString()}</span>
+                                <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>{(loyalty?.total_redeemed || 0).toLocaleString()}</span>
                             </div>
                         </div>
 
