@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { IndianRupee, Trash2, Pencil, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc, TrendingUp, TrendingDown, PieChart, ShieldCheck, Bell, Home, Heart, ArrowUpRight } from 'lucide-react';
+import { DollarSign, IndianRupee, Trash2, Pencil, Briefcase, Plus, Search, Filter, X, ArrowUpDown, ChevronDown, SortAsc, SortDesc, TrendingUp, TrendingDown, PieChart, ShieldCheck, Bell, Home, Heart, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '../../context';
 import { transactionsService, homeService, financePlusService, investmentsService, accountsService } from '../../services';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
@@ -9,9 +9,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MyWallet from './components/MyWallet';
 import BudgetPlanner from './components/BudgetPlanner';
 import BillsReminders from './components/BillsReminders';
+import FinancialGoals from './components/FinancialGoals';
 import SalaryManager from './components/SalaryManager';
 import PropertyManager from './components/PropertyManager';
 import PensionManager from './components/PensionManager';
+import InvestmentPortfolio from './components/InvestmentPortfolio';
+import FinanceAnalytics from './components/FinanceAnalytics';
+import FinanceReports from './components/FinanceReports';
+import FinanceSettings from './components/FinanceSettings';
 
 /* ─── Storage keys scoped per user ────────────────────────────── */
 const incomeKey = (uid) => `cliks_finance_income_v2_${uid}`;
@@ -1163,6 +1168,27 @@ const FinancePage = () => {
                     budget={budget}
                     onUpdateBudget={handleUpdateBudget}
                     currentSpent={currentMonthExpenses}
+                    currencySymbol={currencySymbol}
+                />
+            </div>
+
+            {/* FINANCIAL GOALS SECTION */}
+            <div style={{ marginBottom: '3rem' }}>
+                <FinancialGoals
+                    goals={goalsList}
+                    onCreate={data => goalCreateMutation.mutate(data)}
+                    onUpdate={(id, data) => goalUpdateMutation.mutate({ id, data })}
+                    onDelete={id => goalDeleteMutation.mutate(id)}
+                    currencySymbol={currencySymbol}
+                />
+            </div>
+
+            {/* INVESTMENT PORTFOLIO SECTION */}
+            <div style={{ marginBottom: '4rem' }}>
+                <InvestmentPortfolio
+                    investments={dashboardData?.investmentStats?.list || []}
+                    onAddInvestment={data => investmentCreateMutation.mutate(data)}
+                    onDeleteInvestment={id => investmentDeleteMutation.mutate(id)}
                     currencySymbol={currencySymbol}
                 />
             </div>

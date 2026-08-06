@@ -20,6 +20,7 @@ import {
     ChevronUp,
     DollarSign,
     ShoppingCart,
+    Calculator,
     Calendar,
     Target,
     Plus,
