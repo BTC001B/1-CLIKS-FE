@@ -7,6 +7,7 @@ import { financePlusService } from '../../services';
 const PurchaseDetails = () => {
     const queryClient = useQueryClient();
     const [selectedBusiness, setSelectedBusiness] = useState(null);
+    const [viewingInvoiceId, setViewingInvoiceId] = useState(null);
 
     const { data: purchases = [], isLoading: loadingPurchases } = useQuery({
         queryKey: ['customer-purchases'],
@@ -16,6 +17,12 @@ const PurchaseDetails = () => {
     const { data: loyalty = { available_points: 0, lifetime_earned: 0, total_redeemed: 0 }, isLoading: loadingLoyalty } = useQuery({
         queryKey: ['loyalty-stats'],
         queryFn: financePlusService.getLoyaltyStats
+    });
+
+    const { data: fullInvoice, isLoading: loadingInvoice } = useQuery({
+        queryKey: ['full-invoice', viewingInvoiceId],
+        queryFn: () => financePlusService.getInvoiceDetails(viewingInvoiceId),
+        enabled: !!viewingInvoiceId
     });
 
     const groupedPurchases = useMemo(() => {
@@ -242,13 +249,229 @@ const PurchaseDetails = () => {
                                                 <div style={{ fontSize: '0.8rem', fontWeight: 850, color: '#7C3AED' }}>+{inv.points_earned || 0}</div>
                                             </div>
                                             <div style={{ textAlign: 'right' }}>
-                                                <button style={{ background: 'none', border: 'none', color: '#2563EB', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto' }}>
+                                                <button
+                                                    onClick={() => setViewingInvoiceId(inv.invoice_id)}
+                                                    style={{ background: 'none', border: 'none', color: '#2563EB', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto' }}
+                                                >
                                                     View Items <ChevronRight size={14} />
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Detailed Invoice View Modal */}
+            <AnimatePresence>
+                {viewingInvoiceId && (
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewingInvoiceId(null)} style={{ position: 'absolute', inset: 0, background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(8px)' }} />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            style={{
+                                position: 'relative', width: '100%', maxWidth: '850px', maxHeight: '90vh',
+                                background: '#fff', borderRadius: '32px', boxShadow: '0 30px 60px -12px rgba(0,0,0,0.25)',
+                                overflow: 'hidden', display: 'flex', flexDirection: 'column'
+                            }}
+                        >
+                            {/* Modal Header */}
+                            <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ width: 48, height: 48, borderRadius: '14px', background: '#1B6B3A', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Receipt size={24} /></div>
+                                    <div>
+                                        <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#1E293B', margin: 0 }}>Invoice Details</h3>
+                                        <p style={{ fontSize: '0.85rem', color: '#64748B', margin: 0 }}>#{fullInvoice?.invoice_number || '...'}</p>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    {fullInvoice?.invoice_status && (
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 850, textTransform: 'uppercase', padding: '0.4rem 1rem', borderRadius: '10px', ...getStatusStyle(fullInvoice.invoice_status) }}>{fullInvoice.invoice_status}</span>
+                                    )}
+                                    <button onClick={() => setViewingInvoiceId(null)} style={{ width: 40, height: 40, borderRadius: '12px', background: '#fff', border: '1px solid #E2E8F0', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
+                                </div>
+                            </div>
+
+                            <div style={{ padding: '2.5rem', overflowY: 'auto', flex: 1 }}>
+                                {loadingInvoice ? (
+                                    <div style={{ textAlign: 'center', padding: '4rem' }}>
+                                        <RefreshCcw size={40} className="animate-spin" style={{ color: '#CBD5E1', marginBottom: '1rem' }} />
+                                        <p style={{ color: '#64748B', fontWeight: 600 }}>Loading full invoice data...</p>
+                                    </div>
+                                ) : fullInvoice ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+
+                                        {/* Row 1: Merchant & Customer Info */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+                                            <div>
+                                                <h4 style={{ fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Merchant Details</h4>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice.merchant.name}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice.merchant.email}</div>
+                                                    {fullInvoice.billing_address && (
+                                                        <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '0.5rem', lineHeight: 1.5 }}>
+                                                            {fullInvoice.billing_address}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <h4 style={{ fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Customer Details</h4>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice.client_name}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice.client_email}</div>
+                                                    {fullInvoice.client_gstin && <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1B6B3A' }}>GSTIN: {fullInvoice.client_gstin}</div>}
+                                                    {fullInvoice.shipping_address && (
+                                                        <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '0.5rem', lineHeight: 1.5 }}>
+                                                            <strong>Shipping:</strong><br />
+                                                            {fullInvoice.shipping_address}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Row 2: Invoice Metadata */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', padding: '1.25rem 2rem', background: '#F8FAFC', borderRadius: '20px' }}>
+                                            <div>
+                                                <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Date</div>
+                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1E293B' }}>{new Date(fullInvoice.created_at).toLocaleDateString()}</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Type</div>
+                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1E293B' }}>{fullInvoice.invoice_type || 'GST Invoice'}</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Due Date</div>
+                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#EF4444' }}>{fullInvoice.due_date || 'N/A'}</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px' }}>Status</div>
+                                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#059669' }}>{fullInvoice.status || 'Active'}</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Purchased Products Table */}
+                                        <div>
+                                            <h4 style={{ fontSize: '0.75rem', fontWeight: 850, color: '#1E293B', textTransform: 'uppercase', marginBottom: '1.25rem' }}>Purchased Products</h4>
+                                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                                <thead>
+                                                    <tr style={{ borderBottom: '2px solid #F1F5F9' }}>
+                                                        <th style={{ padding: '0.75rem 0', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase' }}>Item Description</th>
+                                                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'center' }}>Qty</th>
+                                                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'right' }}>Price</th>
+                                                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'right' }}>Tax</th>
+                                                        <th style={{ padding: '0.75rem 0', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'right' }}>Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {fullInvoice.items.map((item, idx) => (
+                                                        <tr key={idx} style={{ borderBottom: '1px solid #F8FAFC' }}>
+                                                            <td style={{ padding: '1rem 0' }}>
+                                                                <div style={{ fontWeight: 700, color: '#1E293B', fontSize: '0.9rem' }}>{item.name || item.description}</div>
+                                                                {(item.sku || item.hsn) && <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '2px' }}>SKU/HSN: {item.sku || item.hsn}</div>}
+                                                            </td>
+                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'center', fontWeight: 600, color: '#64748B' }}>{item.quantity} {item.unit || 'pcs'}</td>
+                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600 }}>₹{(item.price || item.rate || 0).toLocaleString()}</td>
+                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600, color: '#64748B' }}>{item.gst || item.tax_percentage || 0}%</td>
+                                                            <td style={{ padding: '1rem 0', textAlign: 'right', fontWeight: 800, color: '#1E293B' }}>₹{(item.total || item.amount || 0).toLocaleString()}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Bottom Grid: Payment Info & Summary */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', borderTop: '1px solid #F1F5F9', paddingTop: '2rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                                <div>
+                                                    <h4 style={{ fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '1rem' }}>Payment Information</h4>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#F0FDF4', borderRadius: '12px', border: '1px solid #DCFCE7' }}>
+                                                            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#166534' }}>Primary Mode</span>
+                                                            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#166534' }}>{fullInvoice.payment_mode || 'Cash'}</span>
+                                                        </div>
+                                                        {fullInvoice.payments.length > 0 && fullInvoice.payments.map((p, i) => (
+                                                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', padding: '0.2rem 1rem', color: '#64748B' }}>
+                                                                <span>{p.payment_method} ({new Date(p.payment_date).toLocaleDateString()})</span>
+                                                                <span style={{ fontWeight: 700 }}>₹{p.amount.toLocaleString()}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div style={{ padding: '1.25rem', background: 'linear-gradient(135deg, #7C3AED 0%, #6366F1 100%)', borderRadius: '20px', color: '#fff' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                                        <Star size={18} fill="#fff" />
+                                                        <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Loyalty Impact</span>
+                                                    </div>
+                                                    <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>+{fullInvoice.loyalty_earned || 0} Points</div>
+                                                    <p style={{ fontSize: '0.75rem', opacity: 0.8, margin: '4px 0 0 0' }}>Automatically added to your {fullInvoice.merchant.name} rewards.</p>
+                                                </div>
+                                            </div>
+
+                                            <div style={{ background: '#F8FAFC', borderRadius: '24px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>
+                                                    <span>Subtotal</span>
+                                                    <span>₹{(fullInvoice.amount || 0).toLocaleString()}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#059669', fontWeight: 600 }}>
+                                                    <span>Discount</span>
+                                                    <span>-₹{(fullInvoice.discount_amount || 0).toLocaleString()}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>
+                                                    <span>Tax (GST)</span>
+                                                    <span>₹{(fullInvoice.tax_amount || 0).toLocaleString()}</span>
+                                                </div>
+                                                {fullInvoice.round_off !== 0 && (
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>
+                                                        <span>Round Off</span>
+                                                        <span>₹{fullInvoice.round_off > 0 ? '+' : ''}{fullInvoice.round_off}</span>
+                                                    </div>
+                                                )}
+                                                <div style={{ height: '1px', background: '#E2E8F0', margin: '0.5rem 0' }} />
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem', color: '#1E293B', fontWeight: 900 }}>
+                                                    <span>Grand Total</span>
+                                                    <span>₹{(fullInvoice.total_amount || 0).toLocaleString()}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 700, marginTop: '0.5rem' }}>
+                                                    <span>Paid Amount</span>
+                                                    <span style={{ color: '#059669' }}>₹{(fullInvoice.paid_amount || 0).toLocaleString()}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 700 }}>
+                                                    <span>Due Amount</span>
+                                                    <span style={{ color: '#EF4444' }}>₹{(fullInvoice.due_amount || 0).toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                ) : (
+                                    <div style={{ textAlign: 'center', padding: '4rem', color: '#EF4444' }}>
+                                        <AlertCircle size={40} style={{ marginBottom: '1rem' }} />
+                                        <p style={{ fontWeight: 700 }}>Failed to load invoice details.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Footer / Actions */}
+                            <div style={{ padding: '1.25rem 2.5rem', background: '#F8FAFC', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                                <button
+                                    onClick={() => window.print()}
+                                    style={{ padding: '0.75rem 1.5rem', borderRadius: '12px', background: '#fff', border: '1px solid #E2E8F0', color: '#475569', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                >
+                                    Download PDF
+                                </button>
+                                <button
+                                    onClick={() => setViewingInvoiceId(null)}
+                                    style={{ padding: '0.75rem 2rem', borderRadius: '12px', background: '#1E293B', border: 'none', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+                                >
+                                    Close Viewer
+                                </button>
                             </div>
                         </motion.div>
                     </div>
