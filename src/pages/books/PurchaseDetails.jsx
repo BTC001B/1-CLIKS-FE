@@ -119,13 +119,13 @@ const PurchaseDetails = () => {
                             </div>
                         ) : (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
-                                {groupedPurchases.map(group => (
-                                    <div key={group.id} style={{ border: '1px solid #F1F5F9', borderRadius: '20px', padding: '1.5rem', background: '#fff', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                                {groupedPurchases.map((group, gIdx) => (
+                                    <div key={group?.id || gIdx} style={{ border: '1px solid #F1F5F9', borderRadius: '20px', padding: '1.5rem', background: '#fff', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                             <div>
-                                                <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#1E293B', margin: 0 }}>{group.merchant_name}</h4>
+                                                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B', margin: 0 }}>{group?.merchant_name || 'Business'}</h4>
                                                 <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600, marginTop: '4px' }}>
-                                                    {group.total_purchases} {group.total_purchases === 1 ? 'Purchase' : 'Purchases'}
+                                                    {group?.total_purchases || 0} {group?.total_purchases === 1 ? 'Purchase' : 'Purchases'}
                                                 </div>
                                             </div>
                                             <div style={{ width: 42, height: 42, borderRadius: '12px', background: '#F0FDF4', color: '#1B6B3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -136,11 +136,11 @@ const PurchaseDetails = () => {
                                         <div style={{ background: '#F8FAFC', borderRadius: '14px', padding: '1rem' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                                 <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Loyalty Earned</span>
-                                                <span style={{ fontSize: '0.85rem', color: '#7C3AED', fontWeight: 850 }}>{group.total_loyalty} pts</span>
+                                                <span style={{ fontSize: '0.85rem', color: '#7C3AED', fontWeight: 850 }}>{group?.total_loyalty || 0} pts</span>
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                 <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Last Purchase</span>
-                                                <span style={{ fontSize: '0.8rem', color: '#1E293B', fontWeight: 700 }}>{new Date(group.last_purchase).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                                                <span style={{ fontSize: '0.8rem', color: '#1E293B', fontWeight: 700 }}>{group?.last_purchase ? new Date(group.last_purchase).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</span>
                                             </div>
                                         </div>
 
@@ -222,30 +222,30 @@ const PurchaseDetails = () => {
                             </div>
 
                             <div style={{ padding: '1.5rem 2rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {(selectedBusiness?.invoices || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(inv => (
-                                    <div key={inv.id} style={{ border: '1px solid #F1F5F9', borderRadius: '16px', padding: '1.25rem', background: '#fff' }}>
+                                {(selectedBusiness?.invoices || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map((inv, iIdx) => (
+                                    <div key={inv?.id || iIdx} style={{ border: '1px solid #F1F5F9', borderRadius: '16px', padding: '1.25rem', background: '#fff' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                             <div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                     <Receipt size={16} style={{ color: '#64748B' }} />
-                                                    <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1E293B' }}>{inv.invoice_number}</span>
+                                                    <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1E293B' }}>{inv?.invoice_number || 'N/A'}</span>
                                                 </div>
-                                                <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontWeight: 600, display: 'block', marginTop: '4px' }}>{new Date(inv.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                                <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontWeight: 600, display: 'block', marginTop: '4px' }}>{inv?.timestamp ? new Date(inv.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}</span>
                                             </div>
                                             <div style={{ textAlign: 'right' }}>
-                                                <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#1B6B3A' }}>₹{(inv.grand_total || 0).toLocaleString()}</div>
-                                                <span style={{ fontSize: '0.65rem', fontWeight: 850, textTransform: 'uppercase', padding: '0.2rem 0.5rem', borderRadius: '6px', ...getStatusStyle(inv.payment_status) }}>{inv.payment_status}</span>
+                                                <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#1B6B3A' }}>₹{(inv?.grand_total || 0).toLocaleString()}</div>
+                                                <span style={{ fontSize: '0.65rem', fontWeight: 850, textTransform: 'uppercase', padding: '0.2rem 0.5rem', borderRadius: '6px', ...getStatusStyle(inv?.payment_status) }}>{inv?.payment_status || 'Unpaid'}</span>
                                             </div>
                                         </div>
 
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', borderTop: '1px dashed #E2E8F0', paddingTop: '1rem' }}>
                                             <div>
                                                 <div style={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>GST</div>
-                                                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>₹{(inv.tax_amount || 0).toLocaleString()}</div>
+                                                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>₹{(inv?.tax_amount || 0).toLocaleString()}</div>
                                             </div>
                                             <div>
                                                 <div style={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Points</div>
-                                                <div style={{ fontSize: '0.8rem', fontWeight: 850, color: '#7C3AED' }}>+{inv.points_earned || 0}</div>
+                                                <div style={{ fontSize: '0.8rem', fontWeight: 850, color: '#7C3AED' }}>+{inv?.points_earned || 0}</div>
                                             </div>
                                             <div style={{ textAlign: 'right' }}>
                                                 <button
@@ -313,11 +313,11 @@ const PurchaseDetails = () => {
                                             <div>
                                                 <h4 style={{ fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Merchant Details</h4>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice?.merchant?.name || 'CLIKS Merchant'}</div>
+                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice?.merchant?.name || fullInvoice?.merchant_name || 'CLIKS Merchant'}</div>
                                                     <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice?.merchant?.email || 'N/A'}</div>
                                                     {fullInvoice?.billing_address && (
                                                         <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '0.5rem', lineHeight: 1.5 }}>
-                                                            {fullInvoice.billing_address}
+                                                            {fullInvoice?.billing_address}
                                                         </div>
                                                     )}
                                                 </div>
@@ -325,8 +325,8 @@ const PurchaseDetails = () => {
                                             <div style={{ textAlign: 'right' }}>
                                                 <h4 style={{ fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Customer Details</h4>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice?.customer?.name || fullInvoice?.client_name || 'Customer'}</div>
-                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice?.customer?.email || fullInvoice?.client_email || 'N/A'}</div>
+                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice?.customer?.name || fullInvoice?.client_name || fullInvoice?.customer_name || 'Customer'}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice?.customer?.email || fullInvoice?.client_email || fullInvoice?.customer_email || 'N/A'}</div>
                                                     {(fullInvoice?.customer?.gstin || fullInvoice?.client_gstin) && <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1B6B3A' }}>GSTIN: {fullInvoice?.customer?.gstin || fullInvoice?.client_gstin}</div>}
                                                     {(fullInvoice?.customer?.shipping_address || fullInvoice?.shipping_address) && (
                                                         <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '0.5rem', lineHeight: 1.5 }}>
@@ -400,8 +400,8 @@ const PurchaseDetails = () => {
                                                             <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#166534' }}>Primary Mode</span>
                                                             <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#166534' }}>{fullInvoice?.payment_mode || 'Cash'}</span>
                                                         </div>
-                                                        {fullInvoice?.payment_info?.history && fullInvoice.payment_info.history.length > 0 ? fullInvoice.payment_info.history.map((p, i) => (
-                                                            <div key={i} style={{ padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                                                        {fullInvoice?.payment_info?.history && fullInvoice.payment_info.history.length > 0 ? fullInvoice.payment_info.history.map((p, pIdx) => (
+                                                            <div key={pIdx} style={{ padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                                                                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>{p?.method || 'Payment'}</span>
                                                                     <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1E293B' }}>₹{(p?.amount || 0).toLocaleString()}</span>
@@ -507,4 +507,3 @@ const PurchaseDetails = () => {
 };
 
 export default PurchaseDetails;
-
