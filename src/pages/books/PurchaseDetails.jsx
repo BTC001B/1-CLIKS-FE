@@ -300,13 +300,13 @@ const PurchaseDetails = () => {
                                             <div style={{ textAlign: 'right' }}>
                                                 <h4 style={{ fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Customer Details</h4>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice.client_name}</div>
-                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice.client_email}</div>
-                                                    {fullInvoice.client_gstin && <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1B6B3A' }}>GSTIN: {fullInvoice.client_gstin}</div>}
-                                                    {fullInvoice.shipping_address && (
+                                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B' }}>{fullInvoice.customer.name}</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{fullInvoice.customer.email}</div>
+                                                    {fullInvoice.customer.gstin && <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1B6B3A' }}>GSTIN: {fullInvoice.customer.gstin}</div>}
+                                                    {fullInvoice.customer.shipping_address && (
                                                         <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '0.5rem', lineHeight: 1.5 }}>
                                                             <strong>Shipping:</strong><br />
-                                                            {fullInvoice.shipping_address}
+                                                            {fullInvoice.customer.shipping_address}
                                                         </div>
                                                     )}
                                                 </div>
@@ -342,7 +342,8 @@ const PurchaseDetails = () => {
                                                         <th style={{ padding: '0.75rem 0', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase' }}>Item Description</th>
                                                         <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'center' }}>Qty</th>
                                                         <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'right' }}>Price</th>
-                                                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'right' }}>Tax</th>
+                                                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'right' }}>Disc.</th>
+                                                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'right' }}>GST</th>
                                                         <th style={{ padding: '0.75rem 0', fontSize: '0.7rem', fontWeight: 850, color: '#94A3B8', textTransform: 'uppercase', textAlign: 'right' }}>Total</th>
                                                     </tr>
                                                 </thead>
@@ -355,6 +356,7 @@ const PurchaseDetails = () => {
                                                             </td>
                                                             <td style={{ padding: '1rem 0.5rem', textAlign: 'center', fontWeight: 600, color: '#64748B' }}>{item.quantity} {item.unit || 'pcs'}</td>
                                                             <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600 }}>₹{(item.price || item.rate || 0).toLocaleString()}</td>
+                                                            <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600, color: '#059669' }}>{item.discount || 0}%</td>
                                                             <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 600, color: '#64748B' }}>{item.gst || item.tax_percentage || 0}%</td>
                                                             <td style={{ padding: '1rem 0', textAlign: 'right', fontWeight: 800, color: '#1E293B' }}>₹{(item.total || item.amount || 0).toLocaleString()}</td>
                                                         </tr>
@@ -373,21 +375,39 @@ const PurchaseDetails = () => {
                                                             <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#166534' }}>Primary Mode</span>
                                                             <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#166534' }}>{fullInvoice.payment_mode || 'Cash'}</span>
                                                         </div>
-                                                        {fullInvoice.payments.length > 0 && fullInvoice.payments.map((p, i) => (
-                                                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', padding: '0.2rem 1rem', color: '#64748B' }}>
-                                                                <span>{p.payment_method} ({new Date(p.payment_date).toLocaleDateString()})</span>
-                                                                <span style={{ fontWeight: 700 }}>₹{p.amount.toLocaleString()}</span>
+                                                        {fullInvoice.payment_info.history.length > 0 ? fullInvoice.payment_info.history.map((p, i) => (
+                                                            <div key={i} style={{ padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>{p.method}</span>
+                                                                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1E293B' }}>₹{p.amount.toLocaleString()}</span>
+                                                                </div>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94A3B8' }}>
+                                                                    <span>{new Date(p.date).toLocaleDateString()}</span>
+                                                                    {p.ref && <span>Ref: {p.ref}</span>}
+                                                                </div>
                                                             </div>
-                                                        ))}
+                                                        )) : (
+                                                            <div style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.8rem', border: '1px dashed #E2E8F0', borderRadius: '12px' }}>
+                                                                No digital payment history recorded.
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <div style={{ padding: '1.25rem', background: 'linear-gradient(135deg, #7C3AED 0%, #6366F1 100%)', borderRadius: '20px', color: '#fff' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
                                                         <Star size={18} fill="#fff" />
-                                                        <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Loyalty Impact</span>
+                                                        <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Loyalty Details</span>
                                                     </div>
-                                                    <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>+{fullInvoice.loyalty_earned || 0} Points</div>
-                                                    <p style={{ fontSize: '0.75rem', opacity: 0.8, margin: '4px 0 0 0' }}>Automatically added to your {fullInvoice.merchant.name} rewards.</p>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                                                        <div>
+                                                            <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>+{fullInvoice.loyalty.earned} Earned</div>
+                                                            {fullInvoice.loyalty.redeemed > 0 && <div style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.9 }}>-{fullInvoice.loyalty.redeemed} Redeemed</div>}
+                                                        </div>
+                                                        <div style={{ textAlign: 'right' }}>
+                                                            <div style={{ fontSize: '0.7rem', fontWeight: 800, opacity: 0.8, textTransform: 'uppercase' }}>Net Added</div>
+                                                            <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>{fullInvoice.loyalty.earned - fullInvoice.loyalty.redeemed} Pts</div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -397,11 +417,11 @@ const PurchaseDetails = () => {
                                                     <span>₹{(fullInvoice.amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#059669', fontWeight: 600 }}>
-                                                    <span>Discount</span>
+                                                    <span>Total Discount</span>
                                                     <span>-₹{(fullInvoice.discount_amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>
-                                                    <span>Tax (GST)</span>
+                                                    <span>GST Amount</span>
                                                     <span>₹{(fullInvoice.tax_amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 {fullInvoice.round_off !== 0 && (
