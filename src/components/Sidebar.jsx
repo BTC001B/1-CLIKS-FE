@@ -135,6 +135,8 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
         if (path.includes('/books/finance')) return 'Finance';
         if (path === '/books' || path === '/books/') return 'Report';
         if (path.includes('/books/money-tracker')) return 'Track';
+        if (path.includes('/books/accounting')) return 'Accounting';
+        if (path.includes('/books/purchase-details')) return 'Purchase details';
         if (path.includes('/books/settings')) return 'Settings';
         if (path.includes('/books/faq')) return 'Help & Support';
         if (path.includes('/ca')) return 'FIN-PRO';
@@ -383,6 +385,28 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                             <div className="flex items-center gap-3">
                                 <Compass size={20} style={{ color: activeItem === 'Track' ? '#ffffff' : '#1B6B3A' }} />
                                 <span className="sidebar-label">Track</span>
+                            </div>
+                        </button>
+
+                        {/* 5c. Accounting */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Accounting' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Accounting', '/books/accounting')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Calculator size={20} style={{ color: activeItem === 'Accounting' ? '#ffffff' : '#1B6B3A' }} />
+                                <span className="sidebar-label">Accounting</span>
+                            </div>
+                        </button>
+
+                        {/* 5d. Purchase details */}
+                        <button
+                            className={`sidebar-item ${activeItem === 'Purchase details' ? 'active' : ''}`}
+                            onClick={() => handleItemClick('Purchase details', '/books/purchase-details')}
+                        >
+                            <div className="flex items-center gap-3">
+                                <ShoppingCart size={20} style={{ color: activeItem === 'Purchase details' ? '#ffffff' : '#1B6B3A' }} />
+                                <span className="sidebar-label">Purchase details</span>
                             </div>
                         </button>
 
