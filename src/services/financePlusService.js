@@ -37,7 +37,11 @@ export const financePlusService = {
   createMoneyTracker: (data) => apiClient.post('/finance-plus/money-trackers', data).then(res => res.data),
   getMoneyTrackerById: (id) => apiClient.get(`/finance-plus/money-trackers/${id}`).then(res => res.data),
   updateMoneyTracker: (id, data) => apiClient.put(`/finance-plus/money-trackers/${id}`, data).then(res => res.data),
-  deleteMoneyTracker: (id) => apiClient.delete(`/finance-plus/money-trackers/${id}`).then(res => res.data)
+  deleteMoneyTracker: (id) => apiClient.delete(`/finance-plus/money-trackers/${id}`).then(res => res.data),
+
+  // Customer Purchase History & Loyalty
+  getPurchases: () => apiClient.get('/finance-plus/purchases').then(res => res.data),
+  getLoyaltyStats: () => apiClient.get('/finance-plus/loyalty').then(res => res.data)
 };
 
 export default financePlusService;
