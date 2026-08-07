@@ -8,6 +8,15 @@ const PurchaseDetails = () => {
     const queryClient = useQueryClient();
     const [selectedBusiness, setSelectedBusiness] = useState(null);
     const [viewingInvoiceId, setViewingInvoiceId] = useState(null);
+    const [receiveData, setReceiveData] = useState(() => {
+        const saved = localStorage.getItem('cliks_purchase_receive_data');
+        return saved !== null ? JSON.parse(saved) : true;
+    });
+
+    const toggleReceiveData = (val) => {
+        setReceiveData(val);
+        localStorage.setItem('cliks_purchase_receive_data', JSON.stringify(val));
+    };
 
     const { data: purchases = [], isLoading: loadingPurchases } = useQuery({
         queryKey: ['customer-purchases'],
@@ -27,11 +36,18 @@ const PurchaseDetails = () => {
     });
 
     const groupedPurchases = useMemo(() => {
+        if (!receiveData) return [];
         const groups = {};
         if (!Array.isArray(purchases)) return [];
 
         purchases.forEach(p => {
             if (!p) return;
+            // Requirement 1: Only display invoices that have sendToCustomerHistory = true
+            // If the field is missing (older records), we assume true for backward compatibility
+            if (p.sendToCustomerHistory === false || p.send_to_customer_history === 0 || p.send_to_customer_history === 'false') {
+                return;
+            }
+
             const id = p.merchant_business_id || p.merchant_name || 'unknown';
             if (!groups[id]) {
                 groups[id] = {
@@ -55,17 +71,17 @@ const PurchaseDetails = () => {
         return Object.values(groups)
             .filter(Boolean)
             .sort((a, b) => new Date(b.last_purchase) - new Date(a.last_purchase));
-    }, [purchases]);
+    }, [purchases, receiveData]);
 
     const activeMerchants = useMemo(() => {
-        if (!Array.isArray(groupedPurchases)) return [];
+        if (!receiveData || !Array.isArray(groupedPurchases)) return [];
         return groupedPurchases
             .filter(g => g && g.merchant_name)
             .map(g => ({
                 name: g.merchant_name,
                 status: 'CONNECTED'
             }));
-    }, [groupedPurchases]);
+    }, [groupedPurchases, receiveData]);
 
     const handleSync = () => {
         queryClient.invalidateQueries(['customer-purchases']);
@@ -87,13 +103,48 @@ const PurchaseDetails = () => {
                         Connected commerce tracking and customer loyalty insights.
                     </p>
                 </div>
-                <button
-                    onClick={handleSync}
-                    disabled={loadingPurchases}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '10px', fontWeight: '700', color: '#1B6B3A', cursor: 'pointer', opacity: loadingPurchases ? 0.6 : 1 }}
-                >
-                    <RefreshCcw size={18} className={loadingPurchases ? 'animate-spin' : ''} /> {loadingPurchases ? 'Syncing...' : 'Sync Data'}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#fff', padding: '0.4rem 0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Receive Data</span>
+                        <div style={{ display: 'flex', background: '#F1F5F9', padding: '3px', borderRadius: '8px' }}>
+                            <button
+                                onClick={() => toggleReceiveData(true)}
+                                style={{
+                                    padding: '0.35rem 0.8rem',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    background: receiveData ? '#1B6B3A' : 'transparent',
+                                    color: receiveData ? '#fff' : '#64748B',
+                                    transition: 'all 0.2s'
+                                }}
+                            >YES</button>
+                            <button
+                                onClick={() => toggleReceiveData(false)}
+                                style={{
+                                    padding: '0.35rem 0.8rem',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    background: !receiveData ? '#EF4444' : 'transparent',
+                                    color: !receiveData ? '#fff' : '#64748B',
+                                    transition: 'all 0.2s'
+                                }}
+                            >NO</button>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleSync}
+                        disabled={loadingPurchases}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '10px', fontWeight: '700', color: '#1B6B3A', cursor: 'pointer', opacity: loadingPurchases ? 0.6 : 1 }}
+                    >
+                        <RefreshCcw size={18} className={loadingPurchases ? 'animate-spin' : ''} /> {loadingPurchases ? 'Syncing...' : 'Sync Data'}
+                    </button>
+                </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginTop: '1.5rem' }}>
@@ -106,7 +157,15 @@ const PurchaseDetails = () => {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {groupedPurchases.length === 0 ? (
+                        {!receiveData ? (
+                            <div style={{ padding: '4rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
+                                <AlertCircle size={48} style={{ color: '#94A3B8', marginBottom: '1rem' }} />
+                                <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>Data Synchronization Paused</h4>
+                                <p style={{ fontSize: '0.9rem', color: '#94A3B8', marginTop: '0.5rem' }}>
+                                    No purchase history has been received because Receive Data is turned OFF.
+                                </p>
+                            </div>
+                        ) : groupedPurchases.length === 0 ? (
                             <div style={{ padding: '3rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
                                 <ShoppingCart size={40} style={{ color: '#CBD5E1', marginBottom: '1rem' }} />
                                 <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>No Purchases Found</h4>
