@@ -1,21 +1,41 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ShoppingCart, Star, ExternalLink, RefreshCcw, History, ArrowRight, Package, Receipt, IndianRupee, Clock, CheckCircle, AlertCircle, X, ChevronRight } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { financePlusService } from '../../services';
+import { useAuth } from '../../context';
 
 const PurchaseDetails = () => {
+    const { user } = useAuth();
     const queryClient = useQueryClient();
     const [selectedBusiness, setSelectedBusiness] = useState(null);
     const [viewingInvoiceId, setViewingInvoiceId] = useState(null);
     const [receiveData, setReceiveData] = useState(() => {
         const saved = localStorage.getItem('cliks_purchase_receive_data');
-        return saved !== null ? JSON.parse(saved) : true;
+        if (saved !== null) return JSON.parse(saved);
+        // Fallback to user profile if localStorage is empty
+        if (user && user.receive_purchase_data !== undefined) {
+            return !!user.receive_purchase_data;
+        }
+        return true;
     });
 
-    const toggleReceiveData = (val) => {
+    useEffect(() => {
+        if (user && user.receive_purchase_data !== undefined) {
+            setReceiveData(!!user.receive_purchase_data);
+        }
+    }, [user]);
+
+    const toggleReceiveData = async (val) => {
         setReceiveData(val);
         localStorage.setItem('cliks_purchase_receive_data', JSON.stringify(val));
+
+        try {
+            // Update the backend preference
+            await financePlusService.updateSettings({ receive_purchase_data: val });
+        } catch (err) {
+            console.error('Failed to sync Receive Data preference to backend:', err);
+        }
     };
 
     const { data: purchases = [], isLoading: loadingPurchases } = useQuery({
@@ -160,10 +180,7 @@ const PurchaseDetails = () => {
                         {!receiveData ? (
                             <div style={{ padding: '4rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
                                 <AlertCircle size={48} style={{ color: '#94A3B8', marginBottom: '1rem' }} />
-                                <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>Data Synchronization Paused</h4>
-                                <p style={{ fontSize: '0.9rem', color: '#94A3B8', marginTop: '0.5rem' }}>
-                                    No purchase history has been received because Receive Data is turned OFF.
-                                </p>
+                                <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>No purchase history has been received because Receive Data is turned OFF.</h4>
                             </div>
                         ) : groupedPurchases.length === 0 ? (
                             <div style={{ padding: '3rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
