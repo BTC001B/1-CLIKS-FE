@@ -105,6 +105,15 @@ const PurchaseDetails = () => {
             .sort((a, b) => new Date(b.last_purchase) - new Date(a.last_purchase));
     }, [purchases, receiveData]);
 
+    useEffect(() => {
+        if (selectedBusiness && Array.isArray(groupedPurchases) && groupedPurchases.length > 0) {
+            const updatedGroup = groupedPurchases.find(g => String(g.id) === String(selectedBusiness.id) || g.merchant_name === selectedBusiness.merchant_name);
+            if (updatedGroup) {
+                setSelectedBusiness(updatedGroup);
+            }
+        }
+    }, [groupedPurchases]);
+
     const activeMerchants = useMemo(() => {
         if (!receiveData || !Array.isArray(groupedPurchases)) return [];
         return groupedPurchases
@@ -381,8 +390,9 @@ const PurchaseDetails = () => {
                                             <div style={{ textAlign: 'right' }}>
                                                 <button
                                                     onClick={() => {
-                                                        console.log('DEBUG: Sending invoiceId to backend:', inv.invoice_id);
-                                                        setViewingInvoiceId(inv.invoice_id);
+                                                        const targetId = inv.invoice_id || inv.id;
+                                                        console.log('DEBUG: Sending invoiceId to backend:', targetId);
+                                                        setViewingInvoiceId(targetId);
                                                     }}
                                                     style={{ background: 'none', border: 'none', color: '#2563EB', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto' }}
                                                 >
