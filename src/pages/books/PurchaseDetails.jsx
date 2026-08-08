@@ -10,21 +10,7 @@ const PurchaseDetails = () => {
     const queryClient = useQueryClient();
     const [selectedBusiness, setSelectedBusiness] = useState(null);
     const [viewingInvoiceId, setViewingInvoiceId] = useState(null);
-    const [receiveData, setReceiveData] = useState(() => {
-        const saved = localStorage.getItem('cliks_purchase_receive_data');
-        if (saved !== null) return JSON.parse(saved);
-        // Fallback to user profile if localStorage is empty
-        if (user && user.receive_purchase_data !== undefined) {
-            return !!user.receive_purchase_data;
-        }
-        return true;
-    });
-
-    useEffect(() => {
-        if (user && user.receive_purchase_data !== undefined) {
-            setReceiveData(!!user.receive_purchase_data);
-        }
-    }, [user]);
+    const [receiveData, setReceiveData] = useState(true);
 
     const toggleReceiveData = async (val) => {
         setReceiveData(val);
@@ -91,11 +77,6 @@ const PurchaseDetails = () => {
 
         purchases.forEach(p => {
             if (!p) return;
-            // Requirement 1: Only display invoices that have sendToCustomerHistory = true
-            // If the field is missing (older records), we assume true for backward compatibility
-            if (p.sendToCustomerHistory === false || p.send_to_customer_history === 0 || p.send_to_customer_history === 'false') {
-                return;
-            }
 
             const id = p.merchant_business_id || p.merchant_name || 'unknown';
             if (!groups[id]) {
