@@ -42,7 +42,11 @@ export const financePlusService = {
   // Customer Purchase History & Loyalty
   getPurchases: () => apiClient.get('/finance-plus/purchases').then(res => res.data),
   getLoyaltyStats: () => apiClient.get('/finance-plus/loyalty').then(res => res.data),
-  getInvoiceDetails: (id) => apiClient.get(`/finance-plus/invoice/${id}`).then(res => res.data)
+  getInvoiceDetails: (id) => apiClient.get(`/finance-plus/invoice/${id}`).then(res => res.data),
+
+  // Active Integrations / Business Connections
+  getIntegrations: () => apiClient.get('/finance-plus/integrations').then(res => res.data),
+  respondIntegration: (id, action) => apiClient.post(`/finance-plus/integrations/${id}/respond`, { action }).then(res => res.data)
 };
 
 export default financePlusService;

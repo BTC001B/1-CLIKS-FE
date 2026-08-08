@@ -43,6 +43,35 @@ const PurchaseDetails = () => {
         queryFn: financePlusService.getPurchases
     });
 
+    const { data: integrations = [], isLoading: loadingIntegrations } = useQuery({
+        queryKey: ['active-integrations'],
+        queryFn: async () => {
+            try {
+                const res = await financePlusService.getIntegrations();
+                return Array.isArray(res) ? res : (res?.data || []);
+            } catch (e) {
+                console.error('Failed to load integrations:', e);
+                return [];
+            }
+        }
+    });
+
+    const [actionLoadingId, setActionLoadingId] = useState(null);
+
+    const handleRespondConnection = async (id, action) => {
+        try {
+            setActionLoadingId(id);
+            await financePlusService.respondIntegration(id, action);
+            queryClient.invalidateQueries(['active-integrations']);
+            queryClient.invalidateQueries(['customer-purchases']);
+        } catch (err) {
+            console.error('Failed to respond to connection request:', err);
+            alert(err?.response?.data?.message || err.message || 'Failed to update connection request.');
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
+
     const { data: loyalty = { available_points: 0, lifetime_earned: 0, total_redeemed: 0 }, isLoading: loadingLoyalty } = useQuery({
         queryKey: ['loyalty-stats'],
         queryFn: financePlusService.getLoyaltyStats
@@ -253,18 +282,89 @@ const PurchaseDetails = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                     <div style={{ background: '#fff', borderRadius: '24px', padding: '1.5rem', border: '1px solid #E2E8F0' }}>
                         <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1E293B', marginBottom: '1rem' }}>Active Integrations</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {activeMerchants.length === 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                            {loadingIntegrations ? (
+                                <div style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.85rem' }}>
+                                    Loading connection requests...
+                                </div>
+                            ) : integrations.length === 0 ? (
                                 <div style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.85rem', border: '1px dashed #E2E8F0', borderRadius: '12px' }}>
-                                    No active business connections yet.
+                                    No active business connection requests.
                                 </div>
                             ) : (
-                                activeMerchants.map((merchant, idx) => (
-                                    <div key={merchant?.name || idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
-                                        <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>{merchant?.name || 'Unknown Business'}</span>
-                                        <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#10B981', textTransform: 'uppercase' }}>{merchant?.status || 'CONNECTED'}</span>
-                                    </div>
-                                ))
+                                integrations.map((item) => {
+                                    const isPending = item.status === 'PENDING' || item.status === 'pending';
+                                    const isConnected = item.status === 'CONNECTED' || item.status === 'accepted';
+                                    const isRejected = item.status === 'UNCONNECTED' || item.status === 'rejected';
+
+                                    let statusColor = '#64748B';
+                                    let statusBg = '#F1F5F9';
+                                    if (isConnected) { statusColor = '#10B981'; statusBg = '#ECFDF5'; }
+                                    else if (isPending) { statusColor = '#D97706'; statusBg = '#FFFBEB'; }
+                                    else if (isRejected) { statusColor = '#EF4444'; statusBg = '#FEF2F2'; }
+
+                                    return (
+                                        <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', background: '#F8FAFC', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                <div>
+                                                    <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#0F172A', display: 'block' }}>
+                                                        {item.business_name}
+                                                    </span>
+                                                    <span style={{ fontSize: '0.78rem', fontWeight: '600', color: '#475569', display: 'block', marginTop: '2px' }}>
+                                                        Customer: {item.customer_name}
+                                                    </span>
+                                                    <span style={{ fontSize: '0.75rem', color: '#64748B', display: 'block', marginTop: '1px' }}>
+                                                        Email: {item.customer_email}
+                                                    </span>
+                                                </div>
+                                                <span style={{ fontSize: '0.7rem', fontWeight: '850', color: statusColor, background: statusBg, padding: '0.2rem 0.5rem', borderRadius: '6px', textTransform: 'uppercase' }}>
+                                                    {isConnected ? 'CONNECTED' : (isPending ? 'PENDING' : 'UNCONNECTED')}
+                                                </span>
+                                            </div>
+
+                                            {isPending && (
+                                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', paddingTop: '0.5rem', borderTop: '1px dashed #CBD5E1' }}>
+                                                    <button
+                                                        onClick={() => handleRespondConnection(item.id, 'accept')}
+                                                        disabled={actionLoadingId === item.id}
+                                                        style={{
+                                                            flex: 1,
+                                                            padding: '0.45rem 0.75rem',
+                                                            borderRadius: '8px',
+                                                            background: '#16A34A',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            fontWeight: '700',
+                                                            fontSize: '0.78rem',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        {actionLoadingId === item.id ? 'Updating...' : 'Accept'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRespondConnection(item.id, 'reject')}
+                                                        disabled={actionLoadingId === item.id}
+                                                        style={{
+                                                            flex: 1,
+                                                            padding: '0.45rem 0.75rem',
+                                                            borderRadius: '8px',
+                                                            background: 'white',
+                                                            color: '#DC2626',
+                                                            border: '1px solid #FCA5A5',
+                                                            fontWeight: '700',
+                                                            fontSize: '0.78rem',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        {actionLoadingId === item.id ? 'Updating...' : 'Reject'}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })
                             )}
                         </div>
                     </div>
