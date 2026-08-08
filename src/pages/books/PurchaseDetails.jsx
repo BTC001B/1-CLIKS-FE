@@ -26,7 +26,8 @@ const PurchaseDetails = () => {
 
     const { data: purchases = [], isLoading: loadingPurchases } = useQuery({
         queryKey: ['customer-purchases'],
-        queryFn: financePlusService.getPurchases
+        queryFn: financePlusService.getPurchases,
+        refetchInterval: 3000
     });
 
     const { data: integrations = [], isLoading: loadingIntegrations } = useQuery({
@@ -39,7 +40,8 @@ const PurchaseDetails = () => {
                 console.error('Failed to load integrations:', e);
                 return [];
             }
-        }
+        },
+        refetchInterval: 3000
     });
 
     const [actionLoadingId, setActionLoadingId] = useState(null);
@@ -158,6 +160,11 @@ const PurchaseDetails = () => {
                             <div style={{ padding: '4rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
                                 <AlertCircle size={48} style={{ color: '#94A3B8', marginBottom: '1rem' }} />
                                 <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>No purchase history has been received because Receive Data is turned OFF.</h4>
+                            </div>
+                        ) : (loadingPurchases && groupedPurchases.length === 0) ? (
+                            <div style={{ padding: '3rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
+                                <RefreshCcw size={32} className="animate-spin" style={{ color: '#1B6B3A', marginBottom: '0.75rem' }} />
+                                <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#64748B', margin: 0 }}>Loading purchase history...</h4>
                             </div>
                         ) : groupedPurchases.length === 0 ? (
                             <div style={{ padding: '3rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
