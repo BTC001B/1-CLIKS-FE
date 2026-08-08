@@ -34,9 +34,18 @@ import { ApiError, normalizeError } from './errors';
  * Build the full URL for an API request.
  */
 function buildUrl(endpoint, params = null) {
-    let baseUrl = API_BASE_URL || window.location.origin;
+    let baseUrl = API_BASE_URL;
+    if (!baseUrl) {
+        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+            baseUrl = 'http://localhost:5000/api/v1';
+        } else if (typeof window !== 'undefined') {
+            baseUrl = `${window.location.origin}/api/v1`;
+        } else {
+            baseUrl = 'http://localhost:5000/api/v1';
+        }
+    }
     
-    // Ensure base URL ends with /api/v1
+    // Ensure base URL includes /api/v1
     if (!baseUrl.includes('/api/v1')) {
         baseUrl = baseUrl.endsWith('/') ? `${baseUrl}api/v1` : `${baseUrl}/api/v1`;
     }
