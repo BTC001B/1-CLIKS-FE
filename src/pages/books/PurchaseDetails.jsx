@@ -108,11 +108,11 @@ const PurchaseDetails = () => {
     useEffect(() => {
         if (selectedBusiness && Array.isArray(groupedPurchases) && groupedPurchases.length > 0) {
             const updatedGroup = groupedPurchases.find(g => String(g.id) === String(selectedBusiness.id) || g.merchant_name === selectedBusiness.merchant_name);
-            if (updatedGroup) {
+            if (updatedGroup && JSON.stringify(updatedGroup) !== JSON.stringify(selectedBusiness)) {
                 setSelectedBusiness(updatedGroup);
             }
         }
-    }, [groupedPurchases]);
+    }, [groupedPurchases, selectedBusiness]);
 
     const activeMerchants = useMemo(() => {
         if (!receiveData || !Array.isArray(groupedPurchases)) return [];
