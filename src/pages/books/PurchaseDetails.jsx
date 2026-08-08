@@ -182,7 +182,7 @@ const PurchaseDetails = () => {
                     onClick={() => setIsShopModalOpen(true)}
                     style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', background: '#1B6B3A', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 8px rgba(27,107,58,0.2)' }}
                 >
-                    <ExternalLink size={16} /> Link External Store (Dummy)
+                    <ExternalLink size={16} /> LINK EXTERNAL STORE
                 </button>
             </div>
 
@@ -305,9 +305,6 @@ const PurchaseDetails = () => {
                                         <p style={{ fontSize: '0.85rem', color: '#94A3B8', marginTop: '0.5rem', maxWidth: '320px', margin: '0.5rem auto' }}>
                                             Select a connected shop to view purchase history & loyalty points.
                                         </p>
-                                        <button onClick={() => setIsShopModalOpen(true)} style={{ marginTop: '1.5rem', padding: '0.66rem 1.5rem', background: '#1B6B3A', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <ExternalLink size={16} /> Link External Store (Dummy)
-                                        </button>
                                     </div>
                                 ) : (
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
