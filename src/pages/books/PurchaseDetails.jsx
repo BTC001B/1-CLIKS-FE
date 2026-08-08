@@ -153,39 +153,6 @@ const PurchaseDetails = () => {
                     </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#fff', padding: '0.4rem 0.8rem', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Receive Data</span>
-                        <div style={{ display: 'flex', background: '#F1F5F9', padding: '3px', borderRadius: '8px' }}>
-                            <button
-                                onClick={() => toggleReceiveData(true)}
-                                style={{
-                                    padding: '0.35rem 0.8rem',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    background: receiveData ? '#1B6B3A' : 'transparent',
-                                    color: receiveData ? '#fff' : '#64748B',
-                                    transition: 'all 0.2s'
-                                }}
-                            >YES</button>
-                            <button
-                                onClick={() => toggleReceiveData(false)}
-                                style={{
-                                    padding: '0.35rem 0.8rem',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    background: !receiveData ? '#EF4444' : 'transparent',
-                                    color: !receiveData ? '#fff' : '#64748B',
-                                    transition: 'all 0.2s'
-                                }}
-                            >NO</button>
-                        </div>
-                    </div>
                     <button
                         onClick={handleSync}
                         disabled={loadingPurchases}
