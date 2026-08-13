@@ -42,6 +42,16 @@ export const AuthProvider = ({ children }) => {
         initAuth();
     }, [token, logout, user]);
 
+    useEffect(() => {
+        const handleUnauthorized = () => {
+            console.warn('[AuthContext] Session expired / 401 Unauthorized received. Clearing session.');
+            logout();
+        };
+
+        window.addEventListener('auth:unauthorized', handleUnauthorized);
+        return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    }, [logout]);
+
     const ssoLogin = async (bnxToken) => {
         const data = await authService.ssoLogin(bnxToken);
         const { accessToken, user: newUser } = data;
