@@ -156,7 +156,8 @@ const PurchaseDetails = () => {
             setIsSendingChat(true);
             await financePlusService.sendSupplierChatMessage(chatSupplier.id, {
                 message: chatInputMessage.trim(),
-                purchase_order_id: selectedSupplierPO?.id
+                purchase_id: selectedSupplierPO?.id,
+                sender_type: 'supplier'
             });
             setChatInputMessage('');
             queryClient.invalidateQueries(['supplier-chat', chatSupplier.id]);
@@ -243,7 +244,7 @@ const PurchaseDetails = () => {
 
     const pendingConnCount = useMemo(() => {
         if (!Array.isArray(supplierConnRequests)) return 0;
-        return supplierConnRequests.filter(r => (r.connection_status || 'PENDING') === 'PENDING').length;
+        return supplierConnRequests.filter(r => (r.status || r.connection_status || 'PENDING') === 'PENDING').length;
     }, [supplierConnRequests]);
 
     const handleSync = () => {
@@ -256,10 +257,10 @@ const PurchaseDetails = () => {
 
     const getStatusStyle = (status) => {
         const st = String(status || '').toUpperCase();
-        if (st === 'PAID' || st === 'COMPLETED' || st === 'CONFIRMED' || st === 'CONNECTED') return { bg: '#ECFDF5', text: '#059669' };
-        if (st === 'PENDING' || st === 'UNPAID' || st.includes('PENDING')) return { bg: '#FFF7ED', text: '#D97706' };
-        if (st === 'REJECTED' || st === 'CANCELLED') return { bg: '#FEF2F2', text: '#DC2626' };
-        return { bg: '#F8FAFC', text: '#64748B' };
+        if (st === 'PAID' || st === 'COMPLETED' || st === 'CONFIRMED' || st === 'CONNECTED') return { background: '#ECFDF5', color: '#059669' };
+        if (st === 'PENDING' || st === 'UNPAID' || st.includes('PENDING')) return { background: '#FFF7ED', color: '#D97706' };
+        if (st === 'REJECTED' || st === 'CANCELLED') return { background: '#FEF2F2', color: '#DC2626' };
+        return { background: '#F8FAFC', color: '#64748B' };
     };
 
     return (
@@ -647,7 +648,7 @@ const PurchaseDetails = () => {
                         ) : (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
                                 {supplierConnRequests.map((req) => {
-                                    const st = (req.connection_status || 'PENDING').toUpperCase();
+                                    const st = (req.status || req.connection_status || 'PENDING').toUpperCase();
                                     const isPending = st === 'PENDING';
                                     const isConnected = st === 'CONNECTED';
                                     const isRejected = st === 'REJECTED';
@@ -741,7 +742,7 @@ const PurchaseDetails = () => {
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 {supplierPurchaseOrders.map((po) => {
-                                    const poStatus = (po.order_status || 'PENDING CONFIRMATION').toUpperCase();
+                                    const poStatus = (po.order_status || po.supplier_confirmation_status || po.status || 'PENDING CONFIRMATION').toUpperCase();
 
                                     return (
                                         <div key={po.id} style={{ border: '1px solid #E2E8F0', borderRadius: '18px', padding: '1.25rem 1.5rem', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
