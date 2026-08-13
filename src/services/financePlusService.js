@@ -46,7 +46,16 @@ export const financePlusService = {
 
   // Active Integrations / Business Connections
   getIntegrations: () => apiClient.get('/finance-plus/integrations').then(res => res.data),
-  respondIntegration: (id, action) => apiClient.post(`/finance-plus/integrations/${id}/respond`, { action }).then(res => res.data)
+  respondIntegration: (id, action) => apiClient.post(`/finance-plus/integrations/${id}/respond`, { action }).then(res => res.data),
+
+  // Supplier Portal Workflow & Communication
+  getSupplierConnectionRequests: () => apiClient.get('/suppliers/portal/connection-requests').then(res => res.data),
+  respondSupplierConnectionRequest: (id, action) => apiClient.post(`/suppliers/portal/connection-requests/${id}/respond`, { action }).then(res => res.data),
+  getSupplierPurchaseRequests: () => apiClient.get('/suppliers/portal/purchase-requests').then(res => res.data),
+  getSupplierPurchaseOrderDetails: (id) => apiClient.get(`/suppliers/portal/purchase-requests/${id}`).then(res => res.data),
+  confirmSupplierPurchaseOrder: (id) => apiClient.post(`/suppliers/portal/purchase-requests/${id}/confirm`).then(res => res.data),
+  getSupplierChatMessages: (supplierId) => apiClient.get(`/suppliers/portal/chat/${supplierId}`).then(res => res.data),
+  sendSupplierChatMessage: (supplierId, data) => apiClient.post(`/suppliers/portal/chat/${supplierId}`, data).then(res => res.data)
 };
 
 export default financePlusService;
