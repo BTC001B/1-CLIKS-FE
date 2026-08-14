@@ -10,31 +10,52 @@ const ContactPanel = ({ onClose }) => {
 
     const fetchContacts = async () => {
         const token = localStorage.getItem('bnx_auth_token');
-        const baseUrl = import.meta.env.VITE_CONTACT_API_BASE_URL;
-        const res = await fetch(`${baseUrl}/get-all`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+        const baseUrl = import.meta.env.VITE_CONTACT_API_BASE_URL || 'https://api.bit-tool.com/api/contacts';
+        console.log(`[ContactPanel] Fetching contacts from ${baseUrl}/get-all with token:`, token ? 'Present' : 'Missing');
+        try {
+            const res = await fetch(`${baseUrl}/get-all`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log(`[ContactPanel] Fetch response status:`, res.status, res.statusText);
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error(`[ContactPanel] Fetch failed with:`, errText);
+                throw new Error(`Network response was not ok: ${res.status}`);
             }
-        });
-        if (!res.ok) throw new Error('Network response was not ok');
-        const result = await res.json();
-        return result.data?.rows || [];
+            const result = await res.json();
+            return result.data?.rows || [];
+        } catch (err) {
+            console.error('[ContactPanel] Fetch exception:', err);
+            throw err;
+        }
     };
 
     const addContact = async (newContact) => {
         const token = localStorage.getItem('bnx_auth_token');
-        const baseUrl = import.meta.env.VITE_CONTACT_API_BASE_URL;
-        const res = await fetch(`${baseUrl}/add`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(newContact)
-        });
-        if (!res.ok) throw new Error('Network response was not ok');
-        return await res.json();
+        const baseUrl = import.meta.env.VITE_CONTACT_API_BASE_URL || 'https://api.bit-tool.com/api/contacts';
+        try {
+            const res = await fetch(`${baseUrl}/add`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newContact)
+            });
+            console.log(`[ContactPanel] Add response status:`, res.status, res.statusText);
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error(`[ContactPanel] Add failed with:`, errText);
+                throw new Error(`Network response was not ok: ${res.status}`);
+            }
+            return await res.json();
+        } catch (err) {
+            console.error('[ContactPanel] Add exception:', err);
+            throw err;
+        }
     };
 
     const { data: contacts = [], isLoading, isError } = useQuery({
