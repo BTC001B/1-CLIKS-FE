@@ -11,6 +11,7 @@ import {
 import { CalcPopover } from './common/CalcPopover';
 import ContactPanel from './ContactPanel';
 import NotesPanel from './NotesPanel';
+import CalendarPanel from './CalendarPanel';
 
 /* ─── Inline Calculator Panel ─────────────────────────────────────── */
 const CalcPanel = ({ onClose }) => {
@@ -33,7 +34,10 @@ const RightSidebar = ({
     onContactClose,
     isNotesOpen = false,
     onNotesToggle,
-    onNotesClose
+    onNotesClose,
+    isCalendarOpen = false,
+    onCalendarToggle,
+    onCalendarClose
 }) => {
     const navigate = useNavigate();
 
@@ -43,8 +47,9 @@ const RightSidebar = ({
             if (onCalcClose) onCalcClose();
             if (onContactClose) onContactClose();
             if (onNotesClose) onNotesClose();
+            if (onCalendarClose) onCalendarClose();
         }
-    }, [isVisible, onCalcClose, onContactClose, onNotesClose]);
+    }, [isVisible, onCalcClose, onContactClose, onNotesClose, onCalendarClose]);
 
     // Escape key closes calc or contact panel
     useEffect(() => {
@@ -53,11 +58,12 @@ const RightSidebar = ({
                 if (isCalcOpen && onCalcClose) onCalcClose();
                 if (isContactOpen && onContactClose) onContactClose();
                 if (isNotesOpen && onNotesClose) onNotesClose();
+                if (isCalendarOpen && onCalendarClose) onCalendarClose();
             }
         };
         document.addEventListener('keydown', handler);
         return () => document.removeEventListener('keydown', handler);
-    }, [isCalcOpen, onCalcClose, isContactOpen, onContactClose, isNotesOpen, onNotesClose]);
+    }, [isCalcOpen, onCalcClose, isContactOpen, onContactClose, isNotesOpen, onNotesClose, isCalendarOpen, onCalendarClose]);
 
     const topIcons = [
         {
@@ -80,8 +86,9 @@ const RightSidebar = ({
             id: 'calendar',
             title: 'Calendar',
             iconClass: 'icon-calendar',
-            icon: <Calendar size={20} />,
-            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/calendar'); },
+            icon: <CalendarDays size={20} />,
+            action: () => { if (onCalendarToggle) onCalendarToggle(); },
+            active: isCalendarOpen,
         },
         {
             id: 'calculator',
@@ -172,6 +179,20 @@ const RightSidebar = ({
                     />
                     <div className="calc-panel" style={{ width: '400px' }}>
                         <NotesPanel onClose={onNotesClose} />
+                    </div>
+                </>
+            )}
+
+            {/* Calendar Panel */}
+            {isVisible && isCalendarOpen && (
+                <>
+                    <div
+                        className="launcher-overlay"
+                        onClick={onCalendarClose}
+                        aria-hidden="true"
+                    />
+                    <div className="calc-panel" style={{ width: '400px' }}>
+                        <CalendarPanel onClose={onCalendarClose} />
                     </div>
                 </>
             )}
