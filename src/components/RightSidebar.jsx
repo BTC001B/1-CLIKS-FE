@@ -1,89 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Calendar,
     Calculator,
     Contact,
-    Shield,
-    Plus,
-    Edit3,
-    SlidersHorizontal,
-    X,
-    Palette,
-    Bell,
-    User,
-    Lock,
-    Sliders,
-    Info,
-    ChevronRight,
-    RotateCcw,
-    Delete,
-    Grid3X3,
-    Share2,
-    Trash2,
-    Hash,
-    Tag,
-    Globe,
-    ArrowUpDown,
-    History,
-    Percent,
+    StickyNote,
+    CloudSun,
+    X
 } from 'lucide-react';
 import { CalcPopover } from './common/CalcPopover';
-import ProductLauncher from './ProductLauncher';
 import ContactPanel from './ContactPanel';
-
-/* ─── Settings Drawer ─────────────────────────────────────────────── */
-const SettingsDrawer = ({ isOpen, onClose }) => {
-    const navigate = useNavigate();
-    const drawerRef = useRef(null);
-
-    useEffect(() => {
-        const handler = (e) => { if (e.key === 'Escape') onClose(); };
-        if (isOpen) document.addEventListener('keydown', handler);
-        return () => document.removeEventListener('keydown', handler);
-    }, [isOpen, onClose]);
-
-    const sections = [
-        { icon: <Sliders size={18} />, label: 'General', description: 'App preferences & defaults', action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <Palette size={18} />, label: 'Appearance', description: 'Theme, colors, display', action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <Bell size={18} />, label: 'Notifications', description: 'Alerts, reminders, push', action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <User size={18} />, label: 'Account', description: 'Profile & personal info', action: () => { navigate('/books/profile'); onClose(); } },
-        { icon: <Lock size={18} />, label: 'Security', description: 'Password, 2FA, sessions', action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <Sliders size={18} />, label: 'Preferences', description: 'Language, currency, region', action: () => { navigate('/books/settings'); onClose(); } },
-        { icon: <Info size={18} />, label: 'About', description: 'Version, licenses, updates', action: () => { navigate('/books/faq'); onClose(); } },
-    ];
-
-    return (
-        <>
-            <div className={`rs-drawer-overlay ${isOpen ? 'rs-drawer-overlay--open' : ''}`} onClick={onClose} aria-hidden="true" />
-            <div ref={drawerRef} className={`rs-drawer ${isOpen ? 'rs-drawer--open' : ''}`} role="dialog" aria-modal="true" aria-label="Settings">
-                <div className="rs-drawer-header">
-                    <div className="rs-drawer-header-title">
-                        <SlidersHorizontal size={18} style={{ color: '#0E4F2E' }} />
-                        <span>Settings</span>
-                    </div>
-                    <button className="rs-drawer-close" onClick={onClose} aria-label="Close settings"><X size={18} /></button>
-                </div>
-                <div className="rs-drawer-body">
-                    <ul className="rs-drawer-list">
-                        {sections.map((s) => (
-                            <li key={s.label}>
-                                <button className="rs-drawer-item" onClick={s.action}>
-                                    <span className="rs-drawer-item-icon">{s.icon}</span>
-                                    <span className="rs-drawer-item-text">
-                                        <span className="rs-drawer-item-label">{s.label}</span>
-                                        <span className="rs-drawer-item-desc">{s.description}</span>
-                                    </span>
-                                    <ChevronRight size={15} className="rs-drawer-item-arrow" />
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-        </>
-    );
-};
+import NotesPanel from './NotesPanel';
 
 /* ─── Inline Calculator Panel ─────────────────────────────────────── */
 const CalcPanel = ({ onClose }) => {
@@ -101,68 +28,60 @@ const RightSidebar = ({
     onCalcToggle,
     onCalcClose,
     onToolbarClose,
-    onLauncherToggle,
-    isLauncherOpen = false,
-    onLauncherClose,
     isContactOpen = false,
     onContactToggle,
-    onContactClose
+    onContactClose,
+    isNotesOpen = false,
+    onNotesToggle,
+    onNotesClose
 }) => {
     const navigate = useNavigate();
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Close panels when toolbar is hidden
     useEffect(() => {
         if (!isVisible) {
             if (onCalcClose) onCalcClose();
-            if (onLauncherClose) onLauncherClose();
             if (onContactClose) onContactClose();
-            setIsSettingsOpen(false);
+            if (onNotesClose) onNotesClose();
         }
-    }, [isVisible]);
+    }, [isVisible, onCalcClose, onContactClose, onNotesClose]);
 
-    // Escape key closes calc or launcher panel
+    // Escape key closes calc or contact panel
     useEffect(() => {
         const handler = (e) => {
             if (e.key === 'Escape') {
                 if (isCalcOpen && onCalcClose) onCalcClose();
-                if (isLauncherOpen && onLauncherClose) onLauncherClose();
                 if (isContactOpen && onContactClose) onContactClose();
+                if (isNotesOpen && onNotesClose) onNotesClose();
             }
         };
         document.addEventListener('keydown', handler);
         return () => document.removeEventListener('keydown', handler);
-    }, [isCalcOpen, onCalcClose, isLauncherOpen, onLauncherClose, isContactOpen, onContactClose]);
+    }, [isCalcOpen, onCalcClose, isContactOpen, onContactClose, isNotesOpen, onNotesClose]);
 
     const topIcons = [
         {
             id: 'close_toolbar',
             title: 'Close Toolbar',
-            iconClass: 'icon-edit', // generic gray circle
+            iconClass: 'icon-edit',
             icon: <X size={20} />,
             action: onToolbarClose,
             mobileOnly: true
         },
         {
-            id: 'launcher',
-            title: 'Product Launcher',
-            iconClass: 'icon-launcher',
-            icon: (
-                <img
-                    src="/beta_logo.png"
-                    alt="Beta Logo"
-                    className="sidebar-beta-logo-img"
-                />
-            ),
-            action: onLauncherToggle,
-            active: isLauncherOpen,
+            id: 'contact',
+            title: 'Contacts',
+            iconClass: 'icon-contact',
+            icon: <Contact size={20} />,
+            action: () => { if (onContactToggle) onContactToggle(); },
+            active: isContactOpen,
         },
         {
             id: 'calendar',
-            title: 'Dashboard',
+            title: 'Calendar',
             iconClass: 'icon-calendar',
             icon: <Calendar size={20} />,
-            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/dashboard'); },
+            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/calendar'); },
         },
         {
             id: 'calculator',
@@ -173,89 +92,35 @@ const RightSidebar = ({
             active: isCalcOpen,
         },
         {
-            id: 'contact',
-            title: 'People',
-            iconClass: 'icon-contact',
-            icon: <Contact size={20} />,
-            action: () => { if (onContactToggle) onContactToggle(); },
-            active: isContactOpen,
-        },
-        {
-            id: 'shield',
-            title: 'Business CA',
-            iconClass: 'icon-shield',
-            icon: <Shield size={20} />,
-            action: () => { if (onCalcClose) onCalcClose(); navigate('/ca'); },
-        },
-        {
-            id: 'add',
-            title: 'Add',
-            iconClass: 'icon-add',
-            icon: <Plus size={20} strokeWidth={2.5} />,
-            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/dashboard'); },
-        },
-    ];
-
-    const bottomIcons = [
-        {
-            id: 'edit',
-            title: 'Stock',
+            id: 'notes',
+            title: 'Notes',
             iconClass: 'icon-edit',
-            icon: <Edit3 size={20} />,
-            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/stock'); },
+            icon: <StickyNote size={20} />,
+            action: () => { if (onNotesToggle) onNotesToggle(); },
+            active: isNotesOpen,
         },
         {
-            id: 'settings',
-            title: 'Settings',
-            iconClass: 'icon-filter',
-            icon: <SlidersHorizontal size={20} />,
-            action: () => setIsSettingsOpen(prev => !prev),
-            active: isSettingsOpen,
+            id: 'weather',
+            title: 'Weather',
+            iconClass: 'icon-launcher',
+            icon: <CloudSun size={20} />,
+            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/weather'); },
         },
     ];
 
     return (
         <>
-            {/* Full-height fixed toolbar on the right edge */}
             <aside
                 className={`rightpanel${isVisible ? '' : ' rightpanel--hidden'}`}
                 aria-label="Quick actions"
                 aria-hidden={!isVisible}
             >
-                {/* Top icons */}
                 <div className="rightpanel-section">
                     {topIcons.map((item) => (
-                        <React.Fragment key={item.id}>
-                            <button
-                                type="button"
-                                className={`rightpanel-btn${item.active ? ' rightpanel-btn--active' : ''}${item.mobileOnly ? ' md:hidden' : ''}`}
-                                onClick={item.action}
-                                title={item.title}
-                                aria-label={item.title}
-                            >
-                                <span className={`rightpanel-icon ${item.iconClass}`}>
-                                    {item.icon}
-                                </span>
-                            </button>
-                            {item.id === 'launcher' && (
-                                <div className="rightpanel-logo-divider" />
-                            )}
-                        </React.Fragment>
-                    ))}
-                </div>
-
-                {/* Divider */}
-                <div className="rightpanel-spacer" />
-                <div className="rightpanel-divider" />
-                <div style={{ height: 8 }} />
-
-                {/* Bottom icons */}
-                <div className="rightpanel-section">
-                    {bottomIcons.map((item) => (
                         <button
                             key={item.id}
                             type="button"
-                            className={`rightpanel-btn${item.active ? ' rightpanel-btn--active' : ''}`}
+                            className={`rightpanel-btn${item.active ? ' rightpanel-btn--active' : ''}${item.mobileOnly ? ' md:hidden' : ''}`}
                             onClick={item.action}
                             title={item.title}
                             aria-label={item.title}
@@ -266,14 +131,14 @@ const RightSidebar = ({
                         </button>
                     ))}
                 </div>
-
+                
+                <div className="rightpanel-spacer" />
                 <div style={{ height: 8 }} />
             </aside>
 
-            {/* Calculator panel — slides in to the left of the toolbar */}
+            {/* Calculator panel */}
             {isVisible && isCalcOpen && (
                 <>
-                    {/* Dark overlay: covers main content + left sidebar, NOT the header/toolbar */}
                     <div
                         className="calc-overlay"
                         onClick={onCalcClose}
@@ -283,25 +148,9 @@ const RightSidebar = ({
                 </>
             )}
 
-            {/* Product Launcher panel — slides in to the left of the toolbar */}
-            {isVisible && isLauncherOpen && (
-                <>
-                    {/* Transparent overlay to catch clicks without dimming page */}
-                    <div
-                        className="launcher-overlay"
-                        onClick={onLauncherClose}
-                        aria-hidden="true"
-                    />
-                    <div className="calc-panel launcher-panel">
-                        <ProductLauncher onClose={onLauncherClose} />
-                    </div>
-                </>
-            )}
-
-            {/* Contact Panel — slides in to the left of the toolbar */}
+            {/* Contact Panel */}
             {isVisible && isContactOpen && (
                 <>
-                    {/* Transparent overlay to catch clicks without dimming page */}
                     <div
                         className="launcher-overlay"
                         onClick={onContactClose}
@@ -313,10 +162,22 @@ const RightSidebar = ({
                 </>
             )}
 
-            {/* Settings drawer */}
-            <SettingsDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+            {/* Notes Panel */}
+            {isVisible && isNotesOpen && (
+                <>
+                    <div
+                        className="launcher-overlay"
+                        onClick={onNotesClose}
+                        aria-hidden="true"
+                    />
+                    <div className="calc-panel" style={{ width: '400px' }}>
+                        <NotesPanel onClose={onNotesClose} />
+                    </div>
+                </>
+            )}
         </>
     );
 };
 
 export default RightSidebar;
+

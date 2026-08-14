@@ -18,6 +18,7 @@ const MainLayout = ({ children }) => {
     const [isCalcOpen,    setIsCalcOpen]    = useState(false); // lifted here
     const [isLauncherOpen, setIsLauncherOpen] = useState(false);
     const [isContactOpen, setIsContactOpen] = useState(false);
+    const [isNotesOpen, setIsNotesOpen] = useState(false);
 
     const toggleSidebar  = () => setIsSidebarOpen(prev => !prev);
     const toggleAudit    = () => setIsAuditOpen(prev => !prev);
@@ -26,7 +27,7 @@ const MainLayout = ({ children }) => {
     // Right margin grows as panels open, making every page shrink automatically
     const rightOffset =
         (isToolbarOpen ? TOOLBAR_W : 0) +
-        (isToolbarOpen && (isCalcOpen || isLauncherOpen || isContactOpen) ? CALC_W : 0);
+        (isToolbarOpen && (isCalcOpen || isLauncherOpen || isContactOpen || isNotesOpen) ? CALC_W : 0);
 
     return (
         <div className={`app-root select-none ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
@@ -50,6 +51,7 @@ const MainLayout = ({ children }) => {
                         setIsLauncherOpen(prev => !prev);
                         setIsCalcOpen(false);
                         setIsContactOpen(false);
+                        setIsNotesOpen(false);
                     }}
                     onItemClick={() => {
                         if (window.innerWidth <= 768) {
@@ -94,6 +96,7 @@ const MainLayout = ({ children }) => {
                     setIsCalcOpen(false);
                     setIsLauncherOpen(false);
                     setIsContactOpen(false);
+                    setIsNotesOpen(false);
                 }}
                 onLauncherToggle={() => {
                     setIsLauncherOpen(prev => !prev);
@@ -107,8 +110,17 @@ const MainLayout = ({ children }) => {
                     setIsContactOpen(prev => !prev);
                     setIsCalcOpen(false);
                     setIsLauncherOpen(false);
+                    setIsNotesOpen(false);
                 }}
                 onContactClose={() => setIsContactOpen(false)}
+                isNotesOpen={isNotesOpen}
+                onNotesToggle={() => {
+                    setIsNotesOpen(prev => !prev);
+                    setIsCalcOpen(false);
+                    setIsLauncherOpen(false);
+                    setIsContactOpen(false);
+                }}
+                onNotesClose={() => setIsNotesOpen(false)}
             />
 
             <ReferralModal isOpen={isReferralOpen} onClose={() => setIsReferralOpen(false)} />
