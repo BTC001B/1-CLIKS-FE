@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, X, Pin, PinOff, Trash2, Edit2, Loader2, StickyNote } from 'lucide-react';
+import { Plus, X, Pin, PinOff, Trash2, Loader2, StickyNote } from 'lucide-react';
 
 const COLORS = ['#ffffff', '#f28b82', '#fbbc04', '#fff475', '#ccff90', '#a7ffeb', '#cbf0f8', '#aecbfa', '#d7aefb', '#e6c9a8'];
 
@@ -119,51 +119,409 @@ const NotesPanel = ({ onClose }) => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 relative shadow-2xl rounded-l-2xl overflow-hidden w-[400px]">
+        <div className="notes-panel-container">
+            <style>{`
+                .notes-panel-container {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    background-color: #f8fafc;
+                    position: relative;
+                    width: 400px;
+                    box-shadow: -10px 0 25px rgba(0,0,0,0.1);
+                    font-family: 'Inter', system-ui, sans-serif;
+                }
+                .notes-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px 20px;
+                    background-color: #ffffff;
+                    border-bottom: 1px solid #e2e8f0;
+                    z-index: 10;
+                }
+                .notes-header-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+                .notes-icon-wrapper {
+                    padding: 8px;
+                    background-color: #fef3c7;
+                    color: #d97706;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .notes-title {
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #1e293b;
+                    margin: 0;
+                    line-height: 1.2;
+                }
+                .notes-subtitle {
+                    font-size: 12px;
+                    color: #64748b;
+                    margin: 0;
+                }
+                .notes-header-right {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .notes-btn-new {
+                    padding: 8px;
+                    background-color: #059669;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background-color 0.2s;
+                }
+                .notes-btn-new:hover {
+                    background-color: #047857;
+                }
+                .notes-btn-close {
+                    padding: 8px;
+                    background-color: transparent;
+                    color: #64748b;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background-color 0.2s;
+                }
+                .notes-btn-close:hover {
+                    background-color: #f1f5f9;
+                }
+                .notes-content-list {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 24px;
+                }
+                .notes-state-message {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 160px;
+                    color: #94a3b8;
+                }
+                .notes-spin {
+                    animation: notes-spin 1s linear infinite;
+                    margin-bottom: 8px;
+                }
+                @keyframes notes-spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                .notes-error-box {
+                    text-align: center;
+                    padding: 16px;
+                    background-color: #fef2f2;
+                    color: #dc2626;
+                    border-radius: 12px;
+                }
+                .notes-retry-btn {
+                    font-size: 14px;
+                    font-weight: 600;
+                    text-decoration: underline;
+                    background: none;
+                    border: none;
+                    color: inherit;
+                    cursor: pointer;
+                    margin-top: 8px;
+                }
+                .notes-section-title {
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #94a3b8;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    margin: 0 0 12px 4px;
+                }
+                .notes-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                .note-card {
+                    position: relative;
+                    padding: 16px;
+                    border-radius: 12px;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                    border: 1px solid rgba(0,0,0,0.05);
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    overflow: hidden;
+                }
+                .note-card:hover {
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+                }
+                .note-card-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 8px;
+                }
+                .note-card-title {
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: #1e293b;
+                    margin: 0;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    padding-right: 24px;
+                }
+                .note-app-badge {
+                    font-size: 10px;
+                    font-weight: 700;
+                    padding: 2px 8px;
+                    border-radius: 999px;
+                    position: absolute;
+                    top: 12px;
+                    right: 12px;
+                    opacity: 0.9;
+                }
+                .note-card-content {
+                    font-size: 14px;
+                    color: #334155;
+                    margin: 0;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 4;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    white-space: pre-wrap;
+                }
+                .note-actions {
+                    position: absolute;
+                    bottom: 8px;
+                    right: 8px;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    opacity: 0;
+                    background-color: rgba(255, 255, 255, 0.7);
+                    backdrop-filter: blur(4px);
+                    border-radius: 8px;
+                    padding: 4px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    transition: opacity 0.2s;
+                }
+                .note-card:hover .note-actions {
+                    opacity: 1;
+                }
+                .note-action-btn {
+                    padding: 6px;
+                    background: transparent;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    color: #475569;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background-color 0.2s;
+                }
+                .note-action-btn:hover {
+                    background-color: rgba(255,255,255,0.9);
+                }
+                .note-action-btn.delete {
+                    color: #ef4444;
+                }
+                .note-pin-indicator {
+                    position: absolute;
+                    top: -4px;
+                    left: -4px;
+                    color: #1e293b;
+                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+                }
+                .notes-modal-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    z-index: 20;
+                    display: flex;
+                    flex-direction: column;
+                    background-color: #ffffff;
+                }
+                .notes-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 12px 16px;
+                    border-bottom: 1px solid rgba(0,0,0,0.05);
+                    background-color: rgba(255,255,255,0.5);
+                }
+                .notes-modal-title {
+                    font-weight: 700;
+                    color: #1e293b;
+                    margin: 0;
+                    font-size: 16px;
+                }
+                .notes-form {
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1;
+                    padding: 16px;
+                    overflow-y: auto;
+                }
+                .notes-input-title {
+                    font-size: 18px;
+                    font-weight: 700;
+                    background: transparent;
+                    border: none;
+                    outline: none;
+                    margin-bottom: 12px;
+                    color: #0f172a;
+                    font-family: inherit;
+                }
+                .notes-input-title::placeholder {
+                    color: rgba(0,0,0,0.3);
+                }
+                .notes-input-content {
+                    flex: 1;
+                    background: transparent;
+                    border: none;
+                    outline: none;
+                    resize: none;
+                    color: #1e293b;
+                    font-size: 15px;
+                    line-height: 1.6;
+                    font-family: inherit;
+                }
+                .notes-input-content::placeholder {
+                    color: rgba(0,0,0,0.3);
+                }
+                .notes-form-footer {
+                    margin-top: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                .notes-color-picker {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+                .notes-color-btn {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    border: 1px solid rgba(0,0,0,0.1);
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                    cursor: pointer;
+                    transition: transform 0.1s, border-color 0.1s;
+                }
+                .notes-color-btn:hover {
+                    transform: scale(1.1);
+                }
+                .notes-color-btn.active {
+                    transform: scale(1.25);
+                    border-color: #94a3b8;
+                }
+                .notes-form-actions {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-top: 8px;
+                }
+                .notes-pin-label {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 14px;
+                    color: #334155;
+                    cursor: pointer;
+                }
+                .notes-pin-checkbox {
+                    border-radius: 4px;
+                    border: 1px solid #cbd5e1;
+                    width: 16px;
+                    height: 16px;
+                    cursor: pointer;
+                }
+                .notes-submit-btn {
+                    padding: 8px 16px;
+                    background-color: #0f172a;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 600;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+                    transition: background-color 0.2s;
+                }
+                .notes-submit-btn:hover {
+                    background-color: #1e293b;
+                }
+                .notes-submit-btn:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                }
+            `}</style>
+
             {/* Header */}
-            <div className="flex justify-between items-center px-5 py-4 border-b border-slate-200 bg-white shadow-sm z-10">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-yellow-100 text-yellow-600 rounded-lg">
+            <div className="notes-header">
+                <div className="notes-header-left">
+                    <div className="notes-icon-wrapper">
                         <StickyNote size={20} />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-slate-800 leading-tight">Global Notes</h2>
-                        <p className="text-xs text-slate-500">Cross-app thoughts</p>
+                        <h2 className="notes-title">Global Notes</h2>
+                        <p className="notes-subtitle">Cross-app thoughts</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="notes-header-right">
                     <button 
                         onClick={() => {
                             setEditingId(null);
                             setFormData({ title: '', content: '', color: '#ffffff', isPinned: false });
                             setIsFormOpen(true);
                         }}
-                        className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                        className="notes-btn-new"
                         title="New Note"
                     >
                         <Plus size={18} />
                     </button>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors">
+                    <button onClick={onClose} className="notes-btn-close">
                         <X size={18} />
                     </button>
                 </div>
             </div>
 
             {/* Content List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            <div className="notes-content-list">
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center h-40 text-slate-400">
-                        <Loader2 className="animate-spin mb-2" size={24} />
+                    <div className="notes-state-message">
+                        <Loader2 className="notes-spin" size={24} />
                         <p>Loading notes...</p>
                     </div>
                 ) : isError ? (
-                    <div className="text-center p-4 bg-red-50 text-red-600 rounded-xl">
-                        <p className="mb-2">Failed to load notes.</p>
-                        <button onClick={() => queryClient.invalidateQueries({ queryKey: ['globalNotes'] })} className="text-sm font-semibold underline">Retry</button>
+                    <div className="notes-error-box">
+                        <p>Failed to load notes.</p>
+                        <button onClick={() => queryClient.invalidateQueries({ queryKey: ['globalNotes'] })} className="notes-retry-btn">Retry</button>
                     </div>
                 ) : notes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-40 text-slate-400">
-                        <StickyNote size={32} className="mb-3 opacity-50" />
+                    <div className="notes-state-message">
+                        <StickyNote size={32} style={{ marginBottom: 12, opacity: 0.5 }} />
                         <p>No notes found.</p>
                     </div>
                 ) : (
@@ -171,8 +529,8 @@ const NotesPanel = ({ onClose }) => {
                         {/* Pinned Notes */}
                         {pinnedNotes.length > 0 && (
                             <div>
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">Pinned</h3>
-                                <div className="grid grid-cols-1 gap-3">
+                                <h3 className="notes-section-title">Pinned</h3>
+                                <div className="notes-grid">
                                     {pinnedNotes.map(note => <NoteCard key={note.id} note={note} onEdit={handleEdit} onTogglePin={togglePinMutation} onDelete={deleteMutation} getBadgeStyle={getBadgeStyle} />)}
                                 </div>
                             </div>
@@ -181,8 +539,8 @@ const NotesPanel = ({ onClose }) => {
                         {/* Unpinned Notes */}
                         {unpinnedNotes.length > 0 && (
                             <div>
-                                {pinnedNotes.length > 0 && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-1 mt-6">Others</h3>}
-                                <div className="grid grid-cols-1 gap-3">
+                                {pinnedNotes.length > 0 && <h3 className="notes-section-title" style={{ marginTop: 24 }}>Others</h3>}
+                                <div className="notes-grid">
                                     {unpinnedNotes.map(note => <NoteCard key={note.id} note={note} onEdit={handleEdit} onTogglePin={togglePinMutation} onDelete={deleteMutation} getBadgeStyle={getBadgeStyle} />)}
                                 </div>
                             </div>
@@ -191,56 +549,56 @@ const NotesPanel = ({ onClose }) => {
                 )}
             </div>
 
-            {/* Add/Edit Modal (contained within the panel) */}
+            {/* Add/Edit Modal */}
             {isFormOpen && (
-                <div className="absolute inset-0 z-20 flex flex-col bg-white">
-                    <div className="flex justify-between items-center px-4 py-3 border-b">
-                        <h3 className="font-bold text-slate-800">{editingId ? 'Edit Note' : 'New Note'}</h3>
-                        <button onClick={() => setIsFormOpen(false)} className="p-1 hover:bg-slate-100 rounded-md"><X size={18} /></button>
+                <div className="notes-modal-overlay">
+                    <div className="notes-modal-header">
+                        <h3 className="notes-modal-title">{editingId ? 'Edit Note' : 'New Note'}</h3>
+                        <button onClick={() => setIsFormOpen(false)} className="notes-btn-close" style={{ padding: 4 }}><X size={18} /></button>
                     </div>
-                    <form onSubmit={handleSave} className="flex flex-col flex-1 p-4 overflow-y-auto" style={{ backgroundColor: formData.color }}>
+                    <form onSubmit={handleSave} className="notes-form" style={{ backgroundColor: formData.color }}>
                         <input
                             type="text"
                             placeholder="Title"
                             value={formData.title}
                             onChange={e => setFormData({ ...formData, title: e.target.value })}
-                            className="text-lg font-bold bg-transparent border-none outline-none mb-3 placeholder:text-black/30 text-slate-900"
+                            className="notes-input-title"
                         />
                         <textarea
                             placeholder="Take a note..."
                             value={formData.content}
                             onChange={e => setFormData({ ...formData, content: e.target.value })}
-                            className="flex-1 bg-transparent border-none outline-none resize-none placeholder:text-black/30 text-slate-800 leading-relaxed"
+                            className="notes-input-content"
                         />
                         
-                        <div className="mt-4 flex flex-col gap-3">
-                            <div className="flex flex-wrap gap-2">
+                        <div className="notes-form-footer">
+                            <div className="notes-color-picker">
                                 {COLORS.map(color => (
                                     <button
                                         key={color}
                                         type="button"
                                         onClick={() => setFormData({ ...formData, color })}
-                                        className={`w-6 h-6 rounded-full border shadow-sm transition-transform ${formData.color === color ? 'scale-125 border-slate-400' : 'border-black/10 hover:scale-110'}`}
+                                        className={`notes-color-btn ${formData.color === color ? 'active' : ''}`}
                                         style={{ backgroundColor: color }}
                                     />
                                 ))}
                             </div>
-                            <div className="flex items-center justify-between mt-2">
-                                <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                            <div className="notes-form-actions">
+                                <label className="notes-pin-label">
                                     <input 
                                         type="checkbox" 
                                         checked={formData.isPinned}
                                         onChange={e => setFormData({ ...formData, isPinned: e.target.checked })}
-                                        className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                        className="notes-pin-checkbox"
                                     />
                                     Pin note
                                 </label>
                                 <button
                                     type="submit"
                                     disabled={saveMutation.isPending}
-                                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg shadow-md transition-colors disabled:opacity-70 flex items-center gap-2"
+                                    className="notes-submit-btn"
                                 >
-                                    {saveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+                                    {saveMutation.isPending && <Loader2 size={14} className="notes-spin" style={{ marginBottom: 0 }} />}
                                     {editingId ? 'Save' : 'Create'}
                                 </button>
                             </div>
@@ -256,44 +614,44 @@ const NotesPanel = ({ onClose }) => {
 const NoteCard = ({ note, onEdit, onTogglePin, onDelete, getBadgeStyle }) => {
     return (
         <div 
-            className="group relative p-4 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all cursor-pointer overflow-hidden"
+            className="note-card"
             style={{ backgroundColor: note.color || '#ffffff' }}
             onClick={() => onEdit(note)}
         >
-            <div className="flex justify-between items-start mb-2">
-                <h4 className="font-semibold text-slate-800 truncate pr-6">{note.title}</h4>
+            <div className="note-card-header">
+                <h4 className="note-card-title">{note.title}</h4>
                 {note.applicationName && (
                     <span 
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap absolute top-3 right-3 opacity-80"
+                        className="note-app-badge"
                         style={getBadgeStyle(note.applicationName)}
                     >
                         {note.applicationName}
                     </span>
                 )}
             </div>
-            <p className="text-sm text-slate-700 line-clamp-4 whitespace-pre-wrap">{note.content}</p>
+            <p className="note-card-content">{note.content}</p>
             
             {/* Quick Actions Hover Overlay */}
-            <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/50 backdrop-blur-sm rounded-lg p-1 shadow-sm" onClick={e => e.stopPropagation()}>
+            <div className="note-actions" onClick={e => e.stopPropagation()}>
                 <button 
                     onClick={() => onTogglePin.mutate({ id: note.id, isPinned: !note.isPinned })}
-                    className="p-1.5 hover:bg-white rounded-md text-slate-600 transition-colors"
+                    className="note-action-btn"
                     title={note.isPinned ? "Unpin" : "Pin"}
                 >
                     {note.isPinned ? <PinOff size={16} /> : <Pin size={16} />}
                 </button>
                 <button 
                     onClick={() => onDelete.mutate(note.id)}
-                    className="p-1.5 hover:bg-white rounded-md text-red-500 transition-colors"
+                    className="note-action-btn delete"
                     title="Delete note"
                 >
-                    {onDelete.isPending ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                    {onDelete.isPending ? <Loader2 size={16} className="notes-spin" style={{ marginBottom: 0 }} /> : <Trash2 size={16} />}
                 </button>
             </div>
             
             {/* Pin indicator on the card */}
             {note.isPinned && (
-                <div className="absolute -top-1 -left-1 text-slate-800 drop-shadow-md">
+                <div className="note-pin-indicator">
                     <Pin size={16} className="rotate-45" fill="currentColor" />
                 </div>
             )}
@@ -302,3 +660,4 @@ const NoteCard = ({ note, onEdit, onTogglePin, onDelete, getBadgeStyle }) => {
 };
 
 export default NotesPanel;
+
