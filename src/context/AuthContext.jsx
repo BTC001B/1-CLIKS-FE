@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = React.useCallback(() => {
         localStorage.removeItem('books_auth_token');
+        localStorage.removeItem('bnx_auth_token');
         // Reset per-user data so a new user doesn't inherit previous user's values
         localStorage.removeItem('cliks_reward_points');
         setToken(null);

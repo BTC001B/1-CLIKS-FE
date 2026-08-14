@@ -48,6 +48,7 @@ const Auth = () => {
             }
 
             const bnxToken = tokenData.data.access_token;
+            localStorage.setItem('bnx_auth_token', bnxToken);
 
             // 2. Check if this user arrived via a referral link
             //    The ref code is stored in sessionStorage when Landing redirects to B2Auth
