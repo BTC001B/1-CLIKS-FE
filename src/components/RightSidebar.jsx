@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { CalcPopover } from './common/CalcPopover';
 import ProductLauncher from './ProductLauncher';
+import ContactPanel from './ContactPanel';
 
 /* ─── Settings Drawer ─────────────────────────────────────────────── */
 const SettingsDrawer = ({ isOpen, onClose }) => {
@@ -102,7 +103,10 @@ const RightSidebar = ({
     onToolbarClose,
     onLauncherToggle,
     isLauncherOpen = false,
-    onLauncherClose
+    onLauncherClose,
+    isContactOpen = false,
+    onContactToggle,
+    onContactClose
 }) => {
     const navigate = useNavigate();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -112,6 +116,7 @@ const RightSidebar = ({
         if (!isVisible) {
             if (onCalcClose) onCalcClose();
             if (onLauncherClose) onLauncherClose();
+            if (onContactClose) onContactClose();
             setIsSettingsOpen(false);
         }
     }, [isVisible]);
@@ -122,11 +127,12 @@ const RightSidebar = ({
             if (e.key === 'Escape') {
                 if (isCalcOpen && onCalcClose) onCalcClose();
                 if (isLauncherOpen && onLauncherClose) onLauncherClose();
+                if (isContactOpen && onContactClose) onContactClose();
             }
         };
         document.addEventListener('keydown', handler);
         return () => document.removeEventListener('keydown', handler);
-    }, [isCalcOpen, onCalcClose, isLauncherOpen, onLauncherClose]);
+    }, [isCalcOpen, onCalcClose, isLauncherOpen, onLauncherClose, isContactOpen, onContactClose]);
 
     const topIcons = [
         {
@@ -171,7 +177,8 @@ const RightSidebar = ({
             title: 'People',
             iconClass: 'icon-contact',
             icon: <Contact size={20} />,
-            action: () => { if (onCalcClose) onCalcClose(); navigate('/books/people'); },
+            action: () => { if (onContactToggle) onContactToggle(); },
+            active: isContactOpen,
         },
         {
             id: 'shield',
@@ -287,6 +294,21 @@ const RightSidebar = ({
                     />
                     <div className="calc-panel launcher-panel">
                         <ProductLauncher onClose={onLauncherClose} />
+                    </div>
+                </>
+            )}
+
+            {/* Contact Panel — slides in to the left of the toolbar */}
+            {isVisible && isContactOpen && (
+                <>
+                    {/* Transparent overlay to catch clicks without dimming page */}
+                    <div
+                        className="launcher-overlay"
+                        onClick={onContactClose}
+                        aria-hidden="true"
+                    />
+                    <div className="calc-panel contact-panel" style={{ width: '400px' }}>
+                        <ContactPanel onClose={onContactClose} />
                     </div>
                 </>
             )}
