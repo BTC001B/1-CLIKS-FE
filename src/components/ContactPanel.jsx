@@ -70,51 +70,51 @@ const ContactPanel = ({ onClose }) => {
         addMutation.mutate(formData);
     };
 
-    const getAppBadgeColor = (appName) => {
-        if (!appName) return 'bg-gray-100 text-gray-800 border-gray-200';
+    const getBadgeStyle = (appName) => {
+        if (!appName) return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#e5e7eb' };
         const lowerName = appName.toLowerCase();
-        if (lowerName.includes('cliks')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-        if (lowerName.includes('bit')) return 'bg-blue-100 text-blue-800 border-blue-200';
-        if (lowerName.includes('bnx')) return 'bg-purple-100 text-purple-800 border-purple-200';
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        if (lowerName.includes('cliks')) return { backgroundColor: '#d1fae5', color: '#065f46', borderColor: '#a7f3d0' };
+        if (lowerName.includes('bit')) return { backgroundColor: '#dbeafe', color: '#1e40af', borderColor: '#bfdbfe' };
+        if (lowerName.includes('bnx')) return { backgroundColor: '#f3e8ff', color: '#6b21a8', borderColor: '#e9d5ff' };
+        return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#e5e7eb' };
     };
 
     return (
-        <div className="flex flex-col h-full bg-white relative w-full border-l border-gray-200 shadow-xl overflow-hidden" style={{ width: '400px' }}>
+        <div className="contact-panel-root">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-10 shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-50 rounded-lg">
-                        <User size={20} className="text-indigo-600" />
+            <div className="contact-header">
+                <div className="contact-header-left">
+                    <div className="contact-header-icon-bg">
+                        <User size={20} className="contact-header-icon" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-semibold text-gray-900 leading-tight">Global Contacts</h2>
-                        <p className="text-xs text-gray-500">Cross-app directory</p>
+                        <h2 className="contact-header-title">Global Contacts</h2>
+                        <p className="contact-header-subtitle">Cross-app directory</p>
                     </div>
                 </div>
                 <button 
                     onClick={onClose}
-                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
+                    className="contact-close-btn"
                 >
                     <X size={20} />
                 </button>
             </div>
 
             {/* Search & Action Bar */}
-            <div className="p-4 border-b border-gray-100 bg-gray-50 flex gap-2 shrink-0">
-                <div className="relative flex-1">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="contact-search-bar">
+                <div className="contact-search-input-wrapper">
+                    <Search size={16} className="contact-search-icon" />
                     <input
                         type="text"
                         placeholder="Search by name, email, phone..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        className="contact-search-input"
                     />
                 </div>
                 <button 
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center justify-center p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shrink-0 shadow-sm hover:shadow"
+                    className="contact-add-btn"
                     title="Add Contact"
                 >
                     <Plus size={20} />
@@ -122,50 +122,50 @@ const ContactPanel = ({ onClose }) => {
             </div>
 
             {/* Content List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+            <div className="contact-content-list">
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center h-48 gap-3 text-gray-400">
-                        <Loader2 className="animate-spin" size={24} />
-                        <p className="text-sm">Loading contacts...</p>
+                    <div className="contact-state-message">
+                        <Loader2 className="contact-spin" size={24} />
+                        <p>Loading contacts...</p>
                     </div>
                 ) : isError ? (
-                    <div className="flex flex-col items-center justify-center h-48 gap-3 text-red-500">
-                        <p className="text-sm">Failed to load contacts.</p>
-                        <button onClick={() => queryClient.invalidateQueries({ queryKey: ['globalContacts'] })} className="text-xs font-medium underline hover:text-red-700">Retry</button>
+                    <div className="contact-state-message error">
+                        <p>Failed to load contacts.</p>
+                        <button onClick={() => queryClient.invalidateQueries({ queryKey: ['globalContacts'] })} className="contact-retry-btn">Retry</button>
                     </div>
                 ) : filteredContacts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-48 gap-2 text-gray-500 bg-white rounded-xl border border-dashed border-gray-300">
-                        <User size={32} className="text-gray-300" />
-                        <p className="text-sm">{searchTerm ? "No contacts match your search." : "No contacts found."}</p>
+                    <div className="contact-state-message empty">
+                        <User size={32} className="contact-empty-icon" />
+                        <p>{searchTerm ? "No contacts match your search." : "No contacts found."}</p>
                     </div>
                 ) : (
                     filteredContacts.map(contact => (
-                        <div key={contact.id || contact.email} className="bg-white p-4 rounded-xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all group">
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{contact.name}</h3>
+                        <div key={contact.id || contact.email} className="contact-card">
+                            <div className="contact-card-header">
+                                <h3 className="contact-card-name">{contact.name}</h3>
                                 {contact.applicationName && (
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium whitespace-nowrap ${getAppBadgeColor(contact.applicationName)}`}>
+                                    <span className="contact-app-badge" style={getBadgeStyle(contact.applicationName)}>
                                         {contact.applicationName}
                                     </span>
                                 )}
                             </div>
                             {contact.role && (
-                                <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-                                    <Briefcase size={12} className="text-gray-400" />
+                                <div className="contact-card-detail">
+                                    <Briefcase size={12} className="contact-detail-icon" />
                                     <span>{contact.role}</span>
                                 </div>
                             )}
-                            <div className="space-y-1.5 mt-3">
+                            <div className="contact-card-body">
                                 {contact.email && (
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                        <Mail size={12} className="text-gray-400 shrink-0" />
-                                        <a href={`mailto:${contact.email}`} className="hover:text-indigo-600 truncate">{contact.email}</a>
+                                    <div className="contact-card-detail link">
+                                        <Mail size={12} className="contact-detail-icon" />
+                                        <a href={`mailto:${contact.email}`}>{contact.email}</a>
                                     </div>
                                 )}
                                 {contact.phonenumber && (
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                        <Phone size={12} className="text-gray-400 shrink-0" />
-                                        <a href={`tel:${contact.phonenumber}`} className="hover:text-indigo-600 truncate">{contact.phonenumber}</a>
+                                    <div className="contact-card-detail link">
+                                        <Phone size={12} className="contact-detail-icon" />
+                                        <a href={`tel:${contact.phonenumber}`}>{contact.phonenumber}</a>
                                     </div>
                                 )}
                             </div>
@@ -174,82 +174,78 @@ const ContactPanel = ({ onClose }) => {
                 )}
             </div>
 
-            {/* Add Contact Modal overlay (Positioned Absolute inside the panel) */}
+            {/* Add Contact Modal overlay */}
             {isAddModalOpen && (
-                <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm z-20 flex flex-col items-center justify-end animate-in fade-in duration-200">
-                    <div className="bg-white w-full h-[85%] border-t border-gray-200 rounded-t-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-full duration-300">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-                            <h3 className="text-lg font-semibold text-gray-900">Add New Contact</h3>
+                <div className="contact-modal-overlay">
+                    <div className="contact-modal-content">
+                        <div className="contact-modal-header">
+                            <h3 className="contact-modal-title">Add New Contact</h3>
                             <button 
                                 onClick={() => setIsAddModalOpen(false)}
-                                className="p-1.5 bg-gray-100 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors"
+                                className="contact-modal-close"
                             >
                                 <X size={18} />
                             </button>
                         </div>
-                        <div className="p-6 flex-1 overflow-y-auto">
-                            <form onSubmit={handleSubmit} className="space-y-5">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                        <div className="contact-modal-body">
+                            <form onSubmit={handleSubmit} className="contact-form">
+                                <div className="contact-form-group">
+                                    <label>Full Name *</label>
                                     <input 
                                         required 
                                         type="text" 
                                         name="name"
                                         value={formData.name} 
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
                                         placeholder="e.g. John Doe"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                                <div className="contact-form-group">
+                                    <label>Email Address *</label>
                                     <input 
                                         required 
                                         type="email" 
                                         name="email"
                                         value={formData.email} 
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
                                         placeholder="john@example.com"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <div className="contact-form-group">
+                                    <label>Phone Number</label>
                                     <input 
                                         type="tel" 
                                         name="phonenumber"
                                         value={formData.phonenumber} 
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
                                         placeholder="+1 (555) 000-0000"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Role / Job Title</label>
+                                <div className="contact-form-group">
+                                    <label>Role / Job Title</label>
                                     <input 
                                         type="text" 
                                         name="role"
                                         value={formData.role} 
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
                                         placeholder="e.g. Supplier, Consultant"
                                     />
                                 </div>
                                 
-                                <div className="pt-4 mt-6 border-t border-gray-100 flex gap-3">
+                                <div className="contact-form-actions">
                                     <button 
                                         type="button" 
                                         onClick={() => setIsAddModalOpen(false)}
-                                        className="flex-1 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                                        className="contact-btn-secondary"
                                     >
                                         Cancel
                                     </button>
                                     <button 
                                         type="submit" 
                                         disabled={addMutation.isPending}
-                                        className="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-70 flex items-center justify-center gap-2 shadow-sm hover:shadow"
+                                        className="contact-btn-primary"
                                     >
-                                        {addMutation.isPending && <Loader2 size={16} className="animate-spin" />}
+                                        {addMutation.isPending && <Loader2 size={16} className="contact-spin" />}
                                         {addMutation.isPending ? 'Saving...' : 'Save Contact'}
                                     </button>
                                 </div>
@@ -258,6 +254,376 @@ const ContactPanel = ({ onClose }) => {
                     </div>
                 </div>
             )}
+
+            <style>{`
+                .contact-panel-root {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    background: #ffffff;
+                    position: relative;
+                    width: 400px;
+                    border-left: 1px solid #e2e8f0;
+                    box-shadow: -4px 0 25px rgba(0,0,0,0.05);
+                    overflow: hidden;
+                    font-family: 'Inter', sans-serif;
+                }
+                
+                .contact-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 1rem 1.5rem;
+                    border-bottom: 1px solid #f1f5f9;
+                    background: #ffffff;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    flex-shrink: 0;
+                }
+                .contact-header-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+                .contact-header-icon-bg {
+                    padding: 8px;
+                    background: #eef2ff;
+                    border-radius: 8px;
+                    display: flex;
+                }
+                .contact-header-icon {
+                    color: #4f46e5;
+                }
+                .contact-header-title {
+                    font-size: 1.125rem;
+                    font-weight: 600;
+                    color: #111827;
+                    margin: 0;
+                    line-height: 1.2;
+                }
+                .contact-header-subtitle {
+                    font-size: 0.75rem;
+                    color: #6b7280;
+                    margin: 0;
+                }
+                .contact-close-btn {
+                    padding: 8px;
+                    color: #9ca3af;
+                    background: transparent;
+                    border: none;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    display: flex;
+                    transition: all 0.2s;
+                }
+                .contact-close-btn:hover {
+                    color: #4b5563;
+                    background: #f9fafb;
+                }
+
+                .contact-search-bar {
+                    padding: 1rem;
+                    border-bottom: 1px solid #f1f5f9;
+                    background: #f8fafc;
+                    display: flex;
+                    gap: 8px;
+                    flex-shrink: 0;
+                }
+                .contact-search-input-wrapper {
+                    position: relative;
+                    flex: 1;
+                    display: flex;
+                }
+                .contact-search-icon {
+                    position: absolute;
+                    left: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #9ca3af;
+                }
+                .contact-search-input {
+                    width: 100%;
+                    padding: 8px 16px 8px 36px;
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    font-size: 0.875rem;
+                    outline: none;
+                    transition: all 0.2s;
+                    box-sizing: border-box;
+                    color: #111827;
+                }
+                .contact-search-input:focus {
+                    border-color: #6366f1;
+                    box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
+                }
+                .contact-add-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 8px;
+                    background: #4f46e5;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    flex-shrink: 0;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                }
+                .contact-add-btn:hover {
+                    background: #4338ca;
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+                }
+
+                .contact-content-list {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 1rem;
+                    background: #f8fafc;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                .contact-state-message {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 12rem;
+                    gap: 12px;
+                    color: #9ca3af;
+                    font-size: 0.875rem;
+                }
+                .contact-state-message.error {
+                    color: #ef4444;
+                }
+                .contact-state-message.empty {
+                    background: #ffffff;
+                    border: 1px dashed #cbd5e1;
+                    border-radius: 12px;
+                }
+                .contact-retry-btn {
+                    background: none;
+                    border: none;
+                    color: #ef4444;
+                    text-decoration: underline;
+                    font-weight: 500;
+                    font-size: 0.75rem;
+                    cursor: pointer;
+                }
+                .contact-retry-btn:hover {
+                    color: #b91c1c;
+                }
+                .contact-spin {
+                    animation: contact-spin 1s linear infinite;
+                }
+                @keyframes contact-spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+
+                .contact-card {
+                    background: #ffffff;
+                    padding: 1rem;
+                    border-radius: 12px;
+                    border: 1px solid #f1f5f9;
+                    box-shadow: 0 2px 10px -4px rgba(0,0,0,0.05);
+                    transition: all 0.2s;
+                }
+                .contact-card:hover {
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+                }
+                .contact-card-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 8px;
+                }
+                .contact-card-name {
+                    font-weight: 600;
+                    color: #111827;
+                    margin: 0;
+                    font-size: 1rem;
+                    transition: color 0.2s;
+                }
+                .contact-card:hover .contact-card-name {
+                    color: #4f46e5;
+                }
+                .contact-app-badge {
+                    font-size: 0.625rem;
+                    padding: 2px 8px;
+                    border-radius: 9999px;
+                    font-weight: 500;
+                    white-space: nowrap;
+                }
+                .contact-card-detail {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 0.75rem;
+                    color: #4b5563;
+                }
+                .contact-detail-icon {
+                    color: #9ca3af;
+                    flex-shrink: 0;
+                }
+                .contact-card-body {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    margin-top: 12px;
+                }
+                .contact-card-detail.link a {
+                    color: #6b7280;
+                    text-decoration: none;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .contact-card-detail.link a:hover {
+                    color: #4f46e5;
+                }
+
+                .contact-modal-overlay {
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(17,24,39,0.4);
+                    backdrop-filter: blur(4px);
+                    z-index: 20;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-end;
+                    animation: contact-fadeIn 0.2s ease-out;
+                }
+                @keyframes contact-fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                .contact-modal-content {
+                    background: #ffffff;
+                    width: 100%;
+                    height: 85%;
+                    border-top: 1px solid #e2e8f0;
+                    border-radius: 24px 24px 0 0;
+                    box-shadow: 0 -10px 25px -5px rgba(0,0,0,0.1);
+                    display: flex;
+                    flex-direction: column;
+                    animation: contact-slideUp 0.3s ease-out;
+                }
+                @keyframes contact-slideUp {
+                    from { transform: translateY(100%); }
+                    to { transform: translateY(0); }
+                }
+                .contact-modal-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 1rem 1.5rem;
+                    border-bottom: 1px solid #f1f5f9;
+                    flex-shrink: 0;
+                }
+                .contact-modal-title {
+                    font-size: 1.125rem;
+                    font-weight: 600;
+                    color: #111827;
+                    margin: 0;
+                }
+                .contact-modal-close {
+                    padding: 6px;
+                    background: #f3f4f6;
+                    color: #6b7280;
+                    border: none;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    display: flex;
+                    transition: all 0.2s;
+                }
+                .contact-modal-close:hover {
+                    color: #374151;
+                    background: #e5e7eb;
+                }
+                .contact-modal-body {
+                    padding: 1.5rem;
+                    flex: 1;
+                    overflow-y: auto;
+                }
+                .contact-form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+                .contact-form-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+                .contact-form-group label {
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    color: #374151;
+                }
+                .contact-form-group input {
+                    width: 100%;
+                    padding: 10px 16px;
+                    background: #f9fafb;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    font-size: 0.875rem;
+                    outline: none;
+                    transition: all 0.2s;
+                    box-sizing: border-box;
+                    color: #111827;
+                }
+                .contact-form-group input:focus {
+                    background: #ffffff;
+                    border-color: #6366f1;
+                    box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
+                }
+                .contact-form-actions {
+                    padding-top: 1rem;
+                    margin-top: 1.5rem;
+                    border-top: 1px solid #f1f5f9;
+                    display: flex;
+                    gap: 12px;
+                }
+                .contact-btn-secondary, .contact-btn-primary {
+                    flex: 1;
+                    padding: 10px 16px;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                }
+                .contact-btn-secondary {
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    color: #374151;
+                }
+                .contact-btn-secondary:hover {
+                    background: #f9fafb;
+                }
+                .contact-btn-primary {
+                    background: #4f46e5;
+                    border: none;
+                    color: #ffffff;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                }
+                .contact-btn-primary:hover:not(:disabled) {
+                    background: #4338ca;
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+                }
+                .contact-btn-primary:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                }
+            `}</style>
         </div>
     );
 };
