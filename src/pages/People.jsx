@@ -204,11 +204,43 @@ const BusinessPeople = () => {
     // ── Mutations ───────────────────────────────────────────────────────────
     const createContactMutation = useMutation({
         mutationFn: (data) => peopleService.createPerson(data),
-        onSuccess: () => {
+        onSuccess: async (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['people-list'] });
             setIsContactModalOpen(false);
             setContactForm({ name: '', role_type: 'friend', phone: '', email: '', company: '', relationship: '', contact_info: '' });
             alert('Contact added to your network.');
+
+            // Sync to BitTool Contact API
+            try {
+                const contactId = data.id || data._id || data.data?.id || data.data?._id;
+                if (contactId) {
+                    const bitToolData = {
+                        name: variables.name || '',
+                        email: variables.email || '',
+                        phonenumber: variables.phone || '',
+                        role: variables.role_type || '',
+                        externalId: String(contactId)
+                    };
+                    
+                    const bitToolUrl = import.meta.env.VITE_CONTACT_API_BASE_URL;
+                    const token = localStorage.getItem('bnx_auth_token');
+                    
+                    const syncRes = await fetch(`${bitToolUrl}/add`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                        },
+                        body: JSON.stringify(bitToolData)
+                    });
+                    
+                    if (!syncRes.ok) {
+                        console.error('Failed to sync contact with BitTool API', await syncRes.text());
+                    }
+                }
+            } catch (err) {
+                console.error("Error syncing contact with BitTool API", err);
+            }
         }
     });
 
