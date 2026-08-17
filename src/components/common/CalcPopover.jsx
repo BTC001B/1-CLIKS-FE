@@ -46,6 +46,13 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['calculator-history'] })
     });
 
+    const saveCompareMutation = useMutation({
+        mutationFn: calculatorService.saveCompareHistory,
+        onSuccess: () => {
+            alert("Compare history saved successfully!");
+        }
+    });
+
     const deleteItemMutation = useMutation({
         mutationFn: calculatorService.deleteHistoryItem,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['calculator-history'] })
@@ -93,7 +100,24 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
     };
 
     // Constants
-    const CONVERSION_RATE = 83.5; // 1 USD = 83.5 INR (Simulated placeholder)
+    const [conversionRate, setConversionRate] = useState(83.5); // Fallback rate
+
+    useEffect(() => {
+        const fetchRates = async () => {
+            try {
+                const res = await fetch('https://api.frankfurter.dev/v2/rate/USD/INR');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.rates && data.rates.INR) {
+                        setConversionRate(data.rates.INR);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch live currency rates, using fallback:", err);
+            }
+        };
+        fetchRates();
+    }, []);
 
     // Recalculate entire tape
     const getTapeCalculations = () => {
@@ -141,7 +165,7 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
         return { steps, finalTotal: running };
     };
 
-    const { steps, finalTotal } = getTapeCalculations();
+    const { steps, finalTotal } = getTapeCalculations(tape);
 
     // Handles committing current activeInput and operator to the tape
     const commitActiveToTape = (nextOp = null) => {
@@ -291,33 +315,27 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
 
         if (finalTapeState.length === 0) return;
 
-        // Compute the static final total for this snapshot log
+        // Compute running totals for backend
         let runningTotal = 0;
-        finalTapeState.forEach((step) => {
+        const computedTape = finalTapeState.map((step) => {
             const v = parseFloat(step.value || 0);
-            if (step.type === 'base') {
-                runningTotal = v;
-            } else if (step.type === '+') {
-                runningTotal += v;
-            } else if (step.type === '-') {
-                runningTotal -= v;
-            } else if (step.type === '*') {
-                runningTotal *= v;
-            } else if (step.type === '/') {
-                runningTotal = v !== 0 ? runningTotal / v : 0;
-            } else if (step.type === 'gst') {
-                runningTotal += runningTotal * (v / 100);
-            } else if (step.type === 'discount') {
-                runningTotal -= runningTotal * (v / 100);
-            }
+            const prev = runningTotal;
+            if (step.type === 'base') runningTotal = v;
+            else if (step.type === '+') runningTotal += v;
+            else if (step.type === '-') runningTotal -= v;
+            else if (step.type === '*') runningTotal *= v;
+            else if (step.type === '/') runningTotal = v !== 0 ? runningTotal / v : 0;
+            else if (step.type === 'gst') runningTotal += prev * (v / 100);
+            else if (step.type === 'discount') runningTotal -= prev * (v / 100);
+
+            return {
+                ...step,
+                runningAfter: runningTotal
+            };
         });
 
         // Save to backend history
-        saveMutation.mutate({
-            tape: finalTapeState,
-            total: runningTotal,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-        });
+        saveMutation.mutate(computedTape);
     }
 
     // Smart Presets logic
@@ -393,7 +411,7 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
         text += "-----------------------------\n";
         text += `TOTAL: ₹${finalTotal.toLocaleString('en-IN', {maximumFractionDigits: 2})}\n`;
         if (isConverted) {
-            text += `TOTAL (USD): $${(finalTotal / CONVERSION_RATE).toLocaleString('en-US', {maximumFractionDigits: 2})}\n`;
+            text += `TOTAL (USD): $${(finalTotal / conversionRate).toLocaleString('en-US', {maximumFractionDigits: 2})}\n`;
         }
         text += "=============================\n";
 
@@ -1008,14 +1026,22 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                                                 <span style={{ fontSize: '10px', fontWeight: '900', color: '#6366F1', textTransform: 'uppercase', letterSpacing: '0.8px' }}>⚖️ Side-by-Side Compare</span>
                                                 {hasData && (
-                                                    <span style={{
-                                                        fontSize: '11px', fontWeight: '900', padding: '2px 10px', borderRadius: '20px',
-                                                        background: winner === '=' ? '#F1F5F9' : (winner === 'A' ? 'linear-gradient(90deg,#ECFDF5,#D1FAE5)' : 'linear-gradient(90deg,#FEF2F2,#FEE2E2)'),
-                                                        color: winner === '=' ? '#64748B' : (winner === 'A' ? '#059669' : '#DC2626'),
-                                                        border: `1px solid ${winner === '=' ? '#E2E8F0' : (winner === 'A' ? '#A7F3D0' : '#FECACA')}`
-                                                    }}>
-                                                        {winner === '=' ? 'Tied ⚖️' : winner === 'A' ? 'A Wins ▲' : 'B Wins ▲'}
-                                                    </span>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button 
+                                                            onClick={() => saveCompareMutation.mutate({ leftEntries: cmpLeft.entries, rightEntries: cmpRight.entries })}
+                                                            style={{ background: '#EEF2FF', color: '#4F46E5', border: 'none', borderRadius: '20px', padding: '2px 10px', fontSize: '11px', fontWeight: '900', cursor: 'pointer' }}
+                                                        >
+                                                            SAVE
+                                                        </button>
+                                                        <span style={{
+                                                            fontSize: '11px', fontWeight: '900', padding: '2px 10px', borderRadius: '20px',
+                                                            background: winner === '=' ? '#F1F5F9' : (winner === 'A' ? 'linear-gradient(90deg,#ECFDF5,#D1FAE5)' : 'linear-gradient(90deg,#FEF2F2,#FEE2E2)'),
+                                                            color: winner === '=' ? '#64748B' : (winner === 'A' ? '#059669' : '#DC2626'),
+                                                            border: `1px solid ${winner === '=' ? '#E2E8F0' : (winner === 'A' ? '#A7F3D0' : '#FECACA')}`
+                                                        }}>
+                                                            {winner === '=' ? 'Tied ⚖️' : winner === 'A' ? 'A Wins ▲' : 'B Wins ▲'}
+                                                        </span>
+                                                    </div>
                                                 )}
                                             </div>
 
@@ -1131,12 +1157,12 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
                         }}>
                             <div>
                                 <span style={{ fontSize: '10px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    {isConverted ? 'Total (Simulated USD)' : 'Tape Running Total'}
+                                    {isConverted ? 'Total (Live USD)' : 'Tape Running Total'}
                                 </span>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                                     <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-0.5px', color: '#10B981', margin: 0 }}>
                                         {isConverted ? '$' : '₹'}{
-                                            (isConverted ? (finalTotal / CONVERSION_RATE) : finalTotal)
+                                            (isConverted ? (finalTotal / conversionRate) : finalTotal)
                                             .toLocaleString(isConverted ? 'en-US' : 'en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                         }
                                     </h2>
@@ -1144,7 +1170,7 @@ export function CalcPopover({ autoOpen = false, onPanelClose } = {}) {
                             </div>
                             {isConverted && (
                                 <div style={{ textAlign: 'right', opacity: 0.8 }}>
-                                    <span style={{ fontSize: '9px', fontWeight: '700', color: '#94A3B8' }}>Base Value</span>
+                                    <span style={{ fontSize: '9px', fontWeight: '700', color: '#94A3B8' }}>Base Value / Rate: ₹{conversionRate}</span>
                                     <div style={{ fontSize: '12px', fontWeight: '800' }}>₹{finalTotal.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
                                 </div>
                             )}
