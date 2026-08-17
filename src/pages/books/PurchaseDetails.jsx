@@ -69,18 +69,34 @@ const PurchaseDetails = () => {
     };
 
     // --- Queries for Customer Purchases ---
-    const { data: purchases = [], isLoading: loadingPurchases } = useQuery({
+    const { data: rawPurchases = [], isLoading: loadingPurchases } = useQuery({
         queryKey: ['customer-purchases'],
-        queryFn: financePlusService.getPurchases,
+        queryFn: async () => {
+            try {
+                const res = await financePlusService.getPurchases();
+                if (Array.isArray(res)) return res;
+                if (Array.isArray(res?.data)) return res.data;
+                if (Array.isArray(res?.purchases)) return res.purchases;
+                return [];
+            } catch (e) {
+                console.error('Failed to load purchases:', e);
+                return [];
+            }
+        },
         refetchInterval: 3000
     });
 
-    const { data: integrations = [], isLoading: loadingIntegrations } = useQuery({
+    const purchases = useMemo(() => Array.isArray(rawPurchases) ? rawPurchases : [], [rawPurchases]);
+
+    const { data: rawIntegrations = [], isLoading: loadingIntegrations } = useQuery({
         queryKey: ['active-integrations'],
         queryFn: async () => {
             try {
                 const res = await financePlusService.getIntegrations();
-                return Array.isArray(res) ? res : (res?.data || []);
+                if (Array.isArray(res)) return res;
+                if (Array.isArray(res?.data)) return res.data;
+                if (Array.isArray(res?.integrations)) return res.integrations;
+                return [];
             } catch (e) {
                 console.error('Failed to load integrations:', e);
                 return [];
@@ -89,13 +105,18 @@ const PurchaseDetails = () => {
         refetchInterval: 3000
     });
 
+    const integrations = useMemo(() => Array.isArray(rawIntegrations) ? rawIntegrations : [], [rawIntegrations]);
+
     // --- Queries for Supplier Portal Workflow ---
-    const { data: backendSupplierConnRequests = [], isLoading: loadingSupplierConnRequests } = useQuery({
+    const { data: rawBackendSupplierConnRequests = [], isLoading: loadingSupplierConnRequests } = useQuery({
         queryKey: ['supplier-connection-requests'],
         queryFn: async () => {
             try {
                 const res = await financePlusService.getSupplierConnectionRequests();
-                return Array.isArray(res) ? res : (res?.data || []);
+                if (Array.isArray(res)) return res;
+                if (Array.isArray(res?.data)) return res.data;
+                if (Array.isArray(res?.requests)) return res.requests;
+                return [];
             } catch (e) {
                 console.error('Failed to load supplier connection requests:', e);
                 return [];
@@ -104,10 +125,13 @@ const PurchaseDetails = () => {
         refetchInterval: 3000
     });
 
-    // Combine backend and locally created supplier requests
+    const backendSupplierConnRequests = useMemo(() => Array.isArray(rawBackendSupplierConnRequests) ? rawBackendSupplierConnRequests : [], [rawBackendSupplierConnRequests]);
+
+    // Combine backend and locally created supplier requests safely
     const supplierConnRequests = useMemo(() => {
-        const combined = [...localSupplierRequests, ...(Array.isArray(backendSupplierConnRequests) ? backendSupplierConnRequests : [])];
-        // Deduplicate by ID
+        const localList = Array.isArray(localSupplierRequests) ? localSupplierRequests : [];
+        const backendList = Array.isArray(backendSupplierConnRequests) ? backendSupplierConnRequests : [];
+        const combined = [...localList, ...backendList];
         const seen = new Set();
         return combined.filter(req => {
             if (!req || !req.id) return false;
@@ -117,12 +141,16 @@ const PurchaseDetails = () => {
         });
     }, [localSupplierRequests, backendSupplierConnRequests]);
 
-    const { data: supplierPurchaseOrders = [], isLoading: loadingSupplierPOs } = useQuery({
+    const { data: rawSupplierPurchaseOrders = [], isLoading: loadingSupplierPOs } = useQuery({
         queryKey: ['supplier-purchase-requests'],
         queryFn: async () => {
             try {
                 const res = await financePlusService.getSupplierPurchaseRequests();
-                return Array.isArray(res) ? res : (res?.data || []);
+                if (Array.isArray(res)) return res;
+                if (Array.isArray(res?.data)) return res.data;
+                if (Array.isArray(res?.purchase_orders)) return res.purchase_orders;
+                if (Array.isArray(res?.requests)) return res.requests;
+                return [];
             } catch (e) {
                 console.error('Failed to load supplier purchase requests:', e);
                 return [];
@@ -130,6 +158,8 @@ const PurchaseDetails = () => {
         },
         refetchInterval: 3000
     });
+
+    const supplierPurchaseOrders = useMemo(() => Array.isArray(rawSupplierPurchaseOrders) ? rawSupplierPurchaseOrders : [], [rawSupplierPurchaseOrders]);
 
     const { data: chatData = { supplier: null, messages: [] }, isLoading: loadingChat } = useQuery({
         queryKey: ['supplier-chat', chatSupplier?.id],
@@ -167,14 +197,12 @@ const PurchaseDetails = () => {
         try {
             setActionLoadingId(id);
             await financePlusService.respondSupplierConnectionRequest(id, action);
-            // Update local state if it exists locally
-            setLocalSupplierRequests(prev => prev.map(r => r.id === id ? { ...r, status: action === 'accept' ? 'CONNECTED' : 'REJECTED' } : r));
+            setLocalSupplierRequests(prev => (Array.isArray(prev) ? prev : []).map(r => r.id === id ? { ...r, status: action === 'accept' ? 'CONNECTED' : 'REJECTED' } : r));
             queryClient.invalidateQueries(['supplier-connection-requests']);
             queryClient.invalidateQueries(['supplier-purchase-requests']);
         } catch (err) {
             console.error('Failed to respond to supplier connection request:', err);
-            // Fallback for local request
-            setLocalSupplierRequests(prev => prev.map(r => r.id === id ? { ...r, status: action === 'accept' ? 'CONNECTED' : 'REJECTED' } : r));
+            setLocalSupplierRequests(prev => (Array.isArray(prev) ? prev : []).map(r => r.id === id ? { ...r, status: action === 'accept' ? 'CONNECTED' : 'REJECTED' } : r));
         } finally {
             setActionLoadingId(null);
         }
@@ -199,7 +227,8 @@ const PurchaseDetails = () => {
             created_at: new Date().toISOString()
         };
 
-        const updated = [newReq, ...localSupplierRequests];
+        const currentLocal = Array.isArray(localSupplierRequests) ? localSupplierRequests : [];
+        const updated = [newReq, ...currentLocal];
         setLocalSupplierRequests(updated);
         localStorage.setItem('cliks_local_supplier_requests', JSON.stringify(updated));
 
@@ -264,9 +293,8 @@ const PurchaseDetails = () => {
     });
 
     const groupedPurchases = useMemo(() => {
-        if (!receiveData) return [];
+        if (!receiveData || !Array.isArray(purchases)) return [];
         const groups = {};
-        if (!Array.isArray(purchases)) return [];
 
         purchases.forEach(p => {
             if (!p) return;
@@ -302,7 +330,8 @@ const PurchaseDetails = () => {
     const connectedShops = useMemo(() => {
         if (!Array.isArray(integrations)) return [];
         return integrations.filter(item => {
-            const st = String(item.status).toLowerCase();
+            if (!item) return false;
+            const st = String(item.status || '').toLowerCase();
             return st === 'accepted' || st === 'connected';
         });
     }, [integrations]);
@@ -326,7 +355,7 @@ const PurchaseDetails = () => {
 
     const pendingConnCount = useMemo(() => {
         if (!Array.isArray(supplierConnRequests)) return 0;
-        return supplierConnRequests.filter(r => (r.status || r.connection_status || 'PENDING') === 'PENDING').length;
+        return supplierConnRequests.filter(r => r && (r.status || r.connection_status || 'PENDING') === 'PENDING').length;
     }, [supplierConnRequests]);
 
     const handleSync = () => {
@@ -359,11 +388,11 @@ const PurchaseDetails = () => {
     const activeModalInvoice = useMemo(() => {
         if (!viewingInvoiceId) return null;
         if (fullInvoiceData && fullInvoiceData.id) return fullInvoiceData;
-        const found = purchases.find(p => p.id === viewingInvoiceId || p.invoice_id === viewingInvoiceId || p.invoice_number === viewingInvoiceId);
+        const found = (Array.isArray(purchases) ? purchases : []).find(p => p && (p.id === viewingInvoiceId || p.invoice_id === viewingInvoiceId || p.invoice_number === viewingInvoiceId));
         if (found) return found;
         return {
             id: viewingInvoiceId,
-            invoice_number: viewingInvoiceId.startsWith('POS') ? viewingInvoiceId : `POS-${viewingInvoiceId}`,
+            invoice_number: String(viewingInvoiceId).startsWith('POS') ? viewingInvoiceId : `POS-${viewingInvoiceId}`,
             timestamp: new Date().toISOString(),
             payment_status: 'PAID',
             grand_total: 141600,
@@ -454,7 +483,7 @@ const PurchaseDetails = () => {
             {/* TAB 1: CUSTOMER PURCHASES */}
             {activeMainTab === 'customer' && (
                 <>
-                    {/* REQUIREMENT 3: Active Integrations & Loyalty Points on TOP for UI Context */}
+                    {/* Active Integrations & Loyalty Points on TOP for UI Context */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.75rem' }}>
                         
                         {/* 1. Active Integrations Top Card */}
@@ -464,7 +493,7 @@ const PurchaseDetails = () => {
                                     <Building2 size={18} color="#1B6B3A" /> Active Integrations
                                 </h3>
                                 <span style={{ fontSize: '0.72rem', fontWeight: '800', background: '#ECFDF5', color: '#059669', padding: '0.2rem 0.6rem', borderRadius: '12px' }}>
-                                    {integrations.length} Connected
+                                    {(Array.isArray(integrations) ? integrations : []).length} Connected
                                 </span>
                             </div>
 
@@ -473,12 +502,13 @@ const PurchaseDetails = () => {
                                     <div style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.85rem' }}>
                                         Loading connection requests...
                                     </div>
-                                ) : integrations.length === 0 ? (
+                                ) : (!Array.isArray(integrations) || integrations.length === 0) ? (
                                     <div style={{ padding: '1rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.85rem', border: '1px dashed #E2E8F0', borderRadius: '12px' }}>
                                         No active business connection requests.
                                     </div>
                                 ) : (
                                     integrations.map((item) => {
+                                        if (!item) return null;
                                         const isPending = item.status === 'PENDING' || item.status === 'pending';
                                         const isConnected = item.status === 'CONNECTED' || item.status === 'accepted';
                                         const isRejected = item.status === 'UNCONNECTED' || item.status === 'rejected';
@@ -490,7 +520,7 @@ const PurchaseDetails = () => {
                                         else if (isRejected) { statusColor = '#EF4444'; statusBg = '#FEF2F2'; }
 
                                         return (
-                                            <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                                            <div key={item.id || item.business_name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
                                                 <div>
                                                     <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1E293B' }}>{item.business_name}</div>
                                                     <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Customer: {item.customer_name} ({item.customer_email})</div>
@@ -527,7 +557,7 @@ const PurchaseDetails = () => {
                             </div>
                         </div>
 
-                        {/* 2. Loyalty & Rewards Overview Top Card (With Requirement 2 Points-to-Money Ratio) */}
+                        {/* 2. Loyalty & Rewards Overview Top Card */}
                         <div style={{ background: '#fff', borderRadius: '24px', padding: '1.5rem', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -558,7 +588,7 @@ const PurchaseDetails = () => {
                                 </div>
                             </div>
 
-                            {/* Requirement 2: Explicit Points-to-Money Ratio Explanation Banner */}
+                            {/* Points-to-Money Ratio Explanation Banner */}
                             <div style={{ background: '#F8FAFC', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem' }}>
                                 <div>
                                     <span style={{ fontWeight: '800', color: '#334155' }}>Points Ratio: </span>
@@ -663,7 +693,7 @@ const PurchaseDetails = () => {
                                                                 <div style={{ fontSize: '0.8rem', fontWeight: 850, color: '#7C3AED' }}>+{inv?.points_earned || 1416} pts</div>
                                                             </div>
                                                             <div style={{ textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
-                                                                {/* REQUIREMENT 1: View Items Button Opens Modal & Toggles Inline List */}
+                                                                {/* View Items Button Opens Modal & Toggles Inline List */}
                                                                 <button
                                                                     onClick={() => {
                                                                         toggleInvoiceItemsInline(invId);
@@ -676,7 +706,7 @@ const PurchaseDetails = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* REQUIREMENT 1: Inline Purchased Items List View */}
+                                                        {/* Inline Purchased Items List View */}
                                                         {isInlineExpanded && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ marginTop: '1rem', borderTop: '1px solid #F1F5F9', paddingTop: '1rem' }}>
                                                                 <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Purchased Line Items:</div>
@@ -691,7 +721,7 @@ const PurchaseDetails = () => {
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            {(inv?.items && inv.items.length > 0 ? inv.items : MOCK_INVOICE_ITEMS).map((it, idx) => (
+                                                                            {((inv?.items && Array.isArray(inv.items) && inv.items.length > 0) ? inv.items : MOCK_INVOICE_ITEMS).map((it, idx) => (
                                                                                 <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                                                     <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#1E293B' }}>{it.product_name}</td>
                                                                                     <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center', fontWeight: 800, color: '#1B6B3A' }}>{it.quantity} {it.unit || 'Pcs'}</td>
@@ -730,12 +760,12 @@ const PurchaseDetails = () => {
                                                 <AlertCircle size={48} style={{ color: '#94A3B8', marginBottom: '1rem' }} />
                                                 <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>No purchase history has been received because Receive Data is turned OFF.</h4>
                                             </div>
-                                        ) : (loadingPurchases && groupedPurchases.length === 0) ? (
+                                        ) : (loadingPurchases && (!Array.isArray(groupedPurchases) || groupedPurchases.length === 0)) ? (
                                             <div style={{ padding: '3rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
                                                 <RefreshCcw size={32} className="animate-spin" style={{ color: '#1B6B3A', marginBottom: '0.75rem' }} />
                                                 <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#64748B', margin: 0 }}>Loading purchase history...</h4>
                                             </div>
-                                        ) : groupedPurchases.length === 0 ? (
+                                        ) : (!Array.isArray(groupedPurchases) || groupedPurchases.length === 0) ? (
                                             // Fallback Card rendering sample purchase so user can interact with View Items & Points
                                             <div style={{ border: '1px solid #F1F5F9', borderRadius: '20px', padding: '1.5rem', background: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -765,7 +795,7 @@ const PurchaseDetails = () => {
                                                         <div style={{ fontSize: '0.8rem', fontWeight: 850, color: '#7C3AED' }}>+1416 pts</div>
                                                     </div>
                                                     <div style={{ textAlign: 'right' }}>
-                                                        {/* REQUIREMENT 1: View Items Trigger */}
+                                                        {/* View Items Trigger */}
                                                         <button
                                                             onClick={() => setViewingInvoiceId('POS-696314')}
                                                             style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#2563EB', fontSize: '0.8rem', fontWeight: 800, padding: '0.4rem 0.85rem', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
@@ -778,7 +808,8 @@ const PurchaseDetails = () => {
                                         ) : (
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
                                                 {groupedPurchases.map((group, gIdx) => {
-                                                    const matchingConn = connectedShops.find(c => c.business_id === group.id || String(c.business_name).toLowerCase() === String(group.merchant_name).toLowerCase());
+                                                    if (!group) return null;
+                                                    const matchingConn = (Array.isArray(connectedShops) ? connectedShops : []).find(c => c && (c.business_id === group.id || String(c.business_name || '').toLowerCase() === String(group.merchant_name || '').toLowerCase()));
 
                                                     return (
                                                         <div key={group?.id || gIdx} style={{ border: '1px solid #F1F5F9', borderRadius: '20px', padding: '1.5rem', background: '#fff', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
@@ -849,7 +880,7 @@ const PurchaseDetails = () => {
             {/* TAB 2: SUPPLIER PORTAL & PURCHASE REQUESTS */}
             {activeMainTab === 'supplier' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    {/* SECTION 1: SUPPLIER CONNECTION REQUESTS & REQUIREMENT 4 ADD SUPPLIER REQUEST INTEGRATION */}
+                    {/* SECTION 1: SUPPLIER CONNECTION REQUESTS & ADD SUPPLIER REQUEST INTEGRATION */}
                     <div style={{ background: '#fff', borderRadius: '24px', padding: '1.75rem', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <div>
@@ -861,7 +892,7 @@ const PurchaseDetails = () => {
                                 </p>
                             </div>
                             
-                            {/* REQUIREMENT 4: Add Supplier Connection Request Button */}
+                            {/* Add Supplier Connection Request Button */}
                             <button
                                 onClick={() => setIsAddSupplierModalOpen(true)}
                                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1.25rem', background: '#1B6B3A', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(27,107,58,0.25)' }}
@@ -875,7 +906,7 @@ const PurchaseDetails = () => {
                                 <RefreshCcw size={24} className="animate-spin" style={{ margin: '0 auto 0.5rem auto', color: '#1B6B3A' }} />
                                 Loading connection requests...
                             </div>
-                        ) : supplierConnRequests.length === 0 ? (
+                        ) : (!Array.isArray(supplierConnRequests) || supplierConnRequests.length === 0) ? (
                             <div style={{ padding: '2rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
                                 <UserCheck size={36} style={{ color: '#CBD5E1', marginBottom: '0.75rem' }} />
                                 <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#64748B', margin: 0 }}>No Connection Requests Found</h4>
@@ -886,6 +917,7 @@ const PurchaseDetails = () => {
                         ) : (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
                                 {supplierConnRequests.map((req) => {
+                                    if (!req) return null;
                                     const st = (req.status || req.connection_status || 'PENDING').toUpperCase();
                                     const isPending = st === 'PENDING';
                                     const isConnected = st === 'CONNECTED';
@@ -956,7 +988,7 @@ const PurchaseDetails = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                             <div>
                                 <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: '#1E293B', margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                    <FileText size={22} style={{ color: '#1B6B3A' }} /> Purchase Requests ({supplierPurchaseOrders.length})
+                                    <FileText size={22} style={{ color: '#1B6B3A' }} /> Purchase Requests ({(Array.isArray(supplierPurchaseOrders) ? supplierPurchaseOrders : []).length})
                                 </h3>
                                 <p style={{ fontSize: '0.85rem', color: '#64748B', margin: '4px 0 0 0' }}>
                                     Purchase orders received from connected dealers. Review requested products, quantities, and click Confirm.
@@ -969,7 +1001,7 @@ const PurchaseDetails = () => {
                                 <RefreshCcw size={28} className="animate-spin" style={{ margin: '0 auto 0.5rem auto', color: '#1B6B3A' }} />
                                 Loading purchase requests...
                             </div>
-                        ) : supplierPurchaseOrders.length === 0 ? (
+                        ) : (!Array.isArray(supplierPurchaseOrders) || supplierPurchaseOrders.length === 0) ? (
                             <div style={{ padding: '3.5rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
                                 <Package size={44} style={{ color: '#CBD5E1', marginBottom: '0.75rem' }} />
                                 <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>No Purchase Requests Received Yet</h4>
@@ -980,6 +1012,7 @@ const PurchaseDetails = () => {
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 {supplierPurchaseOrders.map((po) => {
+                                    if (!po) return null;
                                     const poStatus = (po.order_status || po.supplier_confirmation_status || po.status || 'PENDING CONFIRMATION').toUpperCase();
 
                                     return (
@@ -1008,7 +1041,7 @@ const PurchaseDetails = () => {
                                             {/* Product Summary */}
                                             <div style={{ background: '#F8FAFC', borderRadius: '14px', padding: '1rem', marginBottom: '1rem' }}>
                                                 <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Products Requested:</div>
-                                                {po.items && po.items.length > 0 ? (
+                                                {po.items && Array.isArray(po.items) && po.items.length > 0 ? (
                                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                                                         {po.items.map((it, iKey) => (
                                                             <div key={iKey} style={{ background: '#fff', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0.4rem 0.75rem', fontSize: '0.82rem', fontWeight: '700', color: '#1E293B' }}>
@@ -1055,7 +1088,7 @@ const PurchaseDetails = () => {
                 </div>
             )}
 
-            {/* REQUIREMENT 1: VIEW PURCHASED ITEMS BREAKDOWN MODAL */}
+            {/* VIEW PURCHASED ITEMS BREAKDOWN MODAL */}
             <AnimatePresence>
                 {viewingInvoiceId && (
                     <div style={{ position: 'fixed', inset: 0, zIndex: 1150, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
@@ -1109,7 +1142,7 @@ const PurchaseDetails = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {((activeModalInvoice?.items && activeModalInvoice.items.length > 0) ? activeModalInvoice.items : MOCK_INVOICE_ITEMS).map((it, idx) => (
+                                                {((activeModalInvoice?.items && Array.isArray(activeModalInvoice.items) && activeModalInvoice.items.length > 0) ? activeModalInvoice.items : MOCK_INVOICE_ITEMS).map((it, idx) => (
                                                     <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                         <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: '#1E293B' }}>{it.product_name}</td>
                                                         <td style={{ padding: '0.85rem 1rem', textAlign: 'center', fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>{it.sku || 'SKU-PROD'}</td>
@@ -1147,7 +1180,7 @@ const PurchaseDetails = () => {
                 )}
             </AnimatePresence>
 
-            {/* REQUIREMENT 2: POINTS CALCULATION & DISTRIBUTION EXPLANATION MODAL */}
+            {/* POINTS CALCULATION & DISTRIBUTION EXPLANATION MODAL */}
             <AnimatePresence>
                 {showPointsModal && (
                     <div style={{ position: 'fixed', inset: 0, zIndex: 1160, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
@@ -1225,7 +1258,7 @@ const PurchaseDetails = () => {
                 )}
             </AnimatePresence>
 
-            {/* REQUIREMENT 4: ADD SUPPLIER REQUEST MODAL */}
+            {/* ADD SUPPLIER REQUEST MODAL */}
             <AnimatePresence>
                 {isAddSupplierModalOpen && (
                     <div style={{ position: 'fixed', inset: 0, zIndex: 1250, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
@@ -1268,7 +1301,7 @@ const PurchaseDetails = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#334155', marginBottom: '0.4rem' }}>Supplier Email</label>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', color: '#334155', marginBottom: '0.4rem' }}>Supplier Email</label>
                                         <input 
                                             type="email" 
                                             placeholder="supplier@bnxmail.com"
@@ -1311,7 +1344,7 @@ const PurchaseDetails = () => {
                 )}
             </AnimatePresence>
 
-            {/* SECTION 3: SUPPLIER ORDER DETAILS MODAL */}
+            {/* SUPPLIER ORDER DETAILS MODAL */}
             <AnimatePresence>
                 {selectedSupplierPO && (
                     <div style={{ position: 'fixed', inset: 0, zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
@@ -1363,7 +1396,7 @@ const PurchaseDetails = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {selectedSupplierPO.items && selectedSupplierPO.items.length > 0 ? (
+                                                {selectedSupplierPO.items && Array.isArray(selectedSupplierPO.items) && selectedSupplierPO.items.length > 0 ? (
                                                     selectedSupplierPO.items.map((it, idx) => (
                                                         <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                             <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: '#1E293B' }}>{it.product_name}</td>
@@ -1382,7 +1415,7 @@ const PurchaseDetails = () => {
                                             <tfoot>
                                                 <tr style={{ background: '#F8FAFC', fontWeight: 900 }}>
                                                     <td colSpan="4" style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#1E293B' }}>Total Amount:</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#1B6B3A', fontSize: '1.05rem' }}>₹{(selectedSupplierPO.grand_total || 0).toLocaleString()}</td>
+                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#1B6B3A', fontSize: '1.1rem' }}>₹{(selectedSupplierPO.grand_total || 0).toLocaleString()}</td>
                                                 </tr>
                                             </tfoot>
                                         </table>
@@ -1428,7 +1461,7 @@ const PurchaseDetails = () => {
                 )}
             </AnimatePresence>
 
-            {/* SECTION 5: DEALER ↔ SUPPLIER PRIVATE CHAT DRAWER */}
+            {/* DEALER ↔ SUPPLIER PRIVATE CHAT DRAWER */}
             <AnimatePresence>
                 {chatSupplier && (
                     <div style={{ position: 'fixed', inset: 0, zIndex: 1200, display: 'flex', justifyContent: 'flex-end' }}>
@@ -1447,13 +1480,14 @@ const PurchaseDetails = () => {
                             <div style={{ flex: 1, padding: '1.25rem', overflowY: 'auto', background: '#F8FAFC', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                                 {loadingChat ? (
                                     <div style={{ padding: '2rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.85rem' }}>Loading messages...</div>
-                                ) : (!chatData?.messages || chatData.messages.length === 0) ? (
+                                ) : (!chatData?.messages || !Array.isArray(chatData.messages) || chatData.messages.length === 0) ? (
                                     <div style={{ padding: '3rem 1rem', textAlign: 'center', color: '#94A3B8' }}>
                                         <MessageSquare size={32} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
                                         <p style={{ fontSize: '0.85rem', margin: 0 }}>No messages yet. Send a message to start communicating with the dealer.</p>
                                     </div>
                                 ) : (
                                     chatData.messages.map((msg) => {
+                                        if (!msg) return null;
                                         const isMe = msg.sender_id === user?.id || msg.sender_role === 'supplier';
 
                                         return (
@@ -1518,7 +1552,7 @@ const PurchaseDetails = () => {
                             </div>
 
                             <div style={{ padding: '1.5rem 2rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {connectedShops.length === 0 ? (
+                                {(!Array.isArray(connectedShops) || connectedShops.length === 0) ? (
                                     <div style={{ padding: '3rem 1rem', textAlign: 'center', border: '1px dashed #CBD5E1', borderRadius: '16px', background: '#F8FAFC' }}>
                                         <ShoppingCart size={40} style={{ color: '#94A3B8', marginBottom: '1rem' }} />
                                         <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#475569', margin: 0 }}>No Connected Shops Found</h4>
@@ -1527,54 +1561,57 @@ const PurchaseDetails = () => {
                                         </p>
                                     </div>
                                 ) : (
-                                    connectedShops.map((shop) => (
-                                        <div
-                                            key={shop.id}
-                                            onClick={() => {
-                                                setSelectedShop(shop);
-                                                setIsShopModalOpen(false);
-                                            }}
-                                            style={{
-                                                padding: '1.25rem 1.5rem',
-                                                borderRadius: '16px',
-                                                border: '1px solid #E2E8F0',
-                                                background: '#fff',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                justify: 'space-between',
-                                                alignItems: 'center',
-                                                transition: 'all 0.2s',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-                                            }}
-                                            onMouseOver={e => e.currentTarget.style.borderColor = '#1B6B3A'}
-                                            onMouseOut={e => e.currentTarget.style.borderColor = '#E2E8F0'}
-                                        >
-                                            <div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                                                    <h4 style={{ fontSize: '1.1rem', fontWeight: '850', color: '#0F172A', margin: 0 }}>{shop.business_name}</h4>
-                                                    <span style={{ fontSize: '0.65rem', fontWeight: '850', color: '#10B981', background: '#ECFDF5', padding: '0.15rem 0.5rem', borderRadius: '6px', textTransform: 'uppercase' }}>CONNECTED</span>
-                                                </div>
-                                                <div style={{ fontSize: '0.8rem', color: '#475569', fontWeight: '600' }}>
-                                                    Customer: {shop.customer_name}
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                style={{
-                                                    padding: '0.6rem 1rem',
-                                                    borderRadius: '10px',
-                                                    background: '#1B6B3A',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    fontWeight: '700',
-                                                    fontSize: '0.8rem',
-                                                    cursor: 'pointer'
+                                    connectedShops.map((shop) => {
+                                        if (!shop) return null;
+                                        return (
+                                            <div
+                                                key={shop.id || shop.business_name}
+                                                onClick={() => {
+                                                    setSelectedShop(shop);
+                                                    setIsShopModalOpen(false);
                                                 }}
+                                                style={{
+                                                    padding: '1.25rem 1.5rem',
+                                                    borderRadius: '16px',
+                                                    border: '1px solid #E2E8F0',
+                                                    background: '#fff',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    justify: 'space-between',
+                                                    alignItems: 'center',
+                                                    transition: 'all 0.2s',
+                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                                                }}
+                                                onMouseOver={e => e.currentTarget.style.borderColor = '#1B6B3A'}
+                                                onMouseOut={e => e.currentTarget.style.borderColor = '#E2E8F0'}
                                             >
-                                                View Purchases →
-                                            </button>
-                                        </div>
-                                    ))
+                                                <div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                                                        <h4 style={{ fontSize: '1.1rem', fontWeight: '850', color: '#0F172A', margin: 0 }}>{shop.business_name}</h4>
+                                                        <span style={{ fontSize: '0.65rem', fontWeight: '850', color: '#10B981', background: '#ECFDF5', padding: '0.15rem 0.5rem', borderRadius: '6px', textTransform: 'uppercase' }}>CONNECTED</span>
+                                                    </div>
+                                                    <div style={{ fontSize: '0.8rem', color: '#475569', fontWeight: '600' }}>
+                                                        Customer: {shop.customer_name}
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    style={{
+                                                        padding: '0.6rem 1rem',
+                                                        borderRadius: '10px',
+                                                        background: '#1B6B3A',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        fontWeight: '700',
+                                                        fontSize: '0.8rem',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    View Purchases →
+                                                </button>
+                                            </div>
+                                        );
+                                    })
                                 )}
                             </div>
                         </motion.div>

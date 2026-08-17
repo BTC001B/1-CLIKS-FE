@@ -371,7 +371,7 @@ const MoneyTracker = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
               <button 
                 onClick={() => { setActiveTracker(null); setActiveTab('details'); }} 
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'white', padding: '0.6rem 1.2rem', borderRadius: '12px', fontWeight: 700, color: '#4F46E5', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', border: '1px solid #E2E8F0', fontSize: '0.9rem' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '0.6rem 1.2rem', borderRadius: '12px', fontWeight: 700, color: '#4F46E5', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', border: '1px solid #E2E8F0', fontSize: '0.9rem' }}
               >
                 <ArrowLeft size={16} /> Back to Dashboard
               </button>
