@@ -222,7 +222,7 @@ const BusinessPeople = () => {
                         externalId: String(contactId)
                     };
                     
-                    const bitToolUrl = import.meta.env.VITE_CONTACT_API_BASE_URL;
+                    const bitToolUrl = import.meta.env.VITE_CONTACT_API_BASE_URL || 'https://api.bit-tool.com/api/contacts';
                     const token = localStorage.getItem('bnx_auth_token');
                     
                     const syncRes = await fetch(`${bitToolUrl}/add`, {
