@@ -273,14 +273,14 @@ const PurchaseDetails = () => {
         }
     };
 
-    const { data: loyalty = { available_points: 140184, lifetime_earned: 152000, total_redeemed: 11816 }, isLoading: loadingLoyalty } = useQuery({
+    const { data: loyalty = { available_points: 0, lifetime_earned: 0, total_redeemed: 0 }, isLoading: loadingLoyalty } = useQuery({
         queryKey: ['loyalty-stats'],
         queryFn: async () => {
             try {
                 const res = await financePlusService.getLoyaltyStats();
-                return res || { available_points: 140184, lifetime_earned: 152000, total_redeemed: 11816 };
+                return res || { available_points: 0, lifetime_earned: 0, total_redeemed: 0 };
             } catch (e) {
-                return { available_points: 140184, lifetime_earned: 152000, total_redeemed: 11816 };
+                return { available_points: 0, lifetime_earned: 0, total_redeemed: 0 };
             }
         }
     });
