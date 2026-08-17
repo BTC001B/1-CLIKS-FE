@@ -40,7 +40,7 @@ const MASTER_SHORTCUTS = [
     { id: 'investments', label: 'Investments', path: '/finance/investments', icon: ArrowUpRight, color: '#EA580C' },
     { id: 'debts', label: 'Debts & Loans', path: '/finance/debts', icon: ShieldCheck, color: '#65A30D' },
     { id: 'ca_hub', label: 'FIN-PRO CA Hub', path: '/ca', icon: Briefcase, color: '#004aad' },
-    { id: 'finance_module', label: 'Finance', path: '/books/finance', icon: TrendingUp, color: '#1B6B3A' },
+    { id: 'finance_module', label: 'Finance', path: '/books/accounting', icon: TrendingUp, color: '#1B6B3A' },
 ];
 
 const BooksDashboard = () => {
@@ -300,7 +300,7 @@ const BooksDashboard = () => {
                             </div>
 
                             {/* Finance Module */}
-                            <div style={{ padding: '1.25rem', borderRadius: '16px', border: '1px solid #F1F5F9', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.2s' }} onClick={() => navigate('/books/finance')}>
+                            <div style={{ padding: '1.25rem', borderRadius: '16px', border: '1px solid #F1F5F9', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.2s' }} onClick={() => navigate('/books/accounting')}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                                     <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'white', color: '#1B6B3A', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                                         <TrendingUp size={24} />

@@ -126,7 +126,7 @@ function AppContent() {
                     <Route path="/payments/rewards-offers" element={<Rewards />} />
 
                     {/* Books Section */}
-                    <Route path="/books/finance" element={<FinancePage />} />
+                    <Route path="/books/finance" element={<Navigate to="/books/accounting" replace />} />
                     <Route path="/books/tax-deductions" element={<TaxDeductions />} />
                     <Route path="/books" element={<Books />} />
                     <Route path="/books/dashboard" element={<BooksDashboard />} />
