@@ -255,7 +255,7 @@ const ProductLauncher = ({ onClose }) => {
                                                                      className="launcher-mini-img-icon"
                                                                  />
                                                              ) : (
-                                                                 <IconComponent size={20} strokeWidth={2.5} />
+                                                                 <IconComponent size={24} strokeWidth={2.2} />
                                                              )}
                                                         </div>
                                                     </div>
@@ -301,7 +301,7 @@ const ProductLauncher = ({ onClose }) => {
                                                                  className="launcher-mini-img-icon"
                                                              />
                                                          ) : (
-                                                             <IconComponent size={20} strokeWidth={2.5} />
+                                                             <IconComponent size={24} strokeWidth={2.2} />
                                                          )}
                                                     </div>
                                                     </div>
@@ -855,8 +855,8 @@ const ProductLauncher = ({ onClose }) => {
                     object-fit: contain;
                 }
                 .launcher-mini-img-icon {
-                    width: 26px;
-                    height: 26px;
+                    width: 34px;
+                    height: 34px;
                     object-fit: contain;
                 }
                 .launcher-all-card:hover {
