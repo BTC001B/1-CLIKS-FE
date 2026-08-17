@@ -45,10 +45,10 @@ const WeatherPanel = () => {
             },
             (error) => {
                 console.error("Geolocation error:", error);
-                setGeoError("Location access denied or unavailable. Please enable location permissions.");
+                setGeoError(`Location error (${error.code}): ${error.message}`);
                 setIsRequestingLocation(false);
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: true, maximumAge: 0 }
         );
     };
 
