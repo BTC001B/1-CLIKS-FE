@@ -19,7 +19,9 @@ import {
     Clock,
     ShieldCheck,
     Briefcase,
-    X
+    X,
+    Calendar,
+    CalendarDays
 } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';

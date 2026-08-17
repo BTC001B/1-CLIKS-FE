@@ -22,6 +22,7 @@ import {
     ShoppingCart,
     Calculator,
     Calendar,
+    CalendarDays,
     Target,
     Plus,
     Bell,
