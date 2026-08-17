@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MapPin, Sun, Moon, Wind, Droplets, Loader2, AlertCircle } from 'lucide-react';
+import { MapPin, Sun, Moon, Wind, Droplets, Loader2, AlertCircle, CloudSun } from 'lucide-react';
 
 const fetchWeather = async (lat, lon) => {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&hourly=temperature_2m&current=temperature_2m,is_day,relative_humidity_2m,wind_speed_10m&timezone=auto`;
@@ -23,9 +23,12 @@ const fetchLocationName = async (lat, lon) => {
 const WeatherPanel = () => {
     const [location, setLocation] = useState(null);
     const [geoError, setGeoError] = useState(null);
-    const [isRequestingLocation, setIsRequestingLocation] = useState(true);
+    const [isRequestingLocation, setIsRequestingLocation] = useState(false);
 
-    useEffect(() => {
+    const requestLocation = () => {
+        setIsRequestingLocation(true);
+        setGeoError(null);
+
         if (!navigator.geolocation) {
             setGeoError("Geolocation is not supported by your browser.");
             setIsRequestingLocation(false);
@@ -47,7 +50,7 @@ const WeatherPanel = () => {
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
-    }, []);
+    };
 
     const { 
         data: weatherData, 
@@ -69,6 +72,23 @@ const WeatherPanel = () => {
         enabled: !!location,
         staleTime: 60 * 60 * 1000, // 1 hour
     });
+
+    if (!location && !isRequestingLocation && !geoError) {
+        return (
+            <div className="flex flex-col h-full w-full bg-white items-center justify-center p-6 text-center">
+                <CloudSun size={48} className="text-blue-400 mb-4" />
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Local Weather</h3>
+                <p className="text-sm text-gray-500 mb-6">Allow location access to see the current weather in your area.</p>
+                <button 
+                    onClick={requestLocation}
+                    className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
+                >
+                    <MapPin size={18} />
+                    Detect Location
+                </button>
+            </div>
+        );
+    }
 
     if (isRequestingLocation || (location && (isWeatherLoading || isLocationLoading))) {
         return (
