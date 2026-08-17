@@ -246,13 +246,41 @@ const BusinessPeople = () => {
 
     const updateContactMutation = useMutation({
         mutationFn: (variables) => peopleService.updatePerson(variables.id, variables.data),
-        onSuccess: (_, variables) => {
+        onSuccess: async (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['people-list'] });
             queryClient.invalidateQueries({ queryKey: ['person-detail', variables.id] });
             setIsContactModalOpen(false);
             setEditingContactId(null);
             setContactForm({ name: '', role_type: 'friend', phone: '', email: '', company: '', relationship: '', contact_info: '' });
             alert('Contact profile updated.');
+
+            // Sync update to BitTool Contact API
+            try {
+                const bitToolData = {
+                    name: variables.data.name || '',
+                    email: variables.data.email || '',
+                    phonenumber: variables.data.phone || '',
+                    role: variables.data.role_type || ''
+                };
+                
+                const bitToolUrl = import.meta.env.VITE_CONTACT_API_BASE_URL || 'https://api.bit-tool.com/api/contacts';
+                const token = localStorage.getItem('bnx_auth_token');
+                
+                const syncRes = await fetch(`${bitToolUrl}/external/${variables.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify(bitToolData)
+                });
+                
+                if (!syncRes.ok) {
+                    console.error('Failed to sync updated contact with BitTool API', await syncRes.text());
+                }
+            } catch (err) {
+                console.error("Error syncing updated contact with BitTool API", err);
+            }
         }
     });
 
