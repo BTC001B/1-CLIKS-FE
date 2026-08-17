@@ -31,7 +31,13 @@ export const calculatorService = {
     
     if (!sessionRes.ok) throw new Error('Failed to create session');
     const sessionData = await sessionRes.json();
-    const sessionId = sessionData.id || sessionData._id;
+    console.log('Session creation response:', sessionData);
+    
+    // Support flat or nested { data: { id } } schemas
+    const sessionId = sessionData.id || sessionData._id || sessionData.data?.id || sessionData.data?._id || sessionData.sessionId;
+    if (!sessionId) {
+      throw new Error(`Failed to extract session ID from response: ${JSON.stringify(sessionData)}`);
+    }
 
     // 2. Add each item sequentially
     let sequence = 1;
@@ -93,7 +99,12 @@ export const calculatorService = {
 
     if (!sessionRes.ok) throw new Error('Failed to create compare session');
     const sessionData = await sessionRes.json();
-    const sessionId = sessionData.id || sessionData._id;
+    console.log('Compare session creation response:', sessionData);
+
+    const sessionId = sessionData.id || sessionData._id || sessionData.data?.id || sessionData.data?._id || sessionData.sessionId;
+    if (!sessionId) {
+      throw new Error(`Failed to extract session ID from response: ${JSON.stringify(sessionData)}`);
+    }
 
     const maxLength = Math.max(compareData.leftEntries.length, compareData.rightEntries.length);
     
