@@ -13,7 +13,8 @@ export const calculatorService = {
   getHistory: async () => {
     const res = await fetch(`${getBaseUrl()}/history`, { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch history');
-    return res.json();
+    const json = await res.json();
+    return Array.isArray(json) ? json : (json.data || json.sessions || json.items || []);
   },
 
   // Tape Calculator Save Session & Items
@@ -82,7 +83,8 @@ export const calculatorService = {
   getCompareHistory: async () => {
     const res = await fetch(`${getBaseUrl()}/compare/history`, { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch compare history');
-    return res.json();
+    const json = await res.json();
+    return Array.isArray(json) ? json : (json.data || json.sessions || json.items || []);
   },
 
   // Compare Mode Save Session & Items
