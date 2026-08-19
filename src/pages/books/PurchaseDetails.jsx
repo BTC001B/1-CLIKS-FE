@@ -175,10 +175,7 @@ const PurchaseDetails = () => {
         }).sort((a, b) => new Date(b.timestamp || b.created_at) - new Date(a.timestamp || a.created_at));
     }, [purchases, selectedShop]);
 
-    const pendingConnCount = useMemo(() => {
-        if (!Array.isArray(supplierConnRequests)) return 0;
-        return supplierConnRequests.filter(r => r && (r.status || r.connection_status || 'PENDING') === 'PENDING').length;
-    }, [supplierConnRequests]);
+    const pendingConnCount = 0;
 
     const handleSync = () => {
         queryClient.invalidateQueries(['customer-purchases']);
