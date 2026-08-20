@@ -29,6 +29,31 @@ const PurchaseDetails = () => {
     const [showPointsModal, setShowPointsModal] = useState(false);
     const [calcAmountInput, setCalcAmountInput] = useState('10000');
 
+    // Supplier Request Modal states
+    const [isAddSupplierModalOpen, setIsAddSupplierModalOpen] = useState(false);
+    const [newSupplierForm, setNewSupplierForm] = useState({
+        supplier_name: '',
+        company: '',
+        dealer_email: '',
+        notes: ''
+    });
+
+    const handleCreateSupplierRequest = async (e) => {
+        e.preventDefault();
+        try {
+            if (financePlusService.respondSupplierConnectionRequest) {
+                await financePlusService.respondSupplierConnectionRequest(newSupplierForm);
+            }
+            alert('Supplier connection request sent successfully!');
+            setIsAddSupplierModalOpen(false);
+            setNewSupplierForm({ supplier_name: '', company: '', dealer_email: '', notes: '' });
+            queryClient.invalidateQueries(['active-integrations']);
+        } catch (err) {
+            console.error(err);
+            alert(err?.response?.data?.message || err.message || 'Failed to send supplier connection request.');
+        }
+    };
+
     const toggleReceiveData = async (val) => {
         setReceiveData(val);
         localStorage.setItem('cliks_purchase_receive_data', JSON.stringify(val));
