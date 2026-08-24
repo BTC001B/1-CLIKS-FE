@@ -37,13 +37,26 @@ const hasProductWarranty = (item) => {
     const rawHW = item.has_warranty || item.warrantyDetails || item.warranty_details || item.hasWarranty;
     const period = item.warranty_period || item.warrantyPeriod || item.period;
     if (rawHW && (rawHW === 'Yes' || rawHW === true || String(rawHW).toLowerCase() === 'yes')) return true;
-    if (period && String(period).trim() !== '' && String(period).trim() !== 'no' && String(period).trim() !== 'N/A') return true;
+    if (period && String(period).trim() !== '' && String(period).trim() !== 'no' && String(period).trim() !== 'N/A' && String(period).trim() !== 'None') return true;
+
+    // Check product name/category for warranty-eligible items (e.g. nokia, macbook, iphone, electronics)
+    const nameLower = String(item.product_name || item.name || '').toLowerCase().trim();
+    const catLower = String(item.category || '').toLowerCase().trim();
+    const warrantyKeywords = ['nokia', 'macbook', 'iphone', 'samsung', 'apple', 'laptop', 'phone', 'mobile', 'tv', 'electronics', 'device', 'gadget', 'computer', 'tablet', 'watch', 'camera'];
+    if (warrantyKeywords.some(kw => nameLower.includes(kw) || catLower.includes(kw))) {
+        return true;
+    }
+
     return false;
 };
 
 const getProductWarrantyPeriod = (item) => {
-    if (!item) return null;
-    return item.warranty_period || item.warrantyPeriod || item.period || 'Covered';
+    if (!item) return '1 Year Warranty';
+    const period = item.warranty_period || item.warrantyPeriod || item.period;
+    if (period && String(period).trim() !== '' && String(period).trim() !== 'no' && String(period).trim() !== 'N/A' && String(period).trim() !== 'None') {
+        return period;
+    }
+    return '1 Year Warranty';
 };
 
 const invoiceHasWarranty = (inv) => {
