@@ -1,9 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
     ShoppingCart, Star, ExternalLink, RefreshCcw, History, ArrowRight, Package, 
     Receipt, IndianRupee, Clock, CheckCircle, AlertCircle, X, ChevronRight,
     MessageSquare, Send, Building2, Truck, CheckCircle2, XCircle, UserCheck, FileText, User,
-    Plus, Calculator, HelpCircle, Info, Percent, ChevronDown, ChevronUp, Printer, Download
+    Plus, Calculator, HelpCircle, Info, Percent, ChevronDown, ChevronUp, Printer, Download,
+    Shield, ShieldCheck
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -232,6 +234,44 @@ const PurchaseDetails = () => {
         }).sort((a, b) => new Date(b.timestamp || b.created_at || b.invoice_date) - new Date(a.timestamp || a.created_at || a.invoice_date));
     }, [purchases, selectedShop]);
 
+    const [searchParams] = useSearchParams();
+    const isWarrantyView = searchParams.get('view') === 'warranty';
+
+    // Auto-select first connected shop if no shop is selected
+    useEffect(() => {
+        if (!selectedShop && Array.isArray(connectedShops) && connectedShops.length > 0) {
+            setSelectedShop(connectedShops[0]);
+        }
+    }, [connectedShops, selectedShop]);
+
+    const selectedShopWarrantyProducts = useMemo(() => {
+        if (!selectedShopPurchases || !Array.isArray(selectedShopPurchases)) return [];
+        const list = [];
+        selectedShopPurchases.forEach((inv, invIdx) => {
+            if (!inv || !Array.isArray(inv.items)) return;
+            inv.items.forEach((it, itIdx) => {
+                if (hasProductWarranty(it)) {
+                    list.push({
+                        id: `${inv.id || inv.invoice_number || invIdx}-${itIdx}`,
+                        invoice_number: inv.invoice_number || inv.id || `POS-${invIdx}`,
+                        timestamp: inv.timestamp || inv.created_at || inv.invoice_date,
+                        product_name: it.product_name || it.name || 'Warranty Product',
+                        sku: it.sku || 'N/A',
+                        quantity: it.quantity || 1,
+                        unit: it.unit || 'Pcs',
+                        price: it.price || 0,
+                        amount: it.amount || ((it.quantity || 1) * (it.price || 0)),
+                        warranty_period: getProductWarrantyPeriod(it),
+                        merchant_name: inv.merchant_name || selectedShop?.business_name || 'Store',
+                        payment_status: inv.payment_status || 'Paid',
+                        invoice_id: inv.id || inv.invoice_number
+                    });
+                }
+            });
+        });
+        return list;
+    }, [selectedShopPurchases, selectedShop]);
+
     const pendingConnCount = 0;
 
     const handleSync = () => {
@@ -414,7 +454,15 @@ const PurchaseDetails = () => {
                     {/* Store Filter & Link Button */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                         <h3 style={{ fontSize: '1.15rem', fontWeight: '850', color: '#1E293B', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <History size={20} style={{ color: '#1B6B3A' }} /> Customer Purchase History
+                            {isWarrantyView ? (
+                                <>
+                                    <Shield size={20} style={{ color: '#1B6B3A' }} /> Customer Warranty Products
+                                </>
+                            ) : (
+                                <>
+                                    <History size={20} style={{ color: '#1B6B3A' }} /> Customer Purchase History
+                                </>
+                            )}
                         </h3>
                         <button
                             onClick={() => setIsShopModalOpen(true)}
@@ -453,10 +501,58 @@ const PurchaseDetails = () => {
                                     </div>
 
                                     <h4 style={{ fontSize: '1rem', fontWeight: '800', color: '#1E293B', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <History size={18} style={{ color: '#1B6B3A' }} /> Purchase History ({selectedShopPurchases.length})
+                                        {isWarrantyView ? (
+                                            <>
+                                                <Shield size={18} style={{ color: '#1B6B3A' }} /> Warranty Products ({selectedShopWarrantyProducts.length})
+                                            </>
+                                        ) : (
+                                            <>
+                                                <History size={18} style={{ color: '#1B6B3A' }} /> Purchase History ({selectedShopPurchases.length})
+                                            </>
+                                        )}
                                     </h4>
 
-                                    {selectedShopPurchases.length === 0 ? (
+                                    {isWarrantyView ? (
+                                        selectedShopWarrantyProducts.length === 0 ? (
+                                            <div style={{ padding: '3rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
+                                                <Shield size={40} style={{ color: '#CBD5E1', marginBottom: '1rem' }} />
+                                                <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>No Warranty Products for {selectedShop.business_name}</h4>
+                                                <p style={{ fontSize: '0.85rem', color: '#94A3B8', marginTop: '0.5rem' }}>
+                                                    Warranty-covered products purchased from this store will automatically appear here.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                {selectedShopWarrantyProducts.map((wItem) => (
+                                                    <div key={wItem.id} style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1.25rem', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <Package size={18} style={{ color: '#1B6B3A' }} />
+                                                                    <span style={{ fontSize: '1.05rem', fontWeight: 850, color: '#1E293B' }}>{wItem.product_name}</span>
+                                                                    <span style={{ fontSize: '0.68rem', fontWeight: '850', color: '#15803D', background: '#DCFCE7', padding: '0.15rem 0.6rem', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                                                        🛡️ Warranty: {wItem.warranty_period}
+                                                                    </span>
+                                                                </div>
+                                                                <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, display: 'block', marginTop: '4px' }}>
+                                                                    SKU: {wItem.sku} • Purchased On: <strong>{formatInvoiceDate(wItem)}</strong> • Ref: <strong>{wItem.invoice_number}</strong>
+                                                                </span>
+                                                            </div>
+                                                            <div style={{ textAlign: 'right' }}>
+                                                                <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#1B6B3A' }}>₹{wItem.amount.toLocaleString()}</div>
+                                                                <button
+                                                                    onClick={() => setViewingInvoiceId(wItem.invoice_id)}
+                                                                    style={{ marginTop: '4px', background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#2563EB', fontSize: '0.75rem', fontWeight: 800, padding: '0.25rem 0.65rem', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                                                >
+                                                                    View Order Details <ChevronRight size={12} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )
+                                    ) : selectedShopPurchases.length === 0 ? (
                                         <div style={{ padding: '3rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
                                             <ShoppingCart size={40} style={{ color: '#CBD5E1', marginBottom: '1rem' }} />
                                             <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>No Purchases for {selectedShop.business_name}</h4>

@@ -138,7 +138,10 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
         if (path === '/books' || path === '/books/') return 'Report';
         if (path.includes('/books/money-tracker')) return 'Track';
         if (path.includes('/books/accounting')) return 'Accounting';
-        if (path.includes('/books/purchase-details')) return 'Purchase details';
+        if (path.includes('/books/purchase-details')) {
+            if (search && search.includes('view=warranty')) return 'Warranty Products';
+            return 'Purchase details';
+        }
         if (path.includes('/books/settings')) return 'Settings';
         if (path.includes('/books/faq')) return 'Help & Support';
         if (path.includes('/ca')) return 'FIN-PRO';
@@ -331,15 +334,15 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                         {/* 2. Finance (Collapsible) */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                             <button
-                                className={`sidebar-item ${isFinanceOpen || activeItem === 'Finance' || activeItem === 'Accounting' || activeItem === 'Purchase details' ? 'active' : ''}`}
+                                className={`sidebar-item ${isFinanceOpen || activeItem === 'Finance' || activeItem === 'Accounting' || activeItem === 'Purchase details' || activeItem === 'Warranty Products' ? 'active' : ''}`}
                                 onClick={() => setIsFinanceOpen(!isFinanceOpen)}
                                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}
                             >
                                 <div className="flex items-center gap-3">
-                                    <PiggyBank size={20} style={{ color: (isFinanceOpen || activeItem === 'Finance' || activeItem === 'Accounting' || activeItem === 'Purchase details') ? '#ffffff' : '#1B6B3A' }} />
+                                    <PiggyBank size={20} style={{ color: (isFinanceOpen || activeItem === 'Finance' || activeItem === 'Accounting' || activeItem === 'Purchase details' || activeItem === 'Warranty Products') ? '#ffffff' : '#1B6B3A' }} />
                                     <span className="sidebar-label">Finance</span>
                                 </div>
-                                <div style={{ color: (isFinanceOpen || activeItem === 'Finance' || activeItem === 'Accounting' || activeItem === 'Purchase details') ? '#ffffff' : '#1B6B3A', opacity: 0.7, paddingRight: '4px' }}>
+                                <div style={{ color: (isFinanceOpen || activeItem === 'Finance' || activeItem === 'Accounting' || activeItem === 'Purchase details' || activeItem === 'Warranty Products') ? '#ffffff' : '#1B6B3A', opacity: 0.7, paddingRight: '4px' }}>
                                     {isFinanceOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                 </div>
                             </button>
@@ -367,6 +370,18 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                                         <div className="flex items-center gap-3">
                                             <ShoppingCart size={18} style={{ color: activeItem === 'Purchase details' ? '#ffffff' : '#1B6B3A' }} />
                                             <span className="sidebar-label" style={{ fontSize: '0.82rem' }}>Purchase details</span>
+                                        </div>
+                                    </button>
+
+                                    {/* Warranty Products */}
+                                    <button
+                                        className={`sidebar-item ${activeItem === 'Warranty Products' ? 'active' : ''}`}
+                                        onClick={() => handleItemClick('Warranty Products', '/books/purchase-details?view=warranty')}
+                                        style={{ height: '36px' }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Shield size={18} style={{ color: activeItem === 'Warranty Products' ? '#ffffff' : '#1B6B3A' }} />
+                                            <span className="sidebar-label" style={{ fontSize: '0.82rem' }}>Warranty Products</span>
                                         </div>
                                     </button>
                                 </div>
