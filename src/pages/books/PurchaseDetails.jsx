@@ -235,7 +235,9 @@ const PurchaseDetails = () => {
     }, [purchases, selectedShop]);
 
     const [searchParams] = useSearchParams();
+    const [showWarrantyTab, setShowWarrantyTab] = useState(false);
     const isWarrantyView = searchParams.get('view') === 'warranty';
+    const isWarrantyActiveView = showWarrantyTab || isWarrantyView;
 
     // Auto-select first connected shop if no shop is selected
     useEffect(() => {
@@ -484,9 +486,29 @@ const PurchaseDetails = () => {
                                             >
                                                 ← Back to Connected Shops
                                             </button>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                                                 <h3 style={{ fontSize: '1.3rem', fontWeight: '850', color: '#1E293B', margin: 0 }}>{selectedShop.business_name}</h3>
                                                 <span style={{ fontSize: '0.7rem', fontWeight: '850', color: '#10B981', background: '#ECFDF5', padding: '0.2rem 0.6rem', borderRadius: '6px', textTransform: 'uppercase' }}>CONNECTED</span>
+                                                <button
+                                                    onClick={() => setShowWarrantyTab(prev => !prev)}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.4rem',
+                                                        padding: '0.3rem 0.85rem',
+                                                        borderRadius: '8px',
+                                                        border: isWarrantyActiveView ? '1.5px solid #15803D' : '1px solid #CBD5E1',
+                                                        background: isWarrantyActiveView ? '#DCFCE7' : '#FFFFFF',
+                                                        color: isWarrantyActiveView ? '#166534' : '#334155',
+                                                        fontWeight: '800',
+                                                        fontSize: '0.78rem',
+                                                        cursor: 'pointer',
+                                                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                >
+                                                    🛡️ your warranty product {selectedShopWarrantyProducts.length > 0 ? `(${selectedShopWarrantyProducts.length})` : ''}
+                                                </button>
                                             </div>
                                             <p style={{ fontSize: '0.8rem', color: '#64748B', margin: '4px 0 0 0' }}>
                                                 Customer: <strong style={{ color: '#334155' }}>{selectedShop.customer_name}</strong> ({selectedShop.customer_email})
