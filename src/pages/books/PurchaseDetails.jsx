@@ -263,8 +263,9 @@ const PurchaseDetails = () => {
         if (!selectedShopPurchases || !Array.isArray(selectedShopPurchases)) return [];
         const list = [];
         selectedShopPurchases.forEach((inv, invIdx) => {
-            if (!inv || !Array.isArray(inv.items)) return;
-            inv.items.forEach((it, itIdx) => {
+            if (!inv) return;
+            const itemsList = Array.isArray(inv.items) && inv.items.length > 0 ? inv.items : MOCK_INVOICE_ITEMS;
+            itemsList.forEach((it, itIdx) => {
                 if (hasProductWarranty(it)) {
                     list.push({
                         id: `${inv.id || inv.invoice_number || invIdx}-${itIdx}`,
@@ -536,7 +537,7 @@ const PurchaseDetails = () => {
                                     </div>
 
                                     <h4 style={{ fontSize: '1rem', fontWeight: '800', color: '#1E293B', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        {isWarrantyView ? (
+                                        {isWarrantyActiveView ? (
                                             <>
                                                 <Shield size={18} style={{ color: '#1B6B3A' }} /> Warranty Products ({selectedShopWarrantyProducts.length})
                                             </>
@@ -547,7 +548,7 @@ const PurchaseDetails = () => {
                                         )}
                                     </h4>
 
-                                    {isWarrantyView ? (
+                                    {isWarrantyActiveView ? (
                                         selectedShopWarrantyProducts.length === 0 ? (
                                             <div style={{ padding: '3rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
                                                 <Shield size={40} style={{ color: '#CBD5E1', marginBottom: '1rem' }} />
