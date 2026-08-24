@@ -17,6 +17,38 @@ const MOCK_INVOICE_ITEMS = [
     { id: 103, product_name: 'Pure Silk Executive Necktie', sku: 'TIE-SILK-EXEC', quantity: 3, unit: 'Pcs', price: 1200, gst_percent: 18, amount: 3600 }
 ];
 
+const formatInvoiceDate = (inv) => {
+    if (!inv) return 'N/A';
+    const dateVal = inv.timestamp || inv.created_at || inv.invoice_date || inv.date;
+    if (!dateVal) return 'N/A';
+    try {
+        const d = new Date(dateVal);
+        if (isNaN(d.getTime())) return String(dateVal).split('T')[0];
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch (e) {
+        return String(dateVal).split('T')[0];
+    }
+};
+
+const hasProductWarranty = (item) => {
+    if (!item) return false;
+    const rawHW = item.has_warranty || item.warrantyDetails || item.warranty_details || item.hasWarranty;
+    const period = item.warranty_period || item.warrantyPeriod || item.period;
+    if (rawHW && (rawHW === 'Yes' || rawHW === true || String(rawHW).toLowerCase() === 'yes')) return true;
+    if (period && String(period).trim() !== '' && String(period).trim() !== 'no' && String(period).trim() !== 'N/A') return true;
+    return false;
+};
+
+const getProductWarrantyPeriod = (item) => {
+    if (!item) return null;
+    return item.warranty_period || item.warrantyPeriod || item.period || 'Covered';
+};
+
+const invoiceHasWarranty = (inv) => {
+    if (!inv || !Array.isArray(inv.items)) return false;
+    return inv.items.some(it => hasProductWarranty(it));
+};
+
 const PurchaseDetails = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();
@@ -154,13 +186,13 @@ const PurchaseDetails = () => {
                     total_purchases: 0,
                     total_loyalty: 0,
                     total_spent: 0,
-                    last_purchase: p.timestamp || new Date().toISOString(),
+                    last_purchase: p.timestamp || p.created_at || new Date().toISOString(),
                     invoices: []
                 };
             }
             groups[id].total_purchases += 1;
             groups[id].total_loyalty += (p.points_earned || 0);
-            groups[id].total_spent += (p.grand_total || 0);
+            groups[id].total_spent += (p.grand_total || p.total_amount || 0);
             if (p.timestamp && new Date(p.timestamp) > new Date(groups[id].last_purchase)) {
                 groups[id].last_purchase = p.timestamp;
             }
@@ -179,7 +211,7 @@ const PurchaseDetails = () => {
         return integrations.filter(item => {
             if (!item) return false;
             const st = String(item.status || '').toLowerCase();
-            return st === 'accepted' || st === 'connected';
+            return st === 'accepted' || st === 'connected' || st === 'active';
         });
     }, [integrations]);
 
@@ -197,7 +229,7 @@ const PurchaseDetails = () => {
                 return String(pBusId) === String(shopBusId);
             }
             return shopName && pMerchantName === shopName;
-        }).sort((a, b) => new Date(b.timestamp || b.created_at) - new Date(a.timestamp || a.created_at));
+        }).sort((a, b) => new Date(b.timestamp || b.created_at || b.invoice_date) - new Date(a.timestamp || a.created_at || a.invoice_date));
     }, [purchases, selectedShop]);
 
     const pendingConnCount = 0;
@@ -226,26 +258,15 @@ const PurchaseDetails = () => {
 
     // Calculate money value ratio: 10 Points = ₹1.00 Value (1 Pt = ₹0.10)
     const pointsToMoneyRatio = 0.10;
-    const availablePointsValue = ((loyalty?.available_points || 140184) * pointsToMoneyRatio).toFixed(2);
+    const availablePointsValue = ((loyalty?.available_points || 0) * pointsToMoneyRatio).toFixed(2);
 
     // Get active invoice object being viewed in modal
     const activeModalInvoice = useMemo(() => {
         if (!viewingInvoiceId) return null;
-        if (fullInvoiceData && fullInvoiceData.id) return fullInvoiceData;
+        if (fullInvoiceData && (fullInvoiceData.id || fullInvoiceData.invoice_number)) return fullInvoiceData;
         const found = (Array.isArray(purchases) ? purchases : []).find(p => p && (p.id === viewingInvoiceId || p.invoice_id === viewingInvoiceId || p.invoice_number === viewingInvoiceId));
-        if (found) return found;
-        return {
-            id: viewingInvoiceId,
-            invoice_number: String(viewingInvoiceId).startsWith('POS') ? viewingInvoiceId : `POS-${viewingInvoiceId}`,
-            timestamp: new Date().toISOString(),
-            payment_status: 'PAID',
-            grand_total: 141600,
-            tax_amount: 0,
-            points_earned: 1416,
-            merchant_name: selectedShop?.business_name || 'ravinew2004',
-            items: MOCK_INVOICE_ITEMS
-        };
-    }, [viewingInvoiceId, fullInvoiceData, purchases, selectedShop]);
+        return found || null;
+    }, [viewingInvoiceId, fullInvoiceData, purchases]);
 
     return (
         <div className="content-wrapper">
@@ -455,14 +476,19 @@ const PurchaseDetails = () => {
                                                             <div>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                     <Receipt size={18} style={{ color: '#1B6B3A' }} />
-                                                                    <span style={{ fontSize: '1rem', fontWeight: 850, color: '#1E293B' }}>{inv?.invoice_number || `POS-69631${iIdx}`}</span>
+                                                                    <span style={{ fontSize: '1rem', fontWeight: 850, color: '#1E293B' }}>{inv?.invoice_number || `POS-${iIdx}`}</span>
+                                                                    {invoiceHasWarranty(inv) && (
+                                                                        <span style={{ fontSize: '0.65rem', fontWeight: '850', color: '#15803D', background: '#DCFCE7', padding: '0.15rem 0.5rem', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                                                            🛡️ Your Warranty Product
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                                 <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontWeight: 600, display: 'block', marginTop: '4px' }}>
-                                                                    {inv?.timestamp ? new Date(inv.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '13 Aug 2026'}
+                                                                    {formatInvoiceDate(inv)}
                                                                 </span>
                                                             </div>
                                                             <div style={{ textAlign: 'right' }}>
-                                                                <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#1B6B3A' }}>₹{(inv?.grand_total || 141600).toLocaleString()}</div>
+                                                                <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#1B6B3A' }}>₹{(inv?.grand_total || inv?.total_amount || 0).toLocaleString()}</div>
                                                                 <span style={{ fontSize: '0.65rem', fontWeight: 850, textTransform: 'uppercase', padding: '0.2rem 0.5rem', borderRadius: '6px', ...getStatusStyle(inv?.payment_status) }}>{inv?.payment_status || 'Paid'}</span>
                                                             </div>
                                                         </div>
@@ -474,7 +500,7 @@ const PurchaseDetails = () => {
                                                             </div>
                                                             <div>
                                                                 <div style={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Points Earned</div>
-                                                                <div style={{ fontSize: '0.8rem', fontWeight: 850, color: '#7C3AED' }}>+{inv?.points_earned || 1416} pts</div>
+                                                                <div style={{ fontSize: '0.8rem', fontWeight: 850, color: '#7C3AED' }}>+{inv?.points_earned || 0} pts</div>
                                                             </div>
                                                             <div style={{ textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
                                                                 {/* View Items Button Opens Modal & Toggles Inline List */}
@@ -505,12 +531,19 @@ const PurchaseDetails = () => {
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            {((inv?.items && Array.isArray(inv.items) && inv.items.length > 0) ? inv.items : MOCK_INVOICE_ITEMS).map((it, idx) => (
+                                                                            {(Array.isArray(inv?.items) ? inv.items : []).map((it, idx) => (
                                                                                 <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                                                                    <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#1E293B' }}>{it.product_name}</td>
-                                                                                    <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center', fontWeight: 800, color: '#1B6B3A' }}>{it.quantity} {it.unit || 'Pcs'}</td>
+                                                                                    <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#1E293B' }}>
+                                                                                        {it.product_name || it.name}
+                                                                                        {hasProductWarranty(it) && (
+                                                                                            <span style={{ fontSize: '0.68rem', fontWeight: '850', color: '#15803D', background: '#DCFCE7', padding: '0.15rem 0.5rem', borderRadius: '6px', marginLeft: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                                                                                🛡️ Your Warranty Product ({getProductWarrantyPeriod(it)})
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </td>
+                                                                                    <td style={{ padding: '0.6rem 0.75rem', textAlign: 'center', fontWeight: 800, color: '#1B6B3A' }}>{it.quantity || 1} {it.unit || 'Pcs'}</td>
                                                                                     <td style={{ padding: '0.6rem 0.75rem', textAlign: 'right', color: '#475569' }}>₹{(it.price || 0).toLocaleString()}</td>
-                                                                                    <td style={{ padding: '0.6rem 0.75rem', textAlign: 'right', fontWeight: 850, color: '#1E293B' }}>₹{(it.amount || (it.quantity * it.price)).toLocaleString()}</td>
+                                                                                    <td style={{ padding: '0.6rem 0.75rem', textAlign: 'right', fontWeight: 850, color: '#1E293B' }}>₹{(it.amount || ((it.quantity || 1) * (it.price || 0))).toLocaleString()}</td>
                                                                                 </tr>
                                                                             ))}
                                                                         </tbody>
@@ -682,17 +715,17 @@ const PurchaseDetails = () => {
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', background: '#F0FDF4', padding: '1.25rem', borderRadius: '16px', border: '1px solid #BBF7D0' }}>
                                     <div>
                                         <div style={{ fontSize: '0.7rem', color: '#166534', fontWeight: 700, textTransform: 'uppercase' }}>Merchant / Store</div>
-                                        <div style={{ fontSize: '0.95rem', fontWeight: 850, color: '#1E293B', marginTop: '2px' }}>{activeModalInvoice?.merchant_name || 'ravinew2004'}</div>
+                                        <div style={{ fontSize: '0.95rem', fontWeight: 850, color: '#1E293B', marginTop: '2px' }}>{activeModalInvoice?.merchant_name || activeModalInvoice?.merchant?.name || 'Store'}</div>
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '0.7rem', color: '#166534', fontWeight: 700, textTransform: 'uppercase' }}>Purchase Date</div>
                                         <div style={{ fontSize: '0.95rem', fontWeight: 850, color: '#1E293B', marginTop: '2px' }}>
-                                            {activeModalInvoice?.timestamp ? new Date(activeModalInvoice.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '13 Aug 2026'}
+                                            {formatInvoiceDate(activeModalInvoice)}
                                         </div>
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '0.7rem', color: '#166534', fontWeight: 700, textTransform: 'uppercase' }}>Loyalty Points</div>
-                                        <div style={{ fontSize: '0.95rem', fontWeight: 850, color: '#7C3AED', marginTop: '2px' }}>+{activeModalInvoice?.points_earned || 1416} pts</div>
+                                        <div style={{ fontSize: '0.95rem', fontWeight: 850, color: '#7C3AED', marginTop: '2px' }}>+{activeModalInvoice?.points_earned || activeModalInvoice?.loyalty?.earned || 0} pts</div>
                                     </div>
                                 </div>
 
@@ -713,20 +746,27 @@ const PurchaseDetails = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {((activeModalInvoice?.items && Array.isArray(activeModalInvoice.items) && activeModalInvoice.items.length > 0) ? activeModalInvoice.items : MOCK_INVOICE_ITEMS).map((it, idx) => (
+                                                {(Array.isArray(activeModalInvoice?.items) ? activeModalInvoice.items : []).map((it, idx) => (
                                                     <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                                        <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: '#1E293B' }}>{it.product_name}</td>
-                                                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center', fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>{it.sku || 'SKU-PROD'}</td>
-                                                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center', fontWeight: 850, color: '#1B6B3A' }}>{it.quantity} {it.unit || 'Pcs'}</td>
+                                                        <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: '#1E293B' }}>
+                                                            {it.product_name || it.name}
+                                                            {hasProductWarranty(it) && (
+                                                                <span style={{ fontSize: '0.68rem', fontWeight: '850', color: '#15803D', background: '#DCFCE7', padding: '0.15rem 0.5rem', borderRadius: '6px', marginLeft: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                                                    🛡️ Your Warranty Product ({getProductWarrantyPeriod(it)})
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center', fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>{it.sku || 'N/A'}</td>
+                                                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center', fontWeight: 850, color: '#1B6B3A' }}>{it.quantity || 1} {it.unit || 'Pcs'}</td>
                                                         <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#475569' }}>₹{(it.price || 0).toLocaleString()}</td>
-                                                        <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 850, color: '#1E293B' }}>₹{(it.amount || (it.quantity * it.price)).toLocaleString()}</td>
+                                                        <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 850, color: '#1E293B' }}>₹{(it.amount || ((it.quantity || 1) * (it.price || 0))).toLocaleString()}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                             <tfoot>
                                                 <tr style={{ background: '#F8FAFC', fontWeight: 900 }}>
                                                     <td colSpan="4" style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#1E293B' }}>Grand Total Paid:</td>
-                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#1B6B3A', fontSize: '1.1rem' }}>₹{(activeModalInvoice?.grand_total || 141600).toLocaleString()}</td>
+                                                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#1B6B3A', fontSize: '1.1rem' }}>₹{(activeModalInvoice?.grand_total || activeModalInvoice?.total_amount || 0).toLocaleString()}</td>
                                                 </tr>
                                             </tfoot>
                                         </table>
