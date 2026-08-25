@@ -22,6 +22,7 @@ if (typeof window !== 'undefined') {
   }, true);
 }
 import { CurrencyProvider } from './context/CurrencyContext'
+import { LanguageProvider } from './context/LanguageContext'
 import './styles/tokens.css'
 import './index.css'
 import './styles/layout.css'
@@ -42,7 +43,9 @@ createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CurrencyProvider>
-          <App />
+          <LanguageProvider>
+            <App />
+          </LanguageProvider>
         </CurrencyProvider>
       </AuthProvider>
     </QueryClientProvider>
