@@ -21,7 +21,7 @@ const MOCK_INVOICE_ITEMS = [
 
 const formatInvoiceDate = (inv) => {
     if (!inv) return 'N/A';
-    const dateVal = inv.timestamp || inv.created_at || inv.invoice_date || inv.date;
+    const dateVal = inv.invoice_date || inv.invoiceDate || inv.date || inv.purchase_date || inv.purchaseDate || inv.timestamp || inv.created_at;
     if (!dateVal) return 'N/A';
     try {
         const d = new Date(dateVal);
