@@ -878,11 +878,11 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                                     <span>100% Allocated</span>
                                 </div>
                                 <div style={{ display: 'flex', height: '10px', width: '100%', borderRadius: '999px', overflow: 'hidden', backgroundColor: '#E2E8F0' }}>
-                                    <div style={{ width: '40%', backgroundColor: '#2563EB' }} title="Audit & Tax (FIN-PRO): 40%" />
-                                    <div style={{ width: '25%', backgroundColor: '#10B981' }} title="Sales & Purchases: 25%" />
-                                    <div style={{ width: '15%', backgroundColor: '#8B5CF6' }} title="Expenses: 15%" />
-                                    <div style={{ width: '10%', backgroundColor: '#F59E0B' }} title="HR & Payroll: 10%" />
-                                    <div style={{ width: '10%', backgroundColor: '#06B6D4' }} title="Inventory & Media: 10%" />
+                                    <div style={{ width: '35%', backgroundColor: '#2563EB' }} title="Books & Accounting: 35%" />
+                                    <div style={{ width: '25%', backgroundColor: '#10B981' }} title="Finance & Investments: 25%" />
+                                    <div style={{ width: '20%', backgroundColor: '#8B5CF6' }} title="Tax & Deductions: 20%" />
+                                    <div style={{ width: '10%', backgroundColor: '#F59E0B' }} title="People & Reminders: 10%" />
+                                    <div style={{ width: '10%', backgroundColor: '#06B6D4' }} title="Social & Media: 10%" />
                                 </div>
                             </div>
 
@@ -898,11 +898,11 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
                                     </thead>
                                     <tbody>
                                         {[
-                                            { module: 'Audit & Tax (FIN-PRO)', share: '40%', files: 'PDFs, XLS, Signed Certificates', color: '#2563EB', badgeBg: '#EFF6FF' },
-                                            { module: 'Sales & Purchases', share: '25%', files: 'PDF Invoices, Vendor Bills', color: '#10B981', badgeBg: '#ECFDF5' },
-                                            { module: 'Expenses', share: '15%', files: 'Receipt Scans, Images', color: '#8B5CF6', badgeBg: '#F5F3FF' },
-                                            { module: 'HR & Payroll', share: '10%', files: 'ID Documents, Payslip PDFs', color: '#F59E0B', badgeBg: '#FFFBEB' },
-                                            { module: 'Inventory & Media', share: '10%', files: 'Product Photos, Barcodes', color: '#06B6D4', badgeBg: '#ECFEFF' }
+                                            { module: 'Books & Accounting', share: '35%', files: 'Sales Invoices, Purchase Bills, Money Trackers', color: '#2563EB', badgeBg: '#EFF6FF' },
+                                            { module: 'Finance & Investments', share: '25%', files: 'Wallet Statements, Bank Accounts, Portfolio Docs', color: '#10B981', badgeBg: '#ECFDF5' },
+                                            { module: 'Tax & Deductions', share: '20%', files: 'ITR Worksheets, Form 16, Audit Files', color: '#8B5CF6', badgeBg: '#F5F3FF' },
+                                            { module: 'People & Reminders', share: '10%', files: 'Contact Records, Reminders, Debt Statements', color: '#F59E0B', badgeBg: '#FFFBEB' },
+                                            { module: 'Social & Media', share: '10%', files: 'Profile Photos, Media Posts, Trading Attachments', color: '#06B6D4', badgeBg: '#ECFEFF' }
                                         ].map((item, idx) => (
                                             <tr key={idx} style={{ borderBottom: idx < 4 ? '1px solid #F1F5F9' : 'none' }}>
                                                 <td style={{ padding: '0.75rem 1rem', fontWeight: '700', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
