@@ -2496,6 +2496,33 @@ export default function BusinessCA() {
                                                 <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '24px' }}>
                                                     {/* Checklist */}
                                                     <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                                                        {/* Select All Checkbox */}
+                                                        {checkItems.length > 0 && (
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0', marginBottom: '2px' }}>
+                                                                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', fontWeight: '800', color: '#0F172A', cursor: 'pointer' }}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={checkItems.length > 0 && checkItems.every(i => !!checks[i.id])}
+                                                                        onChange={() => {
+                                                                            const areAllSelected = checkItems.length > 0 && checkItems.every(i => !!checks[i.id]);
+                                                                            const newChecks = {};
+                                                                            checkItems.forEach(i => {
+                                                                                newChecks[i.id] = !areAllSelected;
+                                                                            });
+                                                                            setClientWorkpaperChecks(prev => ({
+                                                                                ...prev,
+                                                                                [selectedWorkpaperClientId]: newChecks
+                                                                            }));
+                                                                        }}
+                                                                        style={{ accentColor: '#15803d', width: '16px', height: '16px', cursor: 'pointer' }}
+                                                                    />
+                                                                    <span>Select All Procedures</span>
+                                                                </label>
+                                                                <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B' }}>
+                                                                    {doneCount} / {checkItems.length} Selected
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                                             {checkItems.map(item => {
                                                                 const isEditingThis = editingCheckItemId === item.id;
