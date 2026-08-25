@@ -17,11 +17,13 @@ import {
     TrendingUp,
     Target,
     Clock,
+    PiggyBank,
+    FileText,
     ShieldCheck,
     Briefcase,
     X,
     Calendar,
-    CalendarDays
+    Award
 } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -29,14 +31,14 @@ import { homeService } from '../../services';
 import '../../App.css';
 
 const MASTER_SHORTCUTS = [
-    { id: 'stock_management', label: 'Inventory & Assets', path: '/books/stock', icon: Package, color: '#1B6B3A' },
-    { id: 'people_hub', label: 'People Hub', path: '/books/people', icon: Users, color: '#2563EB' },
-    { id: 'expenses', label: 'Add Expense', path: '/finance/expenses', icon: TrendingUp, color: '#DC2626' },
-    { id: 'budgets', label: 'Budgets & Limits', path: '/finance/budgets', icon: Activity, color: '#E11D48' },
-    { id: 'split_collect', label: 'Split Costs', path: '/payments/split-expense', icon: SplitSquareVertical, color: '#DB2777' },
-    { id: 'segregation', label: 'Fund Segregation', path: '/payments/segregation', icon: Target, color: '#059669' },
-    { id: 'company_wallet', label: 'Personal Wallet', path: '/payments/wallet', icon: Wallet, color: '#7C3AED' },
-    { id: 'planned_payments', label: 'Planned Payments', path: '/finance/planned-payments', icon: Clock, color: '#0891B2' },
+    { id: 'stock_management', label: 'Stock Management', path: '/inventory/stock', icon: LayoutDashboard, color: '#1B6B3A' },
+    { id: 'people_hub', label: 'People Hub', path: '/people', icon: Users, color: '#2563EB' },
+    { id: 'expenses', label: 'Expenses', path: '/finance/expenses', icon: FileText, color: '#DC2626' },
+    { id: 'budgets', label: 'Budgets & Planning', path: '/finance/budgets', icon: PiggyBank, color: '#D97706' },
+    { id: 'split_collect', label: 'Split & Collect', path: '/payments/split-collect', icon: Wallet, color: '#059669' },
+    { id: 'segregation', label: 'Segregation', path: '/finance/segregation', icon: SplitSquareVertical, color: '#7C3AED' },
+    { id: 'planner', label: 'Planner & Reminders', path: '/planner', icon: Calendar, color: '#0284C7' },
+    { id: 'rewards', label: 'Rewards & Benefits', path: '/payments/rewards', icon: Award, color: '#E11D48' },
     { id: 'investments', label: 'Investments', path: '/finance/investments', icon: ArrowUpRight, color: '#EA580C' },
     { id: 'debts', label: 'Debts & Loans', path: '/finance/debts', icon: ShieldCheck, color: '#65A30D' },
     { id: 'ca_hub', label: 'FIN-PRO CA Hub', path: '/ca', icon: Briefcase, color: '#004aad' },
@@ -46,6 +48,7 @@ const MASTER_SHORTCUTS = [
 const BooksDashboard = () => {
     const navigate = useNavigate();
     const { formatCurrency } = useCurrency();
+    const { t } = useLanguage();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const [selectedShortcuts, setSelectedShortcuts] = useState(() => {
@@ -75,7 +78,6 @@ const BooksDashboard = () => {
         });
     };
 
-    // Fetch live dashboard summary for books
     const { data: stats, isLoading, refetch } = useQuery({
         queryKey: ['books-dashboard-data'],
         queryFn: homeService.getBooksDashboardData,
@@ -97,26 +99,46 @@ const BooksDashboard = () => {
         );
     }
 
-    // Premium Metric Grid Data
     const metrics = [
         { 
-            label: 'Asset Inventory Value', 
-            value: formatCurrency(stats?.stock?.totalValue || 0), 
-            change: 'Live',
-            icon: Package, 
-            color: '#1B6B3A'
+            label: t('totalIncome', 'Total Income'), 
+            value: formatCurrency(stats?.income || 0), 
+            change: t('live', 'Live'), 
+            icon: ArrowUpRight, 
+            color: '#1B6B3A' 
         },
         { 
-            label: 'Segregated Funds Total', 
-            value: formatCurrency(stats?.wallets?.saved || 0), 
-            change: 'Live',
+            label: t('totalExpenses', 'Total Expenses'), 
+            value: formatCurrency(stats?.expenses || 0), 
+            change: t('live', 'Live'), 
+            icon: ArrowDownLeft, 
+            color: '#DC2626' 
+        },
+        { 
+            label: t('netBalance', 'Net Balance'), 
+            value: formatCurrency((stats?.income || 0) - (stats?.expenses || 0)), 
+            change: t('live', 'Live'), 
             icon: Wallet, 
-            color: '#064E3B'
+            color: '#059669' 
         },
         { 
-            label: 'Split Shared Costs', 
-            value: formatCurrency(stats?.splits?.totalAmount || 0), 
-            change: 'Live',
+            label: t('activeInvestments', 'Active Investments'), 
+            value: formatCurrency(stats?.investments || 0), 
+            change: t('live', 'Live'), 
+            icon: PiggyBank, 
+            color: '#2563EB' 
+        },
+        { 
+            label: t('activePeople', 'Active People'), 
+            value: `${stats?.people || 0} Contacts`, 
+            change: t('live', 'Live'), 
+            icon: Users, 
+            color: '#D97706' 
+        },
+        { 
+            label: t('activeSegregations', 'Active Segregations'), 
+            value: `${stats?.segregation_count || 0} Records`, 
+            change: t('live', 'Live'), 
             icon: SplitSquareVertical, 
             color: '#059669'
         }
@@ -124,18 +146,17 @@ const BooksDashboard = () => {
 
     return (
         <div className="premium-container" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', background: '#ffffff' }}>
-            {/* Header */}
             <div className="dashboard-header" style={{ flexShrink: 0 }}>
                 <div className="dashboard-header-title">
-                    <h1>Books Console</h1>
-                    <p>Monitor your personal finance & operational intelligence suite.</p>
+                    <h1>{t('booksConsole', 'Books Console')}</h1>
+                    <p>{t('booksSubtitle', 'Monitor your personal finance & operational intelligence suite.')}</p>
                 </div>
                 <div className="dashboard-header-actions">
                     <div className="dashboard-search-wrapper">
                         <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                         <input
                             type="text"
-                            placeholder="Find modules, assets..."
+                            placeholder={t('findModulesPlaceholder', 'Find modules, assets...')}
                             className="dashboard-search-input"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -158,14 +179,12 @@ const BooksDashboard = () => {
                             boxShadow: '0 4px 12px rgba(27, 107, 58, 0.15)'
                         }}
                     >
-                        <Settings size={16} /> Customise
+                        <Settings size={16} /> {t('customise', 'Customise')}
                     </button>
                 </div>
             </div>
 
-            {/* Scrollable Dashboard Content */}
             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: '2rem' }}>
-                {/* Stats Grid */}
                 <div className="dashboard-stats-grid">
                     {metrics.map((stat, idx) => (
                         <div key={idx} className="dashboard-stat-card">
@@ -181,9 +200,8 @@ const BooksDashboard = () => {
                     ))}
                 </div>
 
-                {/* Quick Actions Row */}
                 <div style={{ marginTop: '2rem', marginBottom: '1rem' }}>
-                    <h2 style={{ fontSize: '1.15rem', fontWeight: '850', color: '#1E293B', marginBottom: '1.25rem', letterSpacing: '-0.3px' }}>Quick Action Center</h2>
+                    <h2 style={{ fontSize: '1.15rem', fontWeight: '850', color: '#1E293B', marginBottom: '1.25rem', letterSpacing: '-0.3px' }}>{t('quickActionCenter', 'Quick Action Center')}</h2>
 
                     {(() => {
                         const q = searchTerm.trim().toLowerCase();
@@ -195,7 +213,7 @@ const BooksDashboard = () => {
                             <>
                                 {q && visibleShortcuts.length === 0 ? (
                                     <div style={{ padding: '1.5rem 0', color: '#94A3B8', fontSize: '0.9rem', fontWeight: 600 }}>
-                                        No matching modules found.
+                                        {t('noMatchingModules', 'No matching modules found.')}
                                     </div>
                                 ) : (
                                     <div className="dashboard-shortcuts-container">
@@ -226,12 +244,11 @@ const BooksDashboard = () => {
                                                     >
                                                         <Icon size={16} strokeWidth={2.5} />
                                                     </div>
-                                                    <span className="dashboard-shortcut-btn-label">{shortcut.label}</span>
+                                                    <span className="dashboard-shortcut-btn-label">{t(shortcut.id, shortcut.label)}</span>
                                                 </button>
                                             );
                                         })}
 
-                                        {/* Add/Manage Button — hide during search */}
                                         {!q && (
                                             <button
                                                 onClick={() => setIsModalOpen(true)}
