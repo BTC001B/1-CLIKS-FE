@@ -823,7 +823,8 @@ const PurchaseDetails = () => {
                                     )}
                                 </>
                             )}
-                            ) : (
+                        </div>
+                    ) : (
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                         <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#1E293B', margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
