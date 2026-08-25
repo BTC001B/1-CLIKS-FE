@@ -263,7 +263,8 @@ const PurchaseDetails = () => {
     }, [purchases, selectedShop]);
 
     const [searchParams] = useSearchParams();
-    const [showWarrantyTab, setShowWarrantyTab] = useState(false);
+    const [showWarrantyTab, setShowWarrantyTab] = useState(true);
+    const [showPurchaseHistoryTab, setShowPurchaseHistoryTab] = useState(false);
     const [warrantySearchQuery, setWarrantySearchQuery] = useState('');
     const isWarrantyView = searchParams.get('view') === 'warranty';
     const isWarrantyActiveView = showWarrantyTab || isWarrantyView;
@@ -575,7 +576,10 @@ const PurchaseDetails = () => {
                                                 <h3 style={{ fontSize: '1.3rem', fontWeight: '850', color: '#1E293B', margin: 0 }}>{selectedShop.business_name}</h3>
                                                 <span style={{ fontSize: '0.7rem', fontWeight: '850', color: '#10B981', background: '#ECFDF5', padding: '0.2rem 0.6rem', borderRadius: '6px', textTransform: 'uppercase' }}>CONNECTED</span>
                                                 <button
-                                                    onClick={() => setShowWarrantyTab(prev => !prev)}
+                                                    onClick={() => {
+                                                        setShowWarrantyTab(prev => !prev);
+                                                        setShowPurchaseHistoryTab(false);
+                                                    }}
                                                     style={{
                                                         display: 'inline-flex',
                                                         alignItems: 'center',
@@ -592,7 +596,30 @@ const PurchaseDetails = () => {
                                                         transition: 'all 0.2s'
                                                     }}
                                                 >
-                                                    🛡️ your warranty product {selectedShopWarrantyProducts.length > 0 ? `(${selectedShopWarrantyProducts.length})` : ''}
+                                                    🛡️ YOUR WARRANTY PRODUCT {selectedShopWarrantyProducts.length > 0 ? `(${selectedShopWarrantyProducts.length})` : ''}
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setShowPurchaseHistoryTab(prev => !prev);
+                                                        setShowWarrantyTab(false);
+                                                    }}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.4rem',
+                                                        padding: '0.3rem 0.85rem',
+                                                        borderRadius: '8px',
+                                                        border: showPurchaseHistoryTab ? '1.5px solid #15803D' : '1px solid #CBD5E1',
+                                                        background: showPurchaseHistoryTab ? '#DCFCE7' : '#FFFFFF',
+                                                        color: showPurchaseHistoryTab ? '#166534' : '#334155',
+                                                        fontWeight: '800',
+                                                        fontSize: '0.78rem',
+                                                        cursor: 'pointer',
+                                                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                >
+                                                    📜 Purchase History {selectedShopPurchases.length > 0 ? `(${selectedShopPurchases.length})` : ''}
                                                 </button>
                                             </div>
                                             <p style={{ fontSize: '0.8rem', color: '#64748B', margin: '4px 0 0 0' }}>
@@ -638,17 +665,19 @@ const PurchaseDetails = () => {
                                         </div>
                                     </div>
 
-                                    <h4 style={{ fontSize: '1rem', fontWeight: '800', color: '#1E293B', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        {isWarrantyActiveView ? (
-                                            <>
-                                                <Shield size={18} style={{ color: '#1B6B3A' }} /> Warranty Products ({selectedShopWarrantyProducts.length})
-                                            </>
-                                        ) : (
-                                            <>
-                                                <History size={18} style={{ color: '#1B6B3A' }} /> Purchase History ({selectedShopPurchases.length})
-                                            </>
-                                        )}
-                                    </h4>
+                                    {(isWarrantyActiveView || showPurchaseHistoryTab) && (
+                                        <>
+                                            <h4 style={{ fontSize: '1rem', fontWeight: '800', color: '#1E293B', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                {isWarrantyActiveView ? (
+                                                    <>
+                                                        <Shield size={18} style={{ color: '#1B6B3A' }} /> Warranty Products ({selectedShopWarrantyProducts.length})
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <History size={18} style={{ color: '#1B6B3A' }} /> Purchase History ({selectedShopPurchases.length})
+                                                    </>
+                                                )}
+                                            </h4>
 
                                     {isWarrantyActiveView ? (
                                         filteredWarrantyProducts.length === 0 ? (
@@ -792,7 +821,8 @@ const PurchaseDetails = () => {
                                             })}
                                         </div>
                                     )}
-                                </div>
+                                </>
+                            )}
                             ) : (
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
