@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useCurrency } from '../../context';
+import { useCurrency, useLanguage } from '../../context';
 import {
     LayoutDashboard,
     Package,
