@@ -5,7 +5,7 @@ import {
     Receipt, IndianRupee, Clock, CheckCircle, AlertCircle, X, ChevronRight,
     MessageSquare, Send, Building2, Truck, CheckCircle2, XCircle, UserCheck, FileText, User,
     Plus, Calculator, HelpCircle, Info, Percent, ChevronDown, ChevronUp, Printer, Download,
-    Shield, ShieldCheck
+    Shield, ShieldCheck, Search
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -264,6 +264,7 @@ const PurchaseDetails = () => {
 
     const [searchParams] = useSearchParams();
     const [showWarrantyTab, setShowWarrantyTab] = useState(false);
+    const [warrantySearchQuery, setWarrantySearchQuery] = useState('');
     const isWarrantyView = searchParams.get('view') === 'warranty';
     const isWarrantyActiveView = showWarrantyTab || isWarrantyView;
 
@@ -303,6 +304,14 @@ const PurchaseDetails = () => {
         });
         return list;
     }, [selectedShopPurchases, selectedShop]);
+
+    const filteredWarrantyProducts = useMemo(() => {
+        if (!warrantySearchQuery.trim()) return selectedShopWarrantyProducts;
+        const q = warrantySearchQuery.toLowerCase().trim();
+        return selectedShopWarrantyProducts.filter(item => 
+            String(item.product_name || '').toLowerCase().includes(q)
+        );
+    }, [selectedShopWarrantyProducts, warrantySearchQuery]);
 
     const pendingConnCount = 0;
 
@@ -544,12 +553,43 @@ const PurchaseDetails = () => {
                                                 Customer: <strong style={{ color: '#334155' }}>{selectedShop.customer_name}</strong> ({selectedShop.customer_email})
                                             </p>
                                         </div>
-                                        <button
-                                            onClick={() => setIsShopModalOpen(true)}
-                                            style={{ padding: '0.5rem 1rem', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '10px', fontSize: '0.8rem', fontWeight: '700', color: '#475569', cursor: 'pointer' }}
-                                        >
-                                            Switch Shop
-                                        </button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                                <Search size={16} style={{ position: 'absolute', left: '0.75rem', color: '#94A3B8', pointerEvents: 'none' }} />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Search product..." 
+                                                    value={warrantySearchQuery} 
+                                                    onChange={(e) => setWarrantySearchQuery(e.target.value)} 
+                                                    style={{ 
+                                                        padding: '0.5rem 0.85rem 0.5rem 2.2rem', 
+                                                        background: '#F8FAFC', 
+                                                        border: '1px solid #CBD5E1', 
+                                                        borderRadius: '10px', 
+                                                        fontSize: '0.8rem', 
+                                                        fontWeight: '600', 
+                                                        color: '#1E293B', 
+                                                        outline: 'none', 
+                                                        width: '200px',
+                                                        boxSizing: 'border-box'
+                                                    }} 
+                                                />
+                                                {warrantySearchQuery && (
+                                                    <button 
+                                                        onClick={() => setWarrantySearchQuery('')} 
+                                                        style={{ position: 'absolute', right: '0.5rem', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <button
+                                                onClick={() => setIsShopModalOpen(true)}
+                                                style={{ padding: '0.5rem 1rem', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '10px', fontSize: '0.8rem', fontWeight: '700', color: '#475569', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                            >
+                                                Switch Shop
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <h4 style={{ fontSize: '1rem', fontWeight: '800', color: '#1E293B', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -565,17 +605,19 @@ const PurchaseDetails = () => {
                                     </h4>
 
                                     {isWarrantyActiveView ? (
-                                        selectedShopWarrantyProducts.length === 0 ? (
+                                        filteredWarrantyProducts.length === 0 ? (
                                             <div style={{ padding: '3rem 1rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
                                                 <Shield size={40} style={{ color: '#CBD5E1', marginBottom: '1rem' }} />
-                                                <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>No Warranty Products for {selectedShop.business_name}</h4>
+                                                <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#64748B', margin: 0 }}>
+                                                    {warrantySearchQuery ? `No matching warranty products found for "${warrantySearchQuery}"` : `No Warranty Products for ${selectedShop.business_name}`}
+                                                </h4>
                                                 <p style={{ fontSize: '0.85rem', color: '#94A3B8', marginTop: '0.5rem' }}>
-                                                    Warranty-covered products purchased from this store will automatically appear here.
+                                                    {warrantySearchQuery ? 'Try searching with a different product name.' : 'Warranty-covered products purchased from this store will automatically appear here.'}
                                                 </p>
                                             </div>
                                         ) : (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                                {selectedShopWarrantyProducts.map((wItem) => (
+                                                {filteredWarrantyProducts.map((wItem) => (
                                                     <div key={wItem.id} style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1.25rem', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                             <div>
