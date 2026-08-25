@@ -9,6 +9,7 @@ import {
     SplitSquareVertical,
     ArrowRight,
     ArrowUpRight,
+    ArrowDownLeft,
     Search,
     Bell,
     Settings,
