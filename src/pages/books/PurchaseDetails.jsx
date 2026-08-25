@@ -308,10 +308,56 @@ const PurchaseDetails = () => {
     const filteredWarrantyProducts = useMemo(() => {
         if (!warrantySearchQuery.trim()) return selectedShopWarrantyProducts;
         const q = warrantySearchQuery.toLowerCase().trim();
-        return selectedShopWarrantyProducts.filter(item => 
-            String(item.product_name || '').toLowerCase().includes(q)
-        );
+        const cleanQ = q.replace(/^pos-?/i, '');
+        const matches = [];
+        const nonMatches = [];
+
+        selectedShopWarrantyProducts.forEach(item => {
+            const prodName = String(item.product_name || '').toLowerCase();
+            const invNum = String(item.invoice_number || '').toLowerCase();
+            const cleanInvNum = invNum.replace(/^pos-?/i, '');
+
+            const matchesInv = invNum === q || (cleanQ && cleanInvNum === cleanQ) || invNum.includes(q);
+            const matchesProd = prodName.includes(q);
+
+            if (matchesInv || matchesProd) {
+                matches.push(item);
+            } else {
+                nonMatches.push(item);
+            }
+        });
+
+        return [...matches, ...nonMatches];
     }, [selectedShopWarrantyProducts, warrantySearchQuery]);
+
+    const displayedPurchases = useMemo(() => {
+        if (!selectedShopPurchases || !Array.isArray(selectedShopPurchases)) return [];
+        if (!warrantySearchQuery || !warrantySearchQuery.trim()) return selectedShopPurchases;
+
+        const rawQuery = warrantySearchQuery.trim().toLowerCase();
+        const cleanQuery = rawQuery.replace(/^pos-?/i, '');
+
+        const matches = [];
+        const nonMatches = [];
+
+        selectedShopPurchases.forEach(inv => {
+            const invNum = String(inv?.invoice_number || inv?.id || '').toLowerCase().trim();
+            const cleanInvNum = invNum.replace(/^pos-?/i, '');
+
+            const isExactMatch = invNum === rawQuery || (cleanQuery && cleanInvNum === cleanQuery);
+            const isPartialMatch = invNum.includes(rawQuery) || (cleanQuery && cleanInvNum.includes(cleanQuery));
+
+            if (isExactMatch) {
+                matches.unshift(inv);
+            } else if (isPartialMatch) {
+                matches.push(inv);
+            } else {
+                nonMatches.push(inv);
+            }
+        });
+
+        return [...matches, ...nonMatches];
+    }, [selectedShopPurchases, warrantySearchQuery]);
 
     const pendingConnCount = 0;
 
@@ -656,7 +702,7 @@ const PurchaseDetails = () => {
                                         </div>
                                     ) : (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                            {selectedShopPurchases.map((inv, iIdx) => {
+                                            {displayedPurchases.map((inv, iIdx) => {
                                                 const invId = inv?.id || inv?.invoice_number || `POS-${iIdx}`;
                                                 const isInlineExpanded = expandedInvoiceIds.includes(invId);
 
