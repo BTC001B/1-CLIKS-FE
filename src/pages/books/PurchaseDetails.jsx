@@ -59,9 +59,24 @@ const getProductWarrantyPeriod = (item) => {
     return '1 Year Warranty';
 };
 
+const parseInvoiceItems = (inv) => {
+    if (!inv || !inv.items) return [];
+    if (Array.isArray(inv.items)) return inv.items;
+    if (typeof inv.items === 'string') {
+        try {
+            const parsed = JSON.parse(inv.items);
+            if (Array.isArray(parsed)) return parsed;
+        } catch (e) {
+            console.error('Failed to parse invoice items:', e);
+        }
+    }
+    return [];
+};
+
 const invoiceHasWarranty = (inv) => {
-    if (!inv || !Array.isArray(inv.items)) return false;
-    return inv.items.some(it => hasProductWarranty(it));
+    if (!inv) return false;
+    const items = parseInvoiceItems(inv);
+    return items.some(it => hasProductWarranty(it));
 };
 
 const PurchaseDetails = () => {
@@ -264,7 +279,8 @@ const PurchaseDetails = () => {
         const list = [];
         selectedShopPurchases.forEach((inv, invIdx) => {
             if (!inv) return;
-            const itemsList = Array.isArray(inv.items) && inv.items.length > 0 ? inv.items : MOCK_INVOICE_ITEMS;
+            const parsed = parseInvoiceItems(inv);
+            const itemsList = parsed.length > 0 ? parsed : MOCK_INVOICE_ITEMS;
             itemsList.forEach((it, itIdx) => {
                 if (hasProductWarranty(it)) {
                     list.push({
@@ -272,11 +288,11 @@ const PurchaseDetails = () => {
                         invoice_number: inv.invoice_number || inv.id || `POS-${invIdx}`,
                         timestamp: inv.timestamp || inv.created_at || inv.invoice_date,
                         product_name: it.product_name || it.name || 'Warranty Product',
-                        sku: it.sku || 'N/A',
-                        quantity: it.quantity || 1,
+                        sku: it.sku || it.sku_hsn || 'N/A',
+                        quantity: it.quantity || it.qty || 1,
                         unit: it.unit || 'Pcs',
-                        price: it.price || 0,
-                        amount: it.amount || ((it.quantity || 1) * (it.price || 0)),
+                        price: it.price || it.unit_price || 0,
+                        amount: it.amount || it.item_total || ((it.quantity || it.qty || 1) * (it.price || it.unit_price || 0)),
                         warranty_period: getProductWarrantyPeriod(it),
                         merchant_name: inv.merchant_name || selectedShop?.business_name || 'Store',
                         payment_status: inv.payment_status || 'Paid',
@@ -663,7 +679,7 @@ const PurchaseDetails = () => {
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            {(Array.isArray(inv?.items) ? inv.items : []).map((it, idx) => (
+                                                                            {parseInvoiceItems(inv).map((it, idx) => (
                                                                                 <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                                                     <td style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#1E293B' }}>
                                                                                         {it.product_name || it.name}
@@ -878,7 +894,7 @@ const PurchaseDetails = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {(Array.isArray(activeModalInvoice?.items) ? activeModalInvoice.items : []).map((it, idx) => (
+                                                {parseInvoiceItems(activeModalInvoice).map((it, idx) => (
                                                     <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                                         <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: '#1E293B' }}>
                                                             {it.product_name || it.name}
