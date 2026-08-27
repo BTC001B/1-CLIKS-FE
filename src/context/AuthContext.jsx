@@ -53,6 +53,18 @@ export const AuthProvider = ({ children }) => {
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
     }, [logout]);
 
+    useEffect(() => {
+        const handleStorageChange = (e) => {
+            if (!e.key || e.key === 'books_auth_token' || e.key === 'bnx_auth_token') {
+                console.warn('[AuthContext] Auth session changed or switched in another tab. Logging out this tab.');
+                logout();
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [logout]);
+
     const ssoLogin = async (bnxToken) => {
         const data = await authService.ssoLogin(bnxToken);
         const { accessToken, user: newUser } = data;
