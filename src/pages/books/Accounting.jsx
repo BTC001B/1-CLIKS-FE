@@ -1076,16 +1076,6 @@ const Accounting = () => {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ position: 'relative' }}>
-                        <button style={{ width: 42, height: 42, borderRadius: '12px', background: 'white', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', cursor: 'pointer' }}>
-                            <Bell size={20} />
-                            {notifications.filter(n => !n.is_read).length > 0 && (
-                                <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '18px', height: '18px', borderRadius: '50%', background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>
-                                    {notifications.filter(n => !n.is_read).length}
-                                </span>
-                            )}
-                        </button>
-                    </div>
                     <button onClick={() => navigate('/books/tax-deductions')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.25rem', background: '#FEE2E2', color: '#EF4444', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
                         <ShieldCheck size={18} /> Tax &amp; Deductions
                     </button>
