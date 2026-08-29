@@ -47,7 +47,8 @@ const Subscription = () => {
                 throw new Error("Malformed session received from server cluster.");
             }
 
-            const cashfree = await load({ mode: "sandbox" });
+            const mode = backendData?.data?.mode || backendData?.data?.cf_environment || (window.location.hostname.includes('cliksbusiness.com') || window.location.hostname.includes('cliks.beta-softnet.com') ? 'production' : 'sandbox');
+            const cashfree = await load({ mode });
 
             cashfree.checkout({
                 paymentSessionId: paymentSessionId,
