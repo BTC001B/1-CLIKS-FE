@@ -165,8 +165,6 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
     };
 
     const [activeItem, setActiveItem] = useState(getActiveItemFromPath(location.pathname, location.search));
-    const [isFinanceOpen, setIsFinanceOpen] = useState(location.pathname.includes('/books/finance') || location.pathname.includes('/books/accounting') || location.pathname.includes('/books/purchase-details'));
-<<<<<<< HEAD
     const [isStorageModalOpen, setIsStorageModalOpen] = useState(false);
 
     const defaultStorageData = {
@@ -203,9 +201,8 @@ const Sidebar = ({ isOpen, onReferralClick, onItemClick, onLogoClick }) => {
         fetchStorage();
         return () => { isMounted = false; };
     }, [isStorageModalOpen]);
-=======
+
     const [isTrackOpen, setIsTrackOpen] = useState(location.pathname.includes('/books/track') || location.pathname.includes('/books/money-tracker'));
->>>>>>> baa6ca9 (feat: add sidebar navigation, billing record pages, and App structure components)
 
     // Update active item when location changes
     React.useEffect(() => {
