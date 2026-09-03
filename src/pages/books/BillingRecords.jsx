@@ -238,7 +238,7 @@ const BillingRecords = () => {
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
                         <thead>
                             <tr style={{ background: '#F8FAFC', color: '#64748B', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #E2E8F0' }}>
-                                <th style={{ padding: '0.85rem 1rem' }}>Bill ID</th>
+                                <th style={{ padding: '0.85rem 1rem' }}>Billing Order #</th>
                                 <th style={{ padding: '0.85rem 1rem' }}>Customer Name</th>
                                 <th style={{ padding: '0.85rem 1rem' }}>Date & Time</th>
                                 <th style={{ padding: '0.85rem 1rem' }}>Products Summary</th>

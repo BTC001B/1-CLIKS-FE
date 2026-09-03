@@ -43,6 +43,7 @@ const createEmptyProduct = () => ({
 
 const SimpleBilling = () => {
     const navigate = useNavigate();
+    const [billingOrder, setBillingOrder] = useState(() => 'ORD-' + Date.now().toString().slice(-6));
     const [customerName, setCustomerName] = useState('');
     const [products, setProducts] = useState([createEmptyProduct()]);
     const [submittedSuccess, setSubmittedSuccess] = useState(false);
@@ -104,8 +105,11 @@ const SimpleBilling = () => {
             };
         });
 
+        const currentOrderId = billingOrder.trim() || ('ORD-' + Date.now().toString().slice(-6));
+
         const newRecord = {
-            id: 'BILL-' + Date.now().toString().slice(-6),
+            id: currentOrderId,
+            billingOrder: currentOrderId,
             customerName: customerName.trim(),
             date: new Date().toISOString(),
             formattedDate: new Date().toLocaleDateString('en-IN', {
@@ -126,6 +130,7 @@ const SimpleBilling = () => {
 
         // Reset form
         setCustomerName('');
+        setBillingOrder('ORD-' + (Date.now() + 1).toString().slice(-6));
         setProducts([createEmptyProduct()]);
 
         setTimeout(() => {
@@ -206,7 +211,7 @@ const SimpleBilling = () => {
                         </div>
                         <div>
                             <h4 style={{ margin: 0, color: '#065F46', fontWeight: 800, fontSize: '1rem' }}>
-                                Bill #{submittedRecordId} Submitted Successfully!
+                                Billing Order #{submittedRecordId} Submitted Successfully!
                             </h4>
                             <p style={{ margin: '0.2rem 0 0 0', color: '#047857', fontSize: '0.85rem' }}>
                                 The bill record has been saved and is available under Billing Records.
@@ -240,52 +245,104 @@ const SimpleBilling = () => {
                 padding: '2rem',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)'
             }}>
-                {/* Section 1: Customer Details */}
-                <div style={{ marginBottom: '2rem' }}>
-                    <label style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        fontSize: '0.8rem',
-                        fontWeight: 800,
-                        color: '#475569',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        marginBottom: '0.5rem'
-                    }}>
-                        <User size={15} style={{ color: '#1B6B3A' }} /> Customer Name <span style={{ color: '#EF4444' }}>*</span>
-                    </label>
-                    <input
-                        type="text"
-                        placeholder="Enter Customer Name (e.g. John Doe / Sharma Enterprises)"
-                        value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
-                        required
-                        style={{
-                            width: '100%',
-                            maxWidth: '600px',
-                            padding: '0.75rem 1rem',
-                            borderRadius: '12px',
-                            border: '1.5px solid #CBD5E1',
-                            fontSize: '0.95rem',
-                            fontWeight: 600,
-                            color: '#0F172A',
-                            background: '#F8FAFC',
-                            outline: 'none',
-                            boxSizing: 'border-box',
-                            transition: 'all 0.2s ease'
-                        }}
-                        onFocus={(e) => {
-                            e.target.style.borderColor = '#1B6B3A';
-                            e.target.style.background = '#FFFFFF';
-                            e.target.style.boxShadow = '0 0 0 3px rgba(27, 107, 58, 0.1)';
-                        }}
-                        onBlur={(e) => {
-                            e.target.style.borderColor = '#CBD5E1';
-                            e.target.style.background = '#F8FAFC';
-                            e.target.style.boxShadow = 'none';
-                        }}
-                    />
+                {/* Section 1: Billing Order & Customer Details */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: '1.5rem',
+                    marginBottom: '2rem'
+                }}>
+                    {/* Billing Order */}
+                    <div>
+                        <label style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.4rem',
+                            fontSize: '0.8rem',
+                            fontWeight: 800,
+                            color: '#475569',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                            marginBottom: '0.5rem'
+                        }}>
+                            <Receipt size={15} style={{ color: '#1B6B3A' }} /> Billing Order # <span style={{ color: '#EF4444' }}>*</span>
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="Billing Order No. (e.g. ORD-849201)"
+                            value={billingOrder}
+                            onChange={(e) => setBillingOrder(e.target.value)}
+                            required
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 1rem',
+                                borderRadius: '12px',
+                                border: '1.5px solid #CBD5E1',
+                                fontSize: '0.95rem',
+                                fontWeight: 700,
+                                color: '#1B6B3A',
+                                background: '#F0FDF4',
+                                outline: 'none',
+                                boxSizing: 'border-box',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#1B6B3A';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(27, 107, 58, 0.1)';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = '#CBD5E1';
+                                e.target.style.boxShadow = 'none';
+                            }}
+                        />
+                    </div>
+
+                    {/* Customer Name */}
+                    <div>
+                        <label style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.4rem',
+                            fontSize: '0.8rem',
+                            fontWeight: 800,
+                            color: '#475569',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                            marginBottom: '0.5rem'
+                        }}>
+                            <User size={15} style={{ color: '#1B6B3A' }} /> Customer Name <span style={{ color: '#EF4444' }}>*</span>
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="Enter Customer Name (e.g. John Doe / Sharma Enterprises)"
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            required
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 1rem',
+                                borderRadius: '12px',
+                                border: '1.5px solid #CBD5E1',
+                                fontSize: '0.95rem',
+                                fontWeight: 600,
+                                color: '#0F172A',
+                                background: '#F8FAFC',
+                                outline: 'none',
+                                boxSizing: 'border-box',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#1B6B3A';
+                                e.target.style.background = '#FFFFFF';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(27, 107, 58, 0.1)';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = '#CBD5E1';
+                                e.target.style.background = '#F8FAFC';
+                                e.target.style.boxShadow = 'none';
+                            }}
+                        />
+                    </div>
                 </div>
 
                 <div style={{ height: '1px', background: '#F1F5F9', marginBottom: '2rem' }} />
