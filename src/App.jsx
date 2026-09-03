@@ -49,6 +49,8 @@ const Subscription = React.lazy(() => import('./pages/Subscription'));
 const FinancePage = React.lazy(() => import('./pages/books/FinancePage'));
 const TaxDeductions = React.lazy(() => import('./pages/books/TaxDeductions'));
 const MoneyTracker = React.lazy(() => import('./pages/books/MoneyTracker'));
+const SimpleBilling = React.lazy(() => import('./pages/books/SimpleBilling'));
+const BillingRecords = React.lazy(() => import('./pages/books/BillingRecords'));
 const Accounting = React.lazy(() => import('./pages/books/Accounting'));
 const PurchaseDetails = React.lazy(() => import('./pages/books/PurchaseDetails'));
 
@@ -139,7 +141,10 @@ function AppContent() {
                     <Route path="/books/people/records" element={<PeopleRecords />} />
                     <Route path="/books/settings" element={<Settings />} />
                     <Route path="/books/faq" element={<FAQ />} />
-                    <Route path="/books/money-tracker" element={<MoneyTracker />} />
+                    <Route path="/books/money-tracker" element={<Navigate to="/books/track/simple-billing" replace />} />
+                    <Route path="/books/track" element={<Navigate to="/books/track/simple-billing" replace />} />
+                    <Route path="/books/track/simple-billing" element={<SimpleBilling />} />
+                    <Route path="/books/track/billing-records" element={<BillingRecords />} />
                     <Route path="/books/accounting" element={<Accounting />} />
                     <Route path="/books/purchase-details" element={<PurchaseDetails />} />
 
